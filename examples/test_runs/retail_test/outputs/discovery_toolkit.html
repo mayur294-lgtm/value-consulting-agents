@@ -1,0 +1,2377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discovery Workshop | Interactive Value Consulting</title>
+    <style>
+        :root {
+            --primary: #091C35;
+            --primary-light: #0f2847;
+            --accent: #00C853;
+            --accent-red: #FF5252;
+            --accent-yellow: #FFB300;
+            --accent-blue: #3367FF;
+            --accent-purple: #7C4DFF;
+            --bg-dark: #091C35;
+            --bg-card: #0f2847;
+            --bg-card-hover: #163359;
+            --text-primary: #FFFFFF;
+            --text-secondary: #94A3B8;
+            --border: #1e3a5f;
+            --gradient-1: linear-gradient(135deg, #3367FF 0%, #7C4DFF 100%);
+            --gradient-2: linear-gradient(135deg, #00C853 0%, #00BFA5 100%);
+            --gradient-3: linear-gradient(135deg, #FF5252 0%, #FF4081 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%; height: 200%;
+            top: -50%; left: -50%;
+            background: radial-gradient(circle at 20% 80%, rgba(51, 103, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(124, 77, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(0, 200, 83, 0.05) 0%, transparent 30%);
+            animation: bgMove 20s ease-in-out infinite;
+        }
+
+        @keyframes bgMove {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-5%, -5%) rotate(5deg); }
+        }
+
+        /* Engagement Setup Overlay */
+        .setup-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-dark);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .setup-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .setup-container {
+            max-width: 900px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .setup-logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .setup-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+
+        .setup-step {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .setup-step.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .setup-question {
+            font-size: 1.75rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .engagement-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .engagement-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .engagement-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(51, 103, 255, 0.2);
+        }
+
+        .engagement-card.selected {
+            border-color: var(--accent);
+            background: rgba(0, 200, 83, 0.1);
+        }
+
+        .engagement-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .engagement-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .engagement-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .engagement-card .details {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .engagement-card .detail-tag {
+            background: var(--bg-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .session-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .session-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .session-card:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .session-card.selected {
+            border-color: var(--accent);
+            background: rgba(0, 200, 83, 0.1);
+        }
+
+        .session-card .icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .session-card h4 { font-size: 0.95rem; margin-bottom: 0.25rem; }
+        .session-card p { font-size: 0.8rem; color: var(--text-secondary); }
+
+        .setup-input {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .setup-input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .setup-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(51, 103, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 70px;
+            background: rgba(9, 28, 53, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 100;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .session-info {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .engagement-badge {
+            background: var(--gradient-2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Gamification Stats */
+        .game-stats {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .stat-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border-radius: 25px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-pill .icon { font-size: 1.25rem; }
+        .stat-pill .value { font-weight: 700; font-size: 1.1rem; }
+        .stat-pill .label { font-size: 0.7rem; color: var(--text-secondary); }
+
+        .stat-pill.points {
+            background: var(--gradient-2);
+            border: none;
+            color: var(--primary);
+        }
+
+        .stat-pill.streak {
+            background: var(--gradient-3);
+            border: none;
+        }
+
+        .timer-pill {
+            background: var(--bg-card);
+            padding: 0.5rem 1.25rem;
+            border-radius: 25px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            border: 2px solid var(--accent-blue);
+        }
+
+        /* Main Container */
+        .main-container {
+            padding-top: 90px;
+            padding-bottom: 100px;
+            min-height: 100vh;
+            display: none;
+        }
+
+        .main-container.active { display: block; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            bottom: 0;
+            width: 280px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            z-index: 50;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .quick-btn {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-blue);
+        }
+
+        .quick-btn .icon { font-size: 1.25rem; margin-bottom: 0.25rem; }
+        .quick-btn .label { font-size: 0.7rem; color: var(--text-secondary); }
+        .quick-btn .count {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--accent);
+        }
+
+        .feed-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .feed-item {
+            background: var(--bg-dark);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            border-left: 3px solid var(--accent);
+            animation: slideIn 0.3s ease;
+        }
+
+        .feed-item.pain { border-left-color: var(--accent-red); }
+        .feed-item.metric { border-left-color: var(--accent); }
+        .feed-item.quote { border-left-color: var(--accent-yellow); }
+        .feed-item.hypothesis { border-left-color: var(--accent-purple); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .feed-item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+
+        .feed-item-type {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+        }
+
+        .feed-item-time {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+        }
+
+        /* Activity Container */
+        .activity-container {
+            margin-left: 280px;
+            max-width: 1000px;
+            padding: 0 2rem;
+        }
+
+        /* Phase Progress */
+        .phase-progress {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .phase-dot {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .phase-dot:hover {
+            transform: scale(1.1);
+            border-color: var(--accent-blue);
+        }
+
+        .phase-dot.active {
+            background: var(--gradient-1);
+            border-color: transparent;
+            transform: scale(1.15);
+            box-shadow: 0 0 30px rgba(51, 103, 255, 0.4);
+        }
+
+        .phase-dot.completed {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .phase-dot.completed::after {
+            content: '\2713';
+            position: absolute;
+            font-size: 1rem;
+        }
+
+        .phase-connector {
+            width: 30px;
+            height: 3px;
+            background: var(--border);
+            align-self: center;
+            border-radius: 2px;
+        }
+
+        .phase-connector.completed { background: var(--accent); }
+
+        /* Activity Card */
+        .activity-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .activity-header {
+            padding: 2rem;
+            background: var(--gradient-1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .activity-header::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -50%;
+            width: 100%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+        }
+
+        .activity-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-subtitle {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .activity-body { padding: 2rem; }
+
+        /* Consultant Prompt */
+        .consultant-prompt {
+            background: rgba(51, 103, 255, 0.1);
+            border: 1px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .consultant-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--gradient-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .consultant-text { flex: 1; }
+        .consultant-text strong {
+            color: var(--accent-blue);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .consultant-text p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        /* Interactive Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .choice-card {
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-blue);
+            box-shadow: 0 10px 40px rgba(51, 103, 255, 0.2);
+        }
+
+        .choice-card.selected {
+            border-color: var(--accent);
+            background: rgba(0, 200, 83, 0.1);
+        }
+
+        .choice-card.selected::before {
+            content: '\2713';
+            position: absolute;
+            top: 1rem; right: 1rem;
+            width: 28px; height: 28px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .choice-card .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .choice-card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .choice-card p { font-size: 0.85rem; color: var(--text-secondary); }
+
+        /* Hypothesis Tree */
+        .hypothesis-container {
+            margin: 1.5rem 0;
+        }
+
+        .hypothesis-tree {
+            background: var(--bg-dark);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hypothesis-root {
+            background: var(--gradient-1);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hypothesis-root h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .hypothesis-root p {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .hypothesis-branch {
+            margin-left: 1.5rem;
+            border-left: 2px solid var(--border);
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hypothesis-branch-title {
+            color: var(--accent-blue);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .hypothesis-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .hypothesis-item:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .hypothesis-status {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .hypothesis-status.pending {
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .hypothesis-status.validated {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        .hypothesis-status.invalidated {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .hypothesis-status.needs_validation {
+            background: var(--accent-yellow);
+            color: var(--primary);
+        }
+
+        .hypothesis-content { flex: 1; }
+        .hypothesis-content h5 { font-size: 0.9rem; margin-bottom: 0.25rem; }
+        .hypothesis-content p { font-size: 0.8rem; color: var(--text-secondary); }
+
+        /* Journey Hotspot */
+        .hotspot-container { margin: 1.5rem 0; }
+
+        .journey-map {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-dark);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .journey-map::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 4px;
+            background: var(--border);
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .journey-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 2;
+            cursor: pointer;
+        }
+
+        .stage-node {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 3px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .stage-node:hover { transform: scale(1.1); }
+
+        .stage-node.cool { background: var(--bg-card); border-color: var(--border); }
+        .stage-node.warm { background: rgba(255, 179, 0, 0.2); border-color: var(--accent-yellow); }
+        .stage-node.hot { background: rgba(255, 82, 82, 0.3); border-color: var(--accent-red); box-shadow: 0 0 20px rgba(255, 82, 82, 0.4); }
+
+        .stage-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .pain-count-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 24px;
+            height: 24px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Voting System */
+        .vote-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .vote-item {
+            background: var(--bg-dark);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .vote-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .vote-btn {
+            width: 32px;
+            height: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .vote-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        .vote-count {
+            font-size: 1.5rem;
+            font-weight: 700;
+            min-width: 40px;
+            text-align: center;
+            color: var(--accent);
+        }
+
+        .vote-content { flex: 1; }
+        .vote-content h4 { font-size: 0.95rem; }
+
+        .vote-bar {
+            width: 100px;
+            height: 8px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .vote-fill {
+            height: 100%;
+            background: var(--gradient-2);
+            transition: width 0.3s;
+        }
+
+        /* Sliders */
+        .slider-container { margin: 1.5rem 0; }
+
+        .slider-question {
+            background: var(--bg-dark);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .slider-label .value {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .slider-track {
+            height: 12px;
+            background: var(--bg-card);
+            border-radius: 6px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .slider-fill {
+            height: 100%;
+            background: var(--gradient-1);
+            border-radius: 6px;
+            transition: width 0.1s;
+        }
+
+        .slider-thumb {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: left 0.1s;
+        }
+
+        .slider-markers {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 { font-size: 1.25rem; }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus { border-color: var(--accent-blue); }
+
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .severity-selector {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .severity-btn {
+            flex: 1;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .severity-btn:hover { border-color: var(--accent-blue); }
+
+        .severity-btn.selected.critical {
+            background: rgba(255, 82, 82, 0.2);
+            border-color: var(--accent-red);
+        }
+
+        .severity-btn.selected.high {
+            background: rgba(255, 179, 0, 0.2);
+            border-color: var(--accent-yellow);
+        }
+
+        .severity-btn.selected.medium {
+            background: rgba(51, 103, 255, 0.2);
+            border-color: var(--accent-blue);
+        }
+
+        .severity-btn.selected.low {
+            background: rgba(0, 200, 83, 0.2);
+            border-color: var(--accent);
+        }
+
+        /* Navigation */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Achievement Toast */
+        .achievement-toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--gradient-2);
+            color: var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transform: translateX(120%);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 200;
+        }
+
+        .achievement-toast.show { transform: translateX(0); }
+
+        .achievement-toast .icon { font-size: 2rem; }
+        .achievement-toast .content h4 { font-weight: 700; }
+        .achievement-toast .content p { font-size: 0.85rem; opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <!-- Engagement Setup Overlay -->
+    <div class="setup-overlay" id="setup-overlay">
+        <div class="setup-container">
+            <div class="setup-logo">Backbase Discovery</div>
+            <div class="setup-subtitle">Interactive Value Consulting Toolkit</div>
+
+            <!-- Step 1: Engagement Type -->
+            <div class="setup-step active" id="step-1">
+                <h2 class="setup-question">What type of engagement are we running?</h2>
+                <div class="engagement-cards">
+                    <div class="engagement-card" onclick="selectEngagement('ignite_light')">
+                        <div class="icon">&#128640;</div>
+                        <h3>Ignite Light</h3>
+                        <p>Strategic 1.5 day workshop focused on vision alignment, use case ideation, and roadmap co-creation</p>
+                        <div class="details">
+                            <span class="detail-tag">4 hours client time</span>
+                            <span class="detail-tag">Use case focus</span>
+                            <span class="detail-tag">Innovation Day</span>
+                        </div>
+                    </div>
+                    <div class="engagement-card" onclick="selectEngagement('detailed_assessment')">
+                        <div class="icon">&#128200;</div>
+                        <h3>Detailed Assessment</h3>
+                        <p>Deep current state analysis with full capability assessment, business case, and architecture solutioning</p>
+                        <div class="details">
+                            <span class="detail-tag">8-10 hours client time</span>
+                            <span class="detail-tag">Full business case</span>
+                            <span class="detail-tag">ROI model</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Sub-Engagement -->
+            <div class="setup-step" id="step-2">
+                <h2 class="setup-question">Which session are we running?</h2>
+                <div class="session-grid" id="session-grid"></div>
+                <div class="setup-buttons">
+                    <button class="btn btn-secondary" onclick="prevStep()">Back</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Client Details -->
+            <div class="setup-step" id="step-3">
+                <h2 class="setup-question">Client Details</h2>
+                <input type="text" class="setup-input" id="client-name" placeholder="Client Name">
+                <input type="text" class="setup-input" id="consultant-name" placeholder="Your Name (Consultant)">
+                <select class="setup-input" id="client-industry">
+                    <option value="">Select Industry</option>
+                    <option value="retail_banking">Retail Banking</option>
+                    <option value="commercial_banking">Commercial Banking</option>
+                    <option value="wealth_management">Wealth Management</option>
+                    <option value="credit_union">Credit Union</option>
+                    <option value="neo_bank">Neo Bank / Digital Bank</option>
+                    <option value="insurance">Insurance</option>
+                </select>
+                <select class="setup-input" id="client-region">
+                    <option value="">Select Region</option>
+                    <option value="SEA">Southeast Asia</option>
+                    <option value="APAC">Asia Pacific</option>
+                    <option value="EMEA">Europe, Middle East & Africa</option>
+                    <option value="NA">North America</option>
+                    <option value="LATAM">Latin America</option>
+                </select>
+                <div class="setup-buttons">
+                    <button class="btn btn-secondary" onclick="prevStep()">Back</button>
+                    <button class="btn btn-primary" onclick="startWorkshop()">Start Workshop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="logo-section">
+            <span class="logo">Backbase</span>
+            <span class="engagement-badge" id="engagement-badge">IGNITE</span>
+            <span class="session-info" id="session-name">Discovery Workshop</span>
+        </div>
+        <div class="game-stats">
+            <div class="stat-pill points">
+                <span class="icon">&#9733;</span>
+                <span class="value" id="points-value">0</span>
+                <span class="label">pts</span>
+            </div>
+            <div class="stat-pill">
+                <span class="icon">&#128161;</span>
+                <span class="value" id="insights-value">0</span>
+                <span class="label">insights</span>
+            </div>
+            <div class="timer-pill" id="timer">00:00</div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container" id="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Quick Capture</div>
+                <div class="quick-actions">
+                    <div class="quick-btn" onclick="openModal('pain')">
+                        <div class="icon">&#128293;</div>
+                        <div class="count" id="pain-count">0</div>
+                        <div class="label">Pain Points</div>
+                    </div>
+                    <div class="quick-btn" onclick="openModal('metric')">
+                        <div class="icon">&#128202;</div>
+                        <div class="count" id="metric-count">0</div>
+                        <div class="label">Metrics</div>
+                    </div>
+                    <div class="quick-btn" onclick="openModal('quote')">
+                        <div class="icon">&#128172;</div>
+                        <div class="count" id="quote-count">0</div>
+                        <div class="label">Quotes</div>
+                    </div>
+                    <div class="quick-btn" onclick="openModal('hypothesis')">
+                        <div class="icon">&#129504;</div>
+                        <div class="count" id="hypothesis-count">0</div>
+                        <div class="label">Hypotheses</div>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-title">Live Feed</div>
+                <div class="feed-container" id="feed-items"></div>
+            </div>
+        </div>
+
+        <!-- Activity Area -->
+        <div class="activity-container">
+            <div class="phase-progress" id="phase-progress"></div>
+            <div id="activity-content"></div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="modal-pain">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>&#128293; Capture Pain Point</h3>
+                <button class="modal-close" onclick="closeModal('pain')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>What's the pain point?</label>
+                <textarea class="form-input" id="pain-text" placeholder="Describe the challenge or problem..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Severity</label>
+                <div class="severity-selector">
+                    <div class="severity-btn critical" onclick="selectSeverity(this, 'critical')">Critical</div>
+                    <div class="severity-btn high" onclick="selectSeverity(this, 'high')">High</div>
+                    <div class="severity-btn medium" onclick="selectSeverity(this, 'medium')">Medium</div>
+                    <div class="severity-btn low" onclick="selectSeverity(this, 'low')">Low</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Source / Who mentioned it?</label>
+                <input type="text" class="form-input" id="pain-source" placeholder="e.g., Head of Digital">
+            </div>
+            <button class="btn btn-primary" onclick="savePain()" style="width: 100%;">Save Pain Point</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-metric">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>&#128202; Capture Metric</h3>
+                <button class="modal-close" onclick="closeModal('metric')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Metric Name</label>
+                <input type="text" class="form-input" id="metric-name" placeholder="e.g., Onboarding Completion Rate">
+            </div>
+            <div class="form-group">
+                <label>Current Value</label>
+                <input type="text" class="form-input" id="metric-current" placeholder="e.g., 35%">
+            </div>
+            <div class="form-group">
+                <label>Target Value</label>
+                <input type="text" class="form-input" id="metric-target" placeholder="e.g., 80%">
+            </div>
+            <button class="btn btn-primary" onclick="saveMetric()" style="width: 100%;">Save Metric</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-quote">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>&#128172; Capture Quote</h3>
+                <button class="modal-close" onclick="closeModal('quote')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Quote</label>
+                <textarea class="form-input" id="quote-text" placeholder="What did they say?"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Who said it?</label>
+                <input type="text" class="form-input" id="quote-source" placeholder="e.g., CEO, Head of Ops">
+            </div>
+            <button class="btn btn-primary" onclick="saveQuote()" style="width: 100%;">Save Quote</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-hypothesis">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>&#129504; Capture Hypothesis</h3>
+                <button class="modal-close" onclick="closeModal('hypothesis')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Hypothesis Statement</label>
+                <textarea class="form-input" id="hypothesis-text" placeholder="We believe that..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <div class="severity-selector">
+                    <div class="severity-btn medium" onclick="selectHypothesisCategory(this, 'strategic')">Strategic</div>
+                    <div class="severity-btn medium" onclick="selectHypothesisCategory(this, 'operational')">Operational</div>
+                    <div class="severity-btn medium" onclick="selectHypothesisCategory(this, 'technical')">Technical</div>
+                    <div class="severity-btn medium" onclick="selectHypothesisCategory(this, 'financial')">Financial</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Confidence Level</label>
+                <div class="severity-selector">
+                    <div class="severity-btn low" onclick="selectHypothesisConfidence(this, 'low')">Low</div>
+                    <div class="severity-btn medium" onclick="selectHypothesisConfidence(this, 'medium')">Medium</div>
+                    <div class="severity-btn high" onclick="selectHypothesisConfidence(this, 'high')">High</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="saveHypothesis()" style="width: 100%;">Save Hypothesis</button>
+        </div>
+    </div>
+
+    <!-- Achievement Toast -->
+    <div class="achievement-toast" id="achievement-toast">
+        <span class="icon">&#127942;</span>
+        <div class="content">
+            <h4 id="achievement-title">Achievement!</h4>
+            <p id="achievement-desc">You did something great!</p>
+        </div>
+    </div>
+
+    <script>
+        // =====================
+        // ENGAGEMENT CONFIGURATION
+        // =====================
+        const engagementConfigs = {
+            ignite_light: {
+                name: 'Ignite Light',
+                badge: 'IGNITE',
+                sessions: [
+                    { id: 'strategic_alignment', name: 'Strategic Alignment', icon: '&#127919;', desc: 'Vision, KPIs, strategic themes' },
+                    { id: 'customer_experience', name: 'Customer Experience', icon: '&#128100;', desc: 'Journeys, personas, pain points' },
+                    { id: 'employee_experience', name: 'Employee Experience', icon: '&#128187;', desc: 'Operations, servicing' },
+                    { id: 'it_architecture', name: 'IT Architecture', icon: '&#128421;', desc: 'Tech stack, constraints' },
+                    { id: 'use_case_validation', name: 'Use Case Validation', icon: '&#9989;', desc: 'Prioritization, demos' }
+                ],
+                phases: {
+                    strategic_alignment: [
+                        { type: 'cascading_choices', title: 'Cascading Choices', subtitle: 'Align on strategic direction', icon: '&#127919;' },
+                        { type: 'hypothesis_validation', title: 'Validate Hypotheses', subtitle: 'Test our strategic assumptions', icon: '&#129504;' },
+                        { type: 'kpi_capture', title: 'Success Metrics', subtitle: 'What does winning look like?', icon: '&#128202;' },
+                        { type: 'summary', title: 'Strategic Summary', subtitle: 'Review and export findings', icon: '&#128203;' }
+                    ],
+                    customer_experience: [
+                        { type: 'segment_selection', title: 'Customer Segments', subtitle: 'Who are we serving?', icon: '&#128101;' },
+                        { type: 'journey_hotspot', title: 'Journey Pain Points', subtitle: 'Where does it hurt?', icon: '&#128293;' },
+                        { type: 'hmw_statements', title: 'How Might We...', subtitle: 'Frame opportunities', icon: '&#128161;' },
+                        { type: 'use_case_ideation', title: 'Use Case Ideation', subtitle: 'What could we build?', icon: '&#128640;' },
+                        { type: 'summary', title: 'CX Summary', subtitle: 'Review and export', icon: '&#128203;' }
+                    ],
+                    employee_experience: [
+                        { type: 'persona_selection', title: 'Employee Personas', subtitle: 'Who works the journeys?', icon: '&#128100;' },
+                        { type: 'operations_canvas', title: 'Operations Canvas', subtitle: 'Map servicing channels', icon: '&#128736;' },
+                        { type: 'friction_voting', title: 'Friction Points', subtitle: 'Vote on biggest blockers', icon: '&#128545;' },
+                        { type: 'summary', title: 'EX Summary', subtitle: 'Review and export', icon: '&#128203;' }
+                    ],
+                    it_architecture: [
+                        { type: 'tech_landscape', title: 'Tech Landscape', subtitle: 'Current systems and stack', icon: '&#128421;' },
+                        { type: 'integration_pain', title: 'Integration Pain', subtitle: 'Where are the bottlenecks?', icon: '&#128268;' },
+                        { type: 'constraints_capture', title: 'Constraints', subtitle: 'What cannot change?', icon: '&#128274;' },
+                        { type: 'summary', title: 'Tech Summary', subtitle: 'Review and export', icon: '&#128203;' }
+                    ],
+                    use_case_validation: [
+                        { type: 'use_case_review', title: 'Use Case Review', subtitle: 'Validate prioritized cases', icon: '&#128269;' },
+                        { type: 'use_case_voting', title: 'Priority Voting', subtitle: 'Which matter most?', icon: '&#128499;' },
+                        { type: 'demo_selection', title: 'Demo Selection', subtitle: 'What to show on Innovation Day?', icon: '&#127909;' },
+                        { type: 'summary', title: 'Final Summary', subtitle: 'Complete export', icon: '&#128203;' }
+                    ]
+                }
+            },
+            detailed_assessment: {
+                name: 'Detailed Assessment',
+                badge: 'ASSESSMENT',
+                sessions: [
+                    { id: 'strategic_alignment_joint', name: 'Strategic Alignment', icon: '&#127919;', desc: 'Joint vision, trade-offs' },
+                    { id: 'capability_maturity', name: 'Capability Maturity', icon: '&#128200;', desc: 'RAG scoring per capability' },
+                    { id: 'journey_deep_dive', name: 'Journey Deep Dive', icon: '&#128270;', desc: 'Detailed journey analysis' },
+                    { id: 'technology_deep_dive', name: 'Technology Deep Dive', icon: '&#128421;', desc: 'Full tech assessment' },
+                    { id: 'business_value', name: 'Business Value', icon: '&#128176;', desc: 'ROI and business case' }
+                ],
+                phases: {
+                    strategic_alignment_joint: [
+                        { type: 'cascading_choices', title: 'Strategic Themes', subtitle: 'What are the key priorities?', icon: '&#127919;' },
+                        { type: 'hypothesis_validation', title: 'Validate Hypotheses', subtitle: 'Test assumptions with stakeholders', icon: '&#129504;' },
+                        { type: 'tradeoff_canvas', title: 'Trade-off Canvas', subtitle: 'Scale vs advice, digital vs human', icon: '&#9878;' },
+                        { type: 'success_criteria', title: 'Success Criteria', subtitle: 'How will we measure success?', icon: '&#127942;' },
+                        { type: 'summary', title: 'Strategic Summary', subtitle: 'Review and export', icon: '&#128203;' }
+                    ],
+                    capability_maturity: [
+                        { type: 'capability_domains', title: 'Capability Domains', subtitle: 'Select domains to assess', icon: '&#128640;' },
+                        { type: 'rag_scoring', title: 'RAG Scoring', subtitle: 'Score each capability', icon: '&#128308;' },
+                        { type: 'gap_analysis', title: 'Gap Analysis', subtitle: 'Current vs target state', icon: '&#128200;' },
+                        { type: 'evidence_capture', title: 'Evidence Capture', subtitle: 'Document findings', icon: '&#128221;' },
+                        { type: 'summary', title: 'Capability Summary', subtitle: 'Review and export', icon: '&#128203;' }
+                    ],
+                    journey_deep_dive: [
+                        { type: 'journey_selection', title: 'Journey Selection', subtitle: 'Which journeys to analyze?', icon: '&#128270;' },
+                        { type: 'step_by_step', title: 'Step Analysis', subtitle: 'Walk through each step', icon: '&#128694;' },
+                        { type: 'pain_quantification', title: 'Pain Quantification', subtitle: 'Measure the impact', icon: '&#128176;' },
+                        { type: 'root_cause', title: 'Root Cause Analysis', subtitle: 'Why does this happen?', icon: '&#129504;' },
+                        { type: 'summary', title: 'Journey Summary', subtitle: 'Review and export', icon: '&#128203;' }
+                    ],
+                    technology_deep_dive: [
+                        { type: 'system_inventory', title: 'System Inventory', subtitle: 'Map all systems', icon: '&#128421;' },
+                        { type: 'integration_map', title: 'Integration Map', subtitle: 'How do systems connect?', icon: '&#128268;' },
+                        { type: 'tco_analysis', title: 'TCO Analysis', subtitle: 'Total cost of ownership', icon: '&#128176;' },
+                        { type: 'rationalization', title: 'Rationalization', subtitle: 'What to keep, replace, retire?', icon: '&#128465;' },
+                        { type: 'summary', title: 'Tech Summary', subtitle: 'Review and export', icon: '&#128203;' }
+                    ],
+                    business_value: [
+                        { type: 'value_levers', title: 'Value Levers', subtitle: 'Revenue, cost, risk drivers', icon: '&#128176;' },
+                        { type: 'baseline_metrics', title: 'Baseline Metrics', subtitle: 'Current state numbers', icon: '&#128202;' },
+                        { type: 'benefit_modeling', title: 'Benefit Modeling', subtitle: 'Project future state', icon: '&#128200;' },
+                        { type: 'sensitivity_check', title: 'Sensitivity Check', subtitle: 'Test assumptions', icon: '&#128260;' },
+                        { type: 'summary', title: 'Business Case Summary', subtitle: 'Final export', icon: '&#128203;' }
+                    ]
+                }
+            }
+        };
+
+        // =====================
+        // STATE
+        // =====================
+        const state = {
+            setupStep: 1,
+            engagementType: null,
+            selectedSession: null,
+            clientName: '',
+            consultantName: '',
+            industry: '',
+            region: '',
+            currentPhase: 0,
+            points: 0,
+            insights: 0,
+            timerSeconds: 0,
+            painPoints: [],
+            metrics: [],
+            quotes: [],
+            hypotheses: [],
+            votes: {},
+            sliderValues: {},
+            selectedCards: [],
+            journeyPains: { awareness: 0, consideration: 0, application: 0, processing: 0, activation: 0 },
+            capabilityScores: {},
+            achievements: []
+        };
+
+        let selectedSeverity = 'medium';
+        let selectedHypothesisCategory = 'strategic';
+        let selectedHypothesisConfidence = 'medium';
+        let timerInterval = null;
+
+        // =====================
+        // SETUP FLOW
+        // =====================
+        function selectEngagement(type) {
+            state.engagementType = type;
+            document.querySelectorAll('.engagement-card').forEach(c => c.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            setTimeout(() => nextStep(), 300);
+        }
+
+        function selectSession(sessionId) {
+            state.selectedSession = sessionId;
+            document.querySelectorAll('.session-card').forEach(c => c.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            setTimeout(() => nextStep(), 300);
+        }
+
+        function nextStep() {
+            document.getElementById(`step-${state.setupStep}`).classList.remove('active');
+            state.setupStep++;
+
+            if (state.setupStep === 2) {
+                renderSessionOptions();
+            }
+
+            document.getElementById(`step-${state.setupStep}`).classList.add('active');
+        }
+
+        function prevStep() {
+            document.getElementById(`step-${state.setupStep}`).classList.remove('active');
+            state.setupStep--;
+            document.getElementById(`step-${state.setupStep}`).classList.add('active');
+        }
+
+        function renderSessionOptions() {
+            const config = engagementConfigs[state.engagementType];
+            const grid = document.getElementById('session-grid');
+            grid.innerHTML = config.sessions.map(s => `
+                <div class="session-card" onclick="selectSession('${s.id}')">
+                    <div class="icon">${s.icon}</div>
+                    <h4>${s.name}</h4>
+                    <p>${s.desc}</p>
+                </div>
+            `).join('');
+        }
+
+        function startWorkshop() {
+            state.clientName = document.getElementById('client-name').value || 'Client';
+            state.consultantName = document.getElementById('consultant-name').value || 'Consultant';
+            state.industry = document.getElementById('client-industry').value;
+            state.region = document.getElementById('client-region').value;
+
+            // Hide setup, show main
+            document.getElementById('setup-overlay').classList.add('hidden');
+            document.getElementById('main-container').classList.add('active');
+
+            // Update header
+            const config = engagementConfigs[state.engagementType];
+            document.getElementById('engagement-badge').textContent = config.badge;
+            document.getElementById('session-name').textContent = `${state.clientName} | ${config.sessions.find(s => s.id === state.selectedSession).name}`;
+
+            // Start timer
+            timerInterval = setInterval(updateTimer, 1000);
+
+            // Render phases
+            renderPhaseProgress();
+            renderActivity(0);
+
+            // Show welcome achievement
+            setTimeout(() => showAchievement('Workshop Started!', `Let's discover value for ${state.clientName}`), 1000);
+        }
+
+        function updateTimer() {
+            state.timerSeconds++;
+            const m = Math.floor(state.timerSeconds / 60);
+            const s = state.timerSeconds % 60;
+            document.getElementById('timer').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // =====================
+        // PHASE RENDERING
+        // =====================
+        function getPhases() {
+            const config = engagementConfigs[state.engagementType];
+            return config.phases[state.selectedSession] || [];
+        }
+
+        function renderPhaseProgress() {
+            const phases = getPhases();
+            const container = document.getElementById('phase-progress');
+
+            let html = '';
+            phases.forEach((phase, i) => {
+                const isActive = i === state.currentPhase;
+                const isCompleted = i < state.currentPhase;
+
+                if (i > 0) {
+                    html += `<div class="phase-connector ${isCompleted ? 'completed' : ''}"></div>`;
+                }
+
+                html += `
+                    <div class="phase-dot ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}"
+                         onclick="goToPhase(${i})" title="${phase.title}">
+                        ${!isCompleted ? phase.icon : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function goToPhase(index) {
+            if (index <= state.currentPhase + 1) {
+                state.currentPhase = index;
+                renderPhaseProgress();
+                renderActivity(index);
+            }
+        }
+
+        function nextPhase() {
+            const phases = getPhases();
+            if (state.currentPhase < phases.length - 1) {
+                state.currentPhase++;
+                addPoints(20);
+                renderPhaseProgress();
+                renderActivity(state.currentPhase);
+            }
+        }
+
+        function prevPhase() {
+            if (state.currentPhase > 0) {
+                state.currentPhase--;
+                renderPhaseProgress();
+                renderActivity(state.currentPhase);
+            }
+        }
+
+        function renderActivity(index) {
+            const phases = getPhases();
+            const phase = phases[index];
+            const container = document.getElementById('activity-content');
+
+            let bodyContent = '';
+            switch (phase.type) {
+                case 'cascading_choices':
+                    bodyContent = renderCascadingChoices();
+                    break;
+                case 'hypothesis_validation':
+                    bodyContent = renderHypothesisValidation();
+                    break;
+                case 'journey_hotspot':
+                    bodyContent = renderJourneyHotspot();
+                    break;
+                case 'segment_selection':
+                case 'persona_selection':
+                case 'capability_domains':
+                    bodyContent = renderCardSelection(phase.type);
+                    break;
+                case 'hmw_statements':
+                    bodyContent = renderHMWStatements();
+                    break;
+                case 'friction_voting':
+                case 'use_case_voting':
+                    bodyContent = renderVoting();
+                    break;
+                case 'rag_scoring':
+                    bodyContent = renderRAGScoring();
+                    break;
+                case 'kpi_capture':
+                case 'baseline_metrics':
+                    bodyContent = renderMetricSliders();
+                    break;
+                case 'summary':
+                    bodyContent = renderSummary();
+                    break;
+                default:
+                    bodyContent = renderGenericPhase(phase);
+            }
+
+            container.innerHTML = `
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <div class="activity-label">Phase ${index + 1} of ${phases.length}</div>
+                        <div class="activity-title">${phase.title}</div>
+                        <div class="activity-subtitle">${phase.subtitle}</div>
+                    </div>
+                    <div class="activity-body">
+                        ${getConsultantPrompt(phase.type)}
+                        ${bodyContent}
+                        ${renderNavButtons(index, phases.length)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getConsultantPrompt(phaseType) {
+            const prompts = {
+                cascading_choices: "Let's align on strategic direction using the Cascading Choices framework. What are the key strategic themes driving this transformation?",
+                hypothesis_validation: "Before we go deeper, let's test our assumptions. Based on our research, we've developed several hypotheses. Let's validate or invalidate them together.",
+                journey_hotspot: "Click on journey stages to indicate pain intensity. Hot spots will become our focus areas. Where do customers experience the most friction?",
+                segment_selection: "Which customer segments are we focusing on? Select all that apply to this engagement.",
+                hmw_statements: "Let's reframe pain points as opportunities. Complete the 'How might we...' statements based on what we've learned.",
+                friction_voting: "Vote on the friction points that matter most. Your votes help us prioritize what to solve first.",
+                rag_scoring: "Score each capability: Red (major gap), Amber (partial), Green (strong). Be honest about current state.",
+                summary: "Great progress! Let's review what we've captured and export the findings for downstream analysis."
+            };
+
+            const prompt = prompts[phaseType] || "Let's capture key insights for this phase.";
+
+            return `
+                <div class="consultant-prompt">
+                    <div class="consultant-avatar">&#129302;</div>
+                    <div class="consultant-text">
+                        <strong>Consultant AI</strong>
+                        <p>${prompt}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderNavButtons(index, total) {
+            const isFirst = index === 0;
+            const isLast = index === total - 1;
+
+            return `
+                <div class="nav-buttons">
+                    <button class="btn btn-secondary" onclick="prevPhase()" ${isFirst ? 'disabled' : ''}>
+                        &larr; Previous
+                    </button>
+                    <button class="btn btn-primary" onclick="nextPhase()" ${isLast ? 'style="display:none"' : ''}>
+                        Next Phase &rarr;
+                    </button>
+                    ${isLast ? '<button class="btn btn-primary" onclick="exportDiscoveryOutput()">&#128229; Export Discovery Output</button>' : ''}
+                </div>
+            `;
+        }
+
+        // =====================
+        // PHASE RENDERERS
+        // =====================
+        function renderCascadingChoices() {
+            return `
+                <div class="card-grid">
+                    <div class="choice-card" onclick="toggleCard(this, 'growth')">
+                        <div class="icon">&#128200;</div>
+                        <h3>Growth & Acquisition</h3>
+                        <p>Expand customer base, enter new markets, increase market share</p>
+                    </div>
+                    <div class="choice-card" onclick="toggleCard(this, 'efficiency')">
+                        <div class="icon">&#9881;</div>
+                        <h3>Operational Efficiency</h3>
+                        <p>Reduce costs, automate processes, improve productivity</p>
+                    </div>
+                    <div class="choice-card" onclick="toggleCard(this, 'experience')">
+                        <div class="icon">&#11088;</div>
+                        <h3>Customer Experience</h3>
+                        <p>Improve satisfaction, reduce friction, personalize journeys</p>
+                    </div>
+                    <div class="choice-card" onclick="toggleCard(this, 'digital')">
+                        <div class="icon">&#128241;</div>
+                        <h3>Digital Transformation</h3>
+                        <p>Modernize technology, enable innovation, build digital capabilities</p>
+                    </div>
+                    <div class="choice-card" onclick="toggleCard(this, 'risk')">
+                        <div class="icon">&#128737;</div>
+                        <h3>Risk & Compliance</h3>
+                        <p>Manage regulatory requirements, reduce operational risk</p>
+                    </div>
+                    <div class="choice-card" onclick="toggleCard(this, 'employee')">
+                        <div class="icon">&#128100;</div>
+                        <h3>Employee Enablement</h3>
+                        <p>Empower staff, improve tools, increase capacity</p>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; text-align: center; color: var(--text-secondary);">
+                    <span id="selection-count">${state.selectedCards.length}</span> strategic themes selected
+                </div>
+            `;
+        }
+
+        function renderHypothesisValidation() {
+            const hypotheses = state.hypotheses.length > 0 ? state.hypotheses : [
+                { id: 'H01', category: 'strategic', statement: 'Growth is constrained by inability to acquire customers digitally at scale', status: 'pending' },
+                { id: 'H02', category: 'operational', statement: 'Call center volumes are driven primarily by onboarding issues', status: 'pending' },
+                { id: 'H03', category: 'technical', statement: 'Core banking integration is the primary blocker for digital initiatives', status: 'pending' }
+            ];
+
+            return `
+                <div class="hypothesis-container">
+                    <div class="hypothesis-tree">
+                        <div class="hypothesis-root">
+                            <h4>Root Hypothesis</h4>
+                            <p>Digital transformation is stalled due to fragmented customer journeys and legacy integration complexity</p>
+                        </div>
+
+                        ${['strategic', 'operational', 'technical'].map(cat => `
+                            <div class="hypothesis-branch">
+                                <div class="hypothesis-branch-title">${cat.charAt(0).toUpperCase() + cat.slice(1)} Hypotheses</div>
+                                ${hypotheses.filter(h => h.category === cat).map(h => `
+                                    <div class="hypothesis-item" data-id="${h.id}">
+                                        <div class="hypothesis-status ${h.status}" onclick="cycleHypothesisStatus('${h.id}')" title="Click to change status">
+                                            ${h.status === 'validated' ? '&#10003;' : h.status === 'invalidated' ? '&#10007;' : h.status === 'needs_validation' ? '?' : '&#9679;'}
+                                        </div>
+                                        <div class="hypothesis-content">
+                                            <h5>${h.statement}</h5>
+                                            <p>Status: ${h.status.replace('_', ' ')}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-secondary" onclick="openModal('hypothesis')" style="margin-top: 1rem;">
+                        + Add New Hypothesis
+                    </button>
+                </div>
+            `;
+        }
+
+        function cycleHypothesisStatus(id) {
+            const statuses = ['pending', 'validated', 'invalidated', 'needs_validation'];
+            const hyp = state.hypotheses.find(h => h.id === id);
+            if (hyp) {
+                const currentIdx = statuses.indexOf(hyp.status);
+                hyp.status = statuses[(currentIdx + 1) % statuses.length];
+                addPoints(10);
+                addToFeed('hypothesis', `${id} marked as ${hyp.status}`);
+                renderActivity(state.currentPhase);
+            }
+        }
+
+        function renderJourneyHotspot() {
+            return `
+                <div class="hotspot-container">
+                    <div class="journey-map">
+                        ${['awareness', 'consideration', 'application', 'processing', 'activation'].map(stage => `
+                            <div class="journey-stage" onclick="toggleJourneyHeat('${stage}')">
+                                <div class="stage-node ${getHeatClass(stage)}" id="stage-${stage}">
+                                    ${stage === 'awareness' ? '&#128064;' : stage === 'consideration' ? '&#129300;' : stage === 'application' ? '&#128221;' : stage === 'processing' ? '&#9881;' : '&#9989;'}
+                                    ${state.journeyPains[stage] > 0 ? `<div class="pain-count-badge">${state.journeyPains[stage]}</div>` : ''}
+                                </div>
+                                <div class="stage-label">${stage.charAt(0).toUpperCase() + stage.slice(1)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="consultant-prompt" style="background: rgba(255, 179, 0, 0.1); border-color: var(--accent-yellow); margin-top: 1.5rem;">
+                    <div class="consultant-avatar" style="background: linear-gradient(135deg, #FFB300, #FF8F00);">&#127919;</div>
+                    <div class="consultant-text">
+                        <strong style="color: var(--accent-yellow);">Click to add heat</strong>
+                        <p>Each click increases pain intensity: Cool &rarr; Warm &rarr; Hot. Click again to reset.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getHeatClass(stage) {
+            const count = state.journeyPains[stage] || 0;
+            if (count >= 3) return 'hot';
+            if (count >= 1) return 'warm';
+            return 'cool';
+        }
+
+        function toggleJourneyHeat(stage) {
+            state.journeyPains[stage] = (state.journeyPains[stage] + 1) % 4;
+            addPoints(5);
+            renderActivity(state.currentPhase);
+        }
+
+        function renderCardSelection(type) {
+            const options = {
+                segment_selection: [
+                    { id: 'mass_retail', icon: '&#128101;', title: 'Mass Retail', desc: 'Everyday banking customers' },
+                    { id: 'affluent', icon: '&#128176;', title: 'Affluent', desc: 'High-value retail customers' },
+                    { id: 'sme', icon: '&#127970;', title: 'SME', desc: 'Small and medium businesses' },
+                    { id: 'corporate', icon: '&#127970;', title: 'Corporate', desc: 'Large enterprise clients' }
+                ],
+                persona_selection: [
+                    { id: 'msr', icon: '&#128222;', title: 'Call Center Agent', desc: 'Frontline service rep' },
+                    { id: 'branch', icon: '&#127970;', title: 'Branch Staff', desc: 'In-person service' },
+                    { id: 'ops', icon: '&#9881;', title: 'Operations', desc: 'Back office processing' },
+                    { id: 'advisor', icon: '&#128188;', title: 'Advisor/RM', desc: 'Relationship manager' }
+                ],
+                capability_domains: [
+                    { id: 'onboarding', icon: '&#128100;', title: 'Customer Onboarding', desc: 'Acquisition and activation' },
+                    { id: 'servicing', icon: '&#128736;', title: 'Servicing', desc: 'Support and maintenance' },
+                    { id: 'lending', icon: '&#128176;', title: 'Lending', desc: 'Loans and credit' },
+                    { id: 'payments', icon: '&#128179;', title: 'Payments', desc: 'Transactions and transfers' }
+                ]
+            };
+
+            const items = options[type] || [];
+            return `
+                <div class="card-grid">
+                    ${items.map(opt => `
+                        <div class="choice-card" onclick="toggleCard(this, '${opt.id}')">
+                            <div class="icon">${opt.icon}</div>
+                            <h3>${opt.title}</h3>
+                            <p>${opt.desc}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderHMWStatements() {
+            const hotStages = Object.entries(state.journeyPains)
+                .filter(([_, count]) => count >= 2)
+                .map(([stage]) => stage);
+
+            return `
+                <div style="margin: 1.5rem 0;">
+                    ${hotStages.length > 0 ? hotStages.map(stage => `
+                        <div style="background: var(--bg-dark); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;">
+                            <div style="color: var(--accent-red); font-weight: 600; margin-bottom: 0.5rem;">
+                                Hot Stage: ${stage.charAt(0).toUpperCase() + stage.slice(1)}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="color: var(--accent-blue);">How might we...</span>
+                                <input type="text" class="form-input" placeholder="improve the ${stage} experience for customers?"
+                                       style="flex: 1; margin: 0;" onchange="captureHMW('${stage}', this.value)">
+                            </div>
+                        </div>
+                    `).join('') : `
+                        <div class="consultant-prompt" style="background: rgba(255, 179, 0, 0.1); border-color: var(--accent-yellow);">
+                            <div class="consultant-avatar" style="background: linear-gradient(135deg, #FFB300, #FF8F00);">&#9888;</div>
+                            <div class="consultant-text">
+                                <strong style="color: var(--accent-yellow);">No hot stages yet</strong>
+                                <p>Go back to Journey Pain Points and click on stages to mark them as hot.</p>
+                            </div>
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        function captureHMW(stage, value) {
+            if (value.trim()) {
+                addToFeed('insight', `HMW: ${value}`);
+                addPoints(15);
+            }
+        }
+
+        function renderVoting() {
+            const items = state.painPoints.length > 0 ? state.painPoints : [
+                { id: 'v1', text: 'Complex onboarding process takes too long' },
+                { id: 'v2', text: 'Customers cannot track application status' },
+                { id: 'v3', text: 'Manual document verification creates delays' },
+                { id: 'v4', text: 'No mobile-first experience' }
+            ];
+
+            return `
+                <div class="vote-container">
+                    ${items.map(item => `
+                        <div class="vote-item" data-id="${item.id}">
+                            <div class="vote-buttons">
+                                <button class="vote-btn" onclick="vote('${item.id}', 1)">&#9650;</button>
+                                <button class="vote-btn" onclick="vote('${item.id}', -1)">&#9660;</button>
+                            </div>
+                            <div class="vote-count" id="vote-${item.id}">${state.votes[item.id] || 0}</div>
+                            <div class="vote-content">
+                                <h4>${item.text}</h4>
+                            </div>
+                            <div class="vote-bar">
+                                <div class="vote-fill" style="width: ${Math.min(100, (state.votes[item.id] || 0) * 10)}%"></div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn btn-secondary" onclick="openModal('pain')" style="margin-top: 1rem;">
+                    + Add Pain Point
+                </button>
+            `;
+        }
+
+        function vote(itemId, delta) {
+            if (!state.votes[itemId]) state.votes[itemId] = 0;
+            state.votes[itemId] = Math.max(0, state.votes[itemId] + delta);
+            document.getElementById(`vote-${itemId}`).textContent = state.votes[itemId];
+            document.querySelector(`[data-id="${itemId}"] .vote-fill`).style.width = `${Math.min(100, state.votes[itemId] * 10)}%`;
+            if (delta > 0) addPoints(2);
+        }
+
+        function renderRAGScoring() {
+            const capabilities = [
+                { id: 'digital_onboarding', name: 'Digital Onboarding' },
+                { id: 'mobile_experience', name: 'Mobile Experience' },
+                { id: 'self_service', name: 'Self-Service Capabilities' },
+                { id: 'personalization', name: 'Personalization' },
+                { id: 'real_time_processing', name: 'Real-Time Processing' }
+            ];
+
+            return `
+                <div style="margin: 1.5rem 0;">
+                    ${capabilities.map(cap => `
+                        <div style="background: var(--bg-dark); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 500;">${cap.name}</span>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn ${state.capabilityScores[cap.id] === 'red' ? '' : 'btn-secondary'}"
+                                        style="padding: 0.5rem 1rem; ${state.capabilityScores[cap.id] === 'red' ? 'background: var(--accent-red);' : ''}"
+                                        onclick="scoreCapability('${cap.id}', 'red')">&#128308; Red</button>
+                                <button class="btn ${state.capabilityScores[cap.id] === 'amber' ? '' : 'btn-secondary'}"
+                                        style="padding: 0.5rem 1rem; ${state.capabilityScores[cap.id] === 'amber' ? 'background: var(--accent-yellow); color: var(--primary);' : ''}"
+                                        onclick="scoreCapability('${cap.id}', 'amber')">&#128992; Amber</button>
+                                <button class="btn ${state.capabilityScores[cap.id] === 'green' ? '' : 'btn-secondary'}"
+                                        style="padding: 0.5rem 1rem; ${state.capabilityScores[cap.id] === 'green' ? 'background: var(--accent);' : ''}"
+                                        onclick="scoreCapability('${cap.id}', 'green')">&#128994; Green</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function scoreCapability(id, score) {
+            state.capabilityScores[id] = score;
+            addPoints(10);
+            addToFeed('metric', `${id} scored as ${score}`);
+            renderActivity(state.currentPhase);
+        }
+
+        function renderMetricSliders() {
+            const sliders = [
+                { id: 'onboarding_time', label: 'Onboarding Time', min: 0, max: 30, unit: ' days', benchmark: 3 },
+                { id: 'completion_rate', label: 'Digital Completion Rate', min: 0, max: 100, unit: '%', benchmark: 72 },
+                { id: 'call_volume', label: 'Monthly Call Volume', min: 0, max: 100000, unit: '', benchmark: 25000 }
+            ];
+
+            return `
+                <div class="slider-container">
+                    ${sliders.map(slider => `
+                        <div class="slider-question" data-slider="${slider.id}">
+                            <div class="slider-label">
+                                <span>${slider.label}</span>
+                                <span class="value" id="slider-value-${slider.id}">${state.sliderValues[slider.id] || slider.min}${slider.unit}</span>
+                            </div>
+                            <div class="slider-track" onmousedown="startSliderDrag(event, '${slider.id}', ${slider.min}, ${slider.max}, '${slider.unit}')">
+                                <div class="slider-fill" id="slider-fill-${slider.id}" style="width: ${((state.sliderValues[slider.id] || slider.min) - slider.min) / (slider.max - slider.min) * 100}%"></div>
+                                <div class="slider-thumb" id="slider-thumb-${slider.id}" style="left: ${((state.sliderValues[slider.id] || slider.min) - slider.min) / (slider.max - slider.min) * 100}%"></div>
+                            </div>
+                            <div class="slider-markers">
+                                <span>${slider.min}${slider.unit}</span>
+                                <span style="color: var(--accent);">Benchmark: ${slider.benchmark}${slider.unit}</span>
+                                <span>${slider.max}${slider.unit}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        let activeSlider = null;
+
+        function startSliderDrag(e, sliderId, min, max, unit) {
+            activeSlider = { id: sliderId, min, max, unit };
+            handleSliderMove(e);
+            document.addEventListener('mousemove', handleSliderMove);
+            document.addEventListener('mouseup', stopSliderDrag);
+        }
+
+        function handleSliderMove(e) {
+            if (!activeSlider) return;
+            const track = document.querySelector(`[data-slider="${activeSlider.id}"] .slider-track`);
+            const rect = track.getBoundingClientRect();
+            let percent = (e.clientX - rect.left) / rect.width;
+            percent = Math.max(0, Math.min(1, percent));
+            const value = Math.round(activeSlider.min + percent * (activeSlider.max - activeSlider.min));
+            state.sliderValues[activeSlider.id] = value;
+            document.getElementById(`slider-value-${activeSlider.id}`).textContent = value + activeSlider.unit;
+            document.getElementById(`slider-fill-${activeSlider.id}`).style.width = (percent * 100) + '%';
+            document.getElementById(`slider-thumb-${activeSlider.id}`).style.left = (percent * 100) + '%';
+        }
+
+        function stopSliderDrag() {
+            if (activeSlider) {
+                addPoints(5);
+                addToFeed('metric', `${activeSlider.id}: ${state.sliderValues[activeSlider.id]}${activeSlider.unit}`);
+                activeSlider = null;
+            }
+            document.removeEventListener('mousemove', handleSliderMove);
+            document.removeEventListener('mouseup', stopSliderDrag);
+        }
+
+        function renderGenericPhase(phase) {
+            return `
+                <div style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">${phase.icon}</div>
+                    <h3 style="margin-bottom: 0.5rem;">${phase.title}</h3>
+                    <p style="color: var(--text-secondary);">${phase.subtitle}</p>
+                    <p style="margin-top: 2rem; color: var(--text-secondary);">Use the Quick Capture buttons on the left to capture insights for this phase.</p>
+                </div>
+            `;
+        }
+
+        function renderSummary() {
+            return `
+                <div style="text-align: center; padding: 2rem 0;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">&#127881;</div>
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem;">Session Complete!</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                        You've captured ${state.painPoints.length + state.metrics.length + state.quotes.length + state.hypotheses.length} insights
+                    </p>
+                    <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 3rem;">
+                        <div style="background: var(--bg-dark); padding: 1.5rem 2rem; border-radius: 12px;">
+                            <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent);">${state.points}</div>
+                            <div style="color: var(--text-secondary);">Points</div>
+                        </div>
+                        <div style="background: var(--bg-dark); padding: 1.5rem 2rem; border-radius: 12px;">
+                            <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-red);">${state.painPoints.length}</div>
+                            <div style="color: var(--text-secondary);">Pain Points</div>
+                        </div>
+                        <div style="background: var(--bg-dark); padding: 1.5rem 2rem; border-radius: 12px;">
+                            <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-purple);">${state.hypotheses.length}</div>
+                            <div style="color: var(--text-secondary);">Hypotheses</div>
+                        </div>
+                        <div style="background: var(--bg-dark); padding: 1.5rem 2rem; border-radius: 12px;">
+                            <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-blue);">${formatTime(state.timerSeconds)}</div>
+                            <div style="color: var(--text-secondary);">Duration</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            return m + ' min';
+        }
+
+        // =====================
+        // CARD & MODAL HANDLERS
+        // =====================
+        function toggleCard(element, id) {
+            element.classList.toggle('selected');
+            if (element.classList.contains('selected')) {
+                state.selectedCards.push(id);
+                addPoints(5);
+            } else {
+                state.selectedCards = state.selectedCards.filter(c => c !== id);
+            }
+            const counter = document.getElementById('selection-count');
+            if (counter) counter.textContent = state.selectedCards.length;
+        }
+
+        function openModal(type) {
+            document.getElementById(`modal-${type}`).classList.add('active');
+        }
+
+        function closeModal(type) {
+            document.getElementById(`modal-${type}`).classList.remove('active');
+        }
+
+        function selectSeverity(element, severity) {
+            document.querySelectorAll('#modal-pain .severity-btn').forEach(b => b.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedSeverity = severity;
+        }
+
+        function selectHypothesisCategory(element, category) {
+            document.querySelectorAll('#modal-hypothesis .severity-selector:first-of-type .severity-btn').forEach(b => b.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedHypothesisCategory = category;
+        }
+
+        function selectHypothesisConfidence(element, confidence) {
+            document.querySelectorAll('#modal-hypothesis .severity-selector:last-of-type .severity-btn').forEach(b => b.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedHypothesisConfidence = confidence;
+        }
+
+        function savePain() {
+            const text = document.getElementById('pain-text').value;
+            const source = document.getElementById('pain-source').value;
+            if (!text.trim()) return;
+
+            const pain = {
+                id: 'PP' + (state.painPoints.length + 1).toString().padStart(2, '0'),
+                text, severity: selectedSeverity, source,
+                timestamp: new Date().toISOString()
+            };
+            state.painPoints.push(pain);
+            addPoints(10);
+            updateCounts();
+            addToFeed('pain', pain.text);
+            closeModal('pain');
+            document.getElementById('pain-text').value = '';
+            document.getElementById('pain-source').value = '';
+
+            if (state.painPoints.length === 1) showAchievement('First Blood!', 'Captured your first pain point');
+            else if (state.painPoints.length === 5) showAchievement('Pain Hunter', 'Captured 5 pain points');
+        }
+
+        function saveMetric() {
+            const name = document.getElementById('metric-name').value;
+            const current = document.getElementById('metric-current').value;
+            const target = document.getElementById('metric-target').value;
+            if (!name.trim()) return;
+
+            const metric = {
+                id: 'M' + (state.metrics.length + 1).toString().padStart(2, '0'),
+                name, current, target,
+                timestamp: new Date().toISOString()
+            };
+            state.metrics.push(metric);
+            addPoints(15);
+            updateCounts();
+            addToFeed('metric', `${name}: ${current} → ${target}`);
+            closeModal('metric');
+            document.getElementById('metric-name').value = '';
+            document.getElementById('metric-current').value = '';
+            document.getElementById('metric-target').value = '';
+
+            if (state.metrics.length === 1) showAchievement('Data Driven', 'Captured your first metric');
+        }
+
+        function saveQuote() {
+            const text = document.getElementById('quote-text').value;
+            const source = document.getElementById('quote-source').value;
+            if (!text.trim()) return;
+
+            const quote = {
+                id: 'E' + (state.quotes.length + 1).toString().padStart(2, '0'),
+                text, source,
+                timestamp: new Date().toISOString()
+            };
+            state.quotes.push(quote);
+            addPoints(5);
+            updateCounts();
+            addToFeed('quote', `"${text}" - ${source}`);
+            closeModal('quote');
+            document.getElementById('quote-text').value = '';
+            document.getElementById('quote-source').value = '';
+        }
+
+        function saveHypothesis() {
+            const text = document.getElementById('hypothesis-text').value;
+            if (!text.trim()) return;
+
+            const hypothesis = {
+                id: 'H' + (state.hypotheses.length + 1).toString().padStart(2, '0'),
+                statement: text,
+                category: selectedHypothesisCategory,
+                confidence_before: selectedHypothesisConfidence,
+                confidence_after: selectedHypothesisConfidence,
+                status: 'pending',
+                timestamp: new Date().toISOString()
+            };
+            state.hypotheses.push(hypothesis);
+            addPoints(15);
+            updateCounts();
+            addToFeed('hypothesis', text);
+            closeModal('hypothesis');
+            document.getElementById('hypothesis-text').value = '';
+
+            if (state.hypotheses.length === 1) showAchievement('Hypothesis Builder', 'Created your first hypothesis');
+        }
+
+        // =====================
+        // GAMIFICATION
+        // =====================
+        function addPoints(amount) {
+            state.points += amount;
+            state.insights++;
+            updateStats();
+            const pointsEl = document.getElementById('points-value');
+            pointsEl.style.transform = 'scale(1.3)';
+            setTimeout(() => pointsEl.style.transform = 'scale(1)', 200);
+        }
+
+        function updateStats() {
+            document.getElementById('points-value').textContent = state.points;
+            document.getElementById('insights-value').textContent = state.insights;
+        }
+
+        function updateCounts() {
+            document.getElementById('pain-count').textContent = state.painPoints.length;
+            document.getElementById('metric-count').textContent = state.metrics.length;
+            document.getElementById('quote-count').textContent = state.quotes.length;
+            document.getElementById('hypothesis-count').textContent = state.hypotheses.length;
+        }
+
+        function showAchievement(title, desc) {
+            const toast = document.getElementById('achievement-toast');
+            document.getElementById('achievement-title').textContent = title;
+            document.getElementById('achievement-desc').textContent = desc;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
+            state.achievements.push({ title, desc });
+        }
+
+        function addToFeed(type, text) {
+            const feedItems = document.getElementById('feed-items');
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const item = document.createElement('div');
+            item.className = `feed-item ${type}`;
+            item.innerHTML = `
+                <div class="feed-item-header">
+                    <span class="feed-item-type">${type}</span>
+                    <span class="feed-item-time">${time}</span>
+                </div>
+                <div>${text.substring(0, 60)}${text.length > 60 ? '...' : ''}</div>
+            `;
+            feedItems.insertBefore(item, feedItems.firstChild);
+            while (feedItems.children.length > 15) {
+                feedItems.removeChild(feedItems.lastChild);
+            }
+        }
+
+        // =====================
+        // EXPORT - DISCOVERY OUTPUT SCHEMA
+        // =====================
+        function exportDiscoveryOutput() {
+            const output = {
+                "$schema": "discovery-output-v1",
+                metadata: {
+                    engagement_id: `ENG-${new Date().getFullYear()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+                    engagement_type: state.engagementType,
+                    sub_engagement: state.selectedSession,
+                    client_name: state.clientName,
+                    industry: state.industry,
+                    region: state.region,
+                    discovery_date: new Date().toISOString().split('T')[0],
+                    discovery_method: "workshop",
+                    consultant: state.consultantName,
+                    version: "1.0",
+                    session_duration_minutes: Math.round(state.timerSeconds / 60),
+                    points_earned: state.points
+                },
+                strategic_context: {
+                    strategic_themes: state.selectedCards.map((theme, i) => ({
+                        theme_id: `ST${(i+1).toString().padStart(2, '0')}`,
+                        name: theme.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                        priority: i < 2 ? 'high' : 'medium'
+                    })),
+                    cascading_choices: {
+                        where_to_play: { segments: state.selectedCards.filter(c => ['mass_retail', 'affluent', 'sme', 'corporate'].includes(c)) },
+                        how_to_win: { themes: state.selectedCards.filter(c => ['growth', 'efficiency', 'experience', 'digital'].includes(c)) }
+                    }
+                },
+                hypothesis_tree: {
+                    root_hypothesis: "Digital transformation opportunity identified through discovery workshop",
+                    branches: state.hypotheses.map(h => ({
+                        hypothesis_id: h.id,
+                        category: h.category,
+                        statement: h.statement,
+                        confidence_before: h.confidence_before,
+                        confidence_after: h.confidence_after,
+                        status: h.status
+                    })),
+                    validated_hypotheses: state.hypotheses.filter(h => h.status === 'validated').map(h => h.id),
+                    invalidated_hypotheses: state.hypotheses.filter(h => h.status === 'invalidated').map(h => h.id),
+                    pending_validation: state.hypotheses.filter(h => h.status === 'needs_validation' || h.status === 'pending').map(h => h.id)
+                },
+                evidence_register: state.quotes.map(q => ({
+                    evidence_id: q.id,
+                    type: "quote",
+                    source: { type: "stakeholder", name: q.source },
+                    content: q.text,
+                    timestamp: q.timestamp,
+                    confidence: "medium"
+                })),
+                pain_point_register: state.painPoints.map(p => ({
+                    pain_point_id: p.id,
+                    title: p.text.substring(0, 50),
+                    description: p.text,
+                    severity: p.severity,
+                    source: p.source,
+                    timestamp: p.timestamp
+                })),
+                metric_register: state.metrics.map(m => ({
+                    metric_id: m.id,
+                    name: m.name,
+                    current_value: m.current,
+                    target_value: m.target,
+                    timestamp: m.timestamp
+                })),
+                capability_snapshot: {
+                    channel_maturity: state.journeyPains,
+                    capability_scores: state.capabilityScores
+                },
+                constraints: {
+                    captured_during_workshop: true
+                },
+                next_steps: [
+                    { action: "Review and validate discovery findings", owner: state.consultantName, due_date: new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0] },
+                    { action: "Schedule follow-up sessions for data gaps", owner: "Client Lead", due_date: new Date(Date.now() + 14*24*60*60*1000).toISOString().split('T')[0] }
+                ]
+            };
+
+            const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `discovery-output-${state.clientName.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+
+            showAchievement('Discovery Complete!', 'Output exported for downstream agents');
+        }
+    </script>
+</body>
+</html>

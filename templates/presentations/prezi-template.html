@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{PRESENTATION_TITLE}}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bb-blue: #1A56FF;
+            --bb-dark: #1A1F36;
+            --bb-gray: #6B7280;
+            --bb-light: #F3F4F6;
+            --bb-glow: rgba(26, 86, 255, 0.4);
+            --bb-red: #EF4444;
+            --bb-green: #10B981;
+            --bb-orange: #F59E0B;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            overflow: hidden;
+            color: white;
+        }
+
+        .canvas {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background Effects */
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(26, 86, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(26, 86, 255, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+
+        .bg-glow {
+            position: fixed;
+            width: 800px; height: 800px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--bb-glow) 0%, transparent 70%);
+            filter: blur(100px);
+            z-index: 0;
+            animation: floatGlow 20s ease-in-out infinite;
+        }
+        .bg-glow.glow1 { top: -200px; right: -200px; }
+        .bg-glow.glow2 { bottom: -300px; left: -200px; animation-delay: -10s; }
+
+        @keyframes floatGlow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-50px, 50px) scale(1.1); }
+        }
+
+        /* Scene System */
+        .scene-container {
+            position: absolute;
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .scene {
+            position: absolute;
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .scene.active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .scene-content {
+            max-width: 1400px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Typography */
+        .mega-title {
+            font-size: clamp(50px, 8vw, 120px);
+            font-weight: 900;
+            line-height: 0.95;
+            letter-spacing: -0.03em;
+        }
+        .mega-title .blue { color: var(--bb-blue); }
+        .mega-title .white { color: white; }
+
+        .subtitle {
+            font-size: clamp(16px, 2vw, 28px);
+            font-weight: 400;
+            color: rgba(255,255,255,0.7);
+            margin-top: 20px;
+        }
+
+        .section-label {
+            display: inline-block;
+            background: rgba(26, 86, 255, 0.2);
+            color: var(--bb-blue);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        .quote-text {
+            font-size: clamp(28px, 4vw, 52px);
+            font-weight: 700;
+            line-height: 1.3;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .quote-text .highlight { color: var(--bb-blue); }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .scene.active .stat-card { opacity: 1; transform: translateY(0); }
+        .scene.active .stat-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .stat-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .stat-card:nth-child(3) { transition-delay: 0.6s; }
+
+        .stat-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--bb-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .stat-value {
+            font-size: 42px;
+            font-weight: 800;
+            color: white;
+        }
+
+        /* Card Grid */
+        .land-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .land-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 28px;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .land-card.spotlight {
+            background: var(--bb-dark);
+            border: 2px solid var(--bb-blue);
+            box-shadow: 0 0 40px var(--bb-glow);
+        }
+
+        .scene.active .land-card { opacity: 1; transform: translateY(0); }
+        .scene.active .land-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .land-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .land-card:nth-child(3) { transition-delay: 0.6s; }
+
+        .land-icon { font-size: 36px; margin-bottom: 16px; }
+        .land-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .land-desc { font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 16px; }
+        .land-feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+
+        /* Deal Card */
+        .deal-card {
+            background: white;
+            color: var(--bb-dark);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: left;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 40px;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s ease;
+        }
+
+        .scene.active .deal-card { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+
+        .deal-name { font-size: 28px; font-weight: 800; margin: 16px 0 8px; }
+        .deal-desc { color: var(--bb-gray); font-size: 14px; margin-bottom: 20px; }
+
+        .deal-result {
+            background: var(--bb-dark);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .deal-result-value { font-size: 56px; font-weight: 900; color: var(--bb-blue); }
+        .deal-result-label { font-size: 12px; opacity: 0.7; }
+
+        /* Light Theme */
+        .scene.light-theme .scene-content {
+            background: white;
+            border-radius: 24px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1100px;
+        }
+
+        .scene.light-theme .animate-item {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        .scene.light-theme.active .animate-item { opacity: 1; transform: translateY(0); }
+        .scene.light-theme.active .animate-item:nth-child(1) { transition-delay: 0.1s; }
+        .scene.light-theme.active .animate-item:nth-child(2) { transition-delay: 0.3s; }
+        .scene.light-theme.active .animate-item:nth-child(3) { transition-delay: 0.5s; }
+        .scene.light-theme.active .animate-item:nth-child(4) { transition-delay: 0.7s; }
+
+        /* Superpower Cards */
+        .superpowers-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+
+        .superpower-card {
+            background: linear-gradient(135deg, rgba(26, 86, 255, 0.1) 0%, rgba(26, 31, 54, 0.8) 100%);
+            border: 1px solid rgba(26, 86, 255, 0.3);
+            border-radius: 20px;
+            padding: 24px;
+            width: 180px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s ease;
+        }
+
+        .scene.active .superpower-card { opacity: 1; transform: translateY(0); }
+        .scene.active .superpower-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .superpower-card:nth-child(2) { transition-delay: 0.3s; }
+        .scene.active .superpower-card:nth-child(3) { transition-delay: 0.4s; }
+        .scene.active .superpower-card:nth-child(4) { transition-delay: 0.5s; }
+
+        .superpower-icon {
+            width: 60px; height: 60px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 28px;
+        }
+
+        .superpower-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+        .superpower-tagline { font-size: 11px; color: rgba(255,255,255,0.6); font-style: italic; }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 30px 50px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .play-btn {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: var(--bb-blue);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .play-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px var(--bb-glow); }
+        .play-btn svg { width: 22px; height: 22px; fill: white; }
+
+        .progress-container { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--bb-blue);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-dots { display: flex; justify-content: space-between; padding: 0 2px; }
+
+        .progress-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.active { background: var(--bb-blue); transform: scale(1.4); }
+
+        .scene-info { display: flex; flex-direction: column; align-items: flex-end; min-width: 180px; }
+        .scene-counter { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .scene-title { font-size: 14px; font-weight: 600; }
+
+        /* Nav Arrows */
+        .nav-arrows { position: fixed; top: 50%; transform: translateY(-50%); z-index: 100; }
+        .nav-arrows.left { left: 30px; }
+        .nav-arrows.right { right: 30px; }
+
+        .nav-arrow {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .nav-arrow:hover { background: var(--bb-blue); border-color: var(--bb-blue); }
+        .nav-arrow svg { width: 20px; height: 20px; fill: white; }
+
+        /* Logo & Speaker */
+        .logo {
+            position: fixed;
+            top: 30px; left: 40px;
+            z-index: 100;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .speaker-badge {
+            position: fixed;
+            top: 30px; right: 40px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+        }
+
+        .speaker-avatar {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: var(--bb-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .scene-content { width: 95%; padding: 0 15px; }
+            .mega-title { font-size: clamp(32px, 10vw, 60px) !important; }
+            .stats-grid, .land-grid { grid-template-columns: 1fr; gap: 16px; }
+            .deal-card { grid-template-columns: 1fr !important; gap: 24px; padding: 24px; }
+            .superpowers-row { flex-direction: column; gap: 12px; }
+            .superpower-card { width: 90%; max-width: 200px; }
+            .nav-arrows { display: none; }
+            .controls { padding: 15px 20px; gap: 15px; }
+            .play-btn { width: 44px; height: 44px; }
+            .progress-dots { display: none; }
+            .logo { font-size: 16px; top: 15px; left: 15px; }
+            .speaker-badge { top: 15px; right: 15px; padding: 6px 12px; font-size: 11px; }
+        }
+
+        @media (max-width: 480px) {
+            .mega-title { font-size: clamp(28px, 9vw, 48px) !important; }
+            .stat-value { font-size: 28px; }
+            .deal-result-value { font-size: 36px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas">
+        <div class="bg-grid"></div>
+        <div class="bg-glow glow1"></div>
+        <div class="bg-glow glow2"></div>
+
+        <div class="logo">{{BRAND_NAME}}</div>
+
+        <div class="speaker-badge">
+            <div class="speaker-avatar">{{SPEAKER_INITIALS}}</div>
+            <span>{{SPEAKER_NAMES}}</span>
+        </div>
+
+        <div class="scene-container">
+
+            <!-- Scene 1: Title -->
+            <div class="scene active" data-title="Opening">
+                <div class="scene-content">
+                    <div class="section-label">{{EVENT_NAME}}</div>
+                    <h1 class="mega-title">
+                        <span class="blue">{{TITLE_LINE_1}}</span><br>
+                        <span class="white">{{TITLE_LINE_2}}</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Scene 2: Statement -->
+            <div class="scene" data-title="Key Message">
+                <div class="scene-content">
+                    <div class="quote-text">
+                        {{STATEMENT_TEXT}}<br>
+                        <span class="highlight">{{HIGHLIGHT_TEXT}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 3: Stats -->
+            <div class="scene" data-title="The Numbers">
+                <div class="scene-content">
+                    <div class="section-label">Performance</div>
+                    <h2 style="font-size: 38px; margin-bottom: 10px;">{{STATS_TITLE}}</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">{{METRIC_1_LABEL}}</div>
+                            <div class="stat-value">{{METRIC_1_VALUE}}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">{{METRIC_2_LABEL}}</div>
+                            <div class="stat-value">{{METRIC_2_VALUE}}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">{{METRIC_3_LABEL}}</div>
+                            <div class="stat-value">{{METRIC_3_VALUE}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 4: Card Grid -->
+            <div class="scene" data-title="Key Areas">
+                <div class="scene-content">
+                    <div class="section-label">{{SECTION_LABEL}}</div>
+                    <h2 style="font-size: 38px; margin-bottom: 30px;">{{SECTION_TITLE}}</h2>
+                    <div class="land-grid">
+                        <div class="land-card">
+                            <div class="land-icon">{{CARD_1_ICON}}</div>
+                            <div class="land-title">{{CARD_1_TITLE}}</div>
+                            <div class="land-desc">{{CARD_1_DESC}}</div>
+                        </div>
+                        <div class="land-card spotlight">
+                            <div class="land-icon">{{CARD_2_ICON}}</div>
+                            <div class="land-title">{{CARD_2_TITLE}}</div>
+                            <div class="land-desc">{{CARD_2_DESC}}</div>
+                        </div>
+                        <div class="land-card">
+                            <div class="land-icon">{{CARD_3_ICON}}</div>
+                            <div class="land-title">{{CARD_3_TITLE}}</div>
+                            <div class="land-desc">{{CARD_3_DESC}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 5: Closing -->
+            <div class="scene" data-title="Closing">
+                <div class="scene-content">
+                    <h1 class="mega-title animate-pulse">
+                        <span class="white">{{CLOSING_LINE_1}}</span><br>
+                        <span class="blue">{{CLOSING_LINE_2}}</span>
+                    </h1>
+                    <p class="subtitle" style="margin-top: 40px; font-size: 24px;">
+                        {{CLOSING_TAGLINE}}
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Navigation Arrows -->
+        <div class="nav-arrows left">
+            <button class="nav-arrow" onclick="prevScene()">
+                <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+        </div>
+        <div class="nav-arrows right">
+            <button class="nav-arrow" onclick="nextScene()">
+                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
+            </button>
+        </div>
+
+        <!-- Playback Controls -->
+        <div class="controls">
+            <button class="play-btn" onclick="togglePlay()">
+                <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pauseIcon" style="display: none;" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <div class="progress-container">
+                <div class="progress-bar" onclick="seekTo(event)">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-dots" id="progressDots"></div>
+            </div>
+            <div class="scene-info">
+                <div class="scene-counter" id="sceneCounter">1 / 5</div>
+                <div class="scene-title" id="sceneTitle">Opening</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentScene = 0;
+        let isPlaying = false;
+        let playInterval = null;
+        const scenes = document.querySelectorAll('.scene');
+        const totalScenes = scenes.length;
+        const sceneDuration = 6000;
+
+        function init() {
+            createProgressDots();
+            updateUI();
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    e.preventDefault();
+                    nextScene();
+                } else if (e.key === 'ArrowLeft') {
+                    prevScene();
+                } else if (e.key === 'p') {
+                    togglePlay();
+                }
+            });
+        }
+
+        function createProgressDots() {
+            const container = document.getElementById('progressDots');
+            for (let i = 0; i < totalScenes; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+                dot.onclick = () => goToScene(i);
+                container.appendChild(dot);
+            }
+        }
+
+        function nextScene() {
+            if (currentScene < totalScenes - 1) {
+                goToScene(currentScene + 1);
+            } else {
+                goToScene(0);
+            }
+        }
+
+        function prevScene() {
+            if (currentScene > 0) {
+                goToScene(currentScene - 1);
+            }
+        }
+
+        function goToScene(index) {
+            scenes[currentScene].classList.remove('active');
+            currentScene = index;
+            scenes[currentScene].classList.add('active');
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('sceneCounter').textContent = `${currentScene + 1} / ${totalScenes}`;
+            document.getElementById('sceneTitle').textContent = scenes[currentScene].dataset.title;
+
+            const progress = ((currentScene + 1) / totalScenes) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            const dots = document.querySelectorAll('.progress-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i <= currentScene);
+            });
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const playIcon = document.getElementById('playIcon');
+            const pauseIcon = document.getElementById('pauseIcon');
+
+            if (isPlaying) {
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+                playInterval = setInterval(nextScene, sceneDuration);
+            } else {
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+                clearInterval(playInterval);
+            }
+        }
+
+        function seekTo(event) {
+            const bar = event.currentTarget;
+            const rect = bar.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const percent = x / rect.width;
+            const targetScene = Math.floor(percent * totalScenes);
+            goToScene(Math.min(targetScene, totalScenes - 1));
+        }
+
+        init();
+    </script>
+</body>
+</html>

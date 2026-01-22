@@ -1,0 +1,3923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Banking Transformation | Executive Dashboard</title>
+    <style>
+        :root {
+            /* Backbase Brand Colors */
+            --primary: #091C35;           /* Black Pearl - primary dark */
+            --primary-light: #0f2847;     /* Lighter shade of Black Pearl */
+            --accent: #00C853;            /* Backbase Green - success/positive */
+            --accent-red: #FF5252;        /* Error/negative state */
+            --accent-yellow: #FFB300;     /* Warning state */
+            --accent-blue: #3367FF;       /* Backbase Primary Blue */
+            --bg-dark: #091C35;           /* Black Pearl background */
+            --bg-card: #0f2847;           /* Card background */
+            --bg-card-hover: #163359;     /* Card hover state */
+            --text-primary: #FFFFFF;      /* White text */
+            --text-secondary: #94A3B8;    /* Muted text */
+            --border: #1e3a5f;            /* Border color */
+            --backbase-blue: #3367FF;     /* Backbase Dodger Blue */
+            --backbase-green: #00C853;    /* Backbase Thrive Green */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(9, 28, 53, 0.97);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-brand {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-brand::before {
+            content: '';
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: var(--backbase-blue);
+            border-radius: 6px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .nav-link:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .nav-link.active {
+            background: var(--backbase-blue);
+            color: var(--text-primary);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 5rem 2rem 2rem;
+        }
+
+        /* Section */
+        .section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+        }
+
+        /* KPI Cards Row */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .kpi-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .kpi-value.positive { color: var(--accent); }
+        .kpi-value.negative { color: var(--accent-red); }
+        .kpi-value.neutral { color: var(--accent-blue); }
+        .kpi-value.warning { color: var(--accent-yellow); }
+
+        .kpi-subtext {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Decision Banner */
+        .decision-banner {
+            background: linear-gradient(135deg, var(--backbase-blue) 0%, #1a4fd6 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .decision-banner h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .decision-banner p {
+            opacity: 0.9;
+        }
+
+        .decision-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .card-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-green { background: rgba(0, 200, 83, 0.2); color: var(--accent); }
+        .badge-red { background: rgba(255, 82, 82, 0.2); color: var(--accent-red); }
+        .badge-yellow { background: rgba(255, 179, 0, 0.2); color: var(--accent-yellow); }
+        .badge-blue { background: rgba(51, 103, 255, 0.2); color: var(--accent-blue); }
+
+        /* Progress Bars */
+        .progress-item {
+            margin-bottom: 1rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-dark);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.green { background: var(--accent); }
+        .progress-fill.red { background: var(--accent-red); }
+        .progress-fill.blue { background: var(--accent-blue); }
+        .progress-fill.yellow { background: var(--accent-yellow); }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--bg-dark);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin: 1rem 0;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 100%;
+            padding: 1rem 0;
+        }
+
+        .bar {
+            width: 60px;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.5s ease;
+            position: relative;
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        /* Funnel Chart - True Funnel Shape */
+        .funnel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem 0;
+            position: relative;
+        }
+
+        .funnel-stage {
+            position: relative;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .funnel-shape {
+            height: 45px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            position: relative;
+            clip-path: polygon(0% 0%, 100% 0%, 95% 100%, 5% 100%);
+            transition: all 0.3s ease;
+        }
+
+        .funnel-stage:first-child .funnel-shape {
+            border-radius: 8px 8px 0 0;
+            clip-path: polygon(0% 0%, 100% 0%, 97% 100%, 3% 100%);
+        }
+
+        .funnel-stage:last-child .funnel-shape {
+            clip-path: polygon(5% 0%, 95% 0%, 85% 100%, 15% 100%);
+            border-radius: 0 0 8px 8px;
+        }
+
+        .funnel-shape:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        .funnel-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 0.5rem;
+            margin-top: 2px;
+        }
+
+        .funnel-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-align: left;
+        }
+
+        .funnel-metric {
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .funnel-drop {
+            position: absolute;
+            right: -60px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.65rem;
+            color: var(--accent-red);
+            background: rgba(255, 82, 82, 0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 4px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--backbase-blue);
+            border: 3px solid var(--bg-card);
+        }
+
+        .timeline-item.pending::before {
+            background: var(--text-secondary);
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-date {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Gauge */
+        .gauge-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .gauge {
+            position: relative;
+            width: 200px;
+            height: 100px;
+            overflow: hidden;
+        }
+
+        .gauge-bg {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #FF5252 0deg 72deg,
+                #FFB300 72deg 126deg,
+                #00C853 126deg 180deg,
+                var(--bg-dark) 180deg 360deg
+            );
+        }
+
+        .gauge-center {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: var(--bg-card);
+        }
+
+        .gauge-value {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .gauge-label {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Scenario Cards */
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .scenario-grid { grid-template-columns: 1fr; }
+        }
+
+        .scenario-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .scenario-card.best {
+            background: rgba(0, 200, 83, 0.15);
+            border: 2px solid var(--accent);
+        }
+
+        .scenario-card.likely {
+            background: rgba(51, 103, 255, 0.15);
+            border: 2px solid var(--accent-blue);
+        }
+
+        .scenario-card.worst {
+            background: rgba(255, 179, 0, 0.15);
+            border: 2px solid var(--accent-yellow);
+        }
+
+        .scenario-title {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .scenario-npv {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .scenario-details {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Lists */
+        .list {
+            list-style: none;
+        }
+
+        .list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .list li:last-child {
+            border-bottom: none;
+        }
+
+        .list-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .list-icon.green { background: rgba(0, 200, 83, 0.2); color: var(--accent); }
+        .list-icon.red { background: rgba(255, 82, 82, 0.2); color: var(--accent-red); }
+        .list-icon.yellow { background: rgba(255, 179, 0, 0.2); color: var(--accent-yellow); }
+        .list-icon.blue { background: rgba(51, 103, 255, 0.2); color: var(--accent-blue); }
+
+        /* Quote Box */
+        .quote-box {
+            background: var(--bg-dark);
+            border-left: 4px solid var(--backbase-blue);
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .quote-text {
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+
+        .quote-source {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Action Items */
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .action-priority {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .priority-1 { background: var(--accent-red); }
+        .priority-2 { background: var(--accent-yellow); }
+        .priority-3 { background: var(--accent-blue); }
+
+        .action-content {
+            flex: 1;
+        }
+
+        .action-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .action-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+
+        /* Utility */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .mt-2 { margin-top: 1rem; }
+
+        /* Breakeven Chart */
+        .breakeven-chart {
+            padding: 1rem 0;
+        }
+
+        .breakeven-container {
+            display: flex;
+            gap: 1rem;
+            height: 280px;
+        }
+
+        .y-axis {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: right;
+            padding: 10px 0;
+            min-width: 50px;
+        }
+
+        .y-axis .zero-line-label {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .chart-area {
+            flex: 1;
+            position: relative;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            padding: 10px 10px 60px 10px;
+        }
+
+        .zero-line {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 50%;
+            height: 2px;
+            background: var(--text-secondary);
+            z-index: 1;
+        }
+
+        .breakeven-marker {
+            position: absolute;
+            left: 62.4%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .breakeven-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--backbase-blue);
+            border: 3px solid #fff;
+            box-shadow: 0 0 20px rgba(51, 103, 255, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        .breakeven-label {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--backbase-blue);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .breakeven-label::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid var(--backbase-blue);
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(51, 103, 255, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(51, 103, 255, 0.8); }
+        }
+
+        .line-chart {
+            width: 100%;
+            height: calc(100% - 50px);
+        }
+
+        .x-axis {
+            position: absolute;
+            bottom: 5px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .x-label {
+            text-align: center;
+            font-size: 0.75rem;
+        }
+
+        .x-value {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .x-period {
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+        }
+
+        /* Capability Heatmap */
+        .capability-grid {
+            display: grid;
+            gap: 2px;
+            background: var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .capability-header {
+            background: var(--primary);
+            padding: 0.75rem 0.5rem;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .capability-row-header {
+            background: var(--bg-card);
+            padding: 0.75rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .capability-cell {
+            padding: 0.75rem 0.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .capability-cell:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .capability-cell.red {
+            background: rgba(255, 82, 82, 0.8);
+            color: white;
+        }
+
+        .capability-cell.amber {
+            background: rgba(255, 179, 0, 0.8);
+            color: var(--primary);
+        }
+
+        .capability-cell.green {
+            background: rgba(0, 200, 83, 0.8);
+            color: var(--primary);
+        }
+
+        .capability-cell.grey {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+        }
+
+        .heatmap-legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-dark);
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        /* Journey Flow */
+        .journey-flow {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .journey-swimlanes {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .swimlane {
+            display: flex;
+            min-height: 80px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .swimlane:last-child {
+            border-bottom: none;
+        }
+
+        .swimlane-label {
+            width: 120px;
+            min-width: 120px;
+            background: var(--bg-card);
+            padding: 1rem 0.75rem;
+            font-weight: 600;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-right: 1px solid var(--border);
+        }
+
+        .swimlane-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            gap: 0;
+            background: var(--bg-dark);
+            overflow-x: auto;
+        }
+
+        .journey-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 100px;
+            padding: 0.5rem;
+            position: relative;
+        }
+
+        .step-node {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .step-node:hover {
+            transform: scale(1.1);
+        }
+
+        .step-node.digital {
+            background: var(--backbase-blue);
+        }
+
+        .step-node.manual {
+            background: var(--accent-red);
+        }
+
+        .step-node.hybrid {
+            background: var(--accent-yellow);
+        }
+
+        .step-node.waiting {
+            background: var(--text-secondary);
+        }
+
+        .step-label {
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 4px;
+            color: var(--text-secondary);
+            max-width: 80px;
+        }
+
+        .step-time {
+            font-size: 0.6rem;
+            color: var(--accent-yellow);
+            margin-top: 2px;
+        }
+
+        .journey-arrow {
+            width: 30px;
+            height: 2px;
+            background: var(--border);
+            position: relative;
+            margin: 0 -5px;
+            align-self: center;
+        }
+
+        .journey-arrow::after {
+            content: '';
+            position: absolute;
+            right: -4px;
+            top: -4px;
+            border: 5px solid transparent;
+            border-left: 6px solid var(--border);
+        }
+
+        .pain-point {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+            animation: pulse-pain 2s infinite;
+        }
+
+        @keyframes pulse-pain {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(255, 82, 82, 0); }
+        }
+
+        .channel-switch {
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.55rem;
+            color: var(--accent-red);
+            white-space: nowrap;
+            background: rgba(255, 82, 82, 0.15);
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+
+        .journey-stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 1rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .journey-stat {
+            text-align: center;
+        }
+
+        .journey-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .journey-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Clickable links */
+        .journey-link {
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 3px;
+        }
+
+        .journey-link:hover {
+            color: var(--backbase-blue);
+        }
+
+        /* Print styles */
+        @media print {
+            .nav { display: none; }
+            .container { padding-top: 1rem; }
+            .section { display: block !important; page-break-after: always; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-brand">Retail Bank SEA | Digital Transformation</div>
+        <div class="nav-links">
+            <button class="nav-link active" onclick="showSection('overview')">Overview</button>
+            <button class="nav-link" onclick="showSection('problem')">Problem</button>
+            <button class="nav-link" onclick="showSection('capabilities')">Capabilities</button>
+            <button class="nav-link" onclick="showSection('journeys')">Journeys</button>
+            <button class="nav-link" onclick="showSection('personas')">Personas</button>
+            <button class="nav-link" onclick="showSection('usecases')">Use Cases</button>
+            <button class="nav-link" onclick="showSection('solution')">Solution</button>
+            <button class="nav-link" onclick="showSection('financials')">Financials</button>
+            <button class="nav-link" onclick="showSection('roadmap')">Roadmap</button>
+            <button class="nav-link" onclick="showSection('risks')">Risks</button>
+            <button class="nav-link" onclick="showSection('decision')">Decision</button>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- SECTION: Overview -->
+        <div id="overview" class="section active">
+            <div class="header">
+                <h1>Digital Banking Transformation</h1>
+                <p>Investment Proposal | January 2026</p>
+            </div>
+
+            <!-- Decision Banner -->
+            <div class="decision-banner">
+                <div>
+                    <h2>Recommendation: CONDITIONAL GO</h2>
+                    <p>Proceed with phased approach contingent on Phase 0 validation</p>
+                </div>
+                <div class="decision-badge">Approve $8.0M Investment</div>
+            </div>
+
+            <!-- KPI Row -->
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Investment</div>
+                    <div class="kpi-value neutral">$8.0M</div>
+                    <div class="kpi-subtext">Over 18 months</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Annual Benefits</div>
+                    <div class="kpi-value positive">$8.2M</div>
+                    <div class="kpi-subtext">Year 3+ steady state</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Net Present Value</div>
+                    <div class="kpi-value positive">$5.2M</div>
+                    <div class="kpi-subtext">3-year, 10% discount</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">IRR</div>
+                    <div class="kpi-value positive">42%</div>
+                    <div class="kpi-subtext">Internal Rate of Return</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Payback Period</div>
+                    <div class="kpi-value warning">18 mo</div>
+                    <div class="kpi-subtext">Break-even point</div>
+                </div>
+            </div>
+
+            <!-- Summary Grid -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">The Ask</span>
+                        <span class="card-badge badge-blue">Decision Required</span>
+                    </div>
+                    <ul class="list">
+                        <li>
+                            <span class="list-icon green">1</span>
+                            <span>Approve Conditional Go and Phase 0 funding ($1.5M)</span>
+                        </li>
+                        <li>
+                            <span class="list-icon green">2</span>
+                            <span>Appoint Executive Sponsor (C-level with P&L accountability)</span>
+                        </li>
+                        <li>
+                            <span class="list-icon green">3</span>
+                            <span>Commit to 3-phase approach with decision gates</span>
+                        </li>
+                    </ul>
+                    <div class="quote-box mt-2">
+                        <div class="quote-text">"Final decision at Month 3 after baseline validation"</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Cost of Inaction</span>
+                        <span class="card-badge badge-red">$30M+ Risk</span>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Lost Customer Acquisition</span>
+                            <span>$18M over 3 years</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill red" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Servicing Inefficiency</span>
+                            <span>$12-15M over 3 years</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill red" style="width: 45%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Competitive Erosion</span>
+                            <span>Market share at risk</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill yellow" style="width: 70%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confidence & Maturity -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Business Case Confidence</span>
+                        <span class="card-badge badge-yellow">MEDIUM</span>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge">
+                            <div class="gauge-bg"></div>
+                            <div class="gauge-center"></div>
+                            <div class="gauge-value" style="color: var(--accent-yellow)">MEDIUM</div>
+                        </div>
+                    </div>
+                    <p class="text-center" style="color: var(--text-secondary); font-size: 0.875rem;">
+                        50-80% of key inputs validated. Requires Phase 0 data validation to achieve HIGH confidence.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Current Digital Maturity</span>
+                        <span class="card-badge badge-red">2.2 / 5.0</span>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Current State</span>
+                            <span>2.2 (Developing)</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill yellow" style="width: 44%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Global Average</span>
+                            <span>3.0</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill blue" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Regional Leaders</span>
+                            <span>4.0+</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill green" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2" style="color: var(--accent-red); font-weight: 600;">
+                        12-24 months behind competition
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: Problem -->
+        <div id="problem" class="section">
+            <div class="header">
+                <h1>The Business Problem</h1>
+                <p>We Are Losing Customers and Burning Cash</p>
+            </div>
+
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title journey-link" onclick="showSection('journeys'); showJourney('onboarding');">Onboarding Broken</span>
+                        <span class="card-badge badge-red">Critical</span>
+                    </div>
+                    <div class="kpi-value negative text-center" style="font-size: 3rem;">40%</div>
+                    <p class="text-center mb-2" style="color: var(--text-secondary);">Completion Rate (vs. 65% benchmark)</p>
+
+                    <div class="funnel">
+                        <div class="funnel-stage">
+                            <div class="funnel-shape" style="width: 100%; background: var(--backbase-blue);">
+                                10,000
+                            </div>
+                            <div class="funnel-info">
+                                <span class="funnel-label">Start Application</span>
+                                <span class="funnel-metric" style="color: var(--backbase-blue);">100%</span>
+                            </div>
+                        </div>
+                        <div class="funnel-stage" style="position: relative;">
+                            <div class="funnel-shape" style="width: 85%; background: #2952cc;">
+                                8,000
+                            </div>
+                            <div class="funnel-info">
+                                <span class="funnel-label">Complete Profile</span>
+                                <span class="funnel-metric" style="color: var(--accent-yellow);">-20%</span>
+                            </div>
+                            <span class="funnel-drop">-2,000</span>
+                        </div>
+                        <div class="funnel-stage" style="position: relative;">
+                            <div class="funnel-shape" style="width: 70%; background: var(--accent-yellow);">
+                                6,000
+                            </div>
+                            <div class="funnel-info">
+                                <span class="funnel-label">Submit Documents</span>
+                                <span class="funnel-metric" style="color: var(--accent-red);">-25%</span>
+                            </div>
+                            <span class="funnel-drop">-2,000 ⚠️</span>
+                        </div>
+                        <div class="funnel-stage" style="position: relative;">
+                            <div class="funnel-shape" style="width: 55%; background: var(--accent-red);">
+                                4,000
+                            </div>
+                            <div class="funnel-info">
+                                <span class="funnel-label">Complete</span>
+                                <span class="funnel-metric" style="color: var(--accent-red);">-33%</span>
+                            </div>
+                            <span class="funnel-drop">-2,000</span>
+                        </div>
+                    </div>
+
+                    <p class="text-center mt-2" style="font-size: 0.75rem; color: var(--backbase-blue); cursor: pointer;" onclick="showSection('journeys'); showJourney('onboarding');">
+                        View Full Journey Analysis →
+                    </p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title journey-link" onclick="showSection('journeys'); showJourney('disputes');">Servicing Expensive</span>
+                        <span class="card-badge badge-red">Critical</span>
+                    </div>
+                    <div class="kpi-value negative text-center" style="font-size: 3rem;">20%</div>
+                    <p class="text-center mb-2" style="color: var(--text-secondary);">Digital Containment (vs. 60% benchmark)</p>
+
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Digital @ $1/txn</span>
+                            <span>20%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill green" style="width: 20%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Call Center @ $10/txn</span>
+                            <span>50%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill yellow" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Branch @ $15/txn</span>
+                            <span>30%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill red" style="width: 30%"></div>
+                        </div>
+                    </div>
+
+                    <div class="quote-box">
+                        <div class="quote-text">"Simple requests still come through the call center"</div>
+                        <div class="quote-source">— Operations Lead</div>
+                    </div>
+
+                    <p class="text-center mt-2" style="font-size: 0.75rem; color: var(--backbase-blue); cursor: pointer;" onclick="showSection('journeys'); showJourney('disputes');">
+                        View Disputes Journey →
+                    </p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">No Analytics</span>
+                        <span class="card-badge badge-yellow">Gap</span>
+                    </div>
+                    <div class="kpi-value warning text-center" style="font-size: 3rem;">0</div>
+                    <p class="text-center mb-2" style="color: var(--text-secondary);">Journey Tracking Capability</p>
+
+                    <ul class="list">
+                        <li>
+                            <span class="list-icon red">✗</span>
+                            <span>No drop-off tracking</span>
+                        </li>
+                        <li>
+                            <span class="list-icon red">✗</span>
+                            <span>No channel behavior data</span>
+                        </li>
+                        <li>
+                            <span class="list-icon red">✗</span>
+                            <span>No performance dashboards</span>
+                        </li>
+                        <li>
+                            <span class="list-icon red">✗</span>
+                            <span>Decisions based on anecdotes</span>
+                        </li>
+                    </ul>
+
+                    <div class="quote-box">
+                        <div class="quote-text">"We don't have a clear view of why customers choose branch or call over digital"</div>
+                        <div class="quote-source">— Operations Lead</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Impact Summary -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Business Impact Summary</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Problem Area</th>
+                                <th>Current State</th>
+                                <th>Benchmark</th>
+                                <th>Gap</th>
+                                <th>Annual Impact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Onboarding Completion</td>
+                                <td style="color: var(--accent-red)">40%</td>
+                                <td style="color: var(--accent)">65%</td>
+                                <td>-25pp</td>
+                                <td style="color: var(--accent-red)">$6M+ lost revenue</td>
+                            </tr>
+                            <tr>
+                                <td>Digital Containment</td>
+                                <td style="color: var(--accent-red)">20%</td>
+                                <td style="color: var(--accent)">60%</td>
+                                <td>-40pp</td>
+                                <td style="color: var(--accent-red)">$4-5M excess cost</td>
+                            </tr>
+                            <tr>
+                                <td>Onboarding Cycle Time</td>
+                                <td style="color: var(--accent-red)">7+ days</td>
+                                <td style="color: var(--accent)">&lt;48 hours</td>
+                                <td>5+ days</td>
+                                <td style="color: var(--accent-yellow)">Customer frustration</td>
+                            </tr>
+                            <tr>
+                                <td>Journey Analytics</td>
+                                <td style="color: var(--accent-red)">None</td>
+                                <td style="color: var(--accent)">Full visibility</td>
+                                <td>Critical gap</td>
+                                <td style="color: var(--accent-yellow)">Cannot optimize</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: Capabilities -->
+        <div id="capabilities" class="section">
+            <div class="header">
+                <h1>Capability Assessment</h1>
+                <p>Digital Maturity Across Channels, Journeys & Operations</p>
+            </div>
+
+            <!-- Overall Score -->
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-label">Overall Maturity</div>
+                    <div class="kpi-value warning">2.2</div>
+                    <div class="kpi-subtext">Out of 5.0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Front Office</div>
+                    <div class="kpi-value warning">2.4</div>
+                    <div class="kpi-subtext">Customer-facing</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Middle Office</div>
+                    <div class="kpi-value negative">1.8</div>
+                    <div class="kpi-subtext">Operations</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Back Office</div>
+                    <div class="kpi-value negative">2.0</div>
+                    <div class="kpi-subtext">Core Systems</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Integration</div>
+                    <div class="kpi-value negative">1.5</div>
+                    <div class="kpi-subtext">End-to-End</div>
+                </div>
+            </div>
+
+            <!-- Channel x Journey Heatmap -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <span class="card-title">Channel × Journey Capability Matrix</span>
+                    <span class="card-badge badge-red">Gap Analysis</span>
+                </div>
+                <div class="capability-grid" style="grid-template-columns: 180px repeat(5, 1fr);">
+                    <!-- Header Row -->
+                    <div class="capability-header"></div>
+                    <div class="capability-header">Mobile App</div>
+                    <div class="capability-header">Web Portal</div>
+                    <div class="capability-header">Call Center</div>
+                    <div class="capability-header">Branch</div>
+                    <div class="capability-header">ATM/Kiosk</div>
+
+                    <!-- Onboarding Row -->
+                    <div class="capability-row-header">🚀 Onboarding</div>
+                    <div class="capability-cell amber" onclick="showSection('journeys'); showJourney('onboarding');">Partial<br><small>No eKYC</small></div>
+                    <div class="capability-cell red" onclick="showSection('journeys'); showJourney('onboarding');">Form Only<br><small>No STP</small></div>
+                    <div class="capability-cell amber">Manual<br><small>Paper forms</small></div>
+                    <div class="capability-cell amber">Manual<br><small>7+ days</small></div>
+                    <div class="capability-cell grey">N/A</div>
+
+                    <!-- Account Services Row -->
+                    <div class="capability-row-header">💳 Account Services</div>
+                    <div class="capability-cell green">Good<br><small>Self-serve</small></div>
+                    <div class="capability-cell amber">Basic<br><small>Limited</small></div>
+                    <div class="capability-cell amber">Manual<br><small>High volume</small></div>
+                    <div class="capability-cell amber">Manual<br><small>Walk-in</small></div>
+                    <div class="capability-cell green">Good<br><small>Basic ops</small></div>
+
+                    <!-- Payments Row -->
+                    <div class="capability-row-header">💸 Payments</div>
+                    <div class="capability-cell green">Good<br><small>Real-time</small></div>
+                    <div class="capability-cell green">Good<br><small>Real-time</small></div>
+                    <div class="capability-cell amber">IVR Only<br><small>Limited</small></div>
+                    <div class="capability-cell amber">Manual<br><small>Teller</small></div>
+                    <div class="capability-cell green">Good<br><small>Cash/Check</small></div>
+
+                    <!-- Disputes Row -->
+                    <div class="capability-row-header">⚠️ Disputes</div>
+                    <div class="capability-cell red" onclick="showSection('journeys'); showJourney('disputes');">None<br><small>Call only</small></div>
+                    <div class="capability-cell red" onclick="showSection('journeys'); showJourney('disputes');">None<br><small>Form only</small></div>
+                    <div class="capability-cell red" onclick="showSection('journeys'); showJourney('disputes');">Manual<br><small>30+ min</small></div>
+                    <div class="capability-cell amber">Manual<br><small>Paper</small></div>
+                    <div class="capability-cell grey">N/A</div>
+
+                    <!-- Support Row -->
+                    <div class="capability-row-header">🎧 Support/FAQ</div>
+                    <div class="capability-cell amber">Basic<br><small>No AI</small></div>
+                    <div class="capability-cell amber">FAQ Only<br><small>Static</small></div>
+                    <div class="capability-cell red">Manual<br><small>High cost</small></div>
+                    <div class="capability-cell red">Manual<br><small>Long wait</small></div>
+                    <div class="capability-cell grey">N/A</div>
+                </div>
+
+                <div class="heatmap-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: var(--accent);"></div>
+                        <span>Digital & Integrated</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: var(--accent-yellow);"></div>
+                        <span>Partial / Manual Gaps</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: var(--accent-red);"></div>
+                        <span>Manual / Not Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: var(--bg-card);"></div>
+                        <span>Not Applicable</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operations Heatmap -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <span class="card-title">Operations Layer Assessment</span>
+                    <span class="card-badge badge-yellow">Integration Gaps</span>
+                </div>
+                <div class="capability-grid" style="grid-template-columns: 180px repeat(4, 1fr);">
+                    <!-- Header Row -->
+                    <div class="capability-header"></div>
+                    <div class="capability-header">Front Office<br><small>Customer-Facing</small></div>
+                    <div class="capability-header">Middle Office<br><small>Operations</small></div>
+                    <div class="capability-header">Back Office<br><small>Core Systems</small></div>
+                    <div class="capability-header">Integration<br><small>End-to-End</small></div>
+
+                    <!-- Onboarding -->
+                    <div class="capability-row-header">🚀 Onboarding</div>
+                    <div class="capability-cell amber">Digital Forms<br><small>No eKYC</small></div>
+                    <div class="capability-cell red">Manual Review<br><small>2-3 days</small></div>
+                    <div class="capability-cell amber">Batch Process<br><small>Overnight</small></div>
+                    <div class="capability-cell red">Disconnected<br><small>Manual handoff</small></div>
+
+                    <!-- KYC/AML -->
+                    <div class="capability-row-header">🔍 KYC/AML</div>
+                    <div class="capability-cell amber">Doc Upload<br><small>Manual verify</small></div>
+                    <div class="capability-cell red">Manual Checks<br><small>1-2 days</small></div>
+                    <div class="capability-cell amber">Rule-based<br><small>Limited AI</small></div>
+                    <div class="capability-cell red">Siloed<br><small>No unified view</small></div>
+
+                    <!-- Servicing -->
+                    <div class="capability-row-header">🎧 Servicing</div>
+                    <div class="capability-cell amber">Multi-channel<br><small>Not unified</small></div>
+                    <div class="capability-cell red">Manual Queue<br><small>No routing</small></div>
+                    <div class="capability-cell amber">Case Mgmt<br><small>Legacy</small></div>
+                    <div class="capability-cell red">Channel Silos<br><small>No context</small></div>
+
+                    <!-- Disputes -->
+                    <div class="capability-row-header">⚠️ Disputes</div>
+                    <div class="capability-cell red">Call/Branch<br><small>No digital</small></div>
+                    <div class="capability-cell red">Manual Process<br><small>5-7 days</small></div>
+                    <div class="capability-cell amber">Legacy System<br><small>Limited</small></div>
+                    <div class="capability-cell red">No STP<br><small>All manual</small></div>
+
+                    <!-- Analytics -->
+                    <div class="capability-row-header">📊 Analytics</div>
+                    <div class="capability-cell red">None<br><small>No tracking</small></div>
+                    <div class="capability-cell red">Spreadsheets<br><small>Ad-hoc</small></div>
+                    <div class="capability-cell amber">Basic Reports<br><small>Monthly</small></div>
+                    <div class="capability-cell red">No Dashboard<br><small>Blind spots</small></div>
+                </div>
+            </div>
+
+            <!-- Key Insights -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Critical Gaps Identified</span>
+                    </div>
+                    <ul class="list">
+                        <li>
+                            <span class="list-icon red">1</span>
+                            <span><strong>No eKYC:</strong> Manual document verification causing 7+ day onboarding</span>
+                        </li>
+                        <li>
+                            <span class="list-icon red">2</span>
+                            <span><strong>Channel Silos:</strong> Customer context lost between touchpoints</span>
+                        </li>
+                        <li>
+                            <span class="list-icon red">3</span>
+                            <span><strong>No Digital Disputes:</strong> 100% call/branch for dispute handling</span>
+                        </li>
+                        <li>
+                            <span class="list-icon red">4</span>
+                            <span><strong>Manual Middle Office:</strong> No workflow automation, all manual handoffs</span>
+                        </li>
+                        <li>
+                            <span class="list-icon red">5</span>
+                            <span><strong>Zero Analytics:</strong> Cannot measure, cannot improve</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">The Need for Unified Frontline</span>
+                    </div>
+                    <div class="quote-box">
+                        <div class="quote-text">"Customers experience 4-5 channel switches for a single dispute. Each time they restart from zero."</div>
+                    </div>
+                    <div style="padding: 1rem; background: var(--bg-dark); border-radius: 8px; margin-top: 1rem;">
+                        <h4 style="color: var(--backbase-blue); margin-bottom: 0.5rem;">What a Unified Platform Enables:</h4>
+                        <ul class="list">
+                            <li><span class="list-icon green">✓</span>Single customer view across all channels</li>
+                            <li><span class="list-icon green">✓</span>Seamless handoffs with full context</li>
+                            <li><span class="list-icon green">✓</span>Automated workflows, reduced manual work</li>
+                            <li><span class="list-icon green">✓</span>Real-time analytics and optimization</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: Journeys -->
+        <div id="journeys" class="section">
+            <div class="header">
+                <h1>Journey Analysis</h1>
+                <p>Omnichannel Customer Journeys & Pain Points</p>
+            </div>
+
+            <!-- Journey Selector -->
+            <div class="kpi-row" style="margin-bottom: 1rem;">
+                <div class="kpi-card" style="cursor: pointer; border: 2px solid var(--backbase-blue);" onclick="showJourney('onboarding')" id="btn-onboarding">
+                    <div class="kpi-label">Journey 1</div>
+                    <div class="kpi-value neutral" style="font-size: 1.5rem;">🚀</div>
+                    <div class="kpi-subtext">Onboarding</div>
+                </div>
+                <div class="kpi-card" style="cursor: pointer;" onclick="showJourney('disputes')" id="btn-disputes">
+                    <div class="kpi-label">Journey 2</div>
+                    <div class="kpi-value negative" style="font-size: 1.5rem;">⚠️</div>
+                    <div class="kpi-subtext">Disputes</div>
+                </div>
+                <div class="kpi-card" style="cursor: pointer;" onclick="showJourney('cardblock')" id="btn-cardblock">
+                    <div class="kpi-label">Journey 3</div>
+                    <div class="kpi-value warning" style="font-size: 1.5rem;">🔒</div>
+                    <div class="kpi-subtext">Card Block</div>
+                </div>
+                <div class="kpi-card" style="cursor: pointer;" onclick="showJourney('support')" id="btn-support">
+                    <div class="kpi-label">Journey 4</div>
+                    <div class="kpi-value warning" style="font-size: 1.5rem;">🎧</div>
+                    <div class="kpi-subtext">Support</div>
+                </div>
+                <div class="kpi-card" style="cursor: pointer;" onclick="showJourney('profile')" id="btn-profile">
+                    <div class="kpi-label">Journey 5</div>
+                    <div class="kpi-value negative" style="font-size: 1.5rem;">👤</div>
+                    <div class="kpi-subtext">Profile Update</div>
+                </div>
+            </div>
+
+            <!-- JOURNEY: Onboarding -->
+            <div id="journey-onboarding" class="journey-container">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <span class="card-title">🚀 Customer Onboarding Journey</span>
+                        <span class="card-badge badge-red">40% Completion | 7+ Days</span>
+                    </div>
+
+                    <div class="journey-flow">
+                        <div class="journey-swimlanes">
+                            <!-- Customer -->
+                            <div class="swimlane">
+                                <div class="swimlane-label">👤 Customer</div>
+                                <div class="swimlane-content">
+                                    <div class="journey-step">
+                                        <div class="step-node digital">📱</div>
+                                        <div class="step-label">Start on Mobile</div>
+                                        <div class="step-time">5 min</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node digital">📝</div>
+                                        <div class="step-label">Fill Form</div>
+                                        <div class="step-time">15 min</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">
+                                            📄
+                                            <div class="pain-point">!</div>
+                                        </div>
+                                        <div class="step-label">Gather Docs</div>
+                                        <div class="step-time">1-2 days</div>
+                                        <div class="channel-switch">❌ Drops off</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node hybrid">
+                                            📤
+                                            <div class="pain-point">!</div>
+                                        </div>
+                                        <div class="step-label">Upload/Visit Branch</div>
+                                        <div class="step-time">30 min</div>
+                                        <div class="channel-switch">→ Branch/Email</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node waiting">⏳</div>
+                                        <div class="step-label">Wait for Approval</div>
+                                        <div class="step-time">3-5 days</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node digital">✅</div>
+                                        <div class="step-label">Account Active</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Digital Channel -->
+                            <div class="swimlane">
+                                <div class="swimlane-label">💻 Digital</div>
+                                <div class="swimlane-content">
+                                    <div class="journey-step">
+                                        <div class="step-node digital">🌐</div>
+                                        <div class="step-label">App/Web Form</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node digital">📧</div>
+                                        <div class="step-label">Email Confirm</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node red" style="background: var(--accent-red);">
+                                            ❌
+                                            <div class="pain-point">!</div>
+                                        </div>
+                                        <div class="step-label">No eKYC</div>
+                                    </div>
+                                    <div style="width: 200px;"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node waiting">📩</div>
+                                        <div class="step-label">SMS Notification</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Branch/Call Center -->
+                            <div class="swimlane">
+                                <div class="swimlane-label">🏦 Branch/<br>Call Center</div>
+                                <div class="swimlane-content">
+                                    <div style="width: 250px;"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">
+                                            📋
+                                        </div>
+                                        <div class="step-label">Verify Docs</div>
+                                        <div class="step-time">30 min</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">✍️</div>
+                                        <div class="step-label">Manual Entry</div>
+                                        <div class="step-time">20 min</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Back Office -->
+                            <div class="swimlane">
+                                <div class="swimlane-label">⚙️ Back Office</div>
+                                <div class="swimlane-content">
+                                    <div style="width: 400px;"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">
+                                            🔍
+                                            <div class="pain-point">!</div>
+                                        </div>
+                                        <div class="step-label">Manual KYC Check</div>
+                                        <div class="step-time">1-2 days</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">📊</div>
+                                        <div class="step-label">Credit Check</div>
+                                        <div class="step-time">4-8 hrs</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node hybrid">💾</div>
+                                        <div class="step-label">Core Banking</div>
+                                        <div class="step-time">Batch</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="journey-stats">
+                        <div class="journey-stat">
+                            <div class="journey-stat-value" style="color: var(--accent-red);">7+</div>
+                            <div class="journey-stat-label">Days to Complete</div>
+                        </div>
+                        <div class="journey-stat">
+                            <div class="journey-stat-value" style="color: var(--accent-red);">4</div>
+                            <div class="journey-stat-label">Channel Switches</div>
+                        </div>
+                        <div class="journey-stat">
+                            <div class="journey-stat-value" style="color: var(--accent-red);">60%</div>
+                            <div class="journey-stat-label">Drop-off Rate</div>
+                        </div>
+                        <div class="journey-stat">
+                            <div class="journey-stat-value" style="color: var(--accent-red);">5</div>
+                            <div class="journey-stat-label">Pain Points</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Key Pain Points</span>
+                        </div>
+                        <ul class="list">
+                            <li><span class="list-icon red">1</span><strong>No eKYC:</strong> Customers must visit branch or scan/email documents</li>
+                            <li><span class="list-icon red">2</span><strong>Document Gathering:</strong> Customers leave app to find documents</li>
+                            <li><span class="list-icon red">3</span><strong>Manual KYC:</strong> 1-2 day backlog in operations</li>
+                            <li><span class="list-icon red">4</span><strong>Batch Processing:</strong> Core banking runs overnight only</li>
+                            <li><span class="list-icon red">5</span><strong>No Status Visibility:</strong> Customer doesn't know where they are</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Target State with Unified Platform</span>
+                        </div>
+                        <ul class="list">
+                            <li><span class="list-icon green">✓</span><strong>eKYC Integration:</strong> Real-time ID verification in app</li>
+                            <li><span class="list-icon green">✓</span><strong>Document Capture:</strong> Camera capture with OCR</li>
+                            <li><span class="list-icon green">✓</span><strong>Automated KYC:</strong> Rules-based instant decisioning</li>
+                            <li><span class="list-icon green">✓</span><strong>Real-time Processing:</strong> API-based core integration</li>
+                            <li><span class="list-icon green">✓</span><strong>Progress Tracking:</strong> Real-time status in app</li>
+                        </ul>
+                        <div style="padding: 1rem; background: var(--bg-dark); border-radius: 8px; margin-top: 1rem; text-align: center;">
+                            <span style="color: var(--accent); font-weight: 600;">Target: &lt;48 hours | 65% completion | 0 channel switches</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOURNEY: Disputes -->
+            <div id="journey-disputes" class="journey-container" style="display: none;">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <span class="card-title">⚠️ Dispute Resolution Journey</span>
+                        <span class="card-badge badge-red">100% Manual | 5-7 Days | High Friction</span>
+                    </div>
+
+                    <div class="journey-flow">
+                        <div class="journey-swimlanes">
+                            <!-- Customer -->
+                            <div class="swimlane">
+                                <div class="swimlane-label">👤 Customer</div>
+                                <div class="swimlane-content">
+                                    <div class="journey-step">
+                                        <div class="step-node digital">📱</div>
+                                        <div class="step-label">Notice Issue in App</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">
+                                            🔍
+                                            <div class="pain-point">!</div>
+                                        </div>
+                                        <div class="step-label">Search for Help</div>
+                                        <div class="step-time">10 min</div>
+                                        <div class="channel-switch">No digital option</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">
+                                            📞
+                                            <div class="pain-point">!</div>
+                                        </div>
+                                        <div class="step-label">Call Center</div>
+                                        <div class="step-time">20 min wait</div>
+                                        <div class="channel-switch">→ Phone</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">
+                                            🔄
+                                            <div class="pain-point">!</div>
+                                        </div>
+                                        <div class="step-label">Explain Issue Again</div>
+                                        <div class="step-time">15 min</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node waiting">⏳</div>
+                                        <div class="step-label">Wait for Resolution</div>
+                                        <div class="step-time">5-7 days</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">
+                                            📞
+                                            <div class="pain-point">!</div>
+                                        </div>
+                                        <div class="step-label">Follow-up Call</div>
+                                        <div class="step-time">Repeat</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Digital Channel -->
+                            <div class="swimlane">
+                                <div class="swimlane-label">💻 Digital</div>
+                                <div class="swimlane-content">
+                                    <div class="journey-step">
+                                        <div class="step-node digital">💳</div>
+                                        <div class="step-label">View Transaction</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node red" style="background: var(--accent-red);">
+                                            ❌
+                                            <div class="pain-point">!</div>
+                                        </div>
+                                        <div class="step-label">NO Dispute Button</div>
+                                    </div>
+                                    <div style="width: 350px;"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node waiting">📩</div>
+                                        <div class="step-label">Email Update</div>
+                                        <div class="step-time">Day 7</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Call Center -->
+                            <div class="swimlane">
+                                <div class="swimlane-label">📞 Call Center</div>
+                                <div class="swimlane-content">
+                                    <div style="width: 200px;"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">🎧</div>
+                                        <div class="step-label">IVR Menu</div>
+                                        <div class="step-time">5 min</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">👤</div>
+                                        <div class="step-label">Agent</div>
+                                        <div class="step-time">15 min</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">
+                                            📋
+                                            <div class="pain-point">!</div>
+                                        </div>
+                                        <div class="step-label">Manual Form</div>
+                                        <div class="step-time">10 min</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">📤</div>
+                                        <div class="step-label">Escalate to BO</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Back Office -->
+                            <div class="swimlane">
+                                <div class="swimlane-label">⚙️ Back Office</div>
+                                <div class="swimlane-content">
+                                    <div style="width: 450px;"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">📥</div>
+                                        <div class="step-label">Queue</div>
+                                        <div class="step-time">1-2 days</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">🔍</div>
+                                        <div class="step-label">Investigation</div>
+                                        <div class="step-time">2-3 days</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">✍️</div>
+                                        <div class="step-label">Resolution</div>
+                                        <div class="step-time">1 day</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="journey-stats">
+                        <div class="journey-stat">
+                            <div class="journey-stat-value" style="color: var(--accent-red);">5-7</div>
+                            <div class="journey-stat-label">Days to Resolve</div>
+                        </div>
+                        <div class="journey-stat">
+                            <div class="journey-stat-value" style="color: var(--accent-red);">5+</div>
+                            <div class="journey-stat-label">Channel Switches</div>
+                        </div>
+                        <div class="journey-stat">
+                            <div class="journey-stat-value" style="color: var(--accent-red);">45</div>
+                            <div class="journey-stat-label">Min on Phone</div>
+                        </div>
+                        <div class="journey-stat">
+                            <div class="journey-stat-value" style="color: var(--accent-red);">$45</div>
+                            <div class="journey-stat-label">Cost per Dispute</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Key Pain Points</span>
+                        </div>
+                        <ul class="list">
+                            <li><span class="list-icon red">1</span><strong>No Digital Option:</strong> Must call or visit branch</li>
+                            <li><span class="list-icon red">2</span><strong>Repeat Information:</strong> Customer explains issue multiple times</li>
+                            <li><span class="list-icon red">3</span><strong>No Visibility:</strong> Customer has no status updates</li>
+                            <li><span class="list-icon red">4</span><strong>Manual Queue:</strong> Cases sit in backlog for days</li>
+                            <li><span class="list-icon red">5</span><strong>Follow-up Required:</strong> Customer must call to check status</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Target State with Unified Platform</span>
+                        </div>
+                        <ul class="list">
+                            <li><span class="list-icon green">✓</span><strong>In-App Dispute:</strong> One-tap dispute from transaction</li>
+                            <li><span class="list-icon green">✓</span><strong>Auto-Population:</strong> All context pre-filled</li>
+                            <li><span class="list-icon green">✓</span><strong>Real-time Status:</strong> Track progress in app</li>
+                            <li><span class="list-icon green">✓</span><strong>Automated Routing:</strong> AI-based case assignment</li>
+                            <li><span class="list-icon green">✓</span><strong>Proactive Updates:</strong> Push notifications</li>
+                        </ul>
+                        <div style="padding: 1rem; background: var(--bg-dark); border-radius: 8px; margin-top: 1rem; text-align: center;">
+                            <span style="color: var(--accent); font-weight: 600;">Target: &lt;24 hours | 100% digital | $5 per case</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOURNEY: Card Block (Placeholder) -->
+            <div id="journey-cardblock" class="journey-container" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🔒 Card Block/Unblock Journey</span>
+                        <span class="card-badge badge-yellow">Partially Digital</span>
+                    </div>
+                    <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+                        <h3>Card Block Journey Analysis</h3>
+                        <p style="margin-top: 1rem;">Currently supports: Mobile app (block only), Call center (block/unblock)</p>
+                        <p>Gap: No self-service unblock, no temporary block</p>
+                        <div class="journey-stats" style="margin-top: 2rem;">
+                            <div class="journey-stat">
+                                <div class="journey-stat-value" style="color: var(--accent-yellow);">Partial</div>
+                                <div class="journey-stat-label">Digital Coverage</div>
+                            </div>
+                            <div class="journey-stat">
+                                <div class="journey-stat-value" style="color: var(--accent-yellow);">2</div>
+                                <div class="journey-stat-label">Channel Switches</div>
+                            </div>
+                            <div class="journey-stat">
+                                <div class="journey-stat-value" style="color: var(--accent-yellow);">15 min</div>
+                                <div class="journey-stat-label">Avg Resolution</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOURNEY: Support (Placeholder) -->
+            <div id="journey-support" class="journey-container" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🎧 General Support Journey</span>
+                        <span class="card-badge badge-yellow">High Volume | High Cost</span>
+                    </div>
+                    <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎧</div>
+                        <h3>Support Journey Analysis</h3>
+                        <p style="margin-top: 1rem;">50,000 calls/month | 80% simple queries | No chatbot/AI</p>
+                        <p>Gap: No self-service FAQ, no intelligent routing, no context carryover</p>
+                        <div class="journey-stats" style="margin-top: 2rem;">
+                            <div class="journey-stat">
+                                <div class="journey-stat-value" style="color: var(--accent-red);">50K</div>
+                                <div class="journey-stat-label">Calls/Month</div>
+                            </div>
+                            <div class="journey-stat">
+                                <div class="journey-stat-value" style="color: var(--accent-red);">$10</div>
+                                <div class="journey-stat-label">Cost per Call</div>
+                            </div>
+                            <div class="journey-stat">
+                                <div class="journey-stat-value" style="color: var(--accent-red);">80%</div>
+                                <div class="journey-stat-label">Simple Queries</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOURNEY: Profile Update -->
+            <div id="journey-profile" class="journey-container" style="display: none;">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <span class="card-title">👤 Profile Update Journey</span>
+                        <span class="card-badge badge-red">Cross-Channel Broken | High Call Volume</span>
+                    </div>
+
+                    <!-- Current State Journey Map -->
+                    <div class="journey-map">
+                        <div class="journey-header">
+                            <div>Current State: Profile Update Across Channels</div>
+                            <div style="font-size: 0.8rem; opacity: 0.8;">Mobile changes not synced to web | Creates confusion & support calls</div>
+                        </div>
+
+                        <div class="journey-swimlanes">
+                            <!-- Customer Swimlane -->
+                            <div class="swimlane">
+                                <div class="swimlane-label">📱 Mobile App</div>
+                                <div class="swimlane-content">
+                                    <div class="journey-step">
+                                        <div class="step-node automated">👤</div>
+                                        <div class="step-label">Opens Profile</div>
+                                        <div class="step-time">Instant</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node automated">✏️</div>
+                                        <div class="step-label">Updates Info</div>
+                                        <div class="step-time">2 min</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node automated">✅</div>
+                                        <div class="step-label">Confirms</div>
+                                        <div class="step-time">Instant</div>
+                                    </div>
+                                    <div class="journey-arrow" style="border-color: var(--accent-red);"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual" style="background: var(--accent-red);">❌</div>
+                                        <div class="step-label">Sync Fails</div>
+                                        <div class="step-time" style="color: var(--accent-red);">BROKEN</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Web Channel -->
+                            <div class="swimlane">
+                                <div class="swimlane-label">💻 Web Banking</div>
+                                <div class="swimlane-content">
+                                    <div style="width: 350px;"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual" style="background: var(--accent-red);">👤</div>
+                                        <div class="step-label">Old Data Shown</div>
+                                        <div class="step-time" style="color: var(--accent-red);">Not synced</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">😕</div>
+                                        <div class="step-label">Confusion</div>
+                                        <div class="step-time">Customer frustrated</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Call Center -->
+                            <div class="swimlane">
+                                <div class="swimlane-label">📞 Call Center</div>
+                                <div class="swimlane-content">
+                                    <div style="width: 550px;"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">📞</div>
+                                        <div class="step-label">Customer Calls</div>
+                                        <div class="step-time">15 min wait</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">🔍</div>
+                                        <div class="step-label">Agent Investigates</div>
+                                        <div class="step-time">10 min</div>
+                                    </div>
+                                    <div class="journey-arrow"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual">✍️</div>
+                                        <div class="step-label">Manual Update</div>
+                                        <div class="step-time">5 min</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Back Office -->
+                            <div class="swimlane">
+                                <div class="swimlane-label">⚙️ Core Systems</div>
+                                <div class="swimlane-content">
+                                    <div style="width: 100px;"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual" style="background: var(--accent-yellow);">📝</div>
+                                        <div class="step-label">Mobile DB</div>
+                                        <div class="step-time">Updated</div>
+                                    </div>
+                                    <div class="journey-arrow" style="border-color: var(--accent-red); border-style: dashed;"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual" style="background: var(--accent-red);">🔄</div>
+                                        <div class="step-label">Batch Sync</div>
+                                        <div class="step-time" style="color: var(--accent-red);">24-48 hrs</div>
+                                    </div>
+                                    <div class="journey-arrow" style="border-color: var(--accent-red); border-style: dashed;"></div>
+                                    <div class="journey-step">
+                                        <div class="step-node manual" style="background: var(--accent-yellow);">📝</div>
+                                        <div class="step-label">Web DB</div>
+                                        <div class="step-time">Eventually updated</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="journey-stats">
+                        <div class="journey-stat">
+                            <div class="journey-stat-value" style="color: var(--accent-red);">24-48h</div>
+                            <div class="journey-stat-label">Sync Delay</div>
+                        </div>
+                        <div class="journey-stat">
+                            <div class="journey-stat-value" style="color: var(--accent-red);">8,500</div>
+                            <div class="journey-stat-label">Calls/Month</div>
+                        </div>
+                        <div class="journey-stat">
+                            <div class="journey-stat-value" style="color: var(--accent-red);">$10</div>
+                            <div class="journey-stat-label">Cost per Call</div>
+                        </div>
+                        <div class="journey-stat">
+                            <div class="journey-stat-value" style="color: var(--accent-red);">$85K</div>
+                            <div class="journey-stat-label">Monthly Cost</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Key Pain Points</span>
+                        </div>
+                        <ul class="list">
+                            <li><span class="list-icon red">1</span><strong>No Real-time Sync:</strong> Mobile and web use separate databases with batch sync</li>
+                            <li><span class="list-icon red">2</span><strong>Customer Confusion:</strong> Updated info on mobile doesn't appear on web</li>
+                            <li><span class="list-icon red">3</span><strong>Trust Erosion:</strong> Customers doubt if changes were saved correctly</li>
+                            <li><span class="list-icon red">4</span><strong>Call Center Overload:</strong> 8,500 calls/month just for profile sync issues</li>
+                            <li><span class="list-icon red">5</span><strong>Duplicate Updates:</strong> Customers update again on web, causing data conflicts</li>
+                        </ul>
+                        <div class="quote-box mt-2">
+                            <div class="quote-text">"I updated my address on the app last week. Why does the website still show my old address? Did it even save?"</div>
+                            <div class="quote-source">- Customer complaint (representative of 8,500 monthly calls)</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Target State with Unified Platform</span>
+                        </div>
+                        <ul class="list">
+                            <li><span class="list-icon green">✓</span><strong>Single Source of Truth:</strong> One customer profile across all channels</li>
+                            <li><span class="list-icon green">✓</span><strong>Real-time Sync:</strong> Changes reflect instantly on all channels</li>
+                            <li><span class="list-icon green">✓</span><strong>Confirmation Across Channels:</strong> "Your profile is updated everywhere"</li>
+                            <li><span class="list-icon green">✓</span><strong>Audit Trail:</strong> Full history of changes visible to customer</li>
+                            <li><span class="list-icon green">✓</span><strong>Zero Confusion:</strong> Consistent experience everywhere</li>
+                        </ul>
+                        <div style="padding: 1rem; background: var(--bg-dark); border-radius: 8px; margin-top: 1rem; text-align: center;">
+                            <span style="color: var(--accent); font-weight: 600;">Target: Real-time sync | 90% call reduction | $76K monthly savings</span>
+                        </div>
+
+                        <!-- ROI Summary -->
+                        <div style="margin-top: 1rem; padding: 1rem; background: linear-gradient(135deg, #0f2847 0%, #163359 100%); border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.75rem; opacity: 0.8;">Annual Savings Opportunity</div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">$912K</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 0.75rem; opacity: 0.8;">From eliminating sync-related calls</div>
+                                    <div style="font-size: 0.875rem;">8,500 calls × $10 × 90% × 12 months</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: Personas -->
+        <div id="personas" class="section">
+            <div class="header">
+                <h1>Target Personas</h1>
+                <p>Customer Segments Driving the Transformation | Southeast Asia Region</p>
+            </div>
+
+            <!-- Regional Context Banner -->
+            <div class="decision-banner" style="background: linear-gradient(135deg, #0f2847 0%, #163359 100%); margin-bottom: 2rem;">
+                <div>
+                    <h2 style="font-size: 1.25rem;">Regional Context: Southeast Asia</h2>
+                    <p style="opacity: 0.9; font-size: 0.875rem;">Mobile-first market | Super-app expectations | Real-time payments standard | High digital competition</p>
+                </div>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 700;">95%</div>
+                        <div style="font-size: 0.7rem; opacity: 0.8;">Smartphone Penetration</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 700;">Mobile-First</div>
+                        <div style="font-size: 0.7rem; opacity: 0.8;">Primary Channel</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 700;">Neobank</div>
+                        <div style="font-size: 0.7rem; opacity: 0.8;">Competitive Pressure</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Persona Overview -->
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-label">Primary Personas</div>
+                    <div class="kpi-value neutral">4</div>
+                    <div class="kpi-subtext">Customer segments</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Digital-First</div>
+                    <div class="kpi-value positive">45%</div>
+                    <div class="kpi-subtext">Of target customers</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Hybrid Users</div>
+                    <div class="kpi-value warning">35%</div>
+                    <div class="kpi-subtext">Branch + digital</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Branch Dependent</div>
+                    <div class="kpi-value negative">20%</div>
+                    <div class="kpi-subtext">In-person preference</div>
+                </div>
+            </div>
+
+            <!-- Persona Cards -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Sarah - Digital Native Professional</span>
+                        <span class="card-badge badge-blue">Mass Affluent</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">PROFILE</p>
+                            <ul class="list" style="font-size: 0.875rem;">
+                                <li><span class="list-icon blue">i</span>Age: 28-40 | Income: $80K-150K</li>
+                                <li><span class="list-icon blue">i</span>Channel: Mobile-first, rarely visits branch</li>
+                                <li><span class="list-icon blue">i</span>Tech: High proficiency, expects instant</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">PAIN POINTS</p>
+                            <ul class="list" style="font-size: 0.875rem;">
+                                <li><span class="list-icon red">!</span>Slow approval processes</li>
+                                <li><span class="list-icon red">!</span>Poor mobile experience</li>
+                                <li><span class="list-icon red">!</span>Lack of personalized advice</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="quote-box mt-2">
+                        <div class="quote-text">"I want banking that fits my life, not the other way around."</div>
+                        <div class="quote-source">Key Use Cases: Digital Onboarding, AI Financial Coach, Instant Lending</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Michael - Growing Family</span>
+                        <span class="card-badge badge-green">Mass Retail</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">PROFILE</p>
+                            <ul class="list" style="font-size: 0.875rem;">
+                                <li><span class="list-icon green">i</span>Age: 32-45 | Income: $50K-100K</li>
+                                <li><span class="list-icon green">i</span>Channel: Hybrid - digital + branch for advice</li>
+                                <li><span class="list-icon green">i</span>Tech: Moderate, values simplicity</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">PAIN POINTS</p>
+                            <ul class="list" style="font-size: 0.875rem;">
+                                <li><span class="list-icon red">!</span>Complex mortgage process</li>
+                                <li><span class="list-icon red">!</span>No guidance on family finances</li>
+                                <li><span class="list-icon red">!</span>Disconnected from branch visits</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="quote-box mt-2">
+                        <div class="quote-text">"I need to feel confident about financial decisions for my family."</div>
+                        <div class="quote-source">Key Use Cases: Mortgage Journey, Family Budget Tools, Hybrid Advisor</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">David - Small Business Owner</span>
+                        <span class="card-badge badge-yellow">SME</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">PROFILE</p>
+                            <ul class="list" style="font-size: 0.875rem;">
+                                <li><span class="list-icon yellow">i</span>Age: 35-55 | Revenue: $500K-5M</li>
+                                <li><span class="list-icon yellow">i</span>Channel: Needs relationship manager</li>
+                                <li><span class="list-icon yellow">i</span>Tech: Values efficiency, time-poor</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">PAIN POINTS</p>
+                            <ul class="list" style="font-size: 0.875rem;">
+                                <li><span class="list-icon red">!</span>Slow loan approvals</li>
+                                <li><span class="list-icon red">!</span>Poor cash flow visibility</li>
+                                <li><span class="list-icon red">!</span>No proactive support</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="quote-box mt-2">
+                        <div class="quote-text">"My bank should help me see around corners, not just react."</div>
+                        <div class="quote-source">Key Use Cases: SME Dashboard, Cash Flow AI, Proactive Alerts</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Margaret - Retiring Professional</span>
+                        <span class="card-badge badge-blue">Affluent</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">PROFILE</p>
+                            <ul class="list" style="font-size: 0.875rem;">
+                                <li><span class="list-icon blue">i</span>Age: 55-70 | Wealth: $500K-2M</li>
+                                <li><span class="list-icon blue">i</span>Channel: Values relationship, learning digital</li>
+                                <li><span class="list-icon blue">i</span>Tech: Growing comfort, needs guidance</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">PAIN POINTS</p>
+                            <ul class="list" style="font-size: 0.875rem;">
+                                <li><span class="list-icon red">!</span>Complex retirement planning</li>
+                                <li><span class="list-icon red">!</span>Fear of digital security</li>
+                                <li><span class="list-icon red">!</span>Want trusted advisor access</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="quote-box mt-2">
+                        <div class="quote-text">"I want to use digital banking, but I need to know someone is there if I need help."</div>
+                        <div class="quote-source">Key Use Cases: Retirement Planning, Secure Digital, Video Advisor</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Journey-Persona Matrix -->
+            <div class="card mt-2">
+                <div class="card-header">
+                    <span class="card-title">Persona-Journey Opportunity Matrix</span>
+                    <span class="card-badge badge-green">Priority Mapping</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Journey</th>
+                                <th>Sarah (Digital Native)</th>
+                                <th>Michael (Family)</th>
+                                <th>David (SME)</th>
+                                <th>Margaret (Affluent)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Onboarding</strong></td>
+                                <td><span style="color: var(--accent-red);">Critical Pain</span></td>
+                                <td><span style="color: var(--accent-yellow);">Moderate</span></td>
+                                <td><span style="color: var(--accent-red);">Critical Pain</span></td>
+                                <td><span style="color: var(--accent-yellow);">Moderate</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Self-Service</strong></td>
+                                <td><span style="color: var(--accent-red);">Critical Pain</span></td>
+                                <td><span style="color: var(--accent-red);">Critical Pain</span></td>
+                                <td><span style="color: var(--accent-yellow);">Moderate</span></td>
+                                <td><span style="color: var(--accent);">Opportunity</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Lending</strong></td>
+                                <td><span style="color: var(--accent-red);">Critical Pain</span></td>
+                                <td><span style="color: var(--accent-red);">Critical Pain</span></td>
+                                <td><span style="color: var(--accent-red);">Critical Pain</span></td>
+                                <td><span style="color: var(--accent-yellow);">Moderate</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Financial Planning</strong></td>
+                                <td><span style="color: var(--accent);">Opportunity</span></td>
+                                <td><span style="color: var(--accent-yellow);">Moderate</span></td>
+                                <td><span style="color: var(--accent-yellow);">Moderate</span></td>
+                                <td><span style="color: var(--accent-red);">Critical Pain</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Advisory</strong></td>
+                                <td><span style="color: var(--accent);">Opportunity</span></td>
+                                <td><span style="color: var(--accent-yellow);">Moderate</span></td>
+                                <td><span style="color: var(--accent-red);">Critical Pain</span></td>
+                                <td><span style="color: var(--accent-red);">Critical Pain</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: Use Cases -->
+        <div id="usecases" class="section">
+            <div class="header">
+                <h1>Use Case Library</h1>
+                <p>Current, Future, and Agentic Use Cases Prioritized by Value</p>
+            </div>
+
+            <!-- Use Case Summary -->
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Use Cases</div>
+                    <div class="kpi-value neutral">18</div>
+                    <div class="kpi-subtext">Identified opportunities</div>
+                </div>
+                <div class="kpi-card" style="border: 2px solid var(--accent-blue);">
+                    <div class="kpi-label">Current State</div>
+                    <div class="kpi-value neutral">8</div>
+                    <div class="kpi-subtext">Immediate improvements</div>
+                </div>
+                <div class="kpi-card" style="border: 2px solid var(--accent);">
+                    <div class="kpi-label">Future (Non-Agentic)</div>
+                    <div class="kpi-value positive">6</div>
+                    <div class="kpi-subtext">Enhanced digital</div>
+                </div>
+                <div class="kpi-card" style="border: 2px solid var(--accent-yellow);">
+                    <div class="kpi-label">Agentic AI</div>
+                    <div class="kpi-value warning">4</div>
+                    <div class="kpi-subtext">Autonomous workflows</div>
+                </div>
+            </div>
+
+            <!-- Use Case Priority Table -->
+            <div class="card mb-2">
+                <div class="card-header">
+                    <span class="card-title">Priority Use Cases by Value and Feasibility</span>
+                    <span class="card-badge badge-green">Ranked by Priority Score</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Use Case</th>
+                                <th>Type</th>
+                                <th>Business Value</th>
+                                <th>Feasibility</th>
+                                <th>CX Impact</th>
+                                <th>Priority Score</th>
+                                <th>Phase</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: rgba(0, 200, 83, 0.1);">
+                                <td><strong>Digital Account Opening</strong></td>
+                                <td><span class="card-badge badge-blue">Current</span></td>
+                                <td>9</td>
+                                <td>8</td>
+                                <td>9</td>
+                                <td><span style="color: var(--accent); font-weight: 700;">8.7</span></td>
+                                <td>Now</td>
+                            </tr>
+                            <tr style="background: rgba(0, 200, 83, 0.1);">
+                                <td><strong>Self-Service Portal</strong></td>
+                                <td><span class="card-badge badge-blue">Current</span></td>
+                                <td>8</td>
+                                <td>9</td>
+                                <td>8</td>
+                                <td><span style="color: var(--accent); font-weight: 700;">8.4</span></td>
+                                <td>Now</td>
+                            </tr>
+                            <tr style="background: rgba(0, 200, 83, 0.1);">
+                                <td><strong>Instant Personal Lending</strong></td>
+                                <td><span class="card-badge badge-blue">Current</span></td>
+                                <td>9</td>
+                                <td>7</td>
+                                <td>9</td>
+                                <td><span style="color: var(--accent); font-weight: 700;">8.3</span></td>
+                                <td>Now</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Personalized Insights Engine</strong></td>
+                                <td><span class="card-badge badge-green">Future</span></td>
+                                <td>8</td>
+                                <td>7</td>
+                                <td>9</td>
+                                <td><span style="color: var(--accent-blue); font-weight: 700;">7.9</span></td>
+                                <td>Next</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Omnichannel Context</strong></td>
+                                <td><span class="card-badge badge-green">Future</span></td>
+                                <td>7</td>
+                                <td>8</td>
+                                <td>9</td>
+                                <td><span style="color: var(--accent-blue); font-weight: 700;">7.8</span></td>
+                                <td>Next</td>
+                            </tr>
+                            <tr>
+                                <td><strong>AI Financial Coach</strong></td>
+                                <td><span class="card-badge badge-yellow">Agentic</span></td>
+                                <td>9</td>
+                                <td>5</td>
+                                <td>10</td>
+                                <td><span style="color: var(--accent-blue); font-weight: 700;">7.7</span></td>
+                                <td>Next</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Proactive Servicing Agent</strong></td>
+                                <td><span class="card-badge badge-yellow">Agentic</span></td>
+                                <td>8</td>
+                                <td>5</td>
+                                <td>9</td>
+                                <td><span style="color: var(--accent-yellow); font-weight: 700;">7.1</span></td>
+                                <td>Later</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Autonomous Credit Decisioning</strong></td>
+                                <td><span class="card-badge badge-yellow">Agentic</span></td>
+                                <td>9</td>
+                                <td>4</td>
+                                <td>8</td>
+                                <td><span style="color: var(--accent-yellow); font-weight: 700;">6.9</span></td>
+                                <td>Later</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Featured Use Case Details -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Featured: Digital Account Opening</span>
+                        <span class="card-badge badge-blue">Current State | Now</span>
+                    </div>
+                    <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+                        Enable end-to-end digital account opening with instant approval and real-time KYC verification.
+                    </p>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">HOW IT WORKS</p>
+                    <ul class="list" style="font-size: 0.875rem;">
+                        <li><span class="list-icon blue">1</span>Customer initiates application via mobile/web</li>
+                        <li><span class="list-icon blue">2</span>Real-time ID verification and KYC checks</li>
+                        <li><span class="list-icon blue">3</span>Instant decisioning with automated approval</li>
+                        <li><span class="list-icon green">4</span>Account active and funded within minutes</li>
+                    </ul>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; padding: 1rem; background: var(--bg-dark); border-radius: 8px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">65%→95%</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">Completion Rate</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">$2.4M</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">Annual Value</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-blue);">3 min</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">Time to Complete</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Featured: AI Financial Coach</span>
+                        <span class="card-badge badge-yellow">Agentic | Next Phase</span>
+                    </div>
+                    <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+                        An autonomous AI agent that monitors customer finances and provides proactive recommendations and actions.
+                    </p>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">HOW IT WORKS</p>
+                    <ul class="list" style="font-size: 0.875rem;">
+                        <li><span class="list-icon yellow">1</span><strong>Perceives:</strong> Monitors transactions, balances, goals</li>
+                        <li><span class="list-icon yellow">2</span><strong>Reasons:</strong> Identifies opportunities and risks</li>
+                        <li><span class="list-icon yellow">3</span><strong>Acts:</strong> Sends alerts, moves money (with consent)</li>
+                        <li><span class="list-icon green">4</span><strong>Learns:</strong> Improves recommendations over time</li>
+                    </ul>
+                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 179, 0, 0.1); border: 1px solid var(--accent-yellow); border-radius: 8px;">
+                        <p style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--accent-yellow);">GUARDRAILS</p>
+                        <ul style="font-size: 0.8rem; margin-left: 1rem;">
+                            <li>Autonomy: Move up to $500 automatically, larger amounts need approval</li>
+                            <li>Escalation: Complex advice goes to human advisor</li>
+                            <li>Reversibility: All automated actions can be reversed within 24 hours</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Use Case Roadmap by Type - Aligned with Implementation Roadmap -->
+            <div class="card mt-2">
+                <div class="card-header">
+                    <span class="card-title">Use Case Implementation Roadmap</span>
+                    <span class="card-badge badge-blue">Aligned with Phases</span>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-title">Phase 0: Foundation (M0-3) | $1.5M</div>
+                        <div class="timeline-date" style="color: var(--accent-blue);">Validate & Prepare</div>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;"><strong>Use Cases:</strong> Baseline validation • Architecture finalization • Vendor selection</p>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Gate 1: Approve based on validated baseline data</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">Phase 1: Build & Pilot (M4-12) | $4.0M</div>
+                        <div class="timeline-date" style="color: var(--accent-yellow);">Current State Use Cases + Pilot</div>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;"><strong>Use Cases:</strong> Digital Onboarding • Self-Service Portal • Instant Lending • eKYC Integration • Analytics Foundation</p>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Gate 2 (M9): Approve rollout based on pilot results</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">Phase 2: Scale & Enhance (M13-18) | $2.5M</div>
+                        <div class="timeline-date" style="color: var(--accent);">Future Non-Agentic Use Cases</div>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;"><strong>Use Cases:</strong> Personalization Engine • Omnichannel Context • Full Rollout • Adoption Campaign • Video Banking</p>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">M18: Target performance achieved, break-even reached</p>
+                    </div>
+                    <div class="timeline-item pending">
+                        <div class="timeline-title">Phase 3: Intelligence (M18+) | Future Budget</div>
+                        <div class="timeline-date" style="color: var(--accent-yellow);">Agentic Use Cases</div>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;"><strong>Use Cases:</strong> AI Financial Coach (Pilot) • Proactive Servicing Agent • Autonomous Credit Decisioning</p>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Requires: Data platform maturity, AI/ML infrastructure, proven non-agentic success</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Use Case to Phase Mapping -->
+            <div class="card mt-2">
+                <div class="card-header">
+                    <span class="card-title">Use Case Phase Mapping</span>
+                    <span class="card-badge badge-green">Implementation Schedule</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Use Case</th>
+                                <th>Type</th>
+                                <th>Phase 0<br/>(M0-3)</th>
+                                <th>Phase 1<br/>(M4-12)</th>
+                                <th>Phase 2<br/>(M13-18)</th>
+                                <th>Phase 3<br/>(M18+)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Digital Account Opening</td>
+                                <td><span class="card-badge badge-blue">Current</span></td>
+                                <td style="background: rgba(51, 103, 255, 0.2);">Design</td>
+                                <td style="background: rgba(255, 179, 0, 0.3);">Build & Pilot</td>
+                                <td style="background: rgba(0, 200, 83, 0.3);">Scale</td>
+                                <td>Optimize</td>
+                            </tr>
+                            <tr>
+                                <td>Self-Service Portal</td>
+                                <td><span class="card-badge badge-blue">Current</span></td>
+                                <td style="background: rgba(51, 103, 255, 0.2);">Design</td>
+                                <td style="background: rgba(255, 179, 0, 0.3);">Build & Pilot</td>
+                                <td style="background: rgba(0, 200, 83, 0.3);">Scale</td>
+                                <td>Optimize</td>
+                            </tr>
+                            <tr>
+                                <td>Instant Personal Lending</td>
+                                <td><span class="card-badge badge-blue">Current</span></td>
+                                <td></td>
+                                <td style="background: rgba(255, 179, 0, 0.3);">Build</td>
+                                <td style="background: rgba(0, 200, 83, 0.3);">Pilot & Scale</td>
+                                <td>Optimize</td>
+                            </tr>
+                            <tr>
+                                <td>Personalization Engine</td>
+                                <td><span class="card-badge badge-green">Future</span></td>
+                                <td></td>
+                                <td style="background: rgba(51, 103, 255, 0.2);">Foundation</td>
+                                <td style="background: rgba(0, 200, 83, 0.3);">Build & Deploy</td>
+                                <td>Enhance</td>
+                            </tr>
+                            <tr>
+                                <td>Omnichannel Context</td>
+                                <td><span class="card-badge badge-green">Future</span></td>
+                                <td></td>
+                                <td></td>
+                                <td style="background: rgba(0, 200, 83, 0.3);">Build & Deploy</td>
+                                <td>Enhance</td>
+                            </tr>
+                            <tr>
+                                <td>AI Financial Coach</td>
+                                <td><span class="card-badge badge-yellow">Agentic</span></td>
+                                <td></td>
+                                <td></td>
+                                <td style="background: rgba(51, 103, 255, 0.2);">Design</td>
+                                <td style="background: rgba(255, 179, 0, 0.3);">Pilot</td>
+                            </tr>
+                            <tr>
+                                <td>Proactive Servicing Agent</td>
+                                <td><span class="card-badge badge-yellow">Agentic</span></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td style="background: rgba(255, 179, 0, 0.3);">Pilot</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: Solution -->
+        <div id="solution" class="section">
+            <div class="header">
+                <h1>The Solution</h1>
+                <p>Two Primary Benefit Streams Delivering $8.2M Annual Value</p>
+            </div>
+
+            <!-- Benefit Split -->
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Annual Benefits</div>
+                    <div class="kpi-value positive">$8.2M</div>
+                    <div class="kpi-subtext">Steady state (Year 3+)</div>
+                </div>
+                <div class="kpi-card" style="border: 2px solid var(--accent-blue);">
+                    <div class="kpi-label">Revenue Growth</div>
+                    <div class="kpi-value neutral">$2.4M</div>
+                    <div class="kpi-subtext">29% of total | Onboarding</div>
+                </div>
+                <div class="kpi-card" style="border: 2px solid var(--accent);">
+                    <div class="kpi-label">Cost Reduction</div>
+                    <div class="kpi-value positive">$5.8M</div>
+                    <div class="kpi-subtext">71% of total | Channel Shift</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <!-- Benefit 1 -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Benefit Stream 1: Customer Acquisition</span>
+                        <span class="card-badge badge-blue">$2.4M/year</span>
+                    </div>
+
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Completion Rate</span>
+                            <span>40% → 65%</span>
+                        </div>
+                        <div class="progress-bar" style="height: 24px; position: relative;">
+                            <div class="progress-fill red" style="width: 40%; position: absolute;"></div>
+                            <div class="progress-fill green" style="width: 65%; opacity: 0.5;"></div>
+                        </div>
+                    </div>
+
+                    <div class="table-container mt-2">
+                        <table>
+                            <tr>
+                                <td>Additional customers/year</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent);">+30,000</td>
+                            </tr>
+                            <tr>
+                                <td>Revenue per customer (Y1)</td>
+                                <td class="text-right">$200</td>
+                            </tr>
+                            <tr>
+                                <td>Probability weight</td>
+                                <td class="text-right">60%</td>
+                            </tr>
+                            <tr style="background: var(--bg-dark);">
+                                <td style="font-weight: 600;">Annual Benefit</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent);">$2.4M</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <p class="mt-2" style="font-size: 0.875rem; color: var(--text-secondary);">
+                        <strong>How:</strong> eKYC integration, workflow automation, straight-through processing, mobile-first design
+                    </p>
+                </div>
+
+                <!-- Benefit 2 -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Benefit Stream 2: Channel Shift</span>
+                        <span class="card-badge badge-green">$5.8M/year</span>
+                    </div>
+
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span>Digital Containment</span>
+                            <span>20% → 60%</span>
+                        </div>
+                        <div class="progress-bar" style="height: 24px; position: relative;">
+                            <div class="progress-fill red" style="width: 20%; position: absolute;"></div>
+                            <div class="progress-fill green" style="width: 60%; opacity: 0.5;"></div>
+                        </div>
+                    </div>
+
+                    <div class="table-container mt-2">
+                        <table>
+                            <tr>
+                                <td>Transactions shifted/month</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent);">40,000</td>
+                            </tr>
+                            <tr>
+                                <td>Cost savings per transaction</td>
+                                <td class="text-right">$9</td>
+                            </tr>
+                            <tr>
+                                <td>Probability weight</td>
+                                <td class="text-right">90%</td>
+                            </tr>
+                            <tr style="background: var(--bg-dark);">
+                                <td style="font-weight: 600;">Annual Benefit</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent);">$5.8M</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <p class="mt-2" style="font-size: 0.875rem; color: var(--text-secondary);">
+                        <strong>How:</strong> Self-service expansion, mobile/web enhancements, channel orchestration, customer education
+                    </p>
+                </div>
+            </div>
+
+            <!-- Benefit Realization -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Benefit Realization Timeline</span>
+                </div>
+                <div class="chart-container" style="height: 250px;">
+                    <div class="bar-chart">
+                        <div class="bar" style="height: 0%; background: var(--accent-blue); width: 80px;">
+                            <span class="bar-value">$0</span>
+                            <span class="bar-label">Year 0</span>
+                        </div>
+                        <div class="bar" style="height: 38%; background: var(--accent-blue); width: 80px;">
+                            <span class="bar-value">$3.1M</span>
+                            <span class="bar-label">Year 1</span>
+                        </div>
+                        <div class="bar" style="height: 82%; background: var(--accent); width: 80px;">
+                            <span class="bar-value">$6.7M</span>
+                            <span class="bar-label">Year 2</span>
+                        </div>
+                        <div class="bar" style="height: 100%; background: var(--accent); width: 80px;">
+                            <span class="bar-value">$8.2M</span>
+                            <span class="bar-label">Year 3+</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-3 mt-2" style="gap: 0.5rem;">
+                    <div class="text-center" style="padding: 0.5rem; background: var(--bg-dark); border-radius: 4px;">
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Year 1</div>
+                        <div style="font-weight: 600;">40% realization</div>
+                    </div>
+                    <div class="text-center" style="padding: 0.5rem; background: var(--bg-dark); border-radius: 4px;">
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Year 2</div>
+                        <div style="font-weight: 600;">85% realization</div>
+                    </div>
+                    <div class="text-center" style="padding: 0.5rem; background: var(--bg-dark); border-radius: 4px;">
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Year 3+</div>
+                        <div style="font-weight: 600;">100% steady state</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: Financials -->
+        <div id="financials" class="section">
+            <div class="header">
+                <h1>Financial Summary</h1>
+                <p>Strong ROI with Conservative Assumptions</p>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-label">Investment</div>
+                    <div class="kpi-value neutral">$8.0M</div>
+                    <div class="kpi-subtext">18 months</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">NPV</div>
+                    <div class="kpi-value positive">$5.2M</div>
+                    <div class="kpi-subtext">3-year, 10%</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">IRR</div>
+                    <div class="kpi-value positive">42%</div>
+                    <div class="kpi-subtext">Strong return</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Payback</div>
+                    <div class="kpi-value warning">18 mo</div>
+                    <div class="kpi-subtext">Break-even</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Benefit:Cost</div>
+                    <div class="kpi-value positive">1.5x</div>
+                    <div class="kpi-subtext">3-year cumulative</div>
+                </div>
+            </div>
+
+            <!-- Cash Flow Table -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <span class="card-title">Multi-Year Cash Flow Model</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Line Item</th>
+                                <th class="text-right">Year 0</th>
+                                <th class="text-right">Year 1</th>
+                                <th class="text-right">Year 2</th>
+                                <th class="text-right">Year 3</th>
+                                <th class="text-right">3-Yr Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>COSTS</strong></td>
+                                <td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 2rem;">Implementation</td>
+                                <td class="text-right" style="color: var(--accent-red);">$4.5M</td>
+                                <td class="text-right" style="color: var(--accent-red);">$3.5M</td>
+                                <td class="text-right">$0</td>
+                                <td class="text-right">$0</td>
+                                <td class="text-right" style="color: var(--accent-red);">$8.0M</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 2rem;">Ongoing</td>
+                                <td class="text-right">$0</td>
+                                <td class="text-right" style="color: var(--accent-red);">$0.9M</td>
+                                <td class="text-right" style="color: var(--accent-red);">$1.8M</td>
+                                <td class="text-right" style="color: var(--accent-red);">$1.8M</td>
+                                <td class="text-right" style="color: var(--accent-red);">$4.5M</td>
+                            </tr>
+                            <tr style="background: var(--bg-dark);">
+                                <td><strong>Total Costs</strong></td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent-red);">$4.5M</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent-red);">$4.4M</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent-red);">$1.8M</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent-red);">$1.8M</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent-red);">$12.5M</td>
+                            </tr>
+                            <tr>
+                                <td><strong>BENEFITS</strong></td>
+                                <td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 2rem;">Revenue (Onboarding)</td>
+                                <td class="text-right">$0</td>
+                                <td class="text-right" style="color: var(--accent);">$0.8M</td>
+                                <td class="text-right" style="color: var(--accent);">$1.8M</td>
+                                <td class="text-right" style="color: var(--accent);">$2.4M</td>
+                                <td class="text-right" style="color: var(--accent);">$5.0M</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 2rem;">Cost Savings (Channel)</td>
+                                <td class="text-right">$0</td>
+                                <td class="text-right" style="color: var(--accent);">$2.3M</td>
+                                <td class="text-right" style="color: var(--accent);">$4.9M</td>
+                                <td class="text-right" style="color: var(--accent);">$5.8M</td>
+                                <td class="text-right" style="color: var(--accent);">$13.0M</td>
+                            </tr>
+                            <tr style="background: var(--bg-dark);">
+                                <td><strong>Total Benefits</strong></td>
+                                <td class="text-right" style="font-weight: 600;">$0</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent);">$3.1M</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent);">$6.7M</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent);">$8.2M</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent);">$18.0M</td>
+                            </tr>
+                            <tr style="background: var(--primary);">
+                                <td><strong>NET CASH FLOW</strong></td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent-red);">-$4.5M</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent-red);">-$1.3M</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent);">+$4.9M</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent);">+$6.4M</td>
+                                <td class="text-right" style="font-weight: 600; color: var(--accent);">+$5.5M</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cumulative</strong></td>
+                                <td class="text-right" style="color: var(--accent-red);">-$4.5M</td>
+                                <td class="text-right" style="color: var(--accent-red);">-$5.8M</td>
+                                <td class="text-right" style="color: var(--accent-red);">-$0.9M</td>
+                                <td class="text-right" style="color: var(--accent);">+$5.5M</td>
+                                <td class="text-right"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Scenarios -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <span class="card-title">Scenario Analysis</span>
+                    <span class="card-badge badge-green">NPV Positive in ALL Cases</span>
+                </div>
+                <div class="scenario-grid">
+                    <div class="scenario-card best">
+                        <div class="scenario-title" style="color: var(--accent);">Best Case</div>
+                        <div class="scenario-npv" style="color: var(--accent);">$9.8M</div>
+                        <div class="scenario-details">
+                            IRR 68% | 12mo payback<br>
+                            Benefits +25%, Costs -15%
+                        </div>
+                    </div>
+                    <div class="scenario-card likely">
+                        <div class="scenario-title" style="color: var(--accent-blue);">Likely Case</div>
+                        <div class="scenario-npv" style="color: var(--accent-blue);">$5.2M</div>
+                        <div class="scenario-details">
+                            IRR 42% | 18mo payback<br>
+                            Base assumptions
+                        </div>
+                    </div>
+                    <div class="scenario-card worst">
+                        <div class="scenario-title" style="color: var(--accent-yellow);">Worst Case</div>
+                        <div class="scenario-npv" style="color: var(--accent-yellow);">$0.8M</div>
+                        <div class="scenario-details">
+                            IRR 12% | 36mo payback<br>
+                            Benefits -25%, Costs +25%
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center mt-2" style="color: var(--text-secondary); font-size: 0.875rem;">
+                    <strong>Key Insight:</strong> Even if everything goes worse than expected, initiative still creates value.
+                </p>
+            </div>
+
+            <!-- Breakeven Chart -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <span class="card-title">Breakeven Analysis</span>
+                    <span class="card-badge badge-yellow">Month 18</span>
+                </div>
+                <div class="breakeven-chart">
+                    <div class="breakeven-container">
+                        <!-- Y-axis labels -->
+                        <div class="y-axis">
+                            <span>+$8M</span>
+                            <span>+$4M</span>
+                            <span class="zero-line-label">$0</span>
+                            <span>-$4M</span>
+                            <span>-$8M</span>
+                        </div>
+                        <!-- Chart area -->
+                        <div class="chart-area">
+                            <!-- Zero line -->
+                            <div class="zero-line"></div>
+                            <!-- Breakeven marker -->
+                            <div class="breakeven-marker">
+                                <div class="breakeven-dot"></div>
+                                <div class="breakeven-label">BREAKEVEN<br>Month 18</div>
+                            </div>
+                            <!-- Data points and line -->
+                            <svg class="line-chart" viewBox="0 0 500 200" preserveAspectRatio="none">
+                                <!-- Grid lines -->
+                                <line x1="0" y1="50" x2="500" y2="50" stroke="#4a5568" stroke-width="1" stroke-dasharray="5,5"/>
+                                <line x1="0" y1="150" x2="500" y2="150" stroke="#4a5568" stroke-width="1" stroke-dasharray="5,5"/>
+                                <!-- Negative fill area -->
+                                <path d="M0,100 L0,156 L125,172 L250,156 L312,108 L312,100 Z" fill="rgba(255, 82, 82, 0.2)"/>
+                                <!-- Positive fill area -->
+                                <path d="M312,100 L312,108 L375,56 L500,31 L500,100 Z" fill="rgba(0, 200, 83, 0.2)"/>
+                                <!-- Main line -->
+                                <polyline
+                                    points="0,156 125,172 250,156 312,108 375,56 500,31"
+                                    fill="none"
+                                    stroke="url(#lineGradient)"
+                                    stroke-width="4"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"/>
+                                <!-- Gradient definition -->
+                                <defs>
+                                    <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#FF5252"/>
+                                        <stop offset="50%" stop-color="#FFB300"/>
+                                        <stop offset="100%" stop-color="#00C853"/>
+                                    </linearGradient>
+                                </defs>
+                                <!-- Data points -->
+                                <circle cx="0" cy="156" r="8" fill="#FF5252"/>
+                                <circle cx="125" cy="172" r="8" fill="#FF5252"/>
+                                <circle cx="250" cy="156" r="8" fill="#FFB300"/>
+                                <circle cx="312" cy="108" r="10" fill="#3367FF" stroke="#fff" stroke-width="3"/>
+                                <circle cx="375" cy="56" r="8" fill="#00C853"/>
+                                <circle cx="500" cy="31" r="8" fill="#00C853"/>
+                            </svg>
+                            <!-- X-axis labels -->
+                            <div class="x-axis">
+                                <div class="x-label">
+                                    <span class="x-value" style="color: var(--accent-red);">-$4.5M</span>
+                                    <span class="x-period">Year 0</span>
+                                </div>
+                                <div class="x-label">
+                                    <span class="x-value" style="color: var(--accent-red);">-$5.8M</span>
+                                    <span class="x-period">Year 1</span>
+                                </div>
+                                <div class="x-label">
+                                    <span class="x-value" style="color: var(--accent-red);">-$0.9M</span>
+                                    <span class="x-period">Year 2</span>
+                                </div>
+                                <div class="x-label" style="position: relative;">
+                                    <span class="x-value" style="color: var(--accent);">$0</span>
+                                    <span class="x-period">M18</span>
+                                </div>
+                                <div class="x-label">
+                                    <span class="x-value" style="color: var(--accent);">+$3.6M</span>
+                                    <span class="x-period">Y2.5</span>
+                                </div>
+                                <div class="x-label">
+                                    <span class="x-value" style="color: var(--accent);">+$5.5M</span>
+                                    <span class="x-period">Year 3</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-3 mt-2" style="gap: 0.5rem;">
+                    <div class="text-center" style="padding: 0.75rem; background: rgba(255, 82, 82, 0.15); border-radius: 4px; border: 1px solid var(--accent-red);">
+                        <div style="font-size: 0.75rem; color: var(--accent-red);">Maximum Investment</div>
+                        <div style="font-weight: 600; font-size: 1.25rem; color: var(--accent-red);">-$5.8M</div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary);">End of Year 1</div>
+                    </div>
+                    <div class="text-center" style="padding: 0.75rem; background: rgba(51, 103, 255, 0.15); border-radius: 4px; border: 1px solid var(--backbase-blue);">
+                        <div style="font-size: 0.75rem; color: var(--backbase-blue);">Breakeven Point</div>
+                        <div style="font-weight: 600; font-size: 1.25rem; color: var(--backbase-blue);">Month 18</div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary);">Cumulative = $0</div>
+                    </div>
+                    <div class="text-center" style="padding: 0.75rem; background: rgba(0, 200, 83, 0.15); border-radius: 4px; border: 1px solid var(--accent);">
+                        <div style="font-size: 0.75rem; color: var(--accent);">3-Year Value</div>
+                        <div style="font-weight: 600; font-size: 1.25rem; color: var(--accent);">+$5.5M</div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary);">Net cumulative</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sensitivity -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Sensitivity Analysis - What Matters Most</span>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span>Digital Containment Rate (±10pp)</span>
+                        <span style="color: var(--accent-red);">±$2.5M NPV</span>
+                    </div>
+                    <div class="progress-bar" style="height: 16px;">
+                        <div class="progress-fill red" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span>Transaction Cost by Channel (±$2)</span>
+                        <span style="color: var(--accent-yellow);">±$2.0M NPV</span>
+                    </div>
+                    <div class="progress-bar" style="height: 16px;">
+                        <div class="progress-fill yellow" style="width: 80%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span>Onboarding Volume (±2K/month)</span>
+                        <span style="color: var(--accent-blue);">±$1.5M NPV</span>
+                    </div>
+                    <div class="progress-bar" style="height: 16px;">
+                        <div class="progress-fill blue" style="width: 60%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span>Completion Rate (±10pp)</span>
+                        <span>±$1.3M NPV</span>
+                    </div>
+                    <div class="progress-bar" style="height: 16px;">
+                        <div class="progress-fill blue" style="width: 52%"></div>
+                    </div>
+                </div>
+                <p class="text-center mt-2" style="color: var(--accent-yellow); font-weight: 600;">
+                    Action: Validate top 3 variables in Phase 0 before full commitment
+                </p>
+            </div>
+        </div>
+
+        <!-- SECTION: Roadmap -->
+        <div id="roadmap" class="section">
+            <div class="header">
+                <h1>Implementation Roadmap</h1>
+                <p>18-Month Phased Approach with Decision Gates</p>
+            </div>
+
+            <!-- Phase Cards -->
+            <div class="grid-3 mb-3">
+                <div class="card" style="border-top: 4px solid var(--accent-blue);">
+                    <div class="card-header">
+                        <span class="card-title">Phase 0: Foundation</span>
+                        <span class="card-badge badge-blue">M0-3</span>
+                    </div>
+                    <div class="kpi-value neutral text-center">$1.5M</div>
+                    <ul class="list">
+                        <li><span class="list-icon blue">✓</span>Validate baseline data</li>
+                        <li><span class="list-icon blue">✓</span>Select vendors</li>
+                        <li><span class="list-icon blue">✓</span>Regulatory clearance</li>
+                        <li><span class="list-icon blue">✓</span>Finalize architecture</li>
+                    </ul>
+                    <div style="background: var(--bg-dark); padding: 0.75rem; border-radius: 4px; text-align: center; margin-top: 1rem;">
+                        <strong style="color: var(--accent-blue);">Gate 1:</strong> Approve based on validated data
+                    </div>
+                </div>
+
+                <div class="card" style="border-top: 4px solid var(--accent-yellow);">
+                    <div class="card-header">
+                        <span class="card-title">Phase 1: Build & Pilot</span>
+                        <span class="card-badge badge-yellow">M4-12</span>
+                    </div>
+                    <div class="kpi-value warning text-center">$4.0M</div>
+                    <ul class="list">
+                        <li><span class="list-icon yellow">✓</span>Workflow platform</li>
+                        <li><span class="list-icon yellow">✓</span>eKYC integration</li>
+                        <li><span class="list-icon yellow">✓</span>Analytics foundation</li>
+                        <li><span class="list-icon yellow">✓</span>Pilot launch (M6)</li>
+                    </ul>
+                    <div style="background: var(--bg-dark); padding: 0.75rem; border-radius: 4px; text-align: center; margin-top: 1rem;">
+                        <strong style="color: var(--accent-yellow);">Gate 2:</strong> Approve rollout based on pilot
+                    </div>
+                </div>
+
+                <div class="card" style="border-top: 4px solid var(--accent);">
+                    <div class="card-header">
+                        <span class="card-title">Phase 2: Scale</span>
+                        <span class="card-badge badge-green">M13-18</span>
+                    </div>
+                    <div class="kpi-value positive text-center">$2.5M</div>
+                    <ul class="list">
+                        <li><span class="list-icon green">✓</span>Full rollout</li>
+                        <li><span class="list-icon green">✓</span>All markets live</li>
+                        <li><span class="list-icon green">✓</span>Adoption campaign</li>
+                        <li><span class="list-icon green">✓</span>Optimization</li>
+                    </ul>
+                    <div style="background: var(--bg-dark); padding: 0.75rem; border-radius: 4px; text-align: center; margin-top: 1rem;">
+                        <strong style="color: var(--accent);">M18:</strong> Target performance + Break-even
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Key Milestones</span>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-title">Baseline Validated, Vendors Selected</div>
+                        <div class="timeline-date">Month 3 | Decision Gate 1</div>
+                    </div>
+                    <div class="timeline-item pending">
+                        <div class="timeline-title">Pilot Launch</div>
+                        <div class="timeline-date">Month 6 | 1,000+ customers</div>
+                    </div>
+                    <div class="timeline-item pending">
+                        <div class="timeline-title">Pilot Validation (GO/NO-GO)</div>
+                        <div class="timeline-date">Month 9 | Decision Gate 2</div>
+                    </div>
+                    <div class="timeline-item pending">
+                        <div class="timeline-title">Full Rollout Complete</div>
+                        <div class="timeline-date">Month 12 | All markets live</div>
+                    </div>
+                    <div class="timeline-item pending">
+                        <div class="timeline-title">Target Performance & Break-even</div>
+                        <div class="timeline-date">Month 18 | 65% completion, 60% containment</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investment Breakdown -->
+            <div class="card mt-2">
+                <div class="card-header">
+                    <span class="card-title">Investment Allocation</span>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <h4 class="mb-2">By Initiative</h4>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Onboarding Journey</span>
+                                <span>$4.1M (51%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill blue" style="width: 51%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Self-Service Expansion</span>
+                                <span>$2.8M (35%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill green" style="width: 35%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Analytics Foundation</span>
+                                <span>$0.6M (8%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill yellow" style="width: 8%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>PM & Contingency</span>
+                                <span>$0.5M (6%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill red" style="width: 6%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="mb-2">By Cost Type</h4>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>External Consultants</span>
+                                <span>$2.5M (31%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill blue" style="width: 31%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Software Licenses</span>
+                                <span>$2.3M (29%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill green" style="width: 29%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Internal Labor</span>
+                                <span>$2.0M (25%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill yellow" style="width: 25%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Integration & Other</span>
+                                <span>$1.2M (15%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill red" style="width: 15%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: Risks -->
+        <div id="risks" class="section">
+            <div class="header">
+                <h1>Risks & Mitigations</h1>
+                <p>How We Manage Downside Risk</p>
+            </div>
+
+            <!-- Risk Summary -->
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-label">Risk-Adjusted NPV</div>
+                    <div class="kpi-value positive">$4.0M</div>
+                    <div class="kpi-subtext">After risk weighting</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Contingency Budget</div>
+                    <div class="kpi-value warning">$1.2M</div>
+                    <div class="kpi-subtext">15% of implementation</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Worst Case NPV</div>
+                    <div class="kpi-value positive">$0.8M</div>
+                    <div class="kpi-subtext">Still positive</div>
+                </div>
+            </div>
+
+            <!-- Risk Table -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <span class="card-title">Risk Register</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Risk</th>
+                                <th>Impact</th>
+                                <th>Probability</th>
+                                <th>Mitigation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Baseline data invalidates case</td>
+                                <td><span class="card-badge badge-red">High</span></td>
+                                <td><span class="card-badge badge-yellow">Medium</span></td>
+                                <td>Validate in Phase 0; adjust scope if needed</td>
+                            </tr>
+                            <tr>
+                                <td>Digital adoption fails</td>
+                                <td><span class="card-badge badge-red">High</span></td>
+                                <td><span class="card-badge badge-yellow">Medium</span></td>
+                                <td>15-20% budget to change mgmt, pilot validation</td>
+                            </tr>
+                            <tr>
+                                <td>Regulatory delays (eKYC)</td>
+                                <td><span class="card-badge badge-red">High</span></td>
+                                <td><span class="card-badge badge-yellow">Medium</span></td>
+                                <td>Early engagement, compliant vendor, hybrid approach</td>
+                            </tr>
+                            <tr>
+                                <td>Integration complexity</td>
+                                <td><span class="card-badge badge-yellow">Medium</span></td>
+                                <td><span class="card-badge badge-yellow">Medium</span></td>
+                                <td>Technical discovery, API-first, phased approach</td>
+                            </tr>
+                            <tr>
+                                <td>Pilot shows no improvement</td>
+                                <td><span class="card-badge badge-red">High</span></td>
+                                <td><span class="card-badge badge-green">Low</span></td>
+                                <td>Realistic targets, iterations, backup plan</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Critical Assumptions -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Critical Assumptions to Validate</span>
+                    <span class="card-badge badge-red">Phase 0 Priority</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Assumption</th>
+                                <th>Current Value</th>
+                                <th>NPV Impact (±25%)</th>
+                                <th>Validation Owner</th>
+                                <th>Timeline</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Current onboarding completion</td>
+                                <td>40%</td>
+                                <td style="color: var(--accent-red);">±$1.3M</td>
+                                <td>Head of Retail</td>
+                                <td>Weeks 1-2</td>
+                            </tr>
+                            <tr>
+                                <td>Cost per transaction</td>
+                                <td>$10</td>
+                                <td style="color: var(--accent-red);">±$2.0M</td>
+                                <td>CFO</td>
+                                <td>Weeks 1-2</td>
+                            </tr>
+                            <tr>
+                                <td>Monthly application volume</td>
+                                <td>10,000</td>
+                                <td style="color: var(--accent-yellow);">±$1.0M</td>
+                                <td>Head of Retail</td>
+                                <td>Weeks 1-2</td>
+                            </tr>
+                            <tr>
+                                <td>Digital containment rate</td>
+                                <td>20%</td>
+                                <td style="color: var(--accent-red);">±$2.5M</td>
+                                <td>Operations Lead</td>
+                                <td>Weeks 1-2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-center mt-2" style="color: var(--text-secondary);">
+                    After validation: MEDIUM confidence → HIGH confidence
+                </p>
+            </div>
+        </div>
+
+        <!-- SECTION: Decision -->
+        <div id="decision" class="section">
+            <div class="header">
+                <h1>Decision Required</h1>
+                <p>What We Need You to Decide Today</p>
+            </div>
+
+            <!-- Recommendation Banner -->
+            <div class="decision-banner" style="margin-bottom: 2rem;">
+                <div>
+                    <h2>CONDITIONAL GO</h2>
+                    <p>Proceed with phased, risk-managed approach</p>
+                </div>
+                <div class="decision-badge">$8.0M Investment | $5.2M NPV | 42% IRR</div>
+            </div>
+
+            <!-- Actions Required -->
+            <div class="grid-2 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Decisions Required Today</span>
+                    </div>
+                    <div class="action-item">
+                        <div class="action-priority priority-1">1</div>
+                        <div class="action-content">
+                            <div class="action-title">Approve Conditional Go</div>
+                            <div class="action-meta">Authorize Phase 0 funding ($1.5M)</div>
+                        </div>
+                    </div>
+                    <div class="action-item">
+                        <div class="action-priority priority-2">2</div>
+                        <div class="action-content">
+                            <div class="action-title">Appoint Executive Sponsor</div>
+                            <div class="action-meta">C-level with P&L accountability</div>
+                        </div>
+                    </div>
+                    <div class="action-item">
+                        <div class="action-priority priority-3">3</div>
+                        <div class="action-content">
+                            <div class="action-title">Commit to Phased Approach</div>
+                            <div class="action-meta">3 decision gates at M3, M9, M15</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Actions This Week</span>
+                    </div>
+                    <ul class="list">
+                        <li>
+                            <span class="list-icon green">✓</span>
+                            <span>Executive Sponsor assigned — <strong>CEO</strong></span>
+                        </li>
+                        <li>
+                            <span class="list-icon green">✓</span>
+                            <span>Phase 0 budget approved — <strong>CFO</strong></span>
+                        </li>
+                        <li>
+                            <span class="list-icon green">✓</span>
+                            <span>Program Lead assigned — <strong>Exec Sponsor</strong></span>
+                        </li>
+                        <li>
+                            <span class="list-icon green">✓</span>
+                            <span>Data validation kicked off — <strong>Program Lead</strong></span>
+                        </li>
+                        <li>
+                            <span class="list-icon green">✓</span>
+                            <span>Regulatory engagement initiated — <strong>Compliance</strong></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Why This Approach -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <span class="card-title">Why Conditional Go?</span>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <h4 style="color: var(--accent); margin-bottom: 1rem;">Why GO</h4>
+                        <ul class="list">
+                            <li><span class="list-icon green">✓</span>Strong ROI: $5.2M NPV, 42% IRR</li>
+                            <li><span class="list-icon green">✓</span>Addresses critical pain (validated by evidence)</li>
+                            <li><span class="list-icon green">✓</span>Conservative case - still positive in worst scenario</li>
+                            <li><span class="list-icon green">✓</span>Strategic imperative - must compete digitally</li>
+                            <li><span class="list-icon green">✓</span>Cost of inaction ($30M+) exceeds investment</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--accent-yellow); margin-bottom: 1rem;">Why CONDITIONAL</h4>
+                        <ul class="list">
+                            <li><span class="list-icon yellow">!</span>Key baseline data not yet validated</li>
+                            <li><span class="list-icon yellow">!</span>Regulatory path for eKYC needs confirmation</li>
+                            <li><span class="list-icon yellow">!</span>Phase 0 limits risk to $1.5M if case weakens</li>
+                            <li><span class="list-icon yellow">!</span>Pilot proves value before $8M commitment</li>
+                            <li><span class="list-icon yellow">!</span>3 decision gates enable course correction</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Final Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Decision Timeline</span>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-title" style="color: var(--accent);">Today: Approve Conditional Go + Phase 0</div>
+                        <div class="timeline-date">Authorize $1.5M | Appoint Sponsor</div>
+                    </div>
+                    <div class="timeline-item pending">
+                        <div class="timeline-title">Month 3: Final Investment Decision</div>
+                        <div class="timeline-date">Approve $8M based on validated baseline data</div>
+                    </div>
+                    <div class="timeline-item pending">
+                        <div class="timeline-title">Month 9: Rollout Decision</div>
+                        <div class="timeline-date">Approve full rollout based on pilot results</div>
+                    </div>
+                    <div class="timeline-item pending">
+                        <div class="timeline-title">Month 18: Performance Review</div>
+                        <div class="timeline-date">Target achieved | Break-even | Steady state</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Final Summary -->
+            <div style="background: linear-gradient(135deg, var(--backbase-blue) 0%, #1a4fd6 100%); border-radius: 12px; padding: 2rem; margin-top: 2rem; text-align: center;">
+                <h2 style="margin-bottom: 1rem;">The Choice</h2>
+                <p style="font-size: 1.25rem; margin-bottom: 1.5rem; opacity: 0.9;">
+                    Lead in digital banking or become irrelevant.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+                    <div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--backbase-green);">$8.2M</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Annual Value Created</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2rem; font-weight: 700; color: #FF5252;">$30M+</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Cost of Inaction</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2rem; font-weight: 700; color: #FFB300;">18mo</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Time to Break-even</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p style="color: var(--backbase-blue); font-weight: 600;">BACKBASE</p>
+            <p>Digital Banking Transformation | Retail Bank SEA | January 2026</p>
+            <p style="margin-top: 0.5rem;">Prepared by Backbase Value Consulting | Confidential</p>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Update nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.textContent.toLowerCase().includes(sectionId.substring(0, 4))) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Show specific journey in the Journeys section
+        function showJourney(journeyId) {
+            // Hide all journey containers
+            document.querySelectorAll('.journey-container').forEach(container => {
+                container.style.display = 'none';
+            });
+
+            // Show selected journey
+            const journeyElement = document.getElementById('journey-' + journeyId);
+            if (journeyElement) {
+                journeyElement.style.display = 'block';
+            }
+
+            // Update journey selector buttons
+            document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+                btn.style.border = '1px solid var(--border)';
+            });
+            const activeBtn = document.getElementById('btn-' + journeyId);
+            if (activeBtn) {
+                activeBtn.style.border = '2px solid var(--backbase-blue)';
+            }
+        }
+
+        // Animate numbers on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add subtle animation to progress bars
+            setTimeout(() => {
+                document.querySelectorAll('.progress-fill').forEach(bar => {
+                    bar.style.transition = 'width 1s ease-out';
+                });
+            }, 100);
+
+            // Initialize first journey as selected
+            showJourney('onboarding');
+        });
+    </script>
+</body>
+</html>

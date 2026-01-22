@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Banking Transformation | Executive Presentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bb-blue: #1A56FF;
+            --bb-dark: #1A1F36;
+            --bb-darker: #0D1117;
+            --bb-gray: #6B7280;
+            --bb-light: #F3F4F6;
+            --bb-glow: rgba(26, 86, 255, 0.4);
+            --bb-red: #EF4444;
+            --bb-green: #10B981;
+            --bb-orange: #F59E0B;
+            --bb-yellow: #FFB300;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bb-darker);
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        /* Background effects */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(26, 86, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(26, 86, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .glow-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .glow-orb.blue {
+            width: 600px;
+            height: 600px;
+            background: var(--bb-blue);
+            top: -200px;
+            right: -200px;
+        }
+
+        .glow-orb.green {
+            width: 400px;
+            height: 400px;
+            background: var(--bb-green);
+            bottom: -150px;
+            left: -150px;
+            opacity: 0.2;
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(13, 17, 23, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo::before {
+            content: '';
+            width: 24px;
+            height: 24px;
+            background: var(--bb-blue);
+            border-radius: 6px;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .scene-counter {
+            font-size: 0.875rem;
+            color: var(--bb-gray);
+        }
+
+        .scene-counter span {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .nav-arrows {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 1.25rem;
+        }
+
+        .nav-btn:hover {
+            background: var(--bb-blue);
+            border-color: var(--bb-blue);
+        }
+
+        .auto-play {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .auto-play:hover, .auto-play.active {
+            background: var(--bb-blue);
+            border-color: var(--bb-blue);
+        }
+
+        /* Scene Container */
+        .scene-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .scene.active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .scene-content {
+            max-width: 1400px;
+            width: 100%;
+            padding: 2rem;
+            margin-top: 60px;
+        }
+
+        /* Typography */
+        .section-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--bb-blue);
+            margin-bottom: 1rem;
+        }
+
+        .mega-title {
+            font-size: clamp(48px, 8vw, 100px);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .mega-title .white { color: #fff; }
+        .mega-title .blue { color: var(--bb-blue); }
+        .mega-title .green { color: var(--bb-green); }
+        .mega-title .red { color: var(--bb-red); }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: var(--bb-gray);
+            font-weight: 400;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Quote Scene */
+        .quote-text {
+            font-size: clamp(32px, 5vw, 56px);
+            font-weight: 500;
+            line-height: 1.4;
+            text-align: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .quote-text .highlight {
+            color: var(--bb-blue);
+            font-weight: 700;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .scene.active .stat-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .stat-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .stat-card:nth-child(3) { transition-delay: 0.6s; }
+        .scene.active .stat-card:nth-child(4) { transition-delay: 0.8s; }
+        .scene.active .stat-card:nth-child(5) { transition-delay: 1.0s; }
+
+        .scene.active .stat-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--bb-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .stat-value.blue { color: var(--bb-blue); }
+        .stat-value.green { color: var(--bb-green); }
+        .stat-value.red { color: var(--bb-red); }
+        .stat-value.orange { color: var(--bb-orange); }
+
+        .stat-context {
+            font-size: 0.875rem;
+            color: var(--bb-gray);
+            margin-top: 0.5rem;
+        }
+
+        /* Card Grid */
+        .land-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .land-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .land-card.spotlight {
+            border: 2px solid var(--bb-blue);
+            box-shadow: 0 0 40px rgba(26, 86, 255, 0.3);
+            animation: cardGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes cardGlow {
+            0%, 100% { box-shadow: 0 0 40px rgba(26, 86, 255, 0.3); }
+            50% { box-shadow: 0 0 60px rgba(26, 86, 255, 0.5); }
+        }
+
+        .scene.active .land-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .land-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .land-card:nth-child(3) { transition-delay: 0.6s; }
+
+        .scene.active .land-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .land-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .land-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .land-desc {
+            color: var(--bb-gray);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .land-feature {
+            font-size: 0.8rem;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .land-feature:last-child {
+            border-bottom: none;
+        }
+
+        /* Two Column Comparison */
+        .motion-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .motion-card {
+            padding: 2.5rem;
+            border-radius: 16px;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.8s ease;
+        }
+
+        .motion-card.red {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .motion-card.blue {
+            background: linear-gradient(135deg, rgba(26, 86, 255, 0.2) 0%, rgba(26, 86, 255, 0.05) 100%);
+            border: 1px solid rgba(26, 86, 255, 0.3);
+        }
+
+        .motion-card.green {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .scene.active .motion-card:nth-child(1) { transition-delay: 0.3s; }
+        .scene.active .motion-card:nth-child(2) { transition-delay: 0.6s; }
+
+        .scene.active .motion-card {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .motion-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .motion-percent {
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .motion-detail {
+            font-size: 1rem;
+            margin-top: 1rem;
+            color: var(--bb-gray);
+        }
+
+        /* Phase Timeline */
+        .phases-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .phase-card {
+            padding: 2rem;
+            border-radius: 16px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .phase-card.phase1 {
+            background: linear-gradient(135deg, rgba(26, 86, 255, 0.15) 0%, rgba(26, 86, 255, 0.05) 100%);
+            border: 1px solid rgba(26, 86, 255, 0.3);
+            border-top: 4px solid var(--bb-blue);
+        }
+
+        .phase-card.phase2 {
+            background: linear-gradient(135deg, rgba(255, 179, 0, 0.15) 0%, rgba(255, 179, 0, 0.05) 100%);
+            border: 1px solid rgba(255, 179, 0, 0.3);
+            border-top: 4px solid var(--bb-orange);
+        }
+
+        .phase-card.phase3 {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-top: 4px solid var(--bb-green);
+        }
+
+        .scene.active .phase-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .phase-card:nth-child(2) { transition-delay: 0.5s; }
+        .scene.active .phase-card:nth-child(3) { transition-delay: 0.8s; }
+
+        .scene.active .phase-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .phase-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .phase-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .phase-budget {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .phase-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .phase-tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 100px;
+        }
+
+        /* Journey Card */
+        .journey-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .journey-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .journey-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .journey-badge.red {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--bb-red);
+        }
+
+        .journey-steps {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .journey-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.5s ease;
+        }
+
+        .scene.active .journey-step {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .scene.active .journey-step:nth-child(1) { transition-delay: 0.1s; }
+        .scene.active .journey-step:nth-child(3) { transition-delay: 0.2s; }
+        .scene.active .journey-step:nth-child(5) { transition-delay: 0.3s; }
+        .scene.active .journey-step:nth-child(7) { transition-delay: 0.4s; }
+        .scene.active .journey-step:nth-child(9) { transition-delay: 0.5s; }
+
+        .step-node {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-node.green {
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid var(--bb-green);
+        }
+
+        .step-node.red {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid var(--bb-red);
+        }
+
+        .step-node.yellow {
+            background: rgba(255, 179, 0, 0.2);
+            border: 2px solid var(--bb-orange);
+        }
+
+        .step-label {
+            font-size: 0.75rem;
+            text-align: center;
+        }
+
+        .step-arrow {
+            font-size: 1.5rem;
+            color: var(--bb-gray);
+            margin: 0 0.5rem;
+        }
+
+        /* Scenario Cards */
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .scenario-card {
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .scenario-card.best {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .scenario-card.likely {
+            background: linear-gradient(135deg, rgba(26, 86, 255, 0.15) 0%, rgba(26, 86, 255, 0.05) 100%);
+            border: 2px solid var(--bb-blue);
+            box-shadow: 0 0 30px rgba(26, 86, 255, 0.2);
+        }
+
+        .scenario-card.worst {
+            background: linear-gradient(135deg, rgba(255, 179, 0, 0.15) 0%, rgba(255, 179, 0, 0.05) 100%);
+            border: 1px solid rgba(255, 179, 0, 0.3);
+        }
+
+        .scene.active .scenario-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .scenario-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .scenario-card:nth-child(3) { transition-delay: 0.6s; }
+
+        .scene.active .scenario-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scenario-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .scenario-npv {
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1.2;
+        }
+
+        .scenario-details {
+            font-size: 0.875rem;
+            color: var(--bb-gray);
+            margin-top: 1rem;
+        }
+
+        /* Risk Table */
+        .risk-table {
+            width: 100%;
+            margin-top: 1.5rem;
+            border-collapse: collapse;
+        }
+
+        .risk-table th, .risk-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .risk-table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--bb-gray);
+        }
+
+        .risk-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .risk-badge.high {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--bb-red);
+        }
+
+        .risk-badge.medium {
+            background: rgba(255, 179, 0, 0.2);
+            color: var(--bb-orange);
+        }
+
+        .risk-badge.low {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--bb-green);
+        }
+
+        /* Decision Banner */
+        .decision-banner {
+            background: linear-gradient(135deg, var(--bb-blue) 0%, #1a4fd6 100%);
+            border-radius: 16px;
+            padding: 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease 0.3s;
+        }
+
+        .scene.active .decision-banner {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .decision-content h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .decision-content p {
+            opacity: 0.9;
+        }
+
+        .decision-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        /* Animate items */
+        .animate-item {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .scene.active .animate-item:nth-child(1) { transition-delay: 0.1s; }
+        .scene.active .animate-item:nth-child(2) { transition-delay: 0.2s; }
+        .scene.active .animate-item:nth-child(3) { transition-delay: 0.3s; }
+        .scene.active .animate-item:nth-child(4) { transition-delay: 0.4s; }
+        .scene.active .animate-item:nth-child(5) { transition-delay: 0.5s; }
+
+        .scene.active .animate-item {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Light Theme Scene */
+        .scene.light-theme {
+            background: #fff;
+            color: var(--bb-dark);
+        }
+
+        .scene.light-theme .section-label {
+            color: var(--bb-blue);
+        }
+
+        .scene.light-theme h2 {
+            color: var(--bb-dark);
+        }
+
+        .scene.light-theme .stat-card,
+        .scene.light-theme .land-card,
+        .scene.light-theme .phase-card,
+        .scene.light-theme .journey-card {
+            background: #f8f9fa;
+            border-color: #e5e7eb;
+        }
+
+        .scene.light-theme .stat-label,
+        .scene.light-theme .land-desc,
+        .scene.light-theme .phase-label {
+            color: var(--bb-gray);
+        }
+
+        /* CTA Pulse */
+        .animate-pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Progress bar at bottom */
+        .progress-track {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            z-index: 1000;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--bb-blue);
+            transition: width 0.3s ease;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .mega-title {
+                font-size: clamp(32px, 10vw, 60px) !important;
+            }
+
+            .stats-grid,
+            .land-grid,
+            .phases-grid,
+            .scenario-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .motion-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-arrows {
+                display: none;
+            }
+
+            .scene-content {
+                padding: 1rem;
+            }
+
+            .stat-value {
+                font-size: 2.5rem;
+            }
+
+            .phase-budget {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Keyboard hints */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 0.75rem;
+            color: var(--bb-gray);
+            z-index: 1000;
+        }
+
+        .keyboard-hint kbd {
+            background: rgba(255,255,255,0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            margin: 0 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="glow-orb blue"></div>
+    <div class="glow-orb green"></div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="logo">Digital Banking Transformation</div>
+        <div class="nav-controls">
+            <div class="scene-counter">
+                <span id="current-scene">1</span> / <span id="total-scenes">25</span>
+            </div>
+            <div class="nav-arrows">
+                <button class="nav-btn" onclick="prevScene()">&#8592;</button>
+                <button class="nav-btn" onclick="nextScene()">&#8594;</button>
+            </div>
+            <button class="auto-play" onclick="toggleAutoPlay()" id="autoplay-btn">Auto Play</button>
+        </div>
+    </nav>
+
+    <!-- Scene Container -->
+    <div class="scene-container" id="scene-container">
+
+        <!-- SCENE 1: Opening Hook -->
+        <div class="scene active" data-title="Opening">
+            <div class="scene-content" style="text-align: center;">
+                <div class="section-label animate-item">RETAIL BANK SEA</div>
+                <h1 class="mega-title">
+                    <span class="white animate-item">DIGITAL</span><br>
+                    <span class="blue animate-item">TRANSFORMATION</span>
+                </h1>
+                <p class="subtitle animate-item">Investment Proposal | January 2026</p>
+            </div>
+        </div>
+
+        <!-- SCENE 2: The Question -->
+        <div class="scene" data-title="The Question">
+            <div class="scene-content">
+                <div class="quote-text">
+                    Should we invest <span class="highlight">$8M</span><br>
+                    to transform our digital banking?
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 3: Recommendation -->
+        <div class="scene" data-title="Recommendation">
+            <div class="scene-content" style="text-align: center;">
+                <div class="section-label">OUR RECOMMENDATION</div>
+                <h1 class="mega-title">
+                    <span class="white">CONDITIONAL</span><br>
+                    <span class="green">GO</span>
+                </h1>
+                <p class="subtitle">Proceed with phased approach contingent on Phase 0 validation</p>
+                <div class="decision-banner animate-pulse">
+                    <div class="decision-content">
+                        <h3>Approve $8.0M Investment</h3>
+                        <p>18-month phased approach with decision gates</p>
+                    </div>
+                    <div class="decision-badge">ROI: 42% IRR</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 4: Key Metrics -->
+        <div class="scene" data-title="Key Metrics">
+            <div class="scene-content">
+                <div class="section-label">THE INVESTMENT CASE</div>
+                <h2>Strong Returns, Conservative Assumptions</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Investment</div>
+                        <div class="stat-value blue">$8.0M</div>
+                        <div class="stat-context">Over 18 months</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Annual Benefits</div>
+                        <div class="stat-value green">$8.2M</div>
+                        <div class="stat-context">Year 3+ steady state</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Net Present Value</div>
+                        <div class="stat-value green">$5.2M</div>
+                        <div class="stat-context">3-year, 10% discount</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Internal Rate of Return</div>
+                        <div class="stat-value green">42%</div>
+                        <div class="stat-context">Strong return</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Payback Period</div>
+                        <div class="stat-value orange">18 mo</div>
+                        <div class="stat-context">Break-even point</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 5: The Problem Statement -->
+        <div class="scene" data-title="The Problem">
+            <div class="scene-content" style="text-align: center;">
+                <div class="section-label">THE PROBLEM</div>
+                <h1 class="mega-title">
+                    <span class="white">WE'RE LOSING</span><br>
+                    <span class="red">CUSTOMERS & CASH</span>
+                </h1>
+                <p class="subtitle">Critical gaps in digital capabilities are costing us $4.7M annually</p>
+            </div>
+        </div>
+
+        <!-- SCENE 6: Onboarding Broken -->
+        <div class="scene" data-title="Onboarding">
+            <div class="scene-content">
+                <div class="section-label">PROBLEM #1</div>
+                <h2>Onboarding is Broken</h2>
+                <div class="motion-grid">
+                    <div class="motion-card red">
+                        <div class="motion-title">Current Completion Rate</div>
+                        <div class="motion-percent" style="color: var(--bb-red);">40%</div>
+                        <div class="motion-detail">6,000 lost customers/month</div>
+                    </div>
+                    <div class="motion-card green">
+                        <div class="motion-title">Industry Benchmark</div>
+                        <div class="motion-percent" style="color: var(--bb-green);">65%</div>
+                        <div class="motion-detail">Where we should be</div>
+                    </div>
+                </div>
+                <div class="decision-banner" style="margin-top: 2rem; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--bb-red);">
+                    <div class="decision-content">
+                        <h3 style="color: var(--bb-red);">Impact: $6M+ Lost Revenue Annually</h3>
+                        <p style="color: var(--bb-gray);">7+ day cycle time vs. industry standard of &lt;48 hours</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 7: Servicing Expensive -->
+        <div class="scene" data-title="Servicing">
+            <div class="scene-content">
+                <div class="section-label">PROBLEM #2</div>
+                <h2>Servicing is Expensive</h2>
+                <div class="motion-grid">
+                    <div class="motion-card red">
+                        <div class="motion-title">Digital Containment</div>
+                        <div class="motion-percent" style="color: var(--bb-red);">20%</div>
+                        <div class="motion-detail">Most still call or visit branch</div>
+                    </div>
+                    <div class="motion-card green">
+                        <div class="motion-title">Target State</div>
+                        <div class="motion-percent" style="color: var(--bb-green);">60%</div>
+                        <div class="motion-detail">Self-service first</div>
+                    </div>
+                </div>
+                <div class="stats-grid" style="margin-top: 2rem;">
+                    <div class="stat-card">
+                        <div class="stat-label">Digital Cost</div>
+                        <div class="stat-value green">$1</div>
+                        <div class="stat-context">per transaction</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Call Center</div>
+                        <div class="stat-value orange">$10</div>
+                        <div class="stat-context">per transaction</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Branch</div>
+                        <div class="stat-value red">$15</div>
+                        <div class="stat-context">per transaction</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 8: Profile Update Journey Broken -->
+        <div class="scene" data-title="Profile Sync">
+            <div class="scene-content">
+                <div class="section-label">PROBLEM #3</div>
+                <h2>Profile Updates Don't Sync</h2>
+                <div class="journey-card">
+                    <div class="journey-header">
+                        <div>
+                            <h3>Cross-Channel Sync is Broken</h3>
+                            <p style="color: var(--bb-gray);">Mobile changes not visible on web for 24-48 hours</p>
+                        </div>
+                        <span class="journey-badge red">8,500 calls/month</span>
+                    </div>
+                    <div class="journey-steps">
+                        <div class="journey-step">
+                            <div class="step-node green">📱</div>
+                            <div class="step-label">Updates Mobile</div>
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="journey-step">
+                            <div class="step-node green">✅</div>
+                            <div class="step-label">Confirmed</div>
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="journey-step">
+                            <div class="step-node red">❌</div>
+                            <div class="step-label">Sync Fails</div>
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="journey-step">
+                            <div class="step-node yellow">😕</div>
+                            <div class="step-label">Confusion</div>
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="journey-step">
+                            <div class="step-node red">📞</div>
+                            <div class="step-label">Calls Support</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="stats-grid" style="margin-top: 1.5rem;">
+                    <div class="stat-card">
+                        <div class="stat-label">Sync Delay</div>
+                        <div class="stat-value red">24-48h</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Monthly Calls</div>
+                        <div class="stat-value red">8,500</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Monthly Cost</div>
+                        <div class="stat-value red">$85K</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Annual Waste</div>
+                        <div class="stat-value red">$912K</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 9: Cost of Inaction -->
+        <div class="scene" data-title="Cost of Inaction">
+            <div class="scene-content" style="text-align: center;">
+                <div class="section-label">THE RISK</div>
+                <h1 class="mega-title">
+                    <span class="white">COST OF</span><br>
+                    <span class="red">INACTION: $30M+</span>
+                </h1>
+                <div class="stats-grid" style="max-width: 800px; margin: 0 auto;">
+                    <div class="stat-card">
+                        <div class="stat-label">Lost Customer Revenue</div>
+                        <div class="stat-value red">$18M</div>
+                        <div class="stat-context">over 3 years</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Servicing Inefficiency</div>
+                        <div class="stat-value red">$12-15M</div>
+                        <div class="stat-context">over 3 years</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 10: Digital Maturity -->
+        <div class="scene" data-title="Maturity">
+            <div class="scene-content">
+                <div class="section-label">CAPABILITY ASSESSMENT</div>
+                <h2>We're 12-24 Months Behind Competition</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Our Score</div>
+                        <div class="stat-value red">2.2</div>
+                        <div class="stat-context">out of 5.0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Global Average</div>
+                        <div class="stat-value orange">3.0</div>
+                        <div class="stat-context">where others are</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Regional Leaders</div>
+                        <div class="stat-value green">4.0+</div>
+                        <div class="stat-context">where we need to be</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 11: The Solution -->
+        <div class="scene" data-title="Solution">
+            <div class="scene-content" style="text-align: center;">
+                <div class="section-label">THE SOLUTION</div>
+                <h1 class="mega-title">
+                    <span class="white">TWO BENEFIT</span><br>
+                    <span class="blue">STREAMS</span>
+                </h1>
+                <p class="subtitle">$8.2M annual value at steady state</p>
+            </div>
+        </div>
+
+        <!-- SCENE 12: Benefit Stream 1 -->
+        <div class="scene" data-title="Revenue Growth">
+            <div class="scene-content">
+                <div class="section-label">BENEFIT STREAM 1</div>
+                <h2>Customer Acquisition: $2.4M/year</h2>
+                <div class="motion-grid">
+                    <div class="motion-card red">
+                        <div class="motion-title">Today</div>
+                        <div class="motion-percent" style="color: var(--bb-red);">40%</div>
+                        <div class="motion-detail">Completion rate</div>
+                    </div>
+                    <div class="motion-card green">
+                        <div class="motion-title">Target</div>
+                        <div class="motion-percent" style="color: var(--bb-green);">65%</div>
+                        <div class="motion-detail">+30,000 customers/year</div>
+                    </div>
+                </div>
+                <div class="journey-card">
+                    <h3>How We Get There</h3>
+                    <p style="color: var(--bb-gray);">eKYC integration • Workflow automation • Straight-through processing • Mobile-first design</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 13: Benefit Stream 2 -->
+        <div class="scene" data-title="Cost Savings">
+            <div class="scene-content">
+                <div class="section-label">BENEFIT STREAM 2</div>
+                <h2>Channel Shift: $5.8M/year</h2>
+                <div class="motion-grid">
+                    <div class="motion-card red">
+                        <div class="motion-title">Today</div>
+                        <div class="motion-percent" style="color: var(--bb-red);">20%</div>
+                        <div class="motion-detail">Digital containment</div>
+                    </div>
+                    <div class="motion-card green">
+                        <div class="motion-title">Target</div>
+                        <div class="motion-percent" style="color: var(--bb-green);">60%</div>
+                        <div class="motion-detail">40K transactions/month shifted</div>
+                    </div>
+                </div>
+                <div class="journey-card">
+                    <h3>How We Get There</h3>
+                    <p style="color: var(--bb-gray);">Self-service expansion • Mobile/web enhancements • Channel orchestration • Customer education</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 14: Use Cases -->
+        <div class="scene" data-title="Use Cases">
+            <div class="scene-content">
+                <div class="section-label">PRIORITIZED USE CASES</div>
+                <h2>What We'll Deliver</h2>
+                <div class="land-grid">
+                    <div class="land-card spotlight">
+                        <div class="land-icon">🚀</div>
+                        <div class="land-title">Digital Account Opening</div>
+                        <div class="land-desc">End-to-end digital with instant approval</div>
+                        <div class="land-feature">Score: 8.5 | Phase 1</div>
+                        <div class="land-feature">Value: $2.4M/year</div>
+                    </div>
+                    <div class="land-card">
+                        <div class="land-icon">🔧</div>
+                        <div class="land-title">Self-Service Portal</div>
+                        <div class="land-desc">Digital disputes, profile, card services</div>
+                        <div class="land-feature">Score: 8.2 | Phase 1</div>
+                        <div class="land-feature">Value: $4.1M/year</div>
+                    </div>
+                    <div class="land-card">
+                        <div class="land-icon">💳</div>
+                        <div class="land-title">Instant Personal Lending</div>
+                        <div class="land-desc">Real-time credit decisioning</div>
+                        <div class="land-feature">Score: 7.9 | Phase 1-2</div>
+                        <div class="land-feature">Value: $1.7M/year</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 15: Agentic Future -->
+        <div class="scene" data-title="Agentic Future">
+            <div class="scene-content">
+                <div class="section-label">FUTURE: PHASE 3+</div>
+                <h2>Agentic AI Capabilities</h2>
+                <div class="land-grid">
+                    <div class="land-card">
+                        <div class="land-icon">🤖</div>
+                        <div class="land-title">AI Financial Coach</div>
+                        <div class="land-desc">Autonomous monitoring & recommendations</div>
+                        <div class="land-feature">Perceives → Reasons → Acts → Learns</div>
+                        <div class="land-feature">With guardrails & human escalation</div>
+                    </div>
+                    <div class="land-card">
+                        <div class="land-icon">🎯</div>
+                        <div class="land-title">Proactive Servicing</div>
+                        <div class="land-desc">Anticipates issues before they arise</div>
+                        <div class="land-feature">Predicts → Alerts → Resolves</div>
+                        <div class="land-feature">80% reduction in reactive support</div>
+                    </div>
+                    <div class="land-card">
+                        <div class="land-icon">⚡</div>
+                        <div class="land-title">Autonomous Credit</div>
+                        <div class="land-desc">Real-time risk assessment</div>
+                        <div class="land-feature">Sub-second decisions</div>
+                        <div class="land-feature">Continuous learning model</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 16: Financial Summary -->
+        <div class="scene" data-title="Financials">
+            <div class="scene-content" style="text-align: center;">
+                <div class="section-label">FINANCIAL SUMMARY</div>
+                <h1 class="mega-title">
+                    <span class="white">NPV POSITIVE</span><br>
+                    <span class="green">IN ALL SCENARIOS</span>
+                </h1>
+            </div>
+        </div>
+
+        <!-- SCENE 17: Scenario Analysis -->
+        <div class="scene" data-title="Scenarios">
+            <div class="scene-content">
+                <div class="section-label">SCENARIO ANALYSIS</div>
+                <h2>Strong Returns Even If Things Go Wrong</h2>
+                <div class="scenario-grid">
+                    <div class="scenario-card best">
+                        <div class="scenario-title" style="color: var(--bb-green);">Best Case</div>
+                        <div class="scenario-npv" style="color: var(--bb-green);">$9.8M</div>
+                        <div class="scenario-details">
+                            IRR 68% | 12mo payback<br>
+                            Benefits +25%, Costs -15%
+                        </div>
+                    </div>
+                    <div class="scenario-card likely">
+                        <div class="scenario-title" style="color: var(--bb-blue);">Likely Case</div>
+                        <div class="scenario-npv" style="color: var(--bb-blue);">$5.2M</div>
+                        <div class="scenario-details">
+                            IRR 42% | 18mo payback<br>
+                            Base assumptions
+                        </div>
+                    </div>
+                    <div class="scenario-card worst">
+                        <div class="scenario-title" style="color: var(--bb-orange);">Worst Case</div>
+                        <div class="scenario-npv" style="color: var(--bb-orange);">$0.8M</div>
+                        <div class="scenario-details">
+                            IRR 12% | 36mo payback<br>
+                            Benefits -25%, Costs +25%
+                        </div>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 2rem; color: var(--bb-gray);">
+                    <strong style="color: var(--bb-green);">Key Insight:</strong> Even if everything goes worse than expected, initiative still creates value.
+                </p>
+            </div>
+        </div>
+
+        <!-- SCENE 18: Roadmap Title -->
+        <div class="scene" data-title="Roadmap">
+            <div class="scene-content" style="text-align: center;">
+                <div class="section-label">IMPLEMENTATION</div>
+                <h1 class="mega-title">
+                    <span class="white">18-MONTH</span><br>
+                    <span class="blue">PHASED APPROACH</span>
+                </h1>
+                <p class="subtitle">With decision gates to manage risk</p>
+            </div>
+        </div>
+
+        <!-- SCENE 19: Three Phases -->
+        <div class="scene" data-title="Phases">
+            <div class="scene-content">
+                <div class="section-label">IMPLEMENTATION ROADMAP</div>
+                <h2>Three Phases with Decision Gates</h2>
+                <div class="phases-grid">
+                    <div class="phase-card phase1">
+                        <div class="phase-label">PHASE 0</div>
+                        <div class="phase-title">Foundation</div>
+                        <div class="phase-budget" style="color: var(--bb-blue);">$1.5M</div>
+                        <div class="phase-tags">
+                            <span class="phase-tag">M0-3</span>
+                            <span class="phase-tag">Validate</span>
+                            <span class="phase-tag">Design</span>
+                        </div>
+                        <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--bb-blue);">Gate 1: Approve based on validated data</p>
+                    </div>
+                    <div class="phase-card phase2">
+                        <div class="phase-label">PHASE 1</div>
+                        <div class="phase-title">Build & Pilot</div>
+                        <div class="phase-budget" style="color: var(--bb-orange);">$4.0M</div>
+                        <div class="phase-tags">
+                            <span class="phase-tag">M4-12</span>
+                            <span class="phase-tag">Build</span>
+                            <span class="phase-tag">Test</span>
+                        </div>
+                        <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--bb-orange);">Gate 2: Approve rollout based on pilot</p>
+                    </div>
+                    <div class="phase-card phase3">
+                        <div class="phase-label">PHASE 2</div>
+                        <div class="phase-title">Scale</div>
+                        <div class="phase-budget" style="color: var(--bb-green);">$2.5M</div>
+                        <div class="phase-tags">
+                            <span class="phase-tag">M13-18</span>
+                            <span class="phase-tag">Rollout</span>
+                            <span class="phase-tag">Optimize</span>
+                        </div>
+                        <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--bb-green);">M18: Target performance + Break-even</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 20: Risks -->
+        <div class="scene" data-title="Risks">
+            <div class="scene-content">
+                <div class="section-label">RISK MANAGEMENT</div>
+                <h2>Key Risks & Mitigations</h2>
+                <table class="risk-table">
+                    <thead>
+                        <tr>
+                            <th>Risk</th>
+                            <th>Impact</th>
+                            <th>Probability</th>
+                            <th>Mitigation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Baseline data invalidates case</td>
+                            <td><span class="risk-badge high">High</span></td>
+                            <td><span class="risk-badge medium">Medium</span></td>
+                            <td>Validate in Phase 0; adjust scope if needed</td>
+                        </tr>
+                        <tr>
+                            <td>Digital adoption fails</td>
+                            <td><span class="risk-badge high">High</span></td>
+                            <td><span class="risk-badge medium">Medium</span></td>
+                            <td>15-20% budget to change management</td>
+                        </tr>
+                        <tr>
+                            <td>Regulatory delays (eKYC)</td>
+                            <td><span class="risk-badge high">High</span></td>
+                            <td><span class="risk-badge medium">Medium</span></td>
+                            <td>Early engagement, compliant vendor</td>
+                        </tr>
+                        <tr>
+                            <td>Integration complexity</td>
+                            <td><span class="risk-badge medium">Medium</span></td>
+                            <td><span class="risk-badge medium">Medium</span></td>
+                            <td>API-first, phased approach</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="stats-grid" style="margin-top: 2rem;">
+                    <div class="stat-card">
+                        <div class="stat-label">Risk-Adjusted NPV</div>
+                        <div class="stat-value green">$4.0M</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Contingency</div>
+                        <div class="stat-value orange">$1.2M</div>
+                        <div class="stat-context">15% of implementation</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Worst Case NPV</div>
+                        <div class="stat-value green">$0.8M</div>
+                        <div class="stat-context">Still positive</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 21: The Ask -->
+        <div class="scene" data-title="The Ask">
+            <div class="scene-content" style="text-align: center;">
+                <div class="section-label">THE ASK</div>
+                <h1 class="mega-title">
+                    <span class="white">THREE</span><br>
+                    <span class="blue">DECISIONS</span>
+                </h1>
+            </div>
+        </div>
+
+        <!-- SCENE 22: Decision Points -->
+        <div class="scene" data-title="Decisions">
+            <div class="scene-content">
+                <div class="section-label">WHAT WE NEED</div>
+                <h2>Your Approval Required</h2>
+                <div class="land-grid">
+                    <div class="land-card spotlight">
+                        <div class="land-icon">1️⃣</div>
+                        <div class="land-title">Approve Conditional Go</div>
+                        <div class="land-desc">Commit to Phase 0 funding</div>
+                        <div class="land-feature" style="font-size: 1.25rem; font-weight: 700; color: var(--bb-blue);">$1.5M</div>
+                    </div>
+                    <div class="land-card">
+                        <div class="land-icon">2️⃣</div>
+                        <div class="land-title">Appoint Executive Sponsor</div>
+                        <div class="land-desc">C-level with P&L accountability</div>
+                        <div class="land-feature">Decision maker for gates</div>
+                    </div>
+                    <div class="land-card">
+                        <div class="land-icon">3️⃣</div>
+                        <div class="land-title">Commit to Phased Approach</div>
+                        <div class="land-desc">3-phase plan with decision gates</div>
+                        <div class="land-feature">Final decision at Month 3</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 23: Timeline Summary -->
+        <div class="scene" data-title="Timeline">
+            <div class="scene-content">
+                <div class="section-label">KEY MILESTONES</div>
+                <h2>What Happens When</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Month 3</div>
+                        <div class="stat-value blue">Gate 1</div>
+                        <div class="stat-context">Baseline validated</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Month 6</div>
+                        <div class="stat-value orange">Pilot</div>
+                        <div class="stat-context">1,000+ customers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Month 9</div>
+                        <div class="stat-value orange">Gate 2</div>
+                        <div class="stat-context">Go/No-Go decision</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Month 12</div>
+                        <div class="stat-value blue">Rollout</div>
+                        <div class="stat-context">All markets live</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Month 18</div>
+                        <div class="stat-value green">Break-even</div>
+                        <div class="stat-context">Target achieved</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 24: Summary -->
+        <div class="scene" data-title="Summary">
+            <div class="scene-content">
+                <div class="section-label">IN SUMMARY</div>
+                <h2>Why This Investment Makes Sense</h2>
+                <div class="land-grid">
+                    <div class="land-card">
+                        <div class="land-icon">📉</div>
+                        <div class="land-title">Problem is Real</div>
+                        <div class="land-desc">$4.7M annual impact from gaps</div>
+                        <div class="land-feature">40% onboarding completion</div>
+                        <div class="land-feature">20% digital containment</div>
+                    </div>
+                    <div class="land-card">
+                        <div class="land-icon">💰</div>
+                        <div class="land-title">Returns are Strong</div>
+                        <div class="land-desc">$5.2M NPV, 42% IRR</div>
+                        <div class="land-feature">Positive in all scenarios</div>
+                        <div class="land-feature">18-month payback</div>
+                    </div>
+                    <div class="land-card">
+                        <div class="land-icon">🛡️</div>
+                        <div class="land-title">Risk is Managed</div>
+                        <div class="land-desc">Phased approach with gates</div>
+                        <div class="land-feature">Validate before committing</div>
+                        <div class="land-feature">$1.2M contingency built in</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 25: Final CTA -->
+        <div class="scene" data-title="Decision">
+            <div class="scene-content" style="text-align: center;">
+                <div class="section-label">RECOMMENDATION</div>
+                <h1 class="mega-title">
+                    <span class="white">APPROVE</span><br>
+                    <span class="green">CONDITIONAL GO</span>
+                </h1>
+                <div class="decision-banner animate-pulse">
+                    <div class="decision-content">
+                        <h3>$8.0M Investment | 42% IRR | $5.2M NPV</h3>
+                        <p>Phase 0 validation ensures we proceed with confidence</p>
+                    </div>
+                    <div class="decision-badge">Let's Begin</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-track">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <!-- Keyboard Hint -->
+    <div class="keyboard-hint">
+        <kbd>←</kbd> <kbd>→</kbd> or <kbd>Space</kbd> to navigate
+    </div>
+
+    <script>
+        let currentScene = 0;
+        let autoPlayInterval = null;
+        const sceneDuration = 8000; // 8 seconds per scene
+
+        const scenes = document.querySelectorAll('.scene');
+        const totalScenes = scenes.length;
+        document.getElementById('total-scenes').textContent = totalScenes;
+
+        function showScene(index) {
+            if (index < 0) index = 0;
+            if (index >= totalScenes) index = totalScenes - 1;
+
+            scenes.forEach((scene, i) => {
+                scene.classList.remove('active');
+                if (i === index) {
+                    scene.classList.add('active');
+                }
+            });
+
+            currentScene = index;
+            document.getElementById('current-scene').textContent = currentScene + 1;
+
+            // Update progress bar
+            const progress = ((currentScene + 1) / totalScenes) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+        }
+
+        function nextScene() {
+            if (currentScene < totalScenes - 1) {
+                showScene(currentScene + 1);
+            }
+        }
+
+        function prevScene() {
+            if (currentScene > 0) {
+                showScene(currentScene - 1);
+            }
+        }
+
+        function toggleAutoPlay() {
+            const btn = document.getElementById('autoplay-btn');
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+                btn.classList.remove('active');
+                btn.textContent = 'Auto Play';
+            } else {
+                autoPlayInterval = setInterval(() => {
+                    if (currentScene < totalScenes - 1) {
+                        nextScene();
+                    } else {
+                        toggleAutoPlay(); // Stop at end
+                    }
+                }, sceneDuration);
+                btn.classList.add('active');
+                btn.textContent = 'Stop';
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextScene();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevScene();
+            } else if (e.key === 'Escape') {
+                if (autoPlayInterval) toggleAutoPlay();
+            }
+        });
+
+        // Touch/swipe navigation
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) nextScene();
+                else prevScene();
+            }
+        });
+
+        // Click to advance (on scene content)
+        document.getElementById('scene-container').addEventListener('click', (e) => {
+            // Only advance if clicking on empty area
+            if (e.target.closest('.nav-btn, .auto-play, a, button')) return;
+            nextScene();
+        });
+
+        // Initialize
+        showScene(0);
+    </script>
+</body>
+</html>

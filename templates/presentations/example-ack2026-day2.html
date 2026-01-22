@@ -1,0 +1,2782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACK 2026 Day 2 | Activate Your Superpowers</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bb-blue: #1A56FF;
+            --bb-dark: #1A1F36;
+            --bb-gray: #6B7280;
+            --bb-light: #F3F4F6;
+            --bb-glow: rgba(26, 86, 255, 0.4);
+            --bb-red: #EF4444;
+            --bb-green: #10B981;
+            --bb-orange: #F59E0B;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            overflow: hidden;
+            color: white;
+        }
+
+        .canvas {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(26, 86, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(26, 86, 255, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+
+        .bg-glow {
+            position: fixed;
+            width: 800px; height: 800px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--bb-glow) 0%, transparent 70%);
+            filter: blur(100px);
+            z-index: 0;
+            animation: floatGlow 20s ease-in-out infinite;
+        }
+        .bg-glow.glow1 { top: -200px; right: -200px; }
+        .bg-glow.glow2 { bottom: -300px; left: -200px; animation-delay: -10s; }
+
+        @keyframes floatGlow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-50px, 50px) scale(1.1); }
+        }
+
+        .scene-container {
+            position: absolute;
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .scene {
+            position: absolute;
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .scene.active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .scene.exit-left { opacity: 0; transform: translateX(-100px) scale(0.9); }
+        .scene.exit-right { opacity: 0; transform: translateX(100px) scale(0.9); }
+
+        .scene-content {
+            max-width: 1400px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        .mega-title {
+            font-size: clamp(50px, 8vw, 120px);
+            font-weight: 900;
+            line-height: 0.95;
+            letter-spacing: -0.03em;
+        }
+        .mega-title .blue { color: var(--bb-blue); }
+        .mega-title .white { color: white; }
+
+        .subtitle {
+            font-size: clamp(16px, 2vw, 28px);
+            font-weight: 400;
+            color: rgba(255,255,255,0.7);
+            margin-top: 20px;
+        }
+
+        .section-label {
+            display: inline-block;
+            background: rgba(26, 86, 255, 0.2);
+            color: var(--bb-blue);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .scene.active .stat-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .scene.active .stat-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .stat-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .stat-card:nth-child(3) { transition-delay: 0.6s; }
+
+        .stat-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--bb-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 42px;
+            font-weight: 800;
+            color: white;
+        }
+
+        .stat-year {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .stat-target {
+            background: var(--bb-blue);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 12px;
+            display: inline-block;
+        }
+
+        .stat-target-label {
+            font-size: 9px;
+            opacity: 0.8;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Superpower Cards */
+        .superpowers-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+
+        .superpower-card {
+            background: linear-gradient(135deg, rgba(26, 86, 255, 0.1) 0%, rgba(26, 31, 54, 0.8) 100%);
+            border: 1px solid rgba(26, 86, 255, 0.3);
+            border-radius: 20px;
+            padding: 24px;
+            width: 180px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s ease;
+        }
+
+        .scene.active .superpower-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .scene.active .superpower-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .superpower-card:nth-child(2) { transition-delay: 0.3s; }
+        .scene.active .superpower-card:nth-child(3) { transition-delay: 0.4s; }
+        .scene.active .superpower-card:nth-child(4) { transition-delay: 0.5s; }
+
+        .superpower-icon {
+            width: 60px; height: 60px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 28px;
+        }
+
+        .superpower-name {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .superpower-tagline {
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+            font-style: italic;
+        }
+
+        /* Sales Motion Cards */
+        .motion-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        .motion-card {
+            border-radius: 24px;
+            padding: 50px;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.8s ease;
+        }
+
+        .motion-card.blue {
+            background: linear-gradient(135deg, var(--bb-blue) 0%, #0d3db8 100%);
+        }
+
+        .motion-card.red {
+            background: linear-gradient(135deg, var(--bb-red) 0%, #DC2626 100%);
+        }
+
+        .scene.active .motion-card {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .scene.active .motion-card:nth-child(1) { transition-delay: 0.3s; }
+        .scene.active .motion-card:nth-child(2) { transition-delay: 0.5s; }
+
+        .motion-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .motion-percent {
+            font-size: 72px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .motion-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-top: 16px;
+            opacity: 0.9;
+        }
+
+        .motion-label {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .motion-target {
+            margin-top: 16px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Pyramid Tiers */
+        .pyramid-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-top: 40px;
+        }
+
+        .pyramid-tier {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .scene.active .pyramid-tier {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .scene.active .pyramid-tier:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .pyramid-tier:nth-child(2) { transition-delay: 0.3s; }
+        .scene.active .pyramid-tier:nth-child(3) { transition-delay: 0.4s; }
+        .scene.active .pyramid-tier:nth-child(4) { transition-delay: 0.5s; }
+        .scene.active .pyramid-tier:nth-child(5) { transition-delay: 0.6s; }
+
+        .tier-label {
+            width: 70px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .tier-bar {
+            height: 45px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .tier-bar.t1 { width: 100px; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.5); }
+        .tier-bar.t2 { width: 160px; background: var(--bb-blue); }
+        .tier-bar.t3 { width: 220px; background: var(--bb-green); }
+        .tier-bar.t4 { width: 280px; background: var(--bb-orange); }
+        .tier-bar.t5 { width: 340px; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); }
+
+        .tier-type {
+            width: 140px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .tier-focus {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .tier-focus.opportunistic { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+        .tier-focus.serviceable { background: rgba(16, 185, 129, 0.2); color: var(--bb-green); }
+        .tier-focus.selective { background: rgba(245, 158, 11, 0.2); color: var(--bb-orange); }
+
+        /* Competition Visual */
+        .competition-visual {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 80px;
+            margin-top: 60px;
+        }
+
+        .competition-item {
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.8s ease;
+            max-width: 400px;
+        }
+
+        .scene.active .competition-item {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .competition-badge {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: var(--bb-dark);
+            border: 3px solid var(--bb-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 44px;
+            margin: 0 auto 20px;
+        }
+
+        .competition-rank {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--bb-blue);
+            margin-bottom: 8px;
+        }
+
+        .competition-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .competition-challenges {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .challenge-bubble {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.9);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .scene.active .challenge-bubble {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scene.active .challenge-bubble:nth-child(1) { transition-delay: 0.5s; }
+        .scene.active .challenge-bubble:nth-child(2) { transition-delay: 0.7s; }
+        .scene.active .challenge-bubble:nth-child(3) { transition-delay: 0.9s; }
+
+        /* Deal Card */
+        .deal-card {
+            background: white;
+            color: var(--bb-dark);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: left;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 40px;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s ease;
+        }
+
+        .scene.active .deal-card {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.3s;
+        }
+
+        .deal-badge {
+            display: inline-block;
+            background: var(--bb-blue);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+
+        .deal-badge.scoping {
+            background: var(--bb-orange);
+        }
+
+        .deal-name {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 16px 0 8px;
+        }
+
+        .deal-desc {
+            color: var(--bb-gray);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .deal-result {
+            background: var(--bb-dark);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .deal-result-value {
+            font-size: 56px;
+            font-weight: 900;
+            color: var(--bb-blue);
+        }
+
+        .deal-result-label {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .deal-superpowers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .deal-sp-badge {
+            background: var(--bb-dark);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Land More Cards */
+        .land-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .land-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 28px;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .land-card.spotlight {
+            background: var(--bb-dark);
+            border: 2px solid var(--bb-blue);
+            box-shadow: 0 0 40px var(--bb-glow);
+        }
+
+        .scene.active .land-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .scene.active .land-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .land-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .land-card:nth-child(3) { transition-delay: 0.6s; }
+
+        .land-icon {
+            font-size: 36px;
+            margin-bottom: 16px;
+        }
+
+        .land-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .land-desc {
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 16px;
+        }
+
+        .land-feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+
+        .land-card.spotlight .land-feature {
+            background: rgba(26, 86, 255, 0.2);
+        }
+
+        /* Light Theme Scene */
+        .scene.light-theme .scene-content {
+            background: white;
+            border-radius: 24px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1100px;
+        }
+        .scene.light-theme .land-card {
+            background: var(--bb-light);
+            border: 1px solid #E5E7EB;
+        }
+        .scene.light-theme .land-card.spotlight {
+            background: white;
+            border: 2px solid var(--bb-blue);
+            box-shadow: 0 4px 20px rgba(26, 86, 255, 0.15);
+        }
+        .scene.light-theme .land-title {
+            color: var(--bb-dark);
+        }
+        .scene.light-theme .land-desc {
+            color: var(--bb-gray);
+        }
+        .scene.light-theme .land-feature {
+            background: white;
+            color: var(--bb-dark);
+            border: 1px solid #E5E7EB;
+        }
+        .scene.light-theme .land-card.spotlight .land-feature {
+            background: rgba(26, 86, 255, 0.08);
+            border: 1px solid rgba(26, 86, 255, 0.2);
+        }
+
+        /* Staggered Animation for Light Theme */
+        .scene.light-theme .animate-item {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        .scene.light-theme.active .animate-item { opacity: 1; transform: translateY(0); }
+        .scene.light-theme.active .animate-item:nth-child(1) { transition-delay: 0.1s; }
+        .scene.light-theme.active .animate-item:nth-child(2) { transition-delay: 0.3s; }
+        .scene.light-theme.active .animate-item:nth-child(3) { transition-delay: 0.5s; }
+        .scene.light-theme.active .animate-item:nth-child(4) { transition-delay: 0.7s; }
+        .scene.light-theme.active .animate-item:nth-child(5) { transition-delay: 0.9s; }
+
+        .new-badge {
+            display: inline-block;
+            background: var(--bb-blue);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        /* Partner Grid */
+        .partner-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .partner-column {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 24px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .scene.active .partner-column {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .scene.active .partner-column:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .partner-column:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .partner-column:nth-child(3) { transition-delay: 0.6s; }
+
+        .partner-column-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .partner-num {
+            width: 28px; height: 28px;
+            background: var(--bb-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .partner-column-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .partner-column-sub {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .partner-item {
+            background: rgba(255,255,255,0.05);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        /* Phases */
+        .phases-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .phase-card {
+            border-radius: 16px;
+            padding: 28px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .phase-card.phase1 {
+            background: var(--bb-blue);
+        }
+
+        .phase-card.phase2, .phase-card.phase3 {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .scene.active .phase-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .scene.active .phase-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .phase-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .phase-card:nth-child(3) { transition-delay: 0.6s; }
+
+        .phase-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+
+        .phase-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .phase-section {
+            margin-bottom: 16px;
+        }
+
+        .phase-section-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+            margin-bottom: 8px;
+        }
+
+        .phase-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .phase-tag {
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+
+        .phase-card.phase2 .phase-tag, .phase-card.phase3 .phase-tag {
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* Ignite Cards */
+        .ignite-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .ignite-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 28px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .ignite-card.new {
+            border: 2px solid var(--bb-blue);
+            position: relative;
+        }
+
+        .ignite-card.new::before {
+            content: 'NEW 2026';
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: var(--bb-blue);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .scene.active .ignite-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .scene.active .ignite-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .ignite-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .ignite-card:nth-child(3) { transition-delay: 0.6s; }
+
+        .ignite-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .ignite-icon {
+            width: 48px; height: 48px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .ignite-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .ignite-subtitle {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .ignite-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        /* Flywheel */
+        .flywheel-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 80px;
+            margin-top: 40px;
+        }
+
+        .flywheel {
+            position: relative;
+            width: 380px; height: 380px;
+        }
+
+        .flywheel-center {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px; height: 120px;
+            background: var(--bb-dark);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .flywheel-node {
+            position: absolute;
+            text-align: center;
+            opacity: 0;
+            transition: all 0.6s ease;
+        }
+
+        .scene.active .flywheel-node {
+            opacity: 1;
+        }
+
+        .flywheel-node.top { top: 0; left: 50%; transform: translateX(-50%); }
+        .flywheel-node.right { top: 50%; right: 0; transform: translateY(-50%); }
+        .flywheel-node.bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
+        .flywheel-node.left { top: 50%; left: 0; transform: translateY(-50%); }
+
+        .scene.active .flywheel-node.top { transition-delay: 0.3s; }
+        .scene.active .flywheel-node.right { transition-delay: 0.5s; }
+        .scene.active .flywheel-node.bottom { transition-delay: 0.7s; }
+        .scene.active .flywheel-node.left { transition-delay: 0.9s; }
+
+        .flywheel-node-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .flywheel-node-label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .flywheel-node.right .flywheel-node-icon {
+            width: 60px; height: 60px;
+            background: var(--bb-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flywheel-circle {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px; height: 280px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .flywheel-info {
+            text-align: left;
+            max-width: 400px;
+        }
+
+        .flywheel-info h3 {
+            font-size: 26px;
+            margin-bottom: 24px;
+        }
+
+        .flywheel-info h3 .green {
+            color: var(--bb-green);
+        }
+
+        .flywheel-bullet {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .flywheel-bullet-icon {
+            font-size: 18px;
+        }
+
+        /* Quote */
+        .quote-text {
+            font-size: clamp(28px, 4vw, 52px);
+            font-weight: 700;
+            line-height: 1.3;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .quote-text .highlight {
+            color: var(--bb-blue);
+        }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 30px 50px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .play-btn {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: var(--bb-blue);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px var(--bb-glow);
+        }
+
+        .play-btn svg {
+            width: 22px; height: 22px;
+            fill: white;
+        }
+
+        .progress-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--bb-blue);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-dots {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 2px;
+        }
+
+        .progress-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.active {
+            background: var(--bb-blue);
+            transform: scale(1.4);
+        }
+
+        .scene-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            min-width: 180px;
+        }
+
+        .scene-counter {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .scene-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .nav-arrows {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+        }
+
+        .nav-arrows.left { left: 30px; }
+        .nav-arrows.right { right: 30px; }
+
+        .nav-arrow {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .nav-arrow:hover {
+            background: var(--bb-blue);
+            border-color: var(--bb-blue);
+        }
+
+        .nav-arrow svg {
+            width: 20px; height: 20px;
+            fill: white;
+        }
+
+        .logo {
+            position: fixed;
+            top: 30px; left: 40px;
+            z-index: 100;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .speaker-badge {
+            position: fixed;
+            top: 30px; right: 40px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+        }
+
+        .speaker-avatar {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: var(--bb-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid, .land-grid, .ignite-grid, .phases-grid, .partner-grid { grid-template-columns: 1fr; }
+            .motion-grid { grid-template-columns: 1fr; }
+            .superpowers-row { flex-direction: column; align-items: center; }
+            .flywheel-container { flex-direction: column; }
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .scene-content {
+                width: 95%;
+                padding: 0 15px;
+            }
+
+            .mega-title {
+                font-size: clamp(32px, 10vw, 60px) !important;
+            }
+
+            .subtitle {
+                font-size: clamp(14px, 3vw, 18px);
+            }
+
+            .section-label {
+                font-size: 10px;
+                padding: 6px 14px;
+            }
+
+            .stats-grid, .land-grid, .ignite-grid, .phases-grid, .partner-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .stat-card, .land-card, .ignite-card, .phase-card, .partner-column {
+                padding: 20px;
+            }
+
+            .stat-value {
+                font-size: 32px;
+            }
+
+            .superpowers-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .superpower-card {
+                width: 90%;
+                max-width: 200px;
+            }
+
+            .motion-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .motion-card {
+                padding: 30px;
+            }
+
+            .motion-percent {
+                font-size: 48px;
+            }
+
+            .motion-value {
+                font-size: 24px;
+            }
+
+            /* Deal Cards Mobile */
+            .deal-card {
+                grid-template-columns: 1fr !important;
+                gap: 24px;
+                padding: 24px;
+            }
+
+            .deal-name {
+                font-size: 22px;
+            }
+
+            .deal-result {
+                padding: 24px;
+            }
+
+            .deal-result-value {
+                font-size: 42px;
+            }
+
+            /* Pyramid Mobile */
+            .pyramid-container {
+                transform: scale(0.8);
+                transform-origin: top center;
+            }
+
+            .tier-bar {
+                font-size: 11px;
+                height: 38px;
+            }
+
+            .tier-label {
+                font-size: 11px;
+                width: 50px;
+            }
+
+            /* Competition Mobile */
+            .competition-visual {
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            .competition-item {
+                max-width: 100%;
+            }
+
+            .competition-badge {
+                width: 80px;
+                height: 80px;
+                font-size: 32px;
+            }
+
+            /* Flywheel Mobile */
+            .flywheel {
+                transform: scale(0.7);
+            }
+
+            .flywheel-info {
+                text-align: center;
+                padding: 0 15px;
+            }
+
+            .flywheel-info h3 {
+                font-size: 20px;
+            }
+
+            /* Controls Mobile */
+            .controls {
+                padding: 15px 20px;
+                gap: 15px;
+            }
+
+            .play-btn {
+                width: 44px;
+                height: 44px;
+            }
+
+            .scene-info {
+                min-width: 100px;
+            }
+
+            .scene-counter {
+                font-size: 10px;
+            }
+
+            .scene-title {
+                font-size: 11px;
+            }
+
+            .progress-dots {
+                display: none;
+            }
+
+            /* Nav Arrows Mobile */
+            .nav-arrows {
+                display: none;
+            }
+
+            /* Logo & Speaker Badge Mobile */
+            .logo {
+                font-size: 16px;
+                top: 15px;
+                left: 15px;
+            }
+
+            .speaker-badge {
+                top: 15px;
+                right: 15px;
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+
+            .speaker-avatar {
+                width: 24px;
+                height: 24px;
+                font-size: 11px;
+            }
+
+            /* Quote Mobile */
+            .quote-text {
+                font-size: clamp(22px, 6vw, 36px);
+                padding: 0 10px;
+            }
+
+            /* Light Theme Mobile */
+            .scene.light-theme .scene-content {
+                padding: 25px;
+                border-radius: 16px;
+            }
+        }
+
+        /* Extra Small Mobile */
+        @media (max-width: 480px) {
+            .mega-title {
+                font-size: clamp(28px, 9vw, 48px) !important;
+            }
+
+            .stat-value {
+                font-size: 28px;
+            }
+
+            .deal-result-value {
+                font-size: 36px;
+            }
+
+            .controls {
+                padding: 12px 15px;
+            }
+
+            .play-btn {
+                width: 40px;
+                height: 40px;
+            }
+
+            .play-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+        }
+
+        /* Touch-friendly tap targets */
+        @media (hover: none) and (pointer: coarse) {
+            .nav-arrow, .play-btn, .progress-dot {
+                min-width: 44px;
+                min-height: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas">
+        <div class="bg-grid"></div>
+        <div class="bg-glow glow1"></div>
+        <div class="bg-glow glow2"></div>
+
+        <div class="logo">Backbase</div>
+
+        <div class="speaker-badge">
+            <div class="speaker-avatar">J</div>
+            <span>Joost, Mayur & Tim</span>
+        </div>
+
+        <div class="scene-container">
+
+            <!-- Scene 1: Opening -->
+            <div class="scene active" data-title="Global Performance Snapshot">
+                <div class="scene-content">
+                    <div class="section-label">ACK 2026 Day 2</div>
+                    <h1 class="mega-title">
+                        <span class="blue">Global</span><br>
+                        <span class="white">Performance</span><br>
+                        <span class="white">Snapshot</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Scene 2: Turnaround Year -->
+            <div class="scene" data-title="2025 Turnaround">
+                <div class="scene-content">
+                    <h1 class="mega-title">
+                        <span class="white">2025 WAS A</span><br>
+                        <span class="blue">TURNAROUND</span><br>
+                        <span class="white">YEAR.</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Scene 3: Turnaround Stats -->
+            <div class="scene" data-title="The Numbers">
+                <div class="scene-content">
+                    <div class="section-label">Performance</div>
+                    <h2 style="font-size: 38px; margin-bottom: 10px;">2025 was a turnaround year.</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">New Bookings</div>
+                            <div class="stat-row">
+                                <div>
+                                    <div class="stat-value">-11%</div>
+                                    <div class="stat-year">2024</div>
+                                </div>
+                                <div style="font-size: 20px; color: var(--bb-blue);">→</div>
+                                <div>
+                                    <div class="stat-value" style="color: var(--bb-blue);">+12%</div>
+                                    <div class="stat-year">2025</div>
+                                </div>
+                            </div>
+                            <div class="stat-target">
+                                ↑ 50%
+                                <span class="stat-target-label">NORTH STAR</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">NRR</div>
+                            <div class="stat-row">
+                                <div>
+                                    <div class="stat-value">90%</div>
+                                    <div class="stat-year">2024</div>
+                                </div>
+                                <div style="font-size: 20px; color: var(--bb-blue);">→</div>
+                                <div>
+                                    <div class="stat-value" style="color: var(--bb-blue);">101%</div>
+                                    <div class="stat-year">2025</div>
+                                </div>
+                            </div>
+                            <div class="stat-target">
+                                ↑ 120%
+                                <span class="stat-target-label">NORTH STAR</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Churn</div>
+                            <div class="stat-row">
+                                <div>
+                                    <div class="stat-value">17%</div>
+                                    <div class="stat-year">2024</div>
+                                </div>
+                                <div style="font-size: 20px; color: var(--bb-blue);">→</div>
+                                <div>
+                                    <div class="stat-value" style="color: var(--bb-green);">14%</div>
+                                    <div class="stat-year">2025</div>
+                                </div>
+                            </div>
+                            <div class="stat-target">
+                                ↓ 7%
+                                <span class="stat-target-label">NORTH STAR</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 4: Market Analysis - Banking Software Revenue Growth -->
+            <div class="scene" data-title="Market Analysis">
+                <div class="scene-content">
+                    <div class="section-label">Market Analysis</div>
+                    <h2 style="font-size: 38px; margin-bottom: 15px;">Banking Software Revenue Growth</h2>
+                    <p style="color: rgba(255,255,255,0.5); margin-bottom: 50px; font-size: 13px;">
+                        YoY revenue growth comparison | Latest (FY24-26) vs Peak (2021-22)
+                    </p>
+
+                    <!-- Chart Container -->
+                    <div style="max-width: 900px; margin: 0 auto;">
+                        <!-- Header Row -->
+                        <div style="display: grid; grid-template-columns: 140px 1fr 80px 80px; gap: 20px; margin-bottom: 20px; padding: 0 10px;">
+                            <div style="font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px;">Company</div>
+                            <div></div>
+                            <div style="font-size: 11px; color: var(--bb-blue); text-transform: uppercase; letter-spacing: 1px; text-align: center;">Latest</div>
+                            <div style="font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; text-align: center;">Peak</div>
+                        </div>
+
+                        <!-- Backbase - Highlighted -->
+                        <div style="display: grid; grid-template-columns: 140px 1fr 80px 80px; gap: 20px; align-items: center; background: rgba(26, 86, 255, 0.1); border: 2px solid var(--bb-blue); border-radius: 12px; padding: 16px 10px; margin-bottom: 12px; box-shadow: 0 0 30px rgba(26, 86, 255, 0.2);">
+                            <div style="font-weight: 700; font-size: 16px; color: var(--bb-blue);">Backbase</div>
+                            <div style="position: relative; height: 24px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+                                <div style="position: absolute; left: 0; top: 0; height: 100%; width: 33%; background: var(--bb-blue); border-radius: 4px;"></div>
+                                <div style="position: absolute; left: 0; top: 0; height: 100%; width: 100%; border-right: 2px dashed rgba(255,255,255,0.2); box-sizing: border-box;"></div>
+                            </div>
+                            <div style="font-size: 22px; font-weight: 800; color: var(--bb-blue); text-align: center;">12%</div>
+                            <div style="font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.5); text-align: center;">36%</div>
+                        </div>
+
+                        <!-- Alkami -->
+                        <div style="display: grid; grid-template-columns: 140px 1fr 80px 80px; gap: 20px; align-items: center; padding: 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                            <div style="font-weight: 500; font-size: 14px; color: rgba(255,255,255,0.8);">Alkami</div>
+                            <div style="position: relative; height: 20px; background: rgba(255,255,255,0.03); border-radius: 4px; overflow: hidden;">
+                                <div style="position: absolute; left: 0; top: 0; height: 100%; width: 72%; background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
+                            </div>
+                            <div style="font-size: 18px; font-weight: 700; color: white; text-align: center;">26%</div>
+                            <div style="font-size: 14px; color: rgba(255,255,255,0.4); text-align: center;">36%</div>
+                        </div>
+
+                        <!-- Q2 Holdings -->
+                        <div style="display: grid; grid-template-columns: 140px 1fr 80px 80px; gap: 20px; align-items: center; padding: 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                            <div style="font-weight: 500; font-size: 14px; color: rgba(255,255,255,0.8);">Q2 Holdings</div>
+                            <div style="position: relative; height: 20px; background: rgba(255,255,255,0.03); border-radius: 4px; overflow: hidden;">
+                                <div style="position: absolute; left: 0; top: 0; height: 100%; width: 33%; background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
+                            </div>
+                            <div style="font-size: 18px; font-weight: 700; color: white; text-align: center;">12%</div>
+                            <div style="font-size: 14px; color: rgba(255,255,255,0.4); text-align: center;">24%</div>
+                        </div>
+
+                        <!-- Temenos -->
+                        <div style="display: grid; grid-template-columns: 140px 1fr 80px 80px; gap: 20px; align-items: center; padding: 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                            <div style="font-weight: 500; font-size: 14px; color: rgba(255,255,255,0.8);">Temenos</div>
+                            <div style="position: relative; height: 20px; background: rgba(255,255,255,0.03); border-radius: 4px; overflow: hidden;">
+                                <div style="position: absolute; left: 0; top: 0; height: 100%; width: 11%; background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
+                            </div>
+                            <div style="font-size: 18px; font-weight: 700; color: white; text-align: center;">4%</div>
+                            <div style="font-size: 14px; color: rgba(255,255,255,0.4); text-align: center;">15%</div>
+                        </div>
+
+                        <!-- Infosys Finacle -->
+                        <div style="display: grid; grid-template-columns: 140px 1fr 80px 80px; gap: 20px; align-items: center; padding: 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                            <div style="font-weight: 500; font-size: 14px; color: rgba(255,255,255,0.8);">Infosys Finacle</div>
+                            <div style="position: relative; height: 20px; background: rgba(255,255,255,0.03); border-radius: 4px; overflow: hidden;">
+                                <div style="position: absolute; left: 0; top: 0; height: 100%; width: 11%; background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
+                            </div>
+                            <div style="font-size: 18px; font-weight: 700; color: white; text-align: center;">4%</div>
+                            <div style="font-size: 14px; color: rgba(255,255,255,0.4); text-align: center;">20%</div>
+                        </div>
+
+                        <!-- NCR Voyix D3 -->
+                        <div style="display: grid; grid-template-columns: 140px 1fr 80px 80px; gap: 20px; align-items: center; padding: 14px 10px;">
+                            <div style="font-weight: 500; font-size: 14px; color: rgba(255,255,255,0.8);">NCR Voyix (D3)</div>
+                            <div style="position: relative; height: 20px; background: rgba(255,255,255,0.03); border-radius: 4px; overflow: hidden;">
+                                <div style="position: absolute; left: 0; top: 0; height: 100%; width: 14%; background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
+                            </div>
+                            <div style="font-size: 18px; font-weight: 700; color: white; text-align: center;">5%</div>
+                            <div style="font-size: 14px; color: rgba(255,255,255,0.4); text-align: center;">22%</div>
+                        </div>
+                    </div>
+
+                    <!-- Insight callout -->
+                    <div style="margin-top: 40px; display: flex; justify-content: center;">
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px 30px; display: inline-flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 20px;">📉</span>
+                            <span style="font-size: 14px; color: rgba(255,255,255,0.7);">Industry-wide slowdown from peak — <strong style="color: white;">opportunity to gain market share</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 5: Two Sales Motions - RED for Land (missed target) -->
+            <div class="scene" data-title="Sales Motions">
+                <div class="scene-content">
+                    <div class="section-label">Sales Execution - Back to basics</div>
+                    <h2 style="font-size: 38px;">Two Sales Motions</h2>
+                    <div class="motion-grid">
+                        <div class="motion-card red">
+                            <div class="motion-title">LAND NEW LOGOS</div>
+                            <div class="motion-percent">50%</div>
+                            <div class="motion-value">€7.4M</div>
+                            <div class="motion-label">New Logos</div>
+                            <div class="motion-target">Target: €43M</div>
+                        </div>
+                        <div class="motion-card blue">
+                            <div class="motion-title">EXPAND IN CUSTOMERS</div>
+                            <div class="motion-percent">50%</div>
+                            <div class="motion-value">€20.9M</div>
+                            <div class="motion-label">Expansion</div>
+                            <div class="motion-target">Target for '25</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 6: New Logo -->
+            <div class="scene" data-title="New Logo Motion">
+                <div class="scene-content">
+                    <h1 class="mega-title">
+                        <span class="white">NEW</span><br>
+                        <span class="blue">LOGO</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Scene 9: Where We Operate - Color coded tiers -->
+            <div class="scene" data-title="Market Tiers">
+                <div class="scene-content">
+                    <h2 style="font-size: 38px; margin-bottom: 10px;">Where do we operate?</h2>
+                    <p class="subtitle" style="margin-bottom: 30px;">We operate in Tier 2, 3, and selectively Tier 4</p>
+                    <div class="pyramid-container">
+                        <div class="pyramid-tier">
+                            <div class="tier-label">Tier 1</div>
+                            <div class="tier-bar t1">Majors</div>
+                            <div class="tier-type">Large accounts</div>
+                            <div class="tier-focus opportunistic">Opportunistic</div>
+                        </div>
+                        <div class="pyramid-tier">
+                            <div class="tier-label">Tier 2</div>
+                            <div class="tier-bar t2">Enterprise</div>
+                            <div class="tier-type">Serviceable</div>
+                            <div class="tier-focus serviceable">Focus</div>
+                        </div>
+                        <div class="pyramid-tier">
+                            <div class="tier-label">Tier 3</div>
+                            <div class="tier-bar t3">Upper Mid-Market</div>
+                            <div class="tier-type">Serviceable</div>
+                            <div class="tier-focus serviceable">Focus</div>
+                        </div>
+                        <div class="pyramid-tier">
+                            <div class="tier-label">Tier 4</div>
+                            <div class="tier-bar t4">Lower Mid-Market</div>
+                            <div class="tier-type">Serviceable</div>
+                            <div class="tier-focus selective">Selective</div>
+                        </div>
+                        <div class="pyramid-tier">
+                            <div class="tier-label">Tier 5</div>
+                            <div class="tier-bar t5">Micro</div>
+                            <div class="tier-type">Small accounts</div>
+                            <div class="tier-focus opportunistic">—</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 10: Both Competitions with popping challenges -->
+            <div class="scene" data-title="Competition">
+                <div class="scene-content">
+                    <div class="section-label">The Challenge</div>
+                    <h2 style="font-size: 32px; margin-bottom: 40px;">Who We're Up Against</h2>
+                    <div class="competition-visual">
+                        <div class="competition-item">
+                            <div class="competition-badge">🏗️</div>
+                            <div class="competition-rank">#1 Competition</div>
+                            <div class="competition-name">Self Build</div>
+                            <div class="competition-challenges">
+                                <div class="challenge-bubble">🔒 Protectiveness of buyer</div>
+                                <div class="challenge-bubble">💻 Internal IT is the competition</div>
+                            </div>
+                        </div>
+                        <div class="competition-item">
+                            <div class="competition-badge">🏦</div>
+                            <div class="competition-rank">#2 Competition</div>
+                            <div class="competition-name">Core Banking Vendors</div>
+                            <div class="competition-challenges">
+                                <div class="challenge-bubble">🍪 Cookie cutter solutions</div>
+                                <div class="challenge-bubble">⚡ Fast time to market</div>
+                                <div class="challenge-bubble">💸 Cheap to free digital banking</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 11: Next Wave Strategy -->
+            <div class="scene" data-title="Next Wave">
+                <div class="scene-content">
+                    <div class="quote-text">
+                        This calls for<br>
+                        <span class="highlight">Next Wave Strategy</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 12: AI Landing Zones -->
+            <div class="scene" data-title="Next S-Curve">
+                <div class="scene-content">
+                    <div class="section-label">Next S-Curve</div>
+                    <h1 class="mega-title" style="font-size: 54px;">
+                        <span class="white">Go all-in on</span><br>
+                        <span class="blue">AI-powered</span><br>
+                        <span class="white">landing zones!</span>
+                    </h1>
+                    <p class="subtitle">Help Banks unlock the Power of AI</p>
+                </div>
+            </div>
+
+            <!-- Scene 13: Land More 2026 - Light Theme with Animations -->
+            <div class="scene light-theme" data-title="Land More 2026">
+                <div class="scene-content">
+                    <!-- Header -->
+                    <div class="animate-item" style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
+                        <div style="background: var(--bb-dark); padding: 14px 22px; border-radius: 12px; font-size: 24px; font-weight: 800; color: white;">
+                            2026 🔥
+                        </div>
+                        <div style="text-align: left;">
+                            <div style="font-size: 11px; color: var(--bb-gray); text-transform: uppercase; letter-spacing: 2px;">Strategy</div>
+                            <div style="font-size: 42px; font-weight: 800; color: var(--bb-dark);">Land <span style="color: var(--bb-blue);">More</span></div>
+                        </div>
+                    </div>
+                    <!-- Target Account Approach - KEY -->
+                    <div class="animate-item" style="background: linear-gradient(135deg, var(--bb-light) 0%, white 100%); border: 2px solid var(--bb-blue); border-radius: 16px; padding: 20px 30px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(26, 86, 255, 0.1);">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 14px;">
+                            <span style="font-size: 32px;">🎯</span>
+                            <div style="text-align: center;">
+                                <div style="font-size: 20px; font-weight: 800; color: var(--bb-dark);">Focused Target Account Approach</div>
+                                <div style="font-size: 13px; color: var(--bb-gray);">Repeatable wins with defined ICP's — precision over volume</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Two Plays underneath -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <div class="land-card animate-item">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                                <span style="font-size: 12px; color: var(--bb-blue); font-weight: 700;">PLAY 1</span>
+                                <span style="font-size: 28px;">🔄</span>
+                            </div>
+                            <div class="land-title">Legacy Platform Replacement</div>
+                            <div class="land-desc">Entry through modernization needs</div>
+                            <div class="land-feature">FIS D1</div>
+                            <div class="land-feature">Fiserv Corillian</div>
+                            <div class="land-feature">Oracle</div>
+                        </div>
+                        <div class="land-card spotlight animate-item">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                                <span style="font-size: 12px; color: var(--bb-blue); font-weight: 700;">PLAY 2</span>
+                                <span class="new-badge">NEW</span>
+                                <span style="font-size: 28px;">🤖</span>
+                            </div>
+                            <div class="land-title" style="color: var(--bb-dark);">Use Case Led Entry</div>
+                            <div class="land-desc">Lead with AI-powered capabilities</div>
+                            <div class="land-feature">💬 Conversational Banking</div>
+                            <div class="land-feature">⚡ Operational Efficiency with Flow 2.0</div>
+                        </div>
+                    </div>
+                    <!-- GTM Superpowers cutting across -->
+                    <div class="animate-item" style="background: linear-gradient(90deg, var(--bb-blue) 0%, rgba(26, 86, 255, 0.8) 100%); border-radius: 12px; padding: 16px 30px; display: flex; align-items: center; justify-content: center; gap: 40px; color: white;">
+                        <div style="font-size: 14px; font-weight: 700;">⚡ Amplify GTM Superpowers</div>
+                        <div style="display: flex; gap: 20px;">
+                            <span style="font-size: 13px; opacity: 0.95;">💡 TL & ABM</span>
+                            <span style="font-size: 13px; opacity: 0.95;">🤝 Partners</span>
+                            <span style="font-size: 13px; opacity: 0.95;">🛒 Marketplace</span>
+                            <span style="font-size: 13px; opacity: 0.95;">🔥 Ignite</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 14: GTM Superpowers -->
+            <div class="scene" data-title="GTM Superpowers">
+                <div class="scene-content">
+                    <h1 class="mega-title" style="font-size: 80px;">
+                        <span class="white">GTM</span><br>
+                        <span class="blue">SUPERPOWERS</span>
+                    </h1>
+                    <div class="superpowers-row">
+                        <div class="superpower-card">
+                            <div class="superpower-icon">🎯💡</div>
+                            <div class="superpower-name">ABM & TL</div>
+                            <div class="superpower-tagline">"Right doors. They come to us."</div>
+                        </div>
+                        <div class="superpower-card">
+                            <div class="superpower-icon">🔥</div>
+                            <div class="superpower-name">Ignite</div>
+                            <div class="superpower-tagline">"Tactical → Strategic."</div>
+                        </div>
+                        <div class="superpower-card">
+                            <div class="superpower-icon">🤝</div>
+                            <div class="superpower-name">Partners</div>
+                            <div class="superpower-tagline">"Open doors. Influence deals."</div>
+                        </div>
+                        <div class="superpower-card">
+                            <div class="superpower-icon">🛒</div>
+                            <div class="superpower-name">Marketplace</div>
+                            <div class="superpower-tagline">"Plug in. Expand value."</div>
+                        </div>
+                    </div>
+                    <p style="margin-top: 50px; font-size: 22px; font-weight: 600;">
+                        ACTIVATE YOUR POWERS. <span style="color: var(--bb-blue);">CHANGE THE ODDS.</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Scene 15: Focus Legacy Platform -->
+            <div class="scene" data-title="Legacy Replacement">
+                <div class="scene-content">
+                    <h1 class="mega-title">
+                        <span class="white">FOCUS :</span><br>
+                        <span class="blue">LEGACY</span><br>
+                        <span class="blue">PLATFORM</span><br>
+                        <span class="white">REPLACEMENT</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Scene 15: Ingredients to Win -->
+            <div class="scene" data-title="Winning Formula">
+                <div class="scene-content">
+                    <div class="quote-text">
+                        We have the <span class="highlight">ingredients</span><br>to win this!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 16: Deal Spotlight BSP -->
+            <div class="scene" data-title="Deal Spotlight: BSP">
+                <div class="scene-content">
+                    <div class="section-label">Deal Spotlight</div>
+                    <div class="deal-card">
+                        <div>
+                            <div>
+                                <span style="font-size: 28px;">🎉</span>
+                                <span style="font-size: 24px; font-weight: 800; margin-left: 8px;">Win!</span>
+                                <span class="deal-badge">Platform Replacement</span>
+                            </div>
+                            <div class="deal-name">Bank South Pacific</div>
+                            <div class="deal-desc">South Pacific's Largest Bank<br>Oracle Legacy → Backbase Platform</div>
+                            <div style="font-size: 12px; color: var(--bb-gray); margin-bottom: 12px;">
+                                <strong style="color: var(--bb-blue);">Partner Superpower</strong> in Action
+                            </div>
+                            <div class="deal-superpowers">
+                                <div class="deal-sp-badge">🤝 Partners</div>
+                                <div class="deal-sp-badge">🛒 Marketplace</div>
+                            </div>
+                            <div style="margin-top: 16px; font-size: 12px; color: var(--bb-gray);">
+                                KEY PARTNERS: <strong>Kearney</strong> · <span style="color: var(--bb-blue);">Entelect</span>
+                            </div>
+                        </div>
+                        <div class="deal-result" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <div style="font-size: 12px; opacity: 0.7; margin-bottom: 8px;">ARR IMPACT</div>
+                            <div class="deal-result-value">€2.38M</div>
+                            <div class="deal-result-label">Annual Recurring Revenue</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 17: Partner Superpower -->
+            <div class="scene" data-title="Partner Superpower">
+                <div class="scene-content">
+                    <div class="section-label">GTM Superpower</div>
+                    <h2 style="font-size: 38px; margin-bottom: 10px;">Partnerships + Alliances</h2>
+                    <div style="background: rgba(255,255,255,0.05); display: inline-block; padding: 10px 20px; border-radius: 10px; margin-bottom: 30px;">
+                        <span style="font-size: 13px; color: rgba(255,255,255,0.6);">2026 Target</span>
+                        <span style="font-size: 24px; font-weight: 800; color: var(--bb-blue); margin-left: 12px;">€16M</span>
+                        <span style="font-size: 12px; color: rgba(255,255,255,0.5);"> partner touched</span>
+                    </div>
+                    <div class="partner-grid">
+                        <div class="partner-column">
+                            <div class="partner-column-header">
+                                <div class="partner-num">1</div>
+                                <div>
+                                    <div class="partner-column-title">DOUBLE DOWN</div>
+                                    <div class="partner-column-sub">and scale</div>
+                                </div>
+                            </div>
+                            <div class="partner-item"><strong>North America</strong> partner GTM</div>
+                            <div class="partner-item"><strong>SI Value Prop</strong> AI-inside</div>
+                            <div class="partner-item" style="background: var(--bb-blue); border-radius: 8px; padding: 10px 14px; border: none; box-shadow: 0 0 20px rgba(26, 86, 255, 0.4);"><strong style="color: white;">McKinsey 2.0</strong> <span style="color: rgba(255,255,255,0.9);">pilot</span> ⭐</div>
+                        </div>
+                        <div class="partner-column">
+                            <div class="partner-column-header">
+                                <div class="partner-num">2</div>
+                                <div>
+                                    <div class="partner-column-title">MATURE</div>
+                                    <div class="partner-column-sub">and evolve</div>
+                                </div>
+                            </div>
+                            <div class="partner-item" style="background: var(--bb-blue); border-radius: 8px; padding: 10px 14px; border: none; box-shadow: 0 0 20px rgba(26, 86, 255, 0.4);"><strong style="color: white;">Global Alliance</strong> <span style="color: rgba(255,255,255,0.9);">portfolio</span> ⭐</div>
+                            <div class="partner-item"><strong>TMI Acceleration</strong></div>
+                            <div class="partner-item"><strong>Expanded</strong> commercial incentives</div>
+                        </div>
+                        <div class="partner-column">
+                            <div class="partner-column-header">
+                                <div class="partner-num">3</div>
+                                <div>
+                                    <div class="partner-column-title">EXPLORE</div>
+                                    <div class="partner-column-sub">and scale</div>
+                                </div>
+                            </div>
+                            <div class="partner-item"><strong>AI SDLC</strong> with partners</div>
+                            <div class="partner-item" style="background: var(--bb-blue); border-radius: 8px; padding: 10px 14px; border: none; box-shadow: 0 0 20px rgba(26, 86, 255, 0.4);"><strong style="color: white;">One-to-Many</strong> <span style="color: rgba(255,255,255,0.9);">distribution</span> ⭐</div>
+                            <div class="partner-item"><strong>Partner-Led</strong> territories</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 18: Deal Spotlight Schroders -->
+            <div class="scene" data-title="Schroders">
+                <div class="scene-content">
+                    <div class="section-label">Deal Spotlight</div>
+                    <div class="deal-card">
+                        <div>
+                            <div>
+                                <span class="deal-badge scoping">IN SCOPING</span>
+                            </div>
+                            <div class="deal-name">Schroders</div>
+                            <div class="deal-desc">Global Wealth & Asset Management<br>Digital Advice & Client Experience Transformation</div>
+                            <div style="display: flex; gap: 10px; margin: 16px 0;">
+                                <span style="background: var(--bb-dark); color: white; padding: 8px 14px; border-radius: 8px; font-size: 12px;">Wealth & Private Banking</span>
+                                <span style="background: var(--bb-blue); color: white; padding: 8px 14px; border-radius: 8px; font-size: 12px;">LAND</span>
+                            </div>
+                            <div style="background: rgba(26, 86, 255, 0.1); padding: 14px 18px; border-radius: 12px; border-left: 3px solid var(--bb-blue); margin: 16px 0;">
+                                <span style="font-size: 16px;">🎙️</span>
+                                <span style="color: var(--bb-blue); font-weight: 600;">"They came to us"</span>
+                                <span style="font-size: 13px; color: var(--bb-gray);"> — followed our podcasts & thought leadership</span>
+                            </div>
+                            <div style="background: var(--bb-dark); color: white; padding: 16px 20px; border-radius: 12px;">
+                                <span style="font-size: 32px; font-weight: 800; color: var(--bb-blue);">3</span>
+                                <span style="font-size: 18px;"> of </span>
+                                <span style="font-size: 32px; font-weight: 800;">5</span>
+                                <span style="font-size: 14px; color: rgba(255,255,255,0.7);"> Senior-level meetings in first 5 calls</span>
+                                <div style="font-size: 12px; color: var(--bb-blue); margin-top: 6px;">→ Ignite · No competitive bake-off</div>
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <div style="font-size: 10px; color: var(--bb-gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">GTM Superpowers Activated</div>
+                                <div class="deal-superpowers">
+                                    <div class="deal-sp-badge">🎯 ABM</div>
+                                    <div class="deal-sp-badge">💡 Thought Leadership</div>
+                                    <div class="deal-sp-badge">🚀 Ignite</div>
+                                </div>
+                                <div class="deal-superpowers" style="margin-top: 8px;">
+                                    <div class="deal-sp-badge">🤝 Partner <span style="opacity: 0.6; margin-left: 8px;">Alpha · Deloitte · Microsoft</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="deal-result" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <div style="font-size: 12px; opacity: 0.7; margin-bottom: 8px;">ARR POTENTIAL</div>
+                            <div class="deal-result-value">€1.9 - 3M</div>
+                            <div class="deal-result-label">Annual Recurring Revenue</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 19: ABM & TL Superpower Intro -->
+            <div class="scene" data-title="ABM & TL">
+                <div class="scene-content">
+                    <div class="section-label">GTM Superpower</div>
+                    <h2 style="font-size: 42px; color: var(--bb-blue);">ABM & TL</h2>
+                    <p class="subtitle">How we changed the odds</p>
+                </div>
+            </div>
+
+            <!-- Scene 20: TL & ABM -->
+            <div class="scene" data-title="TL & ABM">
+                <div class="scene-content">
+                    <div class="section-label">Amplifying our GTM Superpower</div>
+                    <h2 style="font-size: 42px; color: var(--bb-blue);">TL & ABM</h2>
+                    <div style="margin-top: 40px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+                        <div style="display: flex; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <span style="font-size: 24px;">🎨</span>
+                            <span style="font-size: 18px;">Branding</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <span style="font-size: 24px;">📢</span>
+                            <span style="font-size: 18px;">Change the narrative</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <span style="font-size: 24px;">🎯💡</span>
+                            <span style="font-size: 18px;">TL & ABM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 20: Disciplined Execution -->
+            <div class="scene" data-title="Disciplined Execution">
+                <div class="scene-content">
+                    <div class="quote-text">
+                        One Word :<br>
+                        <span class="highlight">Disciplined Execution</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 21: Focus Use Case Led Entry -->
+            <div class="scene" data-title="Use Case Led Entry">
+                <div class="scene-content">
+                    <h1 class="mega-title">
+                        <span class="white">FOCUS :</span><br>
+                        <span class="blue">USE CASE LED</span><br>
+                        <span class="white">ENTRY</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Scene 22: AI Conversational Banking -->
+            <div class="scene" data-title="AI Conversational">
+                <div class="scene-content">
+                    <div class="section-label">New Landing Zone</div>
+                    <h2 style="font-size: 36px;">AI-powered Banking - Conversational</h2>
+                    <p class="subtitle">Internet Banking → Mobile Banking → <span style="color: var(--bb-blue);">Conversational Banking</span></p>
+                    <div style="margin-top: 50px; background: var(--bb-dark); padding: 24px 40px; border-radius: 16px; display: inline-block;">
+                        <span style="font-weight: 700;">AI-native Banking OS</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 23: Activating Use Case Led Entry - 3 Phases -->
+            <div class="scene" data-title="3 Phases">
+                <div class="scene-content">
+                    <h2 style="font-size: 36px; margin-bottom: 30px;">Activating use case led entry</h2>
+                    <div class="phases-grid">
+                        <div class="phase-card phase1">
+                            <div class="phase-label">Phase 1</div>
+                            <div class="phase-title">Reactivate + Engage</div>
+                            <div class="phase-section">
+                                <div class="phase-section-label">Reactivate (Stalled Deals)</div>
+                                <div class="phase-tags">
+                                    <span class="phase-tag">Bank Australia</span>
+                                    <span class="phase-tag">Doha Bank</span>
+                                    <span class="phase-tag">Monte Paschi</span>
+                                    <span class="phase-tag">Al Rayan</span>
+                                </div>
+                            </div>
+                            <div class="phase-section">
+                                <div class="phase-section-label">New (COO Access, No Deal)</div>
+                                <div class="phase-tags">
+                                    <span class="phase-tag">ING</span>
+                                    <span class="phase-tag">BNY Mellon</span>
+                                    <span class="phase-tag">Emirates NBD</span>
+                                </div>
+                            </div>
+                            <div style="margin-top: 20px; font-size: 11px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">
+                                <span style="opacity: 0.6;">SUCCESS</span><br>
+                                <strong>Acknowledge capability | xx accounts → Ignite | xx accounts go/go-go</strong>
+                            </div>
+                        </div>
+                        <div class="phase-card phase2">
+                            <div class="phase-label">Phase 2</div>
+                            <div class="phase-title">Progress + Learn</div>
+                            <div class="phase-section">
+                                <div class="phase-section-label">Stalled Deals</div>
+                                <span class="phase-tag">Progress to business case</span>
+                            </div>
+                            <div class="phase-section">
+                                <div class="phase-section-label">New Accounts</div>
+                                <span class="phase-tag">Discovery → Business alignment</span>
+                            </div>
+                            <div style="margin-top: 20px; font-size: 11px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">
+                                <span style="opacity: 0.6;">SUCCESS</span><br>
+                                <strong>Pipeline advancing | Learning captured</strong>
+                            </div>
+                        </div>
+                        <div class="phase-card phase3">
+                            <div class="phase-label">Phase 3</div>
+                            <div class="phase-title">Scale</div>
+                            <div class="phase-section">
+                                <div class="phase-section-label">Scale What's Working</div>
+                                <span class="phase-tag">Enable field + air cover</span>
+                                <span class="phase-tag" style="margin-top: 6px;">Identify next 10 accounts</span>
+                            </div>
+                            <div class="phase-section">
+                                <div class="phase-section-label">Continuous Refinement</div>
+                                <span class="phase-tag">Apply learnings</span>
+                                <span class="phase-tag" style="margin-top: 6px;">Iterate approach</span>
+                            </div>
+                            <div style="margin-top: 20px; font-size: 11px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">
+                                <span style="opacity: 0.6;">SUCCESS</span><br>
+                                <strong>Scaled execution | Repeatable wins</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 24: Expansion -->
+            <div class="scene" data-title="Expansion Motion">
+                <div class="scene-content">
+                    <h1 class="mega-title">
+                        <span class="blue">EXPANSION</span><br>
+                        <span class="white">FROM WEAKNESS</span><br>
+                        <span class="white">TO STRENGTH</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Scene 25: The Numbers - Expansion Potential -->
+            <div class="scene" data-title="The Numbers">
+                <div class="scene-content">
+                    <div class="section-label">Expansion Potential</div>
+                    <h2 style="font-size: 48px; margin-bottom: 50px;">The <span style="color: var(--bb-blue);">Numbers</span></h2>
+                    <div style="display: flex; justify-content: center; gap: 60px;">
+                        <div style="text-align: center; opacity: 0; transform: translateY(30px); animation: fadeInUp 0.6s ease 0.2s forwards;">
+                            <div style="font-size: 72px; font-weight: 900; color: var(--bb-blue);">€190M+</div>
+                            <div style="font-size: 16px; color: rgba(255,255,255,0.7); margin-top: 10px;">Total Customer Base ARR</div>
+                        </div>
+                        <div style="text-align: center; opacity: 0; transform: translateY(30px); animation: fadeInUp 0.6s ease 0.4s forwards;">
+                            <div style="font-size: 72px; font-weight: 900; color: white;">3x</div>
+                            <div style="font-size: 16px; color: rgba(255,255,255,0.7); margin-top: 10px;">Potential Expansion</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 60px; background: var(--bb-dark); padding: 24px 40px; border-radius: 16px; display: inline-block;">
+                        <span style="font-size: 18px; color: rgba(255,255,255,0.7);">Huge untapped potential in </span>
+                        <span style="font-size: 18px; font-weight: 700; color: var(--bb-blue);">existing customers</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 26: Huge Potential - 3 Account Examples -->
+            <div class="scene" data-title="Account Examples">
+                <div class="scene-content">
+                    <div class="section-label">Proof Points</div>
+                    <h2 style="font-size: 36px; margin-bottom: 40px;">Huge Potential | <span style="color: var(--bb-blue);">3 Examples</span></h2>
+                    <div class="stats-grid">
+                        <!-- Danske Bank -->
+                        <div class="stat-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                                <span style="font-size: 28px;">🇩🇰</span>
+                                <div>
+                                    <div style="font-size: 18px; font-weight: 700;">Danske Bank</div>
+                                    <div style="font-size: 11px; color: rgba(255,255,255,0.5);">Nordic Leader</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 12px; color: rgba(255,255,255,0.5);">2023</div>
+                                    <div style="font-size: 20px; font-weight: 700;">€4.8M</div>
+                                </div>
+                                <div style="color: var(--bb-blue);">→</div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Current</div>
+                                    <div style="font-size: 20px; font-weight: 700;">€7.1M</div>
+                                </div>
+                                <div style="color: var(--bb-blue);">→</div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 12px; color: var(--bb-blue);">2026 Pipeline</div>
+                                    <div style="font-size: 20px; font-weight: 700; color: var(--bb-blue);">€11.9M</div>
+                                </div>
+                            </div>
+                            <div style="background: var(--bb-blue); padding: 10px 16px; border-radius: 10px; text-align: center;">
+                                <span style="font-size: 24px; font-weight: 800;">+148%</span>
+                                <span style="font-size: 12px; opacity: 0.9; margin-left: 8px;">growth potential</span>
+                            </div>
+                        </div>
+
+                        <!-- Navy Federal CU -->
+                        <div class="stat-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                                <span style="font-size: 28px;">🇺🇸</span>
+                                <div>
+                                    <div style="font-size: 18px; font-weight: 700;">Navy Federal CU</div>
+                                    <div style="font-size: 11px; color: rgba(255,255,255,0.5);">America's Largest CU</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Start</div>
+                                    <div style="font-size: 20px; font-weight: 700;">€10M</div>
+                                </div>
+                                <div style="color: var(--bb-blue);">→</div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Current</div>
+                                    <div style="font-size: 20px; font-weight: 700;">€10.6M</div>
+                                </div>
+                                <div style="color: var(--bb-blue);">→</div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 12px; color: var(--bb-blue);">2026 Pipeline</div>
+                                    <div style="font-size: 20px; font-weight: 700; color: var(--bb-blue);">€18.7M</div>
+                                </div>
+                            </div>
+                            <div style="background: var(--bb-blue); padding: 10px 16px; border-radius: 10px; text-align: center;">
+                                <span style="font-size: 24px; font-weight: 800;">+87%</span>
+                                <span style="font-size: 12px; opacity: 0.9; margin-left: 8px;">growth potential</span>
+                            </div>
+                        </div>
+
+                        <!-- I&M Bank -->
+                        <div class="stat-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                                <span style="font-size: 28px;">🇰🇪</span>
+                                <div>
+                                    <div style="font-size: 18px; font-weight: 700;">I&M Bank</div>
+                                    <div style="font-size: 11px; color: rgba(255,255,255,0.5);">East Africa</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 12px; color: rgba(255,255,255,0.5);">2019</div>
+                                    <div style="font-size: 20px; font-weight: 700;">€552K</div>
+                                </div>
+                                <div style="color: var(--bb-blue);">→</div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Current</div>
+                                    <div style="font-size: 20px; font-weight: 700;">€1.63M</div>
+                                </div>
+                                <div style="color: var(--bb-blue);">→</div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 12px; color: var(--bb-blue);">2026 Pipeline</div>
+                                    <div style="font-size: 20px; font-weight: 700; color: var(--bb-blue);">€3.9M</div>
+                                </div>
+                            </div>
+                            <div style="background: var(--bb-blue); padding: 10px 16px; border-radius: 10px; text-align: center;">
+                                <span style="font-size: 24px; font-weight: 800;">+340%</span>
+                                <span style="font-size: 12px; opacity: 0.9; margin-left: 8px;">growth potential</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 30px; background: var(--bb-dark); padding: 16px 30px; border-radius: 12px; display: inline-flex; align-items: center; gap: 16px;">
+                        <span style="font-size: 24px;">📈</span>
+                        <span style="font-size: 16px;">Expansion is our <strong style="color: var(--bb-blue);">highest ROI motion</strong> — customers who expand become advocates</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 27: Let's Activate Expansion Themes -->
+            <div class="scene" data-title="Activate Themes">
+                <div class="scene-content">
+                    <div class="quote-text">
+                        Let's activate our<br>
+                        <span class="highlight">expansion themes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 26: Expansion - Migration to BaaS Spotlight -->
+            <div class="scene" data-title="Migration to BaaS">
+                <div class="scene-content">
+                    <div class="section-label">Sales Motion</div>
+                    <h2 style="font-size: 38px; margin-bottom: 30px;">Expansion</h2>
+                    <div class="land-grid">
+                        <div class="land-card spotlight">
+                            <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--bb-blue); padding: 6px 16px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase;">Microsoft Funded</div>
+                            <div class="land-icon">☁️</div>
+                            <div class="land-title">Migration to BaaS</div>
+                            <div class="land-desc">Turn-key implementation with Microsoft credits covering migration costs</div>
+                            <div class="land-feature">💰 <strong style="color: var(--bb-blue);">25-40%</strong> migration costs covered</div>
+                            <div class="land-feature">🎯 <strong style="color: var(--bb-blue);">45</strong> target accounts</div>
+                            <div class="land-feature">📈 <strong style="color: var(--bb-blue);">€19M</strong> ARR potential</div>
+                        </div>
+                        <div class="land-card" style="opacity: 0.5;">
+                            <div class="land-icon">📦</div>
+                            <div class="land-title">Packaging & Editions Upgrade</div>
+                            <div class="land-desc">Migrate customers to new packaging structure and drive edition upgrades</div>
+                            <div class="land-feature">⬆️ Premium → Signature</div>
+                            <div class="land-feature">➕ Add-on capabilities</div>
+                        </div>
+                        <div class="land-card" style="opacity: 0.5;">
+                            <div class="land-icon">🤖</div>
+                            <div class="land-title">AI Inside Themes</div>
+                            <div class="land-desc">Lead with AI-powered capabilities to drive expansion conversations</div>
+                            <div class="land-feature">💬 Conversational Banking</div>
+                            <div class="land-feature">🎯 CLO & Financial Advice</div>
+                            <div class="land-feature">⚡ IPA (Agentic)</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 30px; background: var(--bb-dark); padding: 16px 30px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span>☁️</span>
+                            <span style="font-size: 14px;">Every seller: Identify BaaS migration opportunities with Microsoft funding</span>
+                        </div>
+                        <div style="display: flex; gap: 40px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: var(--bb-blue);">45</div>
+                                <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;">Target Accounts</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: var(--bb-blue);">€19M</div>
+                                <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;">ARR Potential</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 27: The Opportunity -->
+            <div class="scene" data-title="The Opportunity">
+                <div class="scene-content">
+                    <h2 style="font-size: 44px; margin-bottom: 40px;">The <span style="color: var(--bb-blue);">Opportunity</span></h2>
+                    <div class="stats-grid">
+                        <div class="stat-card" style="background: var(--bb-dark); text-align: center;">
+                            <div class="stat-label">LARGE</div>
+                            <div class="stat-value" style="font-size: 64px;">11</div>
+                            <div style="font-size: 14px; color: rgba(255,255,255,0.6);">customers</div>
+                            <div style="background: rgba(26, 86, 255, 0.2); padding: 10px 16px; border-radius: 10px; margin: 16px 0; font-size: 16px; color: var(--bb-blue);">€140K-€170K</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.5);">MSFT Funding/Deal</div>
+                            <div style="font-size: 28px; font-weight: 800; color: var(--bb-blue); margin-top: 16px;">€6.6M</div>
+                            <div style="font-size: 11px; color: rgba(255,255,255,0.5);">ARR potential</div>
+                        </div>
+                        <div class="stat-card" style="background: var(--bb-dark); text-align: center;">
+                            <div class="stat-label">MEDIUM</div>
+                            <div class="stat-value" style="font-size: 64px;">28</div>
+                            <div style="font-size: 14px; color: rgba(255,255,255,0.6);">customers</div>
+                            <div style="background: rgba(26, 86, 255, 0.2); padding: 10px 16px; border-radius: 10px; margin: 16px 0; font-size: 16px; color: var(--bb-blue);">€65K-€80K</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.5);">MSFT Funding/Deal</div>
+                            <div style="font-size: 28px; font-weight: 800; color: var(--bb-blue); margin-top: 16px;">€11.2M</div>
+                            <div style="font-size: 11px; color: rgba(255,255,255,0.5);">ARR potential</div>
+                        </div>
+                        <div class="stat-card" style="background: var(--bb-dark); text-align: center;">
+                            <div class="stat-label">SMALL</div>
+                            <div class="stat-value" style="font-size: 64px;">6</div>
+                            <div style="font-size: 14px; color: rgba(255,255,255,0.6);">customers</div>
+                            <div style="background: rgba(26, 86, 255, 0.2); padding: 10px 16px; border-radius: 10px; margin: 16px 0; font-size: 16px; color: var(--bb-blue);">€37K-€47K</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.5);">MSFT Funding/Deal</div>
+                            <div style="font-size: 28px; font-weight: 800; color: var(--bb-blue); margin-top: 16px;">€1.5M</div>
+                            <div style="font-size: 11px; color: rgba(255,255,255,0.5);">ARR potential</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 40px; background: var(--bb-blue); padding: 20px 50px; border-radius: 20px; display: inline-block;">
+                        <span style="font-size: 44px; font-weight: 900;">€19.3M</span>
+                        <span style="font-size: 18px; margin-left: 16px; opacity: 0.9;">Total ARR Potential</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 28: I&M Bank Kenya Example -->
+            <div class="scene" data-title="I&M Bank Kenya">
+                <div class="scene-content">
+                    <h2 style="font-size: 36px; margin-bottom: 10px;">Migration to BaaS</h2>
+                    <p class="subtitle" style="margin-bottom: 40px;">Proof point - We have done it!</p>
+                    <div style="background: var(--bb-dark); border-radius: 24px; padding: 40px; max-width: 600px; margin: 0 auto; text-align: center;">
+                        <div style="font-size: 12px; background: var(--bb-blue); display: inline-block; padding: 6px 16px; border-radius: 20px; margin-bottom: 20px;">2025</div>
+                        <div style="font-size: 40px; margin-bottom: 10px;">🇰🇪</div>
+                        <div style="font-size: 32px; font-weight: 800; margin-bottom: 24px;">I&M Bank Kenya</div>
+                        <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 24px;">
+                            <div>
+                                <div style="font-size: 32px; font-weight: 800; color: var(--bb-blue);">$100K</div>
+                                <div style="font-size: 12px; opacity: 0.6;">Microsoft Credits</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 32px; font-weight: 800; color: var(--bb-blue);">30%</div>
+                                <div style="font-size: 12px; opacity: 0.6;">Migration Covered</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 32px; font-weight: 800; color: var(--bb-blue);">€456K</div>
+                                <div style="font-size: 12px; opacity: 0.6;">Incremental ARR</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 14px;">
+                            <span style="opacity: 0.7;">AWS</span>
+                            <span style="margin: 0 12px;">→</span>
+                            <span style="font-weight: 600;">Managed Hosting</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 29: Expansion - Packaging & Editions Spotlight -->
+            <div class="scene" data-title="Packaging & Editions">
+                <div class="scene-content">
+                    <div class="section-label">Sales Motion</div>
+                    <h2 style="font-size: 38px; margin-bottom: 30px;">Expansion</h2>
+                    <div class="land-grid">
+                        <div class="land-card" style="opacity: 0.5;">
+                            <div class="land-icon">☁️</div>
+                            <div class="land-title">Migration to BaaS</div>
+                            <div class="land-desc">Turn-key implementation with Microsoft credits covering migration costs</div>
+                            <div class="land-feature">💰 25-40% costs covered</div>
+                            <div class="land-feature">🎯 45 target accounts</div>
+                            <div class="land-feature">📈 €19M ARR potential</div>
+                        </div>
+                        <div class="land-card spotlight">
+                            <div class="land-icon">📦</div>
+                            <div class="land-title">Packaging & Editions Upgrade</div>
+                            <div class="land-desc">Migrate customers to new packaging structure and drive edition upgrades</div>
+                            <div class="land-feature">⬆️ Premium → Signature</div>
+                            <div class="land-feature">➕ Add-on capabilities</div>
+                        </div>
+                        <div class="land-card" style="opacity: 0.5;">
+                            <div class="land-icon">🤖</div>
+                            <div class="land-title">AI Inside Themes</div>
+                            <div class="land-desc">Lead with AI-powered capabilities to drive expansion conversations</div>
+                            <div class="land-feature">💬 Conversational Banking</div>
+                            <div class="land-feature">🎯 CLO & Financial Advice</div>
+                            <div class="land-feature">⚡ IPA (Agentic)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 30: NFCU - Ignite in Action -->
+            <div class="scene" data-title="NFCU Ignite">
+                <div class="scene-content">
+                    <div style="display: inline-block; background: var(--bb-blue); padding: 8px 20px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 20px;">⚡ Ignite in Action</div>
+                    <h2 style="font-size: 42px; margin-bottom: 30px;">From Tactical<br>to Strategic</h2>
+                    <div style="background: rgba(255,255,255,0.03); border-radius: 20px; padding: 30px; max-width: 600px; margin: 0 auto; text-align: left; border: 1px solid rgba(255,255,255,0.1);">
+                        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px;">
+                            <span style="font-size: 32px;">🇺🇸</span>
+                            <div>
+                                <div style="font-size: 22px; font-weight: 700;">Navy Federal Credit Union</div>
+                                <div style="font-size: 13px; color: rgba(255,255,255,0.6);">America's Largest Credit Union · 13M+ Members</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 48px; font-weight: 800; color: var(--bb-blue); margin-bottom: 8px;">4+</div>
+                        <div style="font-size: 16px; margin-bottom: 24px;">Strategic Initiatives Unlocked</div>
+                        <div style="background: var(--bb-dark); border-radius: 16px; padding: 24px; text-align: center;">
+                            <div style="font-size: 40px; font-weight: 900; color: var(--bb-blue);">€8M+</div>
+                            <div style="font-size: 13px; opacity: 0.7;">Pipeline Unlocked</div>
+                            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 16px;">
+                                <span style="font-size: 12px;">📊 C-level access</span>
+                                <span style="font-size: 12px;">💰 Wealth opened</span>
+                                <span style="font-size: 12px;">🤖 Agentic POCs</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 31: Ignite Superpower -->
+            <div class="scene" data-title="Ignite Superpower">
+                <div class="scene-content">
+                    <div class="section-label">GTM Superpower</div>
+                    <h2 style="font-size: 42px; display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 30px;">
+                        <span style="font-size: 36px;">🚀</span> Ignite
+                    </h2>
+                    <div class="ignite-grid">
+                        <div class="ignite-card">
+                            <div class="ignite-header">
+                                <div class="ignite-icon">💡</div>
+                                <div>
+                                    <div class="ignite-title">Ignite Inspire</div>
+                                    <div class="ignite-subtitle">Inspiration-Led</div>
+                                </div>
+                            </div>
+                            <div class="ignite-item">✨ Art of Possible</div>
+                            <div class="ignite-item">🤖 Agentic AI</div>
+                            <div class="ignite-item">🗺️ New Use Cases</div>
+                        </div>
+                        <div class="ignite-card">
+                            <div class="ignite-header">
+                                <div class="ignite-icon">📊</div>
+                                <div>
+                                    <div class="ignite-title">Ignite Assess</div>
+                                    <div class="ignite-subtitle">Assessment & Solutioning</div>
+                                </div>
+                            </div>
+                            <div class="ignite-item">🔍 Capability Maturity</div>
+                            <div class="ignite-item">💰 ROI Model</div>
+                            <div class="ignite-item">🏗️ Solution Design</div>
+                        </div>
+                        <div class="ignite-card new">
+                            <div class="ignite-header">
+                                <div class="ignite-icon" style="background: var(--bb-blue);">⚙️</div>
+                                <div>
+                                    <div class="ignite-title">Ignite Ops</div>
+                                    <div class="ignite-subtitle">Operational Efficiency</div>
+                                </div>
+                            </div>
+                            <div class="ignite-item">🔄 Flow 2.0</div>
+                            <div class="ignite-item">📉 Cost Reduction</div>
+                            <div class="ignite-item">⚡ Wedge Use Cases</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 30px; background: var(--bb-dark); padding: 20px 40px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+                        <div>
+                            <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 2px;">Vision 2026+</div>
+                            <div style="font-size: 40px; font-weight: 800; color: var(--bb-blue);">€40M</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.6);">ARR Influenced</div>
+                        </div>
+                        <div style="display: flex; gap: 16px;">
+                            <div style="background: rgba(255,255,255,0.05); padding: 14px 20px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 20px; margin-bottom: 4px;">🤖</div>
+                                <div style="font-size: 11px;">Scale with AI</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 14px 20px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 20px; margin-bottom: 4px;">⚡</div>
+                                <div style="font-size: 11px;">Ignite Light</div>
+                            </div>
+                            <div style="background: var(--bb-blue); padding: 14px 20px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 20px; margin-bottom: 4px;">⚙️</div>
+                                <div style="font-size: 11px;">Ops Efficiency</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 14px 20px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 20px; margin-bottom: 4px;">📋</div>
+                                <div style="font-size: 11px;">Qualify Pipe</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; background: var(--bb-dark); padding: 14px 30px; border-radius: 10px; display: inline-flex; align-items: center; gap: 30px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>🔥</span>
+                            <span style="font-size: 13px;">Unqualified → Qualified Pipeline</span>
+                        </div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.6);">
+                            <strong style="color: var(--bb-blue);">Ignite Light</strong> 1.5 days &nbsp;|&nbsp; <strong>Full Assessment</strong> 3+ days
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 32: Expansion - AI Inside Themes Spotlight -->
+            <div class="scene" data-title="AI Inside Themes">
+                <div class="scene-content">
+                    <div class="section-label">Sales Motion</div>
+                    <h2 style="font-size: 38px; margin-bottom: 30px;">Expansion</h2>
+                    <div class="land-grid">
+                        <div class="land-card" style="opacity: 0.5;">
+                            <div class="land-icon">☁️</div>
+                            <div class="land-title">Migration to BaaS</div>
+                            <div class="land-desc">Turn-key implementation with Microsoft credits covering migration costs</div>
+                            <div class="land-feature">💰 25-40% costs covered</div>
+                            <div class="land-feature">🎯 45 target accounts</div>
+                            <div class="land-feature">📈 €19M ARR potential</div>
+                        </div>
+                        <div class="land-card" style="opacity: 0.5;">
+                            <div class="land-icon">📦</div>
+                            <div class="land-title">Packaging & Editions Upgrade</div>
+                            <div class="land-desc">Migrate customers to new packaging structure and drive edition upgrades</div>
+                            <div class="land-feature">⬆️ Premium → Signature</div>
+                            <div class="land-feature">➕ Add-on capabilities</div>
+                        </div>
+                        <div class="land-card spotlight">
+                            <div class="land-icon">🤖</div>
+                            <div class="land-title">AI Inside Themes</div>
+                            <div class="land-desc">Lead with AI-powered capabilities to drive expansion conversations</div>
+                            <div class="land-feature">💬 Conversational Banking</div>
+                            <div class="land-feature">🎯 CLO & Financial Advice</div>
+                            <div class="land-feature">⚡ IPA (Agentic)</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 30px; background: var(--bb-dark); padding: 16px 30px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span>🤖</span>
+                            <span style="font-size: 14px;">Every seller: Lead with AI to unlock expansion conversations</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 33: One Field Operating Model -->
+            <div class="scene" data-title="Operating Model">
+                <div class="scene-content">
+                    <h2 style="font-size: 36px; margin-bottom: 30px;">One Field Operating Model</h2>
+                    <div class="flywheel-container">
+                        <div class="flywheel">
+                            <div class="flywheel-circle"></div>
+                            <div class="flywheel-center">
+                                <span style="font-size: 28px;">🎯</span>
+                                <span style="font-size: 11px; font-weight: 700; margin-top: 4px;">SALES</span>
+                                <span style="font-size: 9px; opacity: 0.7;">ORCHESTRATES</span>
+                            </div>
+                            <div class="flywheel-node top">
+                                <div class="flywheel-node-icon">🤝</div>
+                                <div class="flywheel-node-label">Land</div>
+                            </div>
+                            <div class="flywheel-node right">
+                                <div class="flywheel-node-icon">🚀</div>
+                                <div class="flywheel-node-label" style="color: var(--bb-blue);">Delivery</div>
+                            </div>
+                            <div class="flywheel-node bottom">
+                                <div class="flywheel-node-icon">✨</div>
+                                <div class="flywheel-node-label">Value Realization</div>
+                            </div>
+                            <div class="flywheel-node left">
+                                <div class="flywheel-node-icon">📈</div>
+                                <div class="flywheel-node-label">Expansion</div>
+                            </div>
+                        </div>
+                        <div class="flywheel-info">
+                            <h3>The flywheel works when<br><span class="green">everything is green</span></h3>
+                            <div class="flywheel-bullet">
+                                <span class="flywheel-bullet-icon">🎯</span>
+                                <span><strong>Sales orchestrates</strong> — Coordinates across all stages</span>
+                            </div>
+                            <div class="flywheel-bullet">
+                                <span class="flywheel-bullet-icon">🔗</span>
+                                <span><strong>Connected handoffs</strong> — Each stage enables the next</span>
+                            </div>
+                            <div class="flywheel-bullet">
+                                <span class="flywheel-bullet-icon">✅</span>
+                                <span><strong>All green</strong> — One red link stops the flywheel</span>
+                            </div>
+                            <div class="flywheel-bullet">
+                                <span class="flywheel-bullet-icon">⚡</span>
+                                <span><strong>Momentum compounds</strong> — Each turn accelerates the next</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 30px; background: var(--bb-dark); padding: 14px 30px; border-radius: 10px; display: inline-flex; align-items: center; gap: 10px;">
+                        <span>💡</span>
+                        <span style="font-size: 14px;">Sales orchestrates. <span style="color: var(--bb-green);">All four stages must be green</span> for the flywheel to spin.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scene 34: Closing -->
+            <div class="scene" data-title="Activate Your Powers">
+                <div class="scene-content">
+                    <h1 class="mega-title animate-pulse">
+                        <span class="white">ACTIVATE YOUR</span><br>
+                        <span class="blue">SUPERPOWERS</span>
+                    </h1>
+                    <p class="subtitle" style="margin-top: 40px; font-size: 24px;">
+                        Change the odds. Win together.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Navigation Arrows -->
+        <div class="nav-arrows left">
+            <button class="nav-arrow" onclick="prevScene()">
+                <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+        </div>
+        <div class="nav-arrows right">
+            <button class="nav-arrow" onclick="nextScene()">
+                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
+            </button>
+        </div>
+
+        <!-- Playback Controls -->
+        <div class="controls">
+            <button class="play-btn" onclick="togglePlay()">
+                <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pauseIcon" style="display: none;" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <div class="progress-container">
+                <div class="progress-bar" onclick="seekTo(event)">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-dots" id="progressDots"></div>
+            </div>
+            <div class="scene-info">
+                <div class="scene-counter" id="sceneCounter">1 / 34</div>
+                <div class="scene-title" id="sceneTitle">Global Performance Snapshot</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentScene = 0;
+        let isPlaying = false;
+        let playInterval = null;
+        const scenes = document.querySelectorAll('.scene');
+        const totalScenes = scenes.length;
+        const sceneDuration = 6000;
+
+        function init() {
+            createProgressDots();
+            updateUI();
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    e.preventDefault();
+                    nextScene();
+                } else if (e.key === 'ArrowLeft') {
+                    prevScene();
+                } else if (e.key === 'p') {
+                    togglePlay();
+                }
+            });
+        }
+
+        function createProgressDots() {
+            const container = document.getElementById('progressDots');
+            for (let i = 0; i < totalScenes; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+                dot.onclick = () => goToScene(i);
+                container.appendChild(dot);
+            }
+        }
+
+        function nextScene() {
+            if (currentScene < totalScenes - 1) {
+                goToScene(currentScene + 1);
+            } else {
+                goToScene(0);
+            }
+        }
+
+        function prevScene() {
+            if (currentScene > 0) {
+                goToScene(currentScene - 1);
+            }
+        }
+
+        function goToScene(index) {
+            const prevIndex = currentScene;
+            const prevScene = scenes[prevIndex];
+            const nextSceneEl = scenes[index];
+
+            prevScene.classList.remove('active');
+            if (index > prevIndex) {
+                prevScene.classList.add('exit-left');
+            } else {
+                prevScene.classList.add('exit-right');
+            }
+
+            setTimeout(() => {
+                prevScene.classList.remove('exit-left', 'exit-right');
+            }, 1200);
+
+            currentScene = index;
+            nextSceneEl.classList.add('active');
+
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('sceneCounter').textContent = `${currentScene + 1} / ${totalScenes}`;
+            document.getElementById('sceneTitle').textContent = scenes[currentScene].dataset.title;
+
+            const progress = ((currentScene + 1) / totalScenes) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            const dots = document.querySelectorAll('.progress-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i <= currentScene);
+            });
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const playIcon = document.getElementById('playIcon');
+            const pauseIcon = document.getElementById('pauseIcon');
+
+            if (isPlaying) {
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+                playInterval = setInterval(nextScene, sceneDuration);
+            } else {
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+                clearInterval(playInterval);
+            }
+        }
+
+        function seekTo(event) {
+            const bar = event.currentTarget;
+            const rect = bar.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const percent = x / rect.width;
+            const targetScene = Math.floor(percent * totalScenes);
+            goToScene(Math.min(targetScene, totalScenes - 1));
+        }
+
+        init();
+    </script>
+</body>
+</html>
