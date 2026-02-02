@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Banking Transformation | Value Assessment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bb-blue: #1A56FF;
+            --bb-dark: #1A1F36;
+            --bb-darker: #0F1219;
+            --bb-gray: #6B7280;
+            --bb-light: #F3F4F6;
+            --bb-glow: rgba(26, 86, 255, 0.4);
+            --bb-red: #EF4444;
+            --bb-green: #10B981;
+            --bb-orange: #F59E0B;
+            --bb-purple: #8B5CF6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bb-darker);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Background Effects */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(26, 86, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(26, 86, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .glow-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .glow-orb.orb1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--bb-blue) 0%, transparent 70%);
+            top: -200px;
+            right: -200px;
+            animation: float1 20s ease-in-out infinite;
+        }
+
+        .glow-orb.orb2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--bb-purple) 0%, transparent 70%);
+            bottom: -100px;
+            left: -100px;
+            animation: float2 25s ease-in-out infinite;
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-50px, 50px); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(50px, -30px); }
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(15, 18, 25, 0.9), transparent);
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span { color: var(--bb-blue); }
+
+        .badge {
+            background: rgba(26, 86, 255, 0.15);
+            border: 1px solid rgba(26, 86, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--bb-blue), var(--bb-purple));
+            transition: width 0.5s ease;
+        }
+
+        /* Navigation */
+        .nav-arrows {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(26, 86, 255, 0.2);
+            border: 1px solid rgba(26, 86, 255, 0.4);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--bb-blue);
+            transform: scale(1.1);
+        }
+
+        .scene-counter {
+            position: fixed;
+            bottom: 50px;
+            left: 40px;
+            font-size: 13px;
+            color: var(--bb-gray);
+            z-index: 100;
+        }
+
+        .scene-counter strong { color: white; }
+
+        /* Scenes Container */
+        .scenes-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 80px;
+            opacity: 0;
+            transform: scale(0.85);
+            pointer-events: none;
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        .scene.active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .scene-content {
+            max-width: 1200px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Light Theme Scenes */
+        .scene.light-theme {
+            background: var(--bb-light);
+            color: var(--bb-dark);
+        }
+
+        .scene.light-theme .section-label {
+            color: var(--bb-blue);
+        }
+
+        .scene.light-theme h2, .scene.light-theme h3 {
+            color: var(--bb-dark);
+        }
+
+        /* Typography */
+        .section-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--bb-blue);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .mega-title {
+            font-size: clamp(48px, 8vw, 100px);
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -3px;
+            margin-bottom: 24px;
+        }
+
+        .mega-title .blue { color: var(--bb-blue); }
+        .mega-title .white { color: white; }
+        .mega-title .red { color: var(--bb-red); }
+        .mega-title .green { color: var(--bb-green); }
+        .mega-title .orange { color: var(--bb-orange); }
+
+        .subtitle {
+            font-size: 20px;
+            color: var(--bb-gray);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        h2 {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 40px;
+            letter-spacing: -1px;
+        }
+
+        h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .highlight { color: var(--bb-blue); }
+        .highlight-red { color: var(--bb-red); }
+        .highlight-green { color: var(--bb-green); }
+        .highlight-orange { color: var(--bb-orange); }
+
+        /* Quote Scene */
+        .quote-text {
+            font-size: clamp(28px, 5vw, 48px);
+            font-weight: 300;
+            line-height: 1.4;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .quote-text .highlight {
+            font-weight: 700;
+        }
+
+        .quote-attribution {
+            margin-top: 40px;
+            font-size: 16px;
+            color: var(--bb-gray);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .stat-card {
+            background: rgba(26, 86, 255, 0.08);
+            border: 1px solid rgba(26, 86, 255, 0.2);
+            border-radius: 16px;
+            padding: 32px 24px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .scene.active .stat-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .stat-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .stat-card:nth-child(3) { transition-delay: 0.6s; }
+
+        .scene.active .stat-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--bb-gray);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--bb-blue);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-value.red { color: var(--bb-red); }
+        .stat-value.green { color: var(--bb-green); }
+        .stat-value.orange { color: var(--bb-orange); }
+
+        .stat-context {
+            font-size: 14px;
+            color: var(--bb-gray);
+        }
+
+        /* Card Grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .scene.active .info-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .info-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .info-card:nth-child(3) { transition-delay: 0.6s; }
+
+        .scene.active .info-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .info-card.spotlight {
+            border: 2px solid var(--bb-blue);
+            box-shadow: 0 0 40px rgba(26, 86, 255, 0.2);
+        }
+
+        .card-icon {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: var(--bb-gray);
+            line-height: 1.6;
+        }
+
+        .card-quote {
+            font-style: italic;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Comparison Grid */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .compare-card {
+            padding: 40px;
+            border-radius: 20px;
+            text-align: left;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.6s ease;
+        }
+
+        .compare-card.current {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .compare-card.target {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .scene.active .compare-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .compare-card:nth-child(2) { transition-delay: 0.4s; }
+
+        .scene.active .compare-card {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .compare-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .compare-card.current .compare-label { color: var(--bb-red); }
+        .compare-card.target .compare-label { color: var(--bb-green); }
+
+        .compare-value {
+            font-size: 56px;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .compare-card.current .compare-value { color: var(--bb-red); }
+        .compare-card.target .compare-value { color: var(--bb-green); }
+
+        .compare-desc {
+            font-size: 16px;
+            color: var(--bb-gray);
+        }
+
+        /* Phase Cards */
+        .phases-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .phase-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 32px 24px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .scene.active .phase-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .phase-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .phase-card:nth-child(3) { transition-delay: 0.6s; }
+
+        .scene.active .phase-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .phase-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .phase-card.phase1::before { background: var(--bb-blue); }
+        .phase-card.phase2::before { background: var(--bb-purple); }
+        .phase-card.phase3::before { background: var(--bb-green); }
+
+        .phase-number {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .phase-card.phase1 .phase-number { color: var(--bb-blue); }
+        .phase-card.phase2 .phase-number { color: var(--bb-purple); }
+        .phase-card.phase3 .phase-number { color: var(--bb-green); }
+
+        .phase-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .phase-timeline {
+            font-size: 14px;
+            color: var(--bb-gray);
+            margin-bottom: 16px;
+        }
+
+        .phase-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+
+        .phase-metric-label { color: var(--bb-gray); }
+        .phase-metric-value { font-weight: 700; }
+
+        /* Data Gap Warning */
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 40px auto;
+            max-width: 800px;
+            text-align: left;
+        }
+
+        .warning-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .warning-icon {
+            font-size: 32px;
+        }
+
+        .warning-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--bb-orange);
+        }
+
+        .warning-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .warning-list li {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .warning-list li::before {
+            content: '?';
+            position: absolute;
+            left: 0;
+            color: var(--bb-orange);
+            font-weight: 700;
+        }
+
+        /* CTA Box */
+        .cta-box {
+            background: linear-gradient(135deg, rgba(26, 86, 255, 0.2), rgba(139, 92, 246, 0.2));
+            border: 2px solid var(--bb-blue);
+            border-radius: 20px;
+            padding: 48px;
+            margin: 40px auto;
+            max-width: 700px;
+        }
+
+        .cta-amount {
+            font-size: 64px;
+            font-weight: 900;
+            color: var(--bb-blue);
+            margin-bottom: 16px;
+        }
+
+        .cta-desc {
+            font-size: 18px;
+            color: var(--bb-gray);
+            margin-bottom: 24px;
+        }
+
+        .cta-note {
+            font-size: 14px;
+            color: var(--bb-orange);
+            font-weight: 600;
+        }
+
+        /* Timeline/Steps */
+        .steps-list {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.5s ease;
+        }
+
+        .scene.active .step-item:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .step-item:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .step-item:nth-child(3) { transition-delay: 0.6s; }
+        .scene.active .step-item:nth-child(4) { transition-delay: 0.8s; }
+
+        .scene.active .step-item {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bb-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .step-desc {
+            font-size: 14px;
+            color: var(--bb-gray);
+        }
+
+        /* Light Theme Specific */
+        .light-theme .info-card {
+            background: white;
+            border: 1px solid rgba(26, 31, 54, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .light-theme .card-title {
+            color: var(--bb-dark);
+        }
+
+        .light-theme .stat-card {
+            background: white;
+            border: 1px solid rgba(26, 31, 54, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Table Styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+
+        .data-table th, .data-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--bb-gray);
+        }
+
+        .data-table td {
+            font-size: 15px;
+        }
+
+        .light-theme .data-table th, .light-theme .data-table td {
+            border-bottom-color: rgba(26, 31, 54, 0.1);
+        }
+
+        .light-theme .data-table th {
+            color: var(--bb-gray);
+        }
+
+        /* Scenario Cards */
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .scenario-card {
+            padding: 32px 24px;
+            border-radius: 16px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .scene.active .scenario-card:nth-child(1) { transition-delay: 0.2s; }
+        .scene.active .scenario-card:nth-child(2) { transition-delay: 0.4s; }
+        .scene.active .scenario-card:nth-child(3) { transition-delay: 0.6s; }
+
+        .scene.active .scenario-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scenario-card.conservative {
+            background: rgba(107, 114, 128, 0.1);
+            border: 1px solid rgba(107, 114, 128, 0.3);
+        }
+
+        .scenario-card.base {
+            background: rgba(26, 86, 255, 0.1);
+            border: 2px solid var(--bb-blue);
+            box-shadow: 0 0 30px rgba(26, 86, 255, 0.2);
+        }
+
+        .scenario-card.aspirational {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .scenario-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .scenario-card.conservative .scenario-label { color: var(--bb-gray); }
+        .scenario-card.base .scenario-label { color: var(--bb-blue); }
+        .scenario-card.aspirational .scenario-label { color: var(--bb-green); }
+
+        .scenario-value {
+            font-size: 40px;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .scenario-card.base .scenario-value { color: var(--bb-blue); }
+
+        .scenario-metric {
+            font-size: 14px;
+            color: var(--bb-gray);
+            margin-top: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .scene { padding: 80px 24px; }
+            .mega-title { font-size: clamp(32px, 10vw, 60px) !important; letter-spacing: -1px; }
+            .stats-grid, .card-grid, .phases-grid, .scenario-grid { grid-template-columns: 1fr; }
+            .comparison-grid { grid-template-columns: 1fr; }
+            .warning-list { grid-template-columns: 1fr; }
+            .nav-arrows { bottom: 20px; right: 20px; }
+            .header { padding: 16px 20px; }
+            h2 { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="glow-orb orb1"></div>
+    <div class="glow-orb orb2"></div>
+
+    <header class="header">
+        <div class="logo">Value<span>Consulting</span></div>
+        <div class="badge">Retail Banking | SEA</div>
+    </header>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="scene-counter">
+        <strong id="currentScene">1</strong> / <span id="totalScenes">28</span>
+    </div>
+
+    <div class="nav-arrows">
+        <button class="nav-btn" onclick="prevScene()">&#8592;</button>
+        <button class="nav-btn" onclick="nextScene()">&#8594;</button>
+    </div>
+
+    <div class="scenes-container">
+        <!-- SCENE 1: Title -->
+        <div class="scene active" data-title="Title">
+            <div class="scene-content">
+                <div class="section-label">Value Assessment</div>
+                <h1 class="mega-title">
+                    <span class="white">DIGITAL</span><br>
+                    <span class="blue">TRANSFORMATION</span>
+                </h1>
+                <p class="subtitle">Retail Bank SEA | Business Case for Digital Onboarding & Servicing Excellence</p>
+            </div>
+        </div>
+
+        <!-- SCENE 2: The Challenge -->
+        <div class="scene" data-title="Challenge">
+            <div class="scene-content">
+                <div class="quote-text">
+                    We found<br>
+                    <span class="highlight-red">$2.4M</span><br>
+                    in annual value leakage
+                </div>
+                <p class="subtitle" style="margin-top: 40px;">Across onboarding abandonment, servicing costs, and operational inefficiency</p>
+            </div>
+        </div>
+
+        <!-- SCENE 3: Who We Spoke To -->
+        <div class="scene" data-title="Discovery">
+            <div class="scene-content">
+                <div class="section-label">Discovery</div>
+                <h2>Who We Spoke To</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <div class="card-icon">👤</div>
+                        <div class="card-title">Head of Retail</div>
+                        <div class="card-desc">Strategic perspective on customer acquisition and business performance</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="card-icon">⚙️</div>
+                        <div class="card-title">Operations Lead</div>
+                        <div class="card-desc">Operational view on servicing costs and channel efficiency</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="card-icon">📱</div>
+                        <div class="card-title">Digital Lead</div>
+                        <div class="card-desc">Technology perspective on digital adoption and scaling challenges</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 4: Quote 1 -->
+        <div class="scene" data-title="Quote 1">
+            <div class="scene-content">
+                <div class="quote-text">
+                    "Our onboarding completion rate is <span class="highlight-red">low</span>. A lot of customers drop off when documents are required."
+                </div>
+                <div class="quote-attribution">— Head of Retail</div>
+            </div>
+        </div>
+
+        <!-- SCENE 5: Quote 2 -->
+        <div class="scene" data-title="Quote 2">
+            <div class="scene-content">
+                <div class="quote-text">
+                    "Servicing is <span class="highlight-red">expensive</span>. Simple requests still come through the call center."
+                </div>
+                <div class="quote-attribution">— Operations Lead</div>
+            </div>
+        </div>
+
+        <!-- SCENE 6: Quote 3 -->
+        <div class="scene" data-title="Quote 3">
+            <div class="scene-content">
+                <div class="quote-text">
+                    "We launched digital onboarding, but it <span class="highlight-red">hasn't scaled well</span>. Teams still rely on manual workarounds."
+                </div>
+                <div class="quote-attribution">— Digital Lead</div>
+            </div>
+        </div>
+
+        <!-- SCENE 7: Pain Points Summary -->
+        <div class="scene" data-title="Pain Points">
+            <div class="scene-content">
+                <div class="section-label">Key Findings</div>
+                <h2>Three Critical Pain Points</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <div class="card-icon">📉</div>
+                        <div class="card-title">High Abandonment</div>
+                        <div class="card-desc">Customers dropping off during document collection, 7+ day cycle times</div>
+                        <div class="card-quote">"It can take more than a week in some cases"</div>
+                    </div>
+                    <div class="info-card spotlight">
+                        <div class="card-icon">💸</div>
+                        <div class="card-title">Expensive Servicing</div>
+                        <div class="card-desc">Simple requests still routed to call center instead of digital self-service</div>
+                        <div class="card-quote">"No clear view of why customers choose branch or call over digital"</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="card-icon">🔧</div>
+                        <div class="card-title">Manual Workarounds</div>
+                        <div class="card-desc">Digital onboarding exists but hasn't scaled due to process gaps</div>
+                        <div class="card-quote">"Teams still rely on manual workarounds"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 8: Capability Assessment -->
+        <div class="scene" data-title="Capability Assessment">
+            <div class="scene-content">
+                <div class="section-label">Capability Assessment</div>
+                <h2>Current Maturity Gaps</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Digital Onboarding</div>
+                        <div class="stat-value red">2/5</div>
+                        <div class="stat-context">Exists but not scaled</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Self-Service</div>
+                        <div class="stat-value red">2/5</div>
+                        <div class="stat-context">Simple requests to call center</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Channel Analytics</div>
+                        <div class="stat-value red">1/5</div>
+                        <div class="stat-context">No visibility into behavior</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 9: Onboarding Gap -->
+        <div class="scene" data-title="Onboarding Gap">
+            <div class="scene-content">
+                <div class="section-label">Gap Analysis</div>
+                <h2>Digital Onboarding</h2>
+                <div class="comparison-grid">
+                    <div class="compare-card current">
+                        <div class="compare-label">Current State</div>
+                        <div class="compare-value">~50%</div>
+                        <div class="compare-desc">Completion rate (estimated)<br>7+ day cycle time<br>Drop-off at document stage</div>
+                    </div>
+                    <div class="compare-card target">
+                        <div class="compare-label">Best-in-Class</div>
+                        <div class="compare-value">70%+</div>
+                        <div class="compare-desc">Completion rate<br><5 day cycle time<br>Digital document collection</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 10: Servicing Gap -->
+        <div class="scene" data-title="Servicing Gap">
+            <div class="scene-content">
+                <div class="section-label">Gap Analysis</div>
+                <h2>Customer Servicing</h2>
+                <div class="comparison-grid">
+                    <div class="compare-card current">
+                        <div class="compare-label">Current State</div>
+                        <div class="compare-value">$4.50</div>
+                        <div class="compare-desc">Cost per call center interaction<br>Simple requests handled manually<br>No channel preference data</div>
+                    </div>
+                    <div class="compare-card target">
+                        <div class="compare-label">Target State</div>
+                        <div class="compare-value">$0.45</div>
+                        <div class="compare-desc">Cost per digital interaction<br>50%+ self-service deflection<br>Full channel analytics</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 11: Value Opportunity -->
+        <div class="scene" data-title="The Opportunity">
+            <div class="scene-content">
+                <div class="section-label">ROI Model</div>
+                <h1 class="mega-title">
+                    <span class="white">THE</span><br>
+                    <span class="blue">OPPORTUNITY</span>
+                </h1>
+                <p class="subtitle">Three value levers identified across onboarding, servicing, and operations</p>
+            </div>
+        </div>
+
+        <!-- SCENE 12: Value Lever 1 -->
+        <div class="scene" data-title="Lever 1">
+            <div class="scene-content">
+                <div class="section-label">Value Lever 1</div>
+                <h2>Increased Onboarding Completion</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Additional Accounts</div>
+                        <div class="stat-value">+12,000</div>
+                        <div class="stat-context">Per year (20pp improvement)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Revenue per Customer</div>
+                        <div class="stat-value">$120</div>
+                        <div class="stat-context">Year 1 (SEA benchmark)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Annual Value</div>
+                        <div class="stat-value green">$1.44M</div>
+                        <div class="stat-context">Revenue uplift</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 13: Value Lever 2 -->
+        <div class="scene" data-title="Lever 2">
+            <div class="scene-content">
+                <div class="section-label">Value Lever 2</div>
+                <h2>Servicing Cost Reduction</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Calls Deflected</div>
+                        <div class="stat-value">168K</div>
+                        <div class="stat-context">Per year to digital</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Savings per Call</div>
+                        <div class="stat-value">$4.05</div>
+                        <div class="stat-context">($4.50 - $0.45)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Annual Value</div>
+                        <div class="stat-value green">$680K</div>
+                        <div class="stat-context">Cost reduction</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 14: Value Lever 3 -->
+        <div class="scene" data-title="Lever 3">
+            <div class="scene-content">
+                <div class="section-label">Value Lever 3</div>
+                <h2>Operations Efficiency</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">FTEs Redeployed</div>
+                        <div class="stat-value">7.5</div>
+                        <div class="stat-context">30% efficiency gain</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Cost per FTE</div>
+                        <div class="stat-value">$35K</div>
+                        <div class="stat-context">SEA fully-loaded</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Annual Value</div>
+                        <div class="stat-value green">$263K</div>
+                        <div class="stat-context">Labor savings</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 15: Total Value -->
+        <div class="scene" data-title="Total Value">
+            <div class="scene-content">
+                <div class="quote-text">
+                    Total annual opportunity:<br>
+                    <span class="highlight-green">$2.38M</span>
+                </div>
+                <p class="subtitle" style="margin-top: 40px;">Onboarding $1.44M + Servicing $680K + Operations $263K</p>
+            </div>
+        </div>
+
+        <!-- SCENE 16: Scenarios -->
+        <div class="scene" data-title="Scenarios">
+            <div class="scene-content">
+                <div class="section-label">Scenario Analysis</div>
+                <h2>5-Year Financial Outlook</h2>
+                <div class="scenario-grid">
+                    <div class="scenario-card conservative">
+                        <div class="scenario-label">Conservative</div>
+                        <div class="scenario-value">$3.6M</div>
+                        <div class="scenario-metric">NPV @ 50% realization</div>
+                        <div class="scenario-metric" style="margin-top: 16px; font-weight: 700;">80% ROI</div>
+                    </div>
+                    <div class="scenario-card base">
+                        <div class="scenario-label">Base Case</div>
+                        <div class="scenario-value">$5.4M</div>
+                        <div class="scenario-metric">NPV @ 75% realization</div>
+                        <div class="scenario-metric" style="margin-top: 16px; font-weight: 700;">168% ROI</div>
+                    </div>
+                    <div class="scenario-card aspirational">
+                        <div class="scenario-label">Aspirational</div>
+                        <div class="scenario-value">$7.2M</div>
+                        <div class="scenario-metric">NPV @ 100% realization</div>
+                        <div class="scenario-metric" style="margin-top: 16px; font-weight: 700;">260% ROI</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 17: Investment -->
+        <div class="scene" data-title="Investment">
+            <div class="scene-content">
+                <div class="section-label">Investment Required</div>
+                <h2>Total 5-Year Cost</h2>
+                <div class="cta-box">
+                    <div class="cta-amount">$2.0M</div>
+                    <div class="cta-desc">Year 1: $1.4M implementation<br>Years 2-5: $200K/year run cost</div>
+                </div>
+                <div class="stats-grid" style="margin-top: 40px;">
+                    <div class="stat-card">
+                        <div class="stat-label">5-Year Benefits</div>
+                        <div class="stat-value">$8.9M</div>
+                        <div class="stat-context">Base case</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">ROI</div>
+                        <div class="stat-value green">168%</div>
+                        <div class="stat-context">Base case</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Payback</div>
+                        <div class="stat-value">18mo</div>
+                        <div class="stat-context">Base case</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 18: Roadmap Title -->
+        <div class="scene" data-title="Roadmap">
+            <div class="scene-content">
+                <div class="section-label">Implementation</div>
+                <h1 class="mega-title">
+                    <span class="white">THE</span><br>
+                    <span class="blue">ROADMAP</span>
+                </h1>
+                <p class="subtitle">Three phases over 24 months, each with standalone value</p>
+            </div>
+        </div>
+
+        <!-- SCENE 19: Phase Overview -->
+        <div class="scene" data-title="Phases">
+            <div class="scene-content">
+                <div class="section-label">Implementation</div>
+                <h2>Phased Approach</h2>
+                <div class="phases-grid">
+                    <div class="phase-card phase1">
+                        <div class="phase-number">Phase 1</div>
+                        <div class="phase-title">Digital Onboarding</div>
+                        <div class="phase-timeline">Months 1-9</div>
+                        <div class="phase-metric">
+                            <span class="phase-metric-label">Investment</span>
+                            <span class="phase-metric-value">$800K</span>
+                        </div>
+                        <div class="phase-metric">
+                            <span class="phase-metric-label">Annual Benefit</span>
+                            <span class="phase-metric-value" style="color: var(--bb-green);">$720K</span>
+                        </div>
+                    </div>
+                    <div class="phase-card phase2">
+                        <div class="phase-number">Phase 2</div>
+                        <div class="phase-title">Self-Service</div>
+                        <div class="phase-timeline">Months 6-15</div>
+                        <div class="phase-metric">
+                            <span class="phase-metric-label">Investment</span>
+                            <span class="phase-metric-value">$700K</span>
+                        </div>
+                        <div class="phase-metric">
+                            <span class="phase-metric-label">Annual Benefit</span>
+                            <span class="phase-metric-value" style="color: var(--bb-green);">$510K</span>
+                        </div>
+                    </div>
+                    <div class="phase-card phase3">
+                        <div class="phase-number">Phase 3</div>
+                        <div class="phase-title">Operations Excellence</div>
+                        <div class="phase-timeline">Months 12-24</div>
+                        <div class="phase-metric">
+                            <span class="phase-metric-label">Investment</span>
+                            <span class="phase-metric-value">$500K</span>
+                        </div>
+                        <div class="phase-metric">
+                            <span class="phase-metric-label">Annual Benefit</span>
+                            <span class="phase-metric-value" style="color: var(--bb-green);">$263K</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 20: Phase 1 Detail -->
+        <div class="scene" data-title="Phase 1">
+            <div class="scene-content">
+                <div class="section-label">Phase 1 | Months 1-9</div>
+                <h2>Digital Onboarding Excellence</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <div class="card-icon">📄</div>
+                        <div class="card-title">Digital Document Collection</div>
+                        <div class="card-desc">Reduce friction at the key drop-off point</div>
+                    </div>
+                    <div class="info-card spotlight">
+                        <div class="card-icon">🚀</div>
+                        <div class="card-title">Journey Optimization</div>
+                        <div class="card-desc">End-to-end digital flow with minimal handoffs</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="card-icon">📊</div>
+                        <div class="card-title">Real-time Tracking</div>
+                        <div class="card-desc">Customer visibility into application status</div>
+                    </div>
+                </div>
+                <div style="margin-top: 32px; font-size: 18px;">
+                    <span style="color: var(--bb-gray);">Standalone ROI:</span>
+                    <span style="color: var(--bb-green); font-weight: 700;">90%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 21: Phase 2 Detail -->
+        <div class="scene" data-title="Phase 2">
+            <div class="scene-content">
+                <div class="section-label">Phase 2 | Months 6-15</div>
+                <h2>Self-Service Enablement</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <div class="card-icon">🔄</div>
+                        <div class="card-title">Transaction Hub</div>
+                        <div class="card-desc">Self-service for common requests</div>
+                    </div>
+                    <div class="info-card spotlight">
+                        <div class="card-icon">📈</div>
+                        <div class="card-title">Channel Analytics</div>
+                        <div class="card-desc">Understand why customers choose channels</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="card-icon">💡</div>
+                        <div class="card-title">Knowledge Base</div>
+                        <div class="card-desc">FAQ & self-help digitization</div>
+                    </div>
+                </div>
+                <div style="margin-top: 32px; font-size: 18px;">
+                    <span style="color: var(--bb-gray);">Target:</span>
+                    <span style="color: var(--bb-blue); font-weight: 700;">+25pp</span>
+                    <span style="color: var(--bb-gray);"> digital containment</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 22: Phase 3 Detail -->
+        <div class="scene" data-title="Phase 3">
+            <div class="scene-content">
+                <div class="section-label">Phase 3 | Months 12-24</div>
+                <h2>Operations Excellence</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <div class="card-icon">⚡</div>
+                        <div class="card-title">Workflow Automation</div>
+                        <div class="card-desc">Remove manual workarounds</div>
+                    </div>
+                    <div class="info-card spotlight">
+                        <div class="card-icon">🎯</div>
+                        <div class="card-title">Intelligent Routing</div>
+                        <div class="card-desc">Smart case assignment & escalation</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="card-icon">📉</div>
+                        <div class="card-title">STP Optimization</div>
+                        <div class="card-desc">Increase straight-through processing</div>
+                    </div>
+                </div>
+                <div style="margin-top: 32px; font-size: 18px;">
+                    <span style="color: var(--bb-gray);">Target:</span>
+                    <span style="color: var(--bb-green); font-weight: 700;">-50%</span>
+                    <span style="color: var(--bb-gray);"> manual touchpoints</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 23: Confidence Warning -->
+        <div class="scene" data-title="Confidence">
+            <div class="scene-content">
+                <div class="section-label">Important Caveat</div>
+                <h1 class="mega-title">
+                    <span class="orange">CONFIDENCE</span><br>
+                    <span class="white">LEVEL</span>
+                </h1>
+                <p class="subtitle" style="margin-top: 24px; font-size: 24px; color: var(--bb-orange);">LOW-MEDIUM</p>
+                <p class="subtitle">This analysis relies heavily on benchmark-based assumptions due to limited quantitative data in discovery</p>
+            </div>
+        </div>
+
+        <!-- SCENE 24: Data Gaps -->
+        <div class="scene" data-title="Data Gaps">
+            <div class="scene-content">
+                <div class="section-label">Data Gaps</div>
+                <h2>Critical Validation Required</h2>
+                <div class="warning-box">
+                    <div class="warning-header">
+                        <span class="warning-icon">⚠️</span>
+                        <span class="warning-title">Assumed Values - Require Validation</span>
+                    </div>
+                    <ul class="warning-list">
+                        <li>Application volume (assumed 5,000/month)</li>
+                        <li>Current completion rate (assumed 50%)</li>
+                        <li>Call center volume (assumed 80,000/month)</li>
+                        <li>Cost per call (assumed $4.50)</li>
+                        <li>FTE count in onboarding (assumed 25)</li>
+                        <li>Revenue per new customer (assumed $120)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 25: What Would Change -->
+        <div class="scene" data-title="Sensitivity">
+            <div class="scene-content">
+                <div class="section-label">Sensitivity Analysis</div>
+                <h2>What Would Change the Decision?</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Application Volume</div>
+                        <div class="stat-value orange">2,200</div>
+                        <div class="stat-context">Breakeven threshold (vs 5,000 assumed)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Completion Improvement</div>
+                        <div class="stat-value orange">8pp</div>
+                        <div class="stat-context">Minimum for positive ROI</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Call Volume</div>
+                        <div class="stat-value orange">35K</div>
+                        <div class="stat-context">Breakeven threshold</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 26: Recommendation -->
+        <div class="scene" data-title="Recommendation">
+            <div class="scene-content">
+                <div class="section-label">Recommendation</div>
+                <h1 class="mega-title">
+                    <span class="white">VALIDATE</span><br>
+                    <span class="blue">THEN INVEST</span>
+                </h1>
+                <p class="subtitle">Given data gaps, we recommend a validation phase before full commitment</p>
+            </div>
+        </div>
+
+        <!-- SCENE 27: Decision Request -->
+        <div class="scene" data-title="Decision">
+            <div class="scene-content">
+                <div class="section-label">Decision Requested</div>
+                <h2>Two-Step Approach</h2>
+                <div class="comparison-grid">
+                    <div class="compare-card" style="background: rgba(26, 86, 255, 0.1); border: 2px solid var(--bb-blue);">
+                        <div class="compare-label" style="color: var(--bb-blue);">Step 1: Now</div>
+                        <div class="compare-value" style="color: var(--bb-blue);">$50K</div>
+                        <div class="compare-desc">4-week data validation<br>Confirm key assumptions<br>Refine ROI model</div>
+                    </div>
+                    <div class="compare-card" style="background: rgba(16, 185, 129, 0.1); border: 2px solid var(--bb-green);">
+                        <div class="compare-label" style="color: var(--bb-green);">Step 2: If Validated</div>
+                        <div class="compare-value" style="color: var(--bb-green);">$800K</div>
+                        <div class="compare-desc">Phase 1 implementation<br>Standalone 90% ROI<br>De-risks future phases</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 28: Next Steps -->
+        <div class="scene" data-title="Next Steps">
+            <div class="scene-content">
+                <div class="section-label">Upon Approval</div>
+                <h2>Next Steps</h2>
+                <div class="steps-list">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">Week 1-2: Data Collection</div>
+                            <div class="step-desc">Finance & Operations provide actual metrics</div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">Week 3-4: Model Refinement</div>
+                            <div class="step-desc">Update ROI with validated data</div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">Week 5: Go/No-Go Decision</div>
+                            <div class="step-desc">Final investment approval for Phase 1</div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">Week 6+: Implementation</div>
+                            <div class="step-desc">Phase 1 kickoff upon approval</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSceneIndex = 0;
+        const scenes = document.querySelectorAll('.scene');
+        const totalScenes = scenes.length;
+
+        document.getElementById('totalScenes').textContent = totalScenes;
+
+        function updateScene() {
+            scenes.forEach((scene, index) => {
+                scene.classList.remove('active');
+                if (index === currentSceneIndex) {
+                    scene.classList.add('active');
+                }
+            });
+
+            document.getElementById('currentScene').textContent = currentSceneIndex + 1;
+            document.getElementById('progressBar').style.width = ((currentSceneIndex + 1) / totalScenes * 100) + '%';
+        }
+
+        function nextScene() {
+            if (currentSceneIndex < totalScenes - 1) {
+                currentSceneIndex++;
+                updateScene();
+            }
+        }
+
+        function prevScene() {
+            if (currentSceneIndex > 0) {
+                currentSceneIndex--;
+                updateScene();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextScene();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevScene();
+            }
+        });
+
+        // Touch/swipe support
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) nextScene();
+                else prevScene();
+            }
+        });
+
+        // Click to advance
+        document.querySelector('.scenes-container').addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-btn') && !e.target.closest('button')) {
+                nextScene();
+            }
+        });
+
+        // Initialize
+        updateScene();
+    </script>
+</body>
+</html>

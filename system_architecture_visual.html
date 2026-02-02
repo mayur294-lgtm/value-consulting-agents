@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value Consulting Agent System - Architecture Flow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #1A56FF, #00D4FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #8892b0;
+            margin-bottom: 50px;
+            font-size: 1.1rem;
+        }
+
+        /* Section Headers */
+        .section-header {
+            font-size: 1.3rem;
+            color: #64ffda;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1A56FF33;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #1A56FF;
+            border-radius: 50%;
+        }
+
+        /* Main Flow Container */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            position: relative;
+        }
+
+        /* Flow Row */
+        .flow-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Agent Cards */
+        .agent-card {
+            background: linear-gradient(145deg, #1a1f36, #252a45);
+            border-radius: 16px;
+            padding: 20px;
+            min-width: 200px;
+            max-width: 280px;
+            border: 2px solid transparent;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(26, 86, 255, 0.3);
+        }
+
+        .agent-card.orchestrator {
+            border-color: #1A56FF;
+            background: linear-gradient(145deg, #1a2040, #252a55);
+            min-width: 300px;
+        }
+
+        .agent-card.discovery { border-color: #10B981; }
+        .agent-card.capability { border-color: #F59E0B; }
+        .agent-card.roi { border-color: #8B5CF6; }
+        .agent-card.roadmap { border-color: #F97316; }
+        .agent-card.benchmark { border-color: #06B6D4; }
+        .agent-card.assembly { border-color: #EC4899; }
+
+        .agent-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .orchestrator .agent-icon { background: linear-gradient(135deg, #1A56FF, #3B82F6); }
+        .discovery .agent-icon { background: linear-gradient(135deg, #10B981, #34D399); }
+        .capability .agent-icon { background: linear-gradient(135deg, #F59E0B, #FBBF24); }
+        .roi .agent-icon { background: linear-gradient(135deg, #8B5CF6, #A78BFA); }
+        .roadmap .agent-icon { background: linear-gradient(135deg, #F97316, #FB923C); }
+        .benchmark .agent-icon { background: linear-gradient(135deg, #06B6D4, #22D3EE); }
+        .assembly .agent-icon { background: linear-gradient(135deg, #EC4899, #F472B6); }
+
+        .agent-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .agent-role {
+            font-size: 0.8rem;
+            color: #8892b0;
+            line-height: 1.4;
+        }
+
+        /* Arrow Connectors */
+        .arrow-down {
+            display: flex;
+            justify-content: center;
+            padding: 10px 0;
+        }
+
+        .arrow-down svg {
+            width: 40px;
+            height: 40px;
+            fill: #1A56FF;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Data Flow Indicators */
+        .data-flow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(26, 86, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #64ffda;
+        }
+
+        /* Skills Grid */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .skill-card {
+            background: linear-gradient(145deg, #1a1f36, #252a45);
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid #64ffda;
+            transition: all 0.3s ease;
+        }
+
+        .skill-card:hover {
+            transform: translateX(5px);
+            background: linear-gradient(145deg, #1f2440, #2a2f55);
+        }
+
+        .skill-name {
+            font-weight: 600;
+            color: #64ffda;
+            margin-bottom: 6px;
+            font-family: 'Monaco', monospace;
+        }
+
+        .skill-desc {
+            font-size: 0.85rem;
+            color: #8892b0;
+        }
+
+        /* Knowledge Base */
+        .knowledge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .knowledge-item {
+            background: linear-gradient(145deg, #16213e, #1f2847);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #1A56FF33;
+            transition: all 0.3s ease;
+        }
+
+        .knowledge-item:hover {
+            border-color: #1A56FF;
+            transform: scale(1.02);
+        }
+
+        .knowledge-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .knowledge-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .knowledge-count {
+            font-size: 0.8rem;
+            color: #8892b0;
+        }
+
+        /* Output Templates */
+        .output-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .output-card {
+            background: linear-gradient(145deg, #1a1f36, #252a45);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #EC489933;
+            transition: all 0.3s ease;
+        }
+
+        .output-card:hover {
+            border-color: #EC4899;
+        }
+
+        .output-type {
+            font-size: 0.75rem;
+            color: #EC4899;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .output-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .output-format {
+            font-size: 0.8rem;
+            color: #8892b0;
+        }
+
+        /* Parallel Flow */
+        .parallel-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .parallel-container::before {
+            content: 'PARALLEL EXECUTION';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: #64ffda;
+            background: #1a1a2e;
+            padding: 4px 12px;
+            border-radius: 10px;
+            border: 1px dashed #64ffda;
+        }
+
+        /* Input/Output Labels */
+        .io-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+
+        .io-label.input {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+        }
+
+        .io-label.output {
+            background: rgba(236, 72, 153, 0.2);
+            color: #EC4899;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(26, 31, 54, 0.5);
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        /* Big Picture View */
+        .big-picture {
+            background: linear-gradient(145deg, #1a1f36, #252a45);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 40px 0;
+            border: 2px solid #1A56FF33;
+        }
+
+        .big-picture-title {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #64ffda;
+        }
+
+        /* Flow Steps */
+        .flow-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #1A56FF, #3B82F6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .step-detail {
+            font-size: 0.9rem;
+            color: #8892b0;
+        }
+
+        /* Data Artifacts */
+        .artifacts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .artifact {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-family: 'Monaco', monospace;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .agent-card { min-width: 100%; }
+            .parallel-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Value Consulting Agent System</h1>
+        <p class="subtitle">Interactive Architecture & Data Flow Visualization</p>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #1A56FF;"></div>
+                <span>Orchestrator</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #10B981;"></div>
+                <span>Discovery</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #F59E0B;"></div>
+                <span>Capability</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8B5CF6;"></div>
+                <span>ROI</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #F97316;"></div>
+                <span>Roadmap</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #06B6D4;"></div>
+                <span>Benchmark</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #EC4899;"></div>
+                <span>Assembly</span>
+            </div>
+        </div>
+
+        <!-- Big Picture Flow -->
+        <div class="big-picture">
+            <div class="big-picture-title">🎯 End-to-End Engagement Flow</div>
+
+            <div class="flow-steps">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">User Input Received</div>
+                        <div class="step-detail">Transcripts, Excel data, PDFs, meeting notes, or business context</div>
+                        <div class="artifacts">
+                            <span class="artifact">📝 Transcripts</span>
+                            <span class="artifact">📊 Excel</span>
+                            <span class="artifact">📄 PDFs</span>
+                            <span class="artifact">💼 Context</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Orchestrator Classifies & Routes</div>
+                        <div class="step-detail">Determines engagement type, domain, region, and required agents</div>
+                        <div class="artifacts">
+                            <span class="artifact">Domain: retail/sme/wealth...</span>
+                            <span class="artifact">Type: POV/assessment/ROI</span>
+                            <span class="artifact">Region: EMEA/SEA/US</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Discovery Extracts Evidence</div>
+                        <div class="step-detail">Creates structured evidence registers from raw inputs</div>
+                        <div class="artifacts">
+                            <span class="artifact">E1...En Evidence</span>
+                            <span class="artifact">PP1...PPn Pain Points</span>
+                            <span class="artifact">M1...Mn Metrics</span>
+                            <span class="artifact">CR1...CRn Constraints</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Capability + ROI (Parallel)</div>
+                        <div class="step-detail">Assess maturity gaps while building financial model</div>
+                        <div class="artifacts">
+                            <span class="artifact">Maturity Scores</span>
+                            <span class="artifact">Gap Analysis</span>
+                            <span class="artifact">ROI Model</span>
+                            <span class="artifact">Scenarios</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <div class="step-title">Roadmap Prioritization</div>
+                        <div class="step-detail">Sequence initiatives by value, feasibility, and dependencies</div>
+                        <div class="artifacts">
+                            <span class="artifact">Phased Roadmap</span>
+                            <span class="artifact">Initiative Cards</span>
+                            <span class="artifact">Dependencies</span>
+                            <span class="artifact">Value Timeline</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <div class="step-title">Executive Assembly</div>
+                        <div class="step-detail">Package all outputs into executive-ready deliverables</div>
+                        <div class="artifacts">
+                            <span class="artifact">📋 Executive Summary</span>
+                            <span class="artifact">📊 Assessment Report</span>
+                            <span class="artifact">💰 ROI Report</span>
+                            <span class="artifact">🗺️ Roadmap</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Flow Section -->
+        <div class="section-header">Agent Orchestration Flow</div>
+
+        <div class="flow-container">
+            <!-- User Input -->
+            <div class="flow-row">
+                <div class="data-flow">
+                    📥 USER INPUT: Transcripts, Excel, PDFs, Meeting Notes
+                </div>
+            </div>
+
+            <div class="arrow-down">
+                <svg viewBox="0 0 24 24"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
+            </div>
+
+            <!-- Orchestrator -->
+            <div class="flow-row">
+                <div class="agent-card orchestrator">
+                    <div class="agent-icon">🎯</div>
+                    <div class="agent-name">Value Consulting Orchestrator</div>
+                    <div class="agent-role">Routes requests, classifies engagements, coordinates all agents, enforces quality gates</div>
+                    <div class="io-label input">← Domain, Region, Type</div>
+                    <div class="io-label output">→ Agent Delegations</div>
+                </div>
+            </div>
+
+            <div class="arrow-down">
+                <svg viewBox="0 0 24 24"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
+            </div>
+
+            <!-- Discovery -->
+            <div class="flow-row">
+                <div class="agent-card discovery">
+                    <div class="agent-icon">🔍</div>
+                    <div class="agent-name">Discovery Transcript Interpreter</div>
+                    <div class="agent-role">Extracts evidence, pain points, metrics, and constraints from raw inputs</div>
+                    <div class="io-label input">← Raw transcripts/notes</div>
+                    <div class="io-label output">→ Evidence Register (E1...En)</div>
+                </div>
+            </div>
+
+            <div class="arrow-down">
+                <svg viewBox="0 0 24 24"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
+            </div>
+
+            <!-- Parallel: Capability + ROI -->
+            <div class="parallel-container">
+                <div class="agent-card capability">
+                    <div class="agent-icon">📊</div>
+                    <div class="agent-name">Capability Assessment</div>
+                    <div class="agent-role">Evaluates maturity across journeys, identifies gaps, prioritizes improvements</div>
+                    <div class="io-label input">← Evidence + Domain Context</div>
+                    <div class="io-label output">→ Gap Analysis, Scores</div>
+                </div>
+
+                <div class="agent-card benchmark">
+                    <div class="agent-icon">📈</div>
+                    <div class="agent-name">Benchmark Librarian</div>
+                    <div class="agent-role">Curates industry benchmarks with confidence ratings and regional specificity</div>
+                    <div class="io-label input">← Domain, Region, Metric</div>
+                    <div class="io-label output">→ Benchmarks + Confidence</div>
+                </div>
+
+                <div class="agent-card roi">
+                    <div class="agent-icon">💰</div>
+                    <div class="agent-name">ROI Business Case Builder</div>
+                    <div class="agent-role">Builds defensible financial models with scenarios and sensitivity analysis</div>
+                    <div class="io-label input">← Evidence + Benchmarks</div>
+                    <div class="io-label output">→ Excel Model, Scenarios</div>
+                </div>
+            </div>
+
+            <div class="arrow-down">
+                <svg viewBox="0 0 24 24"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
+            </div>
+
+            <!-- Roadmap -->
+            <div class="flow-row">
+                <div class="agent-card roadmap">
+                    <div class="agent-icon">🗺️</div>
+                    <div class="agent-name">Roadmap Prioritization</div>
+                    <div class="agent-role">Sequences initiatives by value, feasibility, dependencies into phased plan</div>
+                    <div class="io-label input">← Gaps + ROI Levers</div>
+                    <div class="io-label output">→ Phased Roadmap</div>
+                </div>
+            </div>
+
+            <div class="arrow-down">
+                <svg viewBox="0 0 24 24"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
+            </div>
+
+            <!-- Assembly -->
+            <div class="flow-row">
+                <div class="agent-card assembly">
+                    <div class="agent-icon">📦</div>
+                    <div class="agent-name">Executive Narrative Assembler</div>
+                    <div class="agent-role">Packages all outputs into executive-ready deliverables with consistency audit</div>
+                    <div class="io-label input">← All Agent Outputs</div>
+                    <div class="io-label output">→ Final Deliverables</div>
+                </div>
+            </div>
+
+            <div class="arrow-down">
+                <svg viewBox="0 0 24 24"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
+            </div>
+
+            <!-- Final Output -->
+            <div class="flow-row">
+                <div class="data-flow">
+                    📤 DELIVERABLES: Executive Summary, Assessment Report, ROI Model, Roadmap
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills Section -->
+        <div class="section-header">Available Skills (Slash Commands)</div>
+
+        <div class="skills-grid">
+            <div class="skill-card">
+                <div class="skill-name">/presentation</div>
+                <div class="skill-desc">Generate Prezi-style interactive HTML presentations from any content</div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-name">/generate-roi-excel</div>
+                <div class="skill-desc">Create professional Excel ROI models with HNB/Seabank format</div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-name">/chunk-document</div>
+                <div class="skill-desc">Break large PDFs/CSVs into processable chunks</div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-name">/domain-context [domain]</div>
+                <div class="skill-desc">Load complete domain knowledge (retail, sme, wealth, etc.)</div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-name">/domain-benchmarks</div>
+                <div class="skill-desc">Query Consulting Playbook benchmark data by domain/journey</div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-name">/domain-pain-points</div>
+                <div class="skill-desc">Retrieve common pain points for discovery prep/validation</div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-name">/domain-journeys</div>
+                <div class="skill-desc">Access customer/operational journey maps</div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-name">/domain-usecases</div>
+                <div class="skill-desc">Query Backbase use cases & capabilities by category</div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-name">/domain-value-props</div>
+                <div class="skill-desc">Retrieve value propositions & differentiation themes</div>
+            </div>
+        </div>
+
+        <!-- Knowledge Base Section -->
+        <div class="section-header">Knowledge Base (Feeds All Agents)</div>
+
+        <div class="knowledge-grid">
+            <div class="knowledge-item">
+                <div class="knowledge-icon">🏦</div>
+                <div class="knowledge-name">Retail Banking</div>
+                <div class="knowledge-count">9 knowledge files</div>
+            </div>
+            <div class="knowledge-item">
+                <div class="knowledge-icon">🏢</div>
+                <div class="knowledge-name">Commercial</div>
+                <div class="knowledge-count">9 knowledge files</div>
+            </div>
+            <div class="knowledge-item">
+                <div class="knowledge-icon">💼</div>
+                <div class="knowledge-name">SME Banking</div>
+                <div class="knowledge-count">9 knowledge files</div>
+            </div>
+            <div class="knowledge-item">
+                <div class="knowledge-icon">💎</div>
+                <div class="knowledge-name">Wealth Mgmt</div>
+                <div class="knowledge-count">10 knowledge files</div>
+            </div>
+            <div class="knowledge-item">
+                <div class="knowledge-icon">🌐</div>
+                <div class="knowledge-name">Corporate</div>
+                <div class="knowledge-count">9 knowledge files</div>
+            </div>
+            <div class="knowledge-item">
+                <div class="knowledge-icon">📊</div>
+                <div class="knowledge-name">Benchmarks CSV</div>
+                <div class="knowledge-count">5000+ data points</div>
+            </div>
+            <div class="knowledge-item">
+                <div class="knowledge-icon">📈</div>
+                <div class="knowledge-name">ROI Examples</div>
+                <div class="knowledge-count">HNB, Seabank, Weatherby</div>
+            </div>
+            <div class="knowledge-item">
+                <div class="knowledge-icon">⚔️</div>
+                <div class="knowledge-name">Competitor Intel</div>
+                <div class="knowledge-count">Battlecards & Analysis</div>
+            </div>
+        </div>
+
+        <!-- Output Templates Section -->
+        <div class="section-header">Output Templates (Deliverable Standards)</div>
+
+        <div class="output-grid">
+            <div class="output-card">
+                <div class="output-type">Executive</div>
+                <div class="output-name">Executive Summary</div>
+                <div class="output-format">1 page max, 500 words, C-level audience</div>
+            </div>
+            <div class="output-card">
+                <div class="output-type">Assessment</div>
+                <div class="output-name">Capability Assessment</div>
+                <div class="output-format">Maturity scores, gap analysis, evidence-backed</div>
+            </div>
+            <div class="output-card">
+                <div class="output-type">Financial</div>
+                <div class="output-name">ROI Report</div>
+                <div class="output-format">Excel model, 3 scenarios, sensitivity analysis</div>
+            </div>
+            <div class="output-card">
+                <div class="output-type">Strategic</div>
+                <div class="output-name">Roadmap</div>
+                <div class="output-format">Now/Next/Later phases, dependencies, value timeline</div>
+            </div>
+            <div class="output-card">
+                <div class="output-type">Evidence</div>
+                <div class="output-name">Discovery Output</div>
+                <div class="output-format">Evidence register, pain points, metrics, constraints</div>
+            </div>
+            <div class="output-card">
+                <div class="output-type">Comprehensive</div>
+                <div class="output-name">Assessment Report</div>
+                <div class="output-format">Full findings with methodology & assumptions</div>
+            </div>
+        </div>
+
+        <!-- Data Flow Diagram -->
+        <div class="section-header">Detailed Data Flow Between Agents</div>
+
+        <div class="big-picture" style="padding: 30px;">
+            <pre style="color: #64ffda; font-family: Monaco, monospace; font-size: 0.85rem; line-height: 1.8; overflow-x: auto;">
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                              VALUE CONSULTING AGENT SYSTEM                               │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                          │
+│   ┌──────────────┐                                                                       │
+│   │  USER INPUT  │  Transcripts, Excel, PDFs, Notes, Context                            │
+│   └──────┬───────┘                                                                       │
+│          │                                                                               │
+│          ▼                                                                               │
+│   ┌──────────────────────────────────────────────────────────────────────────────────┐  │
+│   │                        🎯 ORCHESTRATOR AGENT                                      │  │
+│   │  • Classifies engagement type (POV, Assessment, ROI, Deal Strategy)              │  │
+│   │  • Determines domain (retail, sme, wealth, commercial, corporate)                │  │
+│   │  • Routes to appropriate agent pipeline                                          │  │
+│   │  • Enforces quality gates before final delivery                                  │  │
+│   └──────────────────────────────────────────────┬───────────────────────────────────┘  │
+│                                                  │                                       │
+│                                                  ▼                                       │
+│   ┌──────────────────────────────────────────────────────────────────────────────────┐  │
+│   │                      🔍 DISCOVERY AGENT                                           │  │
+│   │  INPUT:  Raw transcripts, meeting notes, artifacts                               │  │
+│   │  OUTPUT: Evidence Register (E1...En)                                             │  │
+│   │          Pain Point Register (PP1...PPn)                                         │  │
+│   │          Metric Register (M1...Mn)                                               │  │
+│   │          Constraints Register (CR1...CRn)                                        │  │
+│   │          Open Questions (data gaps flagged)                                      │  │
+│   └───────────────────────────────┬──────────────────────────────────────────────────┘  │
+│                                   │                                                      │
+│         ┌─────────────────────────┼─────────────────────────────┐                       │
+│         │                         │                             │                        │
+│         ▼                         ▼                             ▼                        │
+│   ┌───────────────┐    ┌────────────────────┐    ┌────────────────────────┐            │
+│   │📊 CAPABILITY  │    │  📈 BENCHMARK      │    │    💰 ROI AGENT        │            │
+│   │    AGENT      │    │    LIBRARIAN       │    │                        │            │
+│   │               │◄───│                    │───►│ INPUT: Evidence +      │            │
+│   │ INPUT:        │    │ INPUT: Domain,     │    │        Benchmarks +    │            │
+│   │  Evidence +   │    │  Region, Metric    │    │        Financial Data  │            │
+│   │  Domain Ctx   │    │                    │    │                        │            │
+│   │               │    │ OUTPUT:            │    │ OUTPUT:                │            │
+│   │ OUTPUT:       │    │  Benchmarks with   │    │  Excel ROI Model       │            │
+│   │  Maturity     │    │  confidence rating │    │  3 Scenarios           │            │
+│   │  Scores 1-5   │    │  + regional flags  │    │  Sensitivity Analysis  │            │
+│   │  Gap Analysis │    │                    │    │  Assumptions Register  │            │
+│   │  Priorities   │    └────────────────────┘    │  Benefit-Evidence Map  │            │
+│   └───────┬───────┘                              └───────────┬────────────┘            │
+│           │                                                  │                          │
+│           └────────────────────┬─────────────────────────────┘                          │
+│                                │                                                         │
+│                                ▼                                                         │
+│   ┌──────────────────────────────────────────────────────────────────────────────────┐  │
+│   │                       🗺️ ROADMAP AGENT                                            │  │
+│   │  INPUT:  Capability gaps + ROI levers + Constraints                              │  │
+│   │  OUTPUT: Phased Roadmap (Now/Next/Later)                                         │  │
+│   │          Initiative Cards (gap × lever × effort)                                 │  │
+│   │          Dependency Map                                                          │  │
+│   │          Value Realization Timeline                                              │  │
+│   │          Decision Gates with Criteria                                            │  │
+│   └──────────────────────────────────────────────┬───────────────────────────────────┘  │
+│                                                  │                                       │
+│                                                  ▼                                       │
+│   ┌──────────────────────────────────────────────────────────────────────────────────┐  │
+│   │                      📦 ASSEMBLY AGENT                                            │  │
+│   │  INPUT:  All upstream agent outputs                                              │  │
+│   │  PROCESS:                                                                        │  │
+│   │    • Consistency audit (no contradictions across artifacts)                      │  │
+│   │    • Number verification (ROI figures match everywhere)                          │  │
+│   │    • Terminology standardization                                                 │  │
+│   │    • Executive language polish                                                   │  │
+│   │  OUTPUT:                                                                         │  │
+│   │    📋 Executive Summary (1 page, 500 words)                                      │  │
+│   │    📊 Assessment Report (comprehensive findings)                                 │  │
+│   │    📝 Assumptions Register (all assumptions documented)                          │  │
+│   └──────────────────────────────────────────────┬───────────────────────────────────┘  │
+│                                                  │                                       │
+│                                                  ▼                                       │
+│   ┌──────────────┐                                                                       │
+│   │   OUTPUTS    │  Executive Summary, Assessment Report, ROI Model, Roadmap            │
+│   └──────────────┘                                                                       │
+│                                                                                          │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│  KNOWLEDGE BASE (feeds all agents):                                                      │
+│  • Domain Packs (retail, sme, wealth, commercial, corporate)                            │
+│  • Consulting Playbook Benchmarks (5000+ metrics)                                       │
+│  • ROI Examples (HNB, Seabank, Weatherby)                                               │
+│  • Competitor Intelligence (battlecards)                                                │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+            </pre>
+        </div>
+
+        <!-- Quality Gates -->
+        <div class="section-header">Quality Gates (Enforced by Orchestrator)</div>
+
+        <div class="skills-grid">
+            <div class="skill-card" style="border-color: #EF4444;">
+                <div class="skill-name">✓ Evidence Traceability</div>
+                <div class="skill-desc">Every finding references an Evidence ID (E1, E2, etc.)</div>
+            </div>
+            <div class="skill-card" style="border-color: #EF4444;">
+                <div class="skill-name">✓ Assumption Transparency</div>
+                <div class="skill-desc">ALL assumptions documented with source & confidence</div>
+            </div>
+            <div class="skill-card" style="border-color: #EF4444;">
+                <div class="skill-name">✓ Conservative Bias</div>
+                <div class="skill-desc">Worst-case costs, best-case benefits in ROI models</div>
+            </div>
+            <div class="skill-card" style="border-color: #EF4444;">
+                <div class="skill-name">✓ Regional Benchmarks</div>
+                <div class="skill-desc">Region-specific data preferred, proxies labeled clearly</div>
+            </div>
+            <div class="skill-card" style="border-color: #EF4444;">
+                <div class="skill-name">✓ Executive Language</div>
+                <div class="skill-desc">Plain English, no jargon, action-oriented</div>
+            </div>
+            <div class="skill-card" style="border-color: #EF4444;">
+                <div class="skill-name">✓ Consistency Audit</div>
+                <div class="skill-desc">No contradictions across all artifacts</div>
+            </div>
+        </div>
+
+        <p style="text-align: center; color: #8892b0; margin-top: 60px; font-size: 0.9rem;">
+            Value Consulting Agent System — Generating executive-ready consulting deliverables
+        </p>
+    </div>
+</body>
+</html>

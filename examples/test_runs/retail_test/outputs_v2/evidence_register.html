@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evidence Register</title>
+    <style>
+        :root {
+            --primary: #1A56FF;
+            --dark: #1A1F36;
+            --positive: #00B386;
+            --negative: #FF4444;
+            --warning: #FFC107;
+            --light-blue: #E8F0FF;
+            --light-gray: #F5F5F5;
+            --text: #333;
+            --border: #E0E0E0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--light-gray);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 3rem 4rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        h2 {
+            color: var(--dark);
+            font-size: 1.8rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h3 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        h4 {
+            color: var(--dark);
+            font-size: 1.1rem;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--dark);
+            color: white;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:nth-child(even) {
+            background: var(--light-gray);
+        }
+
+        tr:hover {
+            background: var(--light-blue);
+        }
+
+        code {
+            background: var(--light-gray);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85em;
+        }
+
+        pre {
+            background: var(--dark);
+            color: #E0E0E0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            color: #555;
+            font-style: italic;
+            background: var(--light-blue);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        ul, ol {
+            margin: 1rem 0 1rem 2rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid var(--border);
+            margin: 2rem 0;
+        }
+
+        .emoji-green { color: var(--positive); }
+        .emoji-yellow { color: var(--warning); }
+        .emoji-blue { color: var(--primary); }
+        .emoji-red { color: var(--negative); }
+
+        strong {
+            color: var(--dark);
+        }
+
+        /* Data confidence colors in tables */
+        td:contains("HIGH"), td:contains("🟢") {
+            background: #D4EDDA !important;
+        }
+
+        /* Header styling */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-info {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            pre {
+                white-space: pre-wrap;
+            }
+        }
+
+        /* Confidence color indicators */
+        .conf-high { background-color: #D4EDDA; padding: 2px 6px; border-radius: 3px; }
+        .conf-med { background-color: #CCE5FF; padding: 2px 6px; border-radius: 3px; }
+        .conf-low { background-color: #FFF3CD; padding: 2px 6px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="evidence-register">Evidence Register</h1>
+<p><strong>Engagement:</strong> Retail Bank - SEA Region
+<strong>Date:</strong> 2026-01-13
+<strong>Prepared by:</strong> Value Consulting Team</p>
+<hr />
+<h2 id="evidence-summary">Evidence Summary</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Evidence Statement</th>
+<th>Source Quote</th>
+<th>Lifecycle Stage</th>
+<th>Journey</th>
+<th>Metric Type</th>
+<th>Confidence</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E1</td>
+<td>Low onboarding completion rate</td>
+<td>"Our onboarding completion rate is low"</td>
+<td>Acquire</td>
+<td>Onboarding</td>
+<td>Volume</td>
+<td>Medium</td>
+<td>Interview - Head of Retail</td>
+</tr>
+<tr>
+<td>E2</td>
+<td>Document requirements cause customer drop-off</td>
+<td>"A lot of customers drop off when documents are required"</td>
+<td>Acquire</td>
+<td>Onboarding</td>
+<td>Volume</td>
+<td>High</td>
+<td>Interview - Head of Retail</td>
+</tr>
+<tr>
+<td>E3</td>
+<td>Onboarding cycle time exceeds 7 days in some cases</td>
+<td>"It can take more than a week in some cases"</td>
+<td>Acquire</td>
+<td>Onboarding</td>
+<td>Time</td>
+<td>High</td>
+<td>Interview - Head of Retail</td>
+</tr>
+<tr>
+<td>E4</td>
+<td>High servicing costs</td>
+<td>"Servicing is expensive"</td>
+<td>Retain</td>
+<td>Servicing</td>
+<td>Cost</td>
+<td>Medium</td>
+<td>Interview - Operations Lead</td>
+</tr>
+<tr>
+<td>E5</td>
+<td>Simple requests still handled by high-cost channels</td>
+<td>"Simple requests still come through the call center"</td>
+<td>Retain</td>
+<td>Servicing</td>
+<td>Cost</td>
+<td>High</td>
+<td>Interview - Operations Lead</td>
+</tr>
+<tr>
+<td>E6</td>
+<td>No visibility into customer channel preference</td>
+<td>"We don't have a clear view of why customers choose branch or call over digital"</td>
+<td>Retain</td>
+<td>Servicing</td>
+<td>Quality</td>
+<td>High</td>
+<td>Interview - Operations Lead</td>
+</tr>
+<tr>
+<td>E7</td>
+<td>Digital onboarding launched but not scaling</td>
+<td>"We launched digital onboarding, but it hasn't scaled well"</td>
+<td>Acquire</td>
+<td>Onboarding</td>
+<td>Quality</td>
+<td>High</td>
+<td>Interview - Digital Lead</td>
+</tr>
+<tr>
+<td>E8</td>
+<td>Manual workarounds prevalent</td>
+<td>"Teams still rely on manual workarounds"</td>
+<td>Acquire</td>
+<td>Onboarding</td>
+<td>Quality</td>
+<td>High</td>
+<td>Interview - Digital Lead</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="pain-point-register">Pain Point Register</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Pain Point</th>
+<th>Business Impact</th>
+<th>Lifecycle Stage</th>
+<th>Journey</th>
+<th>Evidence IDs</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PP1</td>
+<td>Low onboarding completion rate</td>
+<td>Lost customer acquisition, reduced revenue growth</td>
+<td>Acquire</td>
+<td>Onboarding</td>
+<td>E1, E2</td>
+<td>Critical</td>
+</tr>
+<tr>
+<td>PP2</td>
+<td>Document verification friction</td>
+<td>Customer drop-off at critical conversion point</td>
+<td>Acquire</td>
+<td>Onboarding</td>
+<td>E2</td>
+<td>Critical</td>
+</tr>
+<tr>
+<td>PP3</td>
+<td>Extended onboarding cycle time</td>
+<td>Poor customer experience, competitive disadvantage</td>
+<td>Acquire</td>
+<td>Onboarding</td>
+<td>E3</td>
+<td>High</td>
+</tr>
+<tr>
+<td>PP4</td>
+<td>Expensive servicing model</td>
+<td>High cost-to-serve, margin pressure</td>
+<td>Retain</td>
+<td>Servicing</td>
+<td>E4, E5</td>
+<td>High</td>
+</tr>
+<tr>
+<td>PP5</td>
+<td>Channel shift failure</td>
+<td>Simple requests consume expensive resources</td>
+<td>Retain</td>
+<td>Servicing</td>
+<td>E5</td>
+<td>High</td>
+</tr>
+<tr>
+<td>PP6</td>
+<td>Lack of customer journey analytics</td>
+<td>Cannot optimize channel mix or personalize experience</td>
+<td>Retain</td>
+<td>Servicing</td>
+<td>E6</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>PP7</td>
+<td>Digital investment not delivering value</td>
+<td>Sunk cost, need for remediation</td>
+<td>Acquire</td>
+<td>Onboarding</td>
+<td>E7, E8</td>
+<td>High</td>
+</tr>
+<tr>
+<td>PP8</td>
+<td>Process immaturity</td>
+<td>Manual workarounds undermine automation</td>
+<td>Acquire</td>
+<td>Onboarding</td>
+<td>E8</td>
+<td>High</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="metric-register">Metric Register</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Metric Name</th>
+<th>Current Value</th>
+<th>Unit</th>
+<th>Source Evidence</th>
+<th>Confidence</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1</td>
+<td>Onboarding completion rate</td>
+<td>~40%</td>
+<td>%</td>
+<td>E1 (implied)</td>
+<td>Low</td>
+<td>"Low" stated but not quantified; 40% assumed based on industry benchmarks for underperforming digital onboarding</td>
+</tr>
+<tr>
+<td>M2</td>
+<td>Onboarding cycle time (max)</td>
+<td>&gt;7 days</td>
+<td>days</td>
+<td>E3</td>
+<td>High</td>
+<td>Direct statement "more than a week in some cases"</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>Document drop-off rate</td>
+<td>~30-50%</td>
+<td>%</td>
+<td>E2 (implied)</td>
+<td>Low</td>
+<td>"A lot" suggests significant; industry range applied</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>Digital channel utilization</td>
+<td>Unknown</td>
+<td>%</td>
+<td>E6</td>
+<td>N/A</td>
+<td>No visibility into channel preference cited</td>
+</tr>
+<tr>
+<td>M5</td>
+<td>Call center volume for simple requests</td>
+<td>Unknown</td>
+<td>volume</td>
+<td>E5</td>
+<td>N/A</td>
+<td>"Simple requests still come through" but volume not stated</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="constraints-risks-register">Constraints &amp; Risks Register</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Constraint/Risk</th>
+<th>Type</th>
+<th>Impact on Engagement</th>
+<th>Evidence IDs</th>
+<th>Mitigation Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CR1</td>
+<td>Limited quantitative data</td>
+<td>Data</td>
+<td>Cannot build precise ROI without baseline metrics</td>
+<td>E1, E4, E6</td>
+<td>Use industry benchmarks with conservative assumptions</td>
+</tr>
+<tr>
+<td>CR2</td>
+<td>Existing digital investment</td>
+<td>Technical</td>
+<td>May need to work with/around existing platform</td>
+<td>E7</td>
+<td>Assess current platform capabilities before recommending</td>
+</tr>
+<tr>
+<td>CR3</td>
+<td>Process maturity gaps</td>
+<td>Organizational</td>
+<td>Technology alone won't solve; need change management</td>
+<td>E8</td>
+<td>Include adoption/change management in roadmap</td>
+</tr>
+<tr>
+<td>CR4</td>
+<td>Unknown budget/timeline</td>
+<td>Budget/Timeline</td>
+<td>Cannot size recommendations appropriately</td>
+<td>Intake form</td>
+<td>Flag for validation with executive sponsor</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="open-questions-data-needed-for-roi">Open Questions / Data Needed for ROI</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Missing Data Point</th>
+<th>Why Needed</th>
+<th>Suggested Source</th>
+<th>Priority for ROI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DG1</td>
+<td>Current onboarding completion rate (%)</td>
+<td>Baseline for improvement calculation</td>
+<td>Digital analytics, onboarding system</td>
+<td>Critical</td>
+</tr>
+<tr>
+<td>DG2</td>
+<td>Monthly application volume</td>
+<td>Scale for benefit calculation</td>
+<td>Core banking system</td>
+<td>Critical</td>
+</tr>
+<tr>
+<td>DG3</td>
+<td>Average onboarding cycle time</td>
+<td>Baseline for time reduction</td>
+<td>Process mining or sample analysis</td>
+<td>High</td>
+</tr>
+<tr>
+<td>DG4</td>
+<td>Drop-off rate by step</td>
+<td>Identify highest friction points</td>
+<td>Funnel analytics</td>
+<td>High</td>
+</tr>
+<tr>
+<td>DG5</td>
+<td>Call center volume by request type</td>
+<td>Size channel shift opportunity</td>
+<td>Call center reporting</td>
+<td>Critical</td>
+</tr>
+<tr>
+<td>DG6</td>
+<td>Cost per call / branch visit / digital transaction</td>
+<td>Calculate cost avoidance</td>
+<td>Finance / Operations</td>
+<td>Critical</td>
+</tr>
+<tr>
+<td>DG7</td>
+<td>Digital adoption rate</td>
+<td>Baseline for digital shift</td>
+<td>Digital analytics</td>
+<td>High</td>
+</tr>
+<tr>
+<td>DG8</td>
+<td>Staff FTE costs</td>
+<td>Calculate labor savings</td>
+<td>HR / Finance</td>
+<td>High</td>
+</tr>
+<tr>
+<td>DG9</td>
+<td>Revenue per new customer (Year 1)</td>
+<td>Value of acquired customers</td>
+<td>Finance</td>
+<td>High</td>
+</tr>
+<tr>
+<td>DG10</td>
+<td>Customer lifetime value</td>
+<td>Value of retention improvements</td>
+<td>Finance / Analytics</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="interpretation-notes">Interpretation Notes</h2>
+<h3 id="key-themes">Key Themes</h3>
+<ol>
+<li>
+<p><strong>Onboarding Journey Broken</strong>: Multiple evidence points (E1, E2, E3, E7, E8) indicate the onboarding journey is fundamentally broken despite digital investment. Document requirements are a major friction point, cycle times are unacceptable, and digital hasn't scaled.</p>
+</li>
+<li>
+<p><strong>Servicing Inefficiency</strong>: Evidence (E4, E5, E6) points to a costly servicing model where simple requests consume expensive channel resources. Lack of analytics prevents optimization.</p>
+</li>
+<li>
+<p><strong>Investment Not Delivering</strong>: The bank has invested in digital (E7) but isn't realizing value due to scaling issues and manual workarounds (E8). This is a remediation opportunity, not a greenfield build.</p>
+</li>
+</ol>
+<h3 id="evidence-quality-assessment">Evidence Quality Assessment</h3>
+<ul>
+<li><strong>Strong Evidence</strong>: E2, E3, E5, E6, E7, E8 - Direct quotes with clear implications</li>
+<li><strong>Directional Evidence</strong>: E1, E4 - Qualitative statements without quantification</li>
+<li><strong>Critical Gaps</strong>: No quantitative baseline metrics provided; will require assumptions or follow-up data collection</li>
+</ul>
+<h3 id="recommendations-for-next-steps">Recommendations for Next Steps</h3>
+<ol>
+<li>Request baseline metrics (DG1-DG10) before finalizing ROI model</li>
+<li>Conduct journey mapping workshop to detail onboarding friction points</li>
+<li>Analyze call center data to quantify channel shift opportunity</li>
+<li>Assess existing digital platform to determine build vs. enhance approach</li>
+</ol>
+    </div>
+    <script>
+        // Add confidence styling to table cells
+        document.querySelectorAll('td').forEach(td => {
+            const text = td.textContent;
+            if (text.includes('HIGH') || text.includes('🟢')) {
+                td.style.backgroundColor = '#D4EDDA';
+            } else if (text.includes('MED') || text.includes('🔵')) {
+                td.style.backgroundColor = '#CCE5FF';
+            } else if (text.includes('LOW') || text.includes('🟡')) {
+                td.style.backgroundColor = '#FFF3CD';
+            } else if (text.includes('CRITICAL') || text.includes('🔴')) {
+                td.style.backgroundColor = '#F8D7DA';
+            }
+        });
+    </script>
+</body>
+</html>

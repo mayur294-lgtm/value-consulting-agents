@@ -21,7 +21,108 @@ Before building any ROI model, you must have:
 
 If any required input is missing, explicitly request it before proceeding.
 
-## Output Structure
+## Output Formats
+
+You MUST produce BOTH outputs:
+
+1. **Excel ROI Model** (PRIMARY) - Using `tools/roi_excel_generator.py`
+2. **Executive Summary Report** (SECONDARY) - Markdown for presentation
+
+### Excel Model Structure (REQUIRED)
+
+Use the `tools/roi_excel_generator.py` to generate an Excel model with:
+
+| Sheet | Purpose | Key Contents |
+|-------|---------|--------------|
+| Cover Page | Client info, date, currency | Client name, analysis period, selected scenario |
+| Instructions | How to use the model | Cell legends, sheet descriptions |
+| Results Dashboard | Key metrics summary | ROI, NPV, IRR, Payback Period |
+| All Inputs | Editable parameters | Basic info, curves, lever inputs |
+| Cashflows | 5-year projections | Benefits, costs, net cashflow by year |
+| Servicing Analysis | Task-level breakdown | Time per task, Backbase impact, cost avoided |
+| Scenarios | Three scenario definitions | Conservative, Moderate, Aggressive parameters |
+| Assumptions | Complete register | All assumptions with sources and owners |
+
+To generate the Excel model, prepare a configuration JSON and invoke:
+
+```python
+from tools.roi_excel_generator import ROIModelGenerator
+
+config = {
+    "client_name": "Client Name",
+    "currency": "USD",
+    "analysis_years": 5,
+    "discount_rate": 0.12,
+    "selected_scenario": "Moderate",
+    "scenarios": {
+        "conservative": {
+            "implementation_curve": [0.1, 0.6, 0.8, 0.9, 1.0],
+            "effectiveness_curve": [0.1, 0.25, 0.45, 0.7, 0.85],
+            "levers": {"event_uplift": 0.1, "onboarding_impact": 0.2}
+        },
+        "moderate": {...},
+        "aggressive": {...}
+    },
+    "investment": {
+        "license": [1200000, 1200000, 1200000, 1200000, 1200000],
+        "implementation": [2000000, 400000, 400000, 400000, 400000]
+    },
+    "levers": [
+        {"id": "L1", "name": "Prospecting", "type": "revenue_uplift", "values": [...]},
+        {"id": "L2", "name": "Servicing", "type": "cost_avoidance", "values": [...]}
+    ],
+    "servicing": [
+        {"task": "Portfolio Review", "volume": 15700, "time": 0.75, "rate": 25, "impact": 0.3}
+    ],
+    "assumptions": [...]
+}
+
+generator = ROIModelGenerator(config)
+generator.generate("outputs/roi_model.xlsx")
+```
+
+### Lever-by-Lever Breakdown (REQUIRED)
+
+Each benefit lever must follow the HNB/Seabank structure:
+
+| Element | Description | Example |
+|---------|-------------|---------|
+| Lever ID | Unique identifier | L1, L2, L3 |
+| Lever Name | Descriptive name | "Prospecting - Prospect Lounge" |
+| Type | revenue_uplift or cost_avoidance | revenue_uplift |
+| Baseline Calculation | Current state formula | Volume × Revenue per customer |
+| Backbase Impact | Improvement percentage | 20% uplift |
+| Year-by-Year Values | 5-year benefit projection | [18000, 147000, 288000, 510000, 600000] |
+| Evidence Links | Supporting evidence IDs | E1, E3, E5 |
+| Assumptions | Key assumptions for this lever | A1: 250 customers/year |
+
+### Servicing Analysis Structure (REQUIRED)
+
+For cost avoidance from servicing improvements, provide detailed task-level analysis:
+
+| Servicing Task | Role | Yearly Volume | Time/Interaction (hrs) | FTE Cost/Hour | Baseline Cost | Backbase Impact | Cost Avoided |
+|---------------|------|---------------|----------------------|---------------|---------------|-----------------|--------------|
+| Portfolio Review | RM | 15,700 | 0.75 | $25 | $294,375 | 30% | $88,313 |
+| Customer Queries | RM | 28,423 | 0.25 | $25 | $177,644 | 60% | $106,586 |
+| Transaction Support | RM | 28,423 | 0.25 | $25 | $177,644 | 60% | $106,586 |
+| TOTAL | | | | | $649,663 | | $301,485 |
+
+### Implementation & Effectiveness Curves (REQUIRED)
+
+Every ROI model must include ramp-up curves:
+
+| Scenario | Metric | Year 1 | Year 2 | Year 3 | Year 4 | Year 5 |
+|----------|--------|--------|--------|--------|--------|--------|
+| Conservative | Implementation | 10% | 60% | 80% | 90% | 100% |
+| Conservative | Effectiveness | 10% | 25% | 45% | 70% | 85% |
+| Moderate | Implementation | 20% | 70% | 80% | 100% | 100% |
+| Moderate | Effectiveness | 15% | 35% | 60% | 85% | 100% |
+| Aggressive | Implementation | 30% | 80% | 90% | 100% | 100% |
+| Aggressive | Effectiveness | 20% | 45% | 70% | 90% | 100% |
+
+Benefits are calculated as: `Baseline Impact × Implementation % × Effectiveness %`
+
+## Executive Summary Report Structure
 
 Follow the roi_report.md template exactly. Your deliverable must include:
 

@@ -113,10 +113,79 @@ Each initiative requires:
 ## What "Good" Consulting Output Looks Like
 
 ### Executive Summary
-- 1-2 pages maximum
-- Situation, findings, recommendations
-- Dollar impacts and timelines
-- Clear go/no-go recommendation
+
+**Format:** 1-2 pages maximum
+**Structure:** Situation → Findings → Recommendations → Decision Request
+
+#### Sample Executive Summary
+
+---
+
+**EXECUTIVE SUMMARY: Digital Banking Transformation Business Case**
+*Prepared for: [Client Name] Executive Committee*
+*Date: [Date]*
+
+**THE OPPORTUNITY**
+
+[Client] operates a fragmented frontline across 12+ disconnected systems, resulting in 21-day average onboarding times (vs. 4-day best-in-class), 35% application abandonment, and customer service costs 2.3x industry benchmark. This creates an estimated **$4.2M annual value leakage** across acquisition, servicing, and retention.
+
+**KEY FINDINGS**
+
+| Area | Current State | Benchmark | Gap Impact |
+|------|---------------|-----------|------------|
+| Digital Onboarding | 21 days | 4 days | $1.8M lost revenue (abandonment) |
+| Servicing Cost | $12.40/interaction | $5.20 | $1.6M excess cost |
+| Customer Churn | 8.2% | 5.0% | $0.8M retention value |
+
+**Root Causes Identified:**
+- No unified customer view across channels (6+ systems for single customer interaction)
+- Manual handoffs in 73% of onboarding steps
+- Limited self-service capabilities (28% digital containment vs. 65% benchmark)
+
+**RECOMMENDATION**
+
+Implement a Unified Frontline platform in three phases over 24 months:
+
+| Phase | Timeline | Investment | Benefit (Annual) |
+|-------|----------|------------|------------------|
+| 1. Digital Onboarding | Months 1-9 | $2.1M | $1.4M |
+| 2. Customer Servicing | Months 6-15 | $1.8M | $1.2M |
+| 3. Engagement & Retention | Months 12-24 | $1.4M | $0.9M |
+
+**FINANCIAL SUMMARY (5-Year)**
+
+| Metric | Value |
+|--------|-------|
+| Total Investment | $8.2M |
+| Total Benefits | $18.6M |
+| Net Present Value (10%) | $7.1M |
+| ROI | 127% |
+| Payback Period | 22 months |
+
+*Conservative case (70% benefit realization): NPV $4.2M, ROI 89%*
+
+**RISKS & MITIGATIONS**
+
+| Risk | Likelihood | Mitigation |
+|------|------------|------------|
+| Integration complexity | Medium | Phased approach, proven connectors |
+| Adoption resistance | Medium | Change management program, quick wins first |
+| Resource constraints | Low | Vendor implementation support |
+
+**DECISION REQUESTED**
+
+Approve Phase 1 investment of **$2.1M** to begin Digital Onboarding transformation. Phase 1 delivers standalone ROI of 112% with 14-month payback, de-risking subsequent phases.
+
+**Next Steps (upon approval):**
+1. Week 1-2: Finalize implementation partner contract
+2. Week 3-4: Complete technical architecture review
+3. Week 5-8: Begin Phase 1 implementation
+
+---
+
+**Assumptions Register:** See Appendix A
+**Detailed ROI Model:** See Appendix B
+**Implementation Roadmap:** See Appendix C
 
 ### Capability Assessment
 - Current state description grounded in evidence

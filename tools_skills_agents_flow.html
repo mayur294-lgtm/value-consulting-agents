@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools, Skills & Agents - Complete System Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0a12 0%, #121220 50%, #0d1117 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #FF6B6B, #4ECDC4, #45B7D1, #96E6A1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 300% 300%;
+            animation: gradient 8s ease infinite;
+        }
+
+        @keyframes gradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #8892b0;
+            margin-bottom: 50px;
+            font-size: 1.2rem;
+        }
+
+        /* Three Column Layout */
+        .three-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        @media (max-width: 1200px) {
+            .three-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Column Styling */
+        .column {
+            background: linear-gradient(145deg, #1a1f36, #252a45);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid transparent;
+        }
+
+        .column.tools { border-color: #FF6B6B; }
+        .column.skills { border-color: #4ECDC4; }
+        .column.agents { border-color: #45B7D1; }
+
+        .column-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .column-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .tools .column-icon { background: linear-gradient(135deg, #FF6B6B, #FF8E8E); }
+        .skills .column-icon { background: linear-gradient(135deg, #4ECDC4, #6EE7DE); }
+        .agents .column-icon { background: linear-gradient(135deg, #45B7D1, #67C9E0); }
+
+        .column-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .column-subtitle {
+            font-size: 0.85rem;
+            color: #8892b0;
+        }
+
+        /* Definition Box */
+        .definition {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #a8b2d1;
+        }
+
+        /* Item Cards */
+        .item-card {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .item-card:hover {
+            transform: translateX(5px);
+            background: rgba(0,0,0,0.4);
+        }
+
+        .tools .item-card { border-color: #FF6B6B; }
+        .skills .item-card { border-color: #4ECDC4; }
+        .agents .item-card { border-color: #45B7D1; }
+
+        .item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .item-name code {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .item-desc {
+            font-size: 0.8rem;
+            color: #8892b0;
+            line-height: 1.4;
+        }
+
+        .item-meta {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .meta-tag {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .meta-tag.input { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+        .meta-tag.output { background: rgba(236, 72, 153, 0.2); color: #EC4899; }
+        .meta-tag.trigger { background: rgba(251, 191, 36, 0.2); color: #FBBF24; }
+
+        /* Interaction Diagram */
+        .interaction-section {
+            background: linear-gradient(145deg, #1a1f36, #252a45);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 50px;
+            border: 2px solid #96E6A1;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: #96E6A1;
+            text-align: center;
+        }
+
+        /* Flow Diagram */
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .flow-box {
+            background: linear-gradient(145deg, #252a45, #2f3555);
+            border-radius: 15px;
+            padding: 20px 30px;
+            text-align: center;
+            border: 2px solid;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .flow-box.user { border-color: #fff; background: linear-gradient(145deg, #333, #444); }
+        .flow-box.tool { border-color: #FF6B6B; }
+        .flow-box.skill { border-color: #4ECDC4; }
+        .flow-box.agent { border-color: #45B7D1; }
+        .flow-box.knowledge { border-color: #96E6A1; }
+        .flow-box.output { border-color: #EC4899; }
+
+        .flow-box-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .flow-box-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .flow-box-desc {
+            font-size: 0.75rem;
+            color: #8892b0;
+        }
+
+        .flow-arrow {
+            font-size: 2rem;
+            color: #64ffda;
+            animation: pulse 2s infinite;
+        }
+
+        .flow-arrow.down {
+            transform: rotate(90deg);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .comparison-table th {
+            background: rgba(0,0,0,0.3);
+            font-weight: 600;
+        }
+
+        .comparison-table th:nth-child(1) { color: #fff; }
+        .comparison-table th:nth-child(2) { color: #FF6B6B; }
+        .comparison-table th:nth-child(3) { color: #4ECDC4; }
+        .comparison-table th:nth-child(4) { color: #45B7D1; }
+
+        .comparison-table tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* ASCII Diagram */
+        .ascii-diagram {
+            background: #0d1117;
+            border-radius: 12px;
+            padding: 30px;
+            overflow-x: auto;
+            margin: 30px 0;
+        }
+
+        .ascii-diagram pre {
+            color: #64ffda;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        /* Use Case Examples */
+        .use-cases {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .use-case {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .use-case-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #64ffda;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .use-case-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+        }
+
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-num.tool { background: #FF6B6B; }
+        .step-num.skill { background: #4ECDC4; }
+        .step-num.agent { background: #45B7D1; }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-type {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+        }
+
+        .step-type.tool { color: #FF6B6B; }
+        .step-type.skill { color: #4ECDC4; }
+        .step-type.agent { color: #45B7D1; }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            padding: 25px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            margin-bottom: 40px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+        }
+
+        /* Relationship Diagram */
+        .relationship-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        @media (max-width: 900px) {
+            .relationship-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .relationship-card {
+            background: linear-gradient(145deg, #1a1f36, #252a45);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .relationship-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .relationship-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .relationship-desc {
+            font-size: 0.85rem;
+            color: #8892b0;
+            line-height: 1.5;
+        }
+
+        .relationship-examples {
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .relationship-example {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+
+        .example-label {
+            color: #64ffda;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tools • Skills • Agents</h1>
+        <p class="subtitle">Complete System Architecture & How They Work Together</p>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF6B6B;"></div>
+                <span><strong>Tools</strong> — Low-level utilities</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4ECDC4;"></div>
+                <span><strong>Skills</strong> — User-triggered commands</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #45B7D1;"></div>
+                <span><strong>Agents</strong> — Autonomous reasoning entities</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #96E6A1;"></div>
+                <span><strong>Knowledge</strong> — Domain data & templates</span>
+            </div>
+        </div>
+
+        <!-- Three Columns: Tools, Skills, Agents -->
+        <div class="three-columns">
+            <!-- TOOLS Column -->
+            <div class="column tools">
+                <div class="column-header">
+                    <div class="column-icon">🔧</div>
+                    <div>
+                        <div class="column-title">Tools</div>
+                        <div class="column-subtitle">Low-Level Utilities</div>
+                    </div>
+                </div>
+
+                <div class="definition">
+                    <strong>What:</strong> Basic building blocks that perform specific operations.<br>
+                    <strong>How:</strong> Called programmatically by Claude or agents.<br>
+                    <strong>When:</strong> Automatically during task execution.
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">📖 Read</div>
+                    <div class="item-desc">Read files from filesystem (code, PDFs, images, notebooks)</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← file path</span>
+                        <span class="meta-tag output">→ file content</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">✏️ Write</div>
+                    <div class="item-desc">Create new files or overwrite existing ones</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← path + content</span>
+                        <span class="meta-tag output">→ created file</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">🔄 Edit</div>
+                    <div class="item-desc">Make precise string replacements in files</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← old + new string</span>
+                        <span class="meta-tag output">→ modified file</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">💻 Bash</div>
+                    <div class="item-desc">Execute shell commands (git, npm, python, etc.)</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← command</span>
+                        <span class="meta-tag output">→ stdout/stderr</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">🔍 Grep</div>
+                    <div class="item-desc">Search file contents with regex patterns</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← pattern</span>
+                        <span class="meta-tag output">→ matches</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">📂 Glob</div>
+                    <div class="item-desc">Find files by name patterns (*.md, src/**/*.ts)</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← pattern</span>
+                        <span class="meta-tag output">→ file paths</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">🌐 WebFetch</div>
+                    <div class="item-desc">Fetch and process web content</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← URL + prompt</span>
+                        <span class="meta-tag output">→ extracted data</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">🔎 WebSearch</div>
+                    <div class="item-desc">Search the web for current information</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← query</span>
+                        <span class="meta-tag output">→ search results</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">📋 Task</div>
+                    <div class="item-desc">Launch specialized sub-agents for complex work</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← agent type + prompt</span>
+                        <span class="meta-tag output">→ agent result</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">✅ TodoWrite</div>
+                    <div class="item-desc">Manage task lists for tracking progress</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← todo items</span>
+                        <span class="meta-tag output">→ updated list</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SKILLS Column -->
+            <div class="column skills">
+                <div class="column-header">
+                    <div class="column-icon">⚡</div>
+                    <div>
+                        <div class="column-title">Skills</div>
+                        <div class="column-subtitle">User-Triggered Commands</div>
+                    </div>
+                </div>
+
+                <div class="definition">
+                    <strong>What:</strong> Pre-defined workflows triggered by <code>/command</code>.<br>
+                    <strong>How:</strong> User types slash command in chat.<br>
+                    <strong>When:</strong> On-demand when user needs specific capability.
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name"><code>/presentation</code></div>
+                    <div class="item-desc">Generate Prezi-style interactive HTML presentations from any content</div>
+                    <div class="item-meta">
+                        <span class="meta-tag trigger">user invoked</span>
+                        <span class="meta-tag output">→ HTML file</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name"><code>/generate-roi-excel</code></div>
+                    <div class="item-desc">Create professional Excel ROI models (HNB/Seabank format)</div>
+                    <div class="item-meta">
+                        <span class="meta-tag trigger">user invoked</span>
+                        <span class="meta-tag output">→ .xlsx file</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name"><code>/chunk-document</code></div>
+                    <div class="item-desc">Split large PDFs/CSVs into processable chunks</div>
+                    <div class="item-meta">
+                        <span class="meta-tag trigger">user invoked</span>
+                        <span class="meta-tag output">→ chunked data</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name"><code>/domain-context</code></div>
+                    <div class="item-desc">Load complete domain knowledge pack (retail, sme, wealth, etc.)</div>
+                    <div class="item-meta">
+                        <span class="meta-tag trigger">user invoked</span>
+                        <span class="meta-tag output">→ domain data</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name"><code>/domain-benchmarks</code></div>
+                    <div class="item-desc">Query Consulting Playbook benchmarks by domain/journey</div>
+                    <div class="item-meta">
+                        <span class="meta-tag trigger">user invoked</span>
+                        <span class="meta-tag output">→ benchmark table</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name"><code>/domain-pain-points</code></div>
+                    <div class="item-desc">Retrieve common pain points for discovery preparation</div>
+                    <div class="item-meta">
+                        <span class="meta-tag trigger">user invoked</span>
+                        <span class="meta-tag output">→ pain point list</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name"><code>/domain-journeys</code></div>
+                    <div class="item-desc">Access customer/operational journey maps</div>
+                    <div class="item-meta">
+                        <span class="meta-tag trigger">user invoked</span>
+                        <span class="meta-tag output">→ journey maps</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name"><code>/domain-usecases</code></div>
+                    <div class="item-desc">Query Backbase use cases & capabilities by category</div>
+                    <div class="item-meta">
+                        <span class="meta-tag trigger">user invoked</span>
+                        <span class="meta-tag output">→ use case list</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name"><code>/domain-value-props</code></div>
+                    <div class="item-desc">Get value propositions & differentiation themes</div>
+                    <div class="item-meta">
+                        <span class="meta-tag trigger">user invoked</span>
+                        <span class="meta-tag output">→ value props</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AGENTS Column -->
+            <div class="column agents">
+                <div class="column-header">
+                    <div class="column-icon">🤖</div>
+                    <div>
+                        <div class="column-title">Agents</div>
+                        <div class="column-subtitle">Autonomous Reasoning Entities</div>
+                    </div>
+                </div>
+
+                <div class="definition">
+                    <strong>What:</strong> Specialized AI personas with methodologies & standards.<br>
+                    <strong>How:</strong> Orchestrator routes work; agents reason & produce artifacts.<br>
+                    <strong>When:</strong> Automatically based on engagement type.
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">🎯 Orchestrator</div>
+                    <div class="item-desc">Central coordinator — classifies engagements, routes to agents, enforces quality gates</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← user request</span>
+                        <span class="meta-tag output">→ delegations</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">🔍 Discovery Agent</div>
+                    <div class="item-desc">Extracts evidence, pain points, metrics, constraints from raw inputs</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← transcripts/notes</span>
+                        <span class="meta-tag output">→ evidence registers</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">📊 Capability Agent</div>
+                    <div class="item-desc">Assesses maturity (1-5), identifies gaps, prioritizes improvements</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← evidence + domain</span>
+                        <span class="meta-tag output">→ gap analysis</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">💰 ROI Agent</div>
+                    <div class="item-desc">Builds financial models with 3 scenarios, sensitivity analysis, assumptions</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← evidence + benchmarks</span>
+                        <span class="meta-tag output">→ Excel model</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">📈 Benchmark Librarian</div>
+                    <div class="item-desc">Curates benchmarks with confidence ratings, regional specificity</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← domain/region/metric</span>
+                        <span class="meta-tag output">→ rated benchmarks</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">🗺️ Roadmap Agent</div>
+                    <div class="item-desc">Sequences initiatives by value, feasibility, dependencies</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← gaps + ROI levers</span>
+                        <span class="meta-tag output">→ phased roadmap</span>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-name">📦 Assembly Agent</div>
+                    <div class="item-desc">Packages all outputs into executive-ready deliverables</div>
+                    <div class="item-meta">
+                        <span class="meta-tag input">← all agent outputs</span>
+                        <span class="meta-tag output">→ final deliverables</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="interaction-section">
+            <div class="section-title">📊 Side-by-Side Comparison</div>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Aspect</th>
+                        <th>🔧 Tools</th>
+                        <th>⚡ Skills</th>
+                        <th>🤖 Agents</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Purpose</strong></td>
+                        <td>Execute atomic operations</td>
+                        <td>Run pre-defined workflows</td>
+                        <td>Reason & generate deliverables</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Triggered By</strong></td>
+                        <td>Claude/Agents automatically</td>
+                        <td>User via <code>/command</code></td>
+                        <td>Orchestrator or Task tool</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Complexity</strong></td>
+                        <td>Single operation</td>
+                        <td>Multi-step workflow</td>
+                        <td>Full reasoning + methodology</td>
+                    </tr>
+                    <tr>
+                        <td><strong>State</strong></td>
+                        <td>Stateless</td>
+                        <td>Stateless</td>
+                        <td>Maintains context, references others</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Output</strong></td>
+                        <td>Raw data / file changes</td>
+                        <td>Formatted results / files</td>
+                        <td>Complete consulting artifacts</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Uses Tools?</strong></td>
+                        <td>—</td>
+                        <td>Yes (internally)</td>
+                        <td>Yes (Read, Write, Grep, etc.)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Uses Skills?</strong></td>
+                        <td>No</td>
+                        <td>—</td>
+                        <td>Can invoke via Skill tool</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Calls Agents?</strong></td>
+                        <td>Task tool spawns agents</td>
+                        <td>No</td>
+                        <td>Orchestrator delegates to agents</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Example</strong></td>
+                        <td><code>Read("file.md")</code></td>
+                        <td><code>/domain-benchmarks retail</code></td>
+                        <td>ROI Agent → Excel model</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- How They Work Together -->
+        <div class="interaction-section">
+            <div class="section-title">🔄 How They Work Together</div>
+
+            <div class="ascii-diagram">
+                <pre>
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                 │
+│    USER                                                                                         │
+│      │                                                                                          │
+│      ├──────────────────┬───────────────────────────────────────────────────────────┐          │
+│      │                  │                                                           │          │
+│      ▼                  ▼                                                           ▼          │
+│  ┌────────┐      ┌─────────────┐                                             ┌───────────┐    │
+│  │ /skill │      │  Question   │                                             │  Provide  │    │
+│  │ command│      │  or Task    │                                             │  Inputs   │    │
+│  └───┬────┘      └──────┬──────┘                                             └─────┬─────┘    │
+│      │                  │                                                          │          │
+│      │                  ▼                                                          │          │
+│      │         ┌────────────────────────────────────────────────────────────────┐  │          │
+│      │         │                    🤖 AGENTS                                   │  │          │
+│      │         │  ┌─────────────────────────────────────────────────────────┐   │  │          │
+│      │         │  │              🎯 ORCHESTRATOR                            │   │  │          │
+│      │         │  │  • Classifies engagement type                           │   │◄─┘          │
+│      │         │  │  • Routes to appropriate agents                         │   │             │
+│      │         │  │  • Enforces quality gates                               │   │             │
+│      │         │  └─────────────────────────┬───────────────────────────────┘   │             │
+│      │         │                            │                                    │             │
+│      │         │            ┌───────────────┼───────────────┐                   │             │
+│      │         │            ▼               ▼               ▼                   │             │
+│      │         │     ┌───────────┐   ┌───────────┐   ┌───────────┐             │             │
+│      │         │     │ Discovery │   │Capability │   │    ROI    │             │             │
+│      │         │     │   Agent   │──▶│   Agent   │──▶│   Agent   │             │             │
+│      │         │     └───────────┘   └───────────┘   └─────┬─────┘             │             │
+│      │         │                            │              │                    │             │
+│      │         │                            │              │    ┌───────────┐  │             │
+│      │         │                            │              ├───▶│ Benchmark │  │             │
+│      │         │                            │              │    │ Librarian │  │             │
+│      │         │                            ▼              │    └───────────┘  │             │
+│      │         │                     ┌───────────┐         │                    │             │
+│      │         │                     │  Roadmap  │◄────────┘                    │             │
+│      │         │                     │   Agent   │                              │             │
+│      │         │                     └─────┬─────┘                              │             │
+│      │         │                           │                                    │             │
+│      │         │                           ▼                                    │             │
+│      │         │                    ┌────────────┐                              │             │
+│      │         │                    │  Assembly  │                              │             │
+│      │         │                    │   Agent    │                              │             │
+│      │         │                    └──────┬─────┘                              │             │
+│      │         │                           │                                    │             │
+│      │         └───────────────────────────┼────────────────────────────────────┘             │
+│      │                                     │                                                  │
+│      │    AGENTS USE:                      │                                                  │
+│      │    ┌────────────────────────────────┼────────────────────────────────────┐            │
+│      │    │           🔧 TOOLS             │                                    │            │
+│      │    │  ┌──────┐ ┌───────┐ ┌──────┐   │    ┌──────┐ ┌───────┐ ┌────────┐  │            │
+│      │    │  │ Read │ │ Write │ │ Edit │   │    │ Grep │ │ Glob  │ │  Bash  │  │            │
+│      │    │  └──────┘ └───────┘ └──────┘   │    └──────┘ └───────┘ └────────┘  │            │
+│      │    │  ┌──────────┐ ┌─────────────┐  │    ┌───────────┐ ┌─────────────┐  │            │
+│      │    │  │ WebFetch │ │ WebSearch   │  │    │ TodoWrite │ │    Task     │  │            │
+│      │    │  └──────────┘ └─────────────┘  │    └───────────┘ └─────────────┘  │            │
+│      │    └────────────────────────────────┼────────────────────────────────────┘            │
+│      │                                     │                                                  │
+│      │    AGENTS ACCESS:                   │                                                  │
+│      │    ┌────────────────────────────────┼────────────────────────────────────┐            │
+│      │    │        📚 KNOWLEDGE BASE       │                                    │            │
+│      │    │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐       │            │
+│      │    │  │ Retail  │ │   SME   │ │ Wealth  │ │Commercial│ │Corporate│       │            │
+│      │    │  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘       │            │
+│      │    │  ┌───────────────┐ ┌────────────────┐ ┌─────────────────────┐      │            │
+│      │    │  │ Benchmarks CSV│ │  ROI Examples  │ │ Competitor Intel    │      │            │
+│      │    │  └───────────────┘ └────────────────┘ └─────────────────────┘      │            │
+│      │    └────────────────────────────────┼────────────────────────────────────┘            │
+│      │                                     │                                                  │
+│      ▼                                     ▼                                                  │
+│  ┌────────────────────────────────────────────────────────────────────────────────────┐     │
+│  │                              ⚡ SKILLS (User Commands)                              │     │
+│  │                                                                                     │     │
+│  │  /presentation    /generate-roi-excel    /chunk-document    /domain-context        │     │
+│  │  /domain-benchmarks    /domain-pain-points    /domain-journeys    /domain-usecases │     │
+│  │                                                                                     │     │
+│  │  Skills USE Tools internally (Read, Write, Grep, etc.)                             │     │
+│  │  Skills CAN be invoked by user at any time                                         │     │
+│  │  Skills produce formatted outputs directly                                          │     │
+│  └────────────────────────────────────────────────────────────────────────────────────┘     │
+│                                     │                                                         │
+│                                     ▼                                                         │
+│  ┌────────────────────────────────────────────────────────────────────────────────────┐     │
+│  │                              📤 OUTPUTS                                             │     │
+│  │                                                                                     │     │
+│  │  📋 Executive Summary    📊 Assessment Report    💰 ROI Model    🗺️ Roadmap        │     │
+│  │  🎬 Presentations        📈 Benchmark Data       📝 Evidence Registers              │     │
+│  └────────────────────────────────────────────────────────────────────────────────────┘     │
+│                                                                                              │
+└──────────────────────────────────────────────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+        </div>
+
+        <!-- Relationships -->
+        <div class="interaction-section">
+            <div class="section-title">🔗 Key Relationships</div>
+
+            <div class="relationship-grid">
+                <div class="relationship-card">
+                    <div class="relationship-icon">🔧 → 🤖</div>
+                    <div class="relationship-title">Tools Enable Agents</div>
+                    <div class="relationship-desc">Agents use tools to read files, search code, write outputs, and execute commands.</div>
+                    <div class="relationship-examples">
+                        <div class="relationship-example">
+                            <div class="example-label">Example:</div>
+                            Discovery Agent uses <code>Read</code> to load transcript → uses <code>Write</code> to save evidence register
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relationship-card">
+                    <div class="relationship-icon">⚡ → 🔧</div>
+                    <div class="relationship-title">Skills Use Tools</div>
+                    <div class="relationship-desc">Skills internally call tools to accomplish their workflows.</div>
+                    <div class="relationship-examples">
+                        <div class="relationship-example">
+                            <div class="example-label">Example:</div>
+                            <code>/domain-benchmarks</code> uses <code>Read</code> to load CSV → <code>Grep</code> to filter → returns formatted table
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relationship-card">
+                    <div class="relationship-icon">🤖 → 🤖</div>
+                    <div class="relationship-title">Agents Collaborate</div>
+                    <div class="relationship-desc">Orchestrator delegates to agents. Agents pass artifacts downstream.</div>
+                    <div class="relationship-examples">
+                        <div class="relationship-example">
+                            <div class="example-label">Example:</div>
+                            Discovery → Capability → ROI → Roadmap → Assembly (pipeline)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relationship-card">
+                    <div class="relationship-icon">📚 → 🤖</div>
+                    <div class="relationship-title">Knowledge Feeds Agents</div>
+                    <div class="relationship-desc">Agents read domain packs, benchmarks, and templates to ground their work.</div>
+                    <div class="relationship-examples">
+                        <div class="relationship-example">
+                            <div class="example-label">Example:</div>
+                            ROI Agent reads <code>knowledge/domains/wealth/benchmarks.md</code> to get industry metrics
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relationship-card">
+                    <div class="relationship-icon">👤 → ⚡</div>
+                    <div class="relationship-title">User Triggers Skills</div>
+                    <div class="relationship-desc">Users invoke skills directly via slash commands for specific capabilities.</div>
+                    <div class="relationship-examples">
+                        <div class="relationship-example">
+                            <div class="example-label">Example:</div>
+                            User types <code>/presentation</code> → Gets interactive HTML presentation
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relationship-card">
+                    <div class="relationship-icon">🤖 → ⚡</div>
+                    <div class="relationship-title">Agents Can Invoke Skills</div>
+                    <div class="relationship-desc">Agents can call the Skill tool to leverage pre-built workflows.</div>
+                    <div class="relationship-examples">
+                        <div class="relationship-example">
+                            <div class="example-label">Example:</div>
+                            ROI Agent invokes <code>/generate-roi-excel</code> to produce final spreadsheet
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Use Case Examples -->
+        <div class="interaction-section">
+            <div class="section-title">🎯 Real-World Use Case Examples</div>
+
+            <div class="use-cases">
+                <div class="use-case">
+                    <div class="use-case-title">📋 Full Consulting Engagement</div>
+                    <div class="use-case-step">
+                        <div class="step-num agent">1</div>
+                        <div class="step-content">
+                            <div class="step-type agent">AGENT</div>
+                            <div>Orchestrator classifies: "Wealth POV in EMEA"</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num tool">2</div>
+                        <div class="step-content">
+                            <div class="step-type tool">TOOL</div>
+                            <div>Read tool loads uploaded transcripts</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num agent">3</div>
+                        <div class="step-content">
+                            <div class="step-type agent">AGENT</div>
+                            <div>Discovery Agent extracts evidence registers</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num agent">4</div>
+                        <div class="step-content">
+                            <div class="step-type agent">AGENT</div>
+                            <div>Capability + ROI Agents work in parallel</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num tool">5</div>
+                        <div class="step-content">
+                            <div class="step-type tool">TOOL</div>
+                            <div>Grep/Read load benchmarks from CSV</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num agent">6</div>
+                        <div class="step-content">
+                            <div class="step-type agent">AGENT</div>
+                            <div>Assembly Agent packages final deliverables</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <div class="use-case-title">📊 Quick Benchmark Query</div>
+                    <div class="use-case-step">
+                        <div class="step-num skill">1</div>
+                        <div class="step-content">
+                            <div class="step-type skill">SKILL</div>
+                            <div>User: <code>/domain-benchmarks retail onboarding</code></div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num tool">2</div>
+                        <div class="step-content">
+                            <div class="step-type tool">TOOL</div>
+                            <div>Read loads Consulting Playbook CSV</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num tool">3</div>
+                        <div class="step-content">
+                            <div class="step-type tool">TOOL</div>
+                            <div>Grep filters for retail + onboarding metrics</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num skill">4</div>
+                        <div class="step-content">
+                            <div class="step-type skill">SKILL</div>
+                            <div>Returns formatted benchmark table to user</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <div class="use-case-title">🎬 Create Presentation</div>
+                    <div class="use-case-step">
+                        <div class="step-num skill">1</div>
+                        <div class="step-content">
+                            <div class="step-type skill">SKILL</div>
+                            <div>User: <code>/presentation</code> with content</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num tool">2</div>
+                        <div class="step-content">
+                            <div class="step-type tool">TOOL</div>
+                            <div>Read loads template from templates/presentations/</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num tool">3</div>
+                        <div class="step-content">
+                            <div class="step-type tool">TOOL</div>
+                            <div>Write creates HTML file with animations</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num tool">4</div>
+                        <div class="step-content">
+                            <div class="step-type tool">TOOL</div>
+                            <div>Bash opens file in browser</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <div class="use-case-title">💰 ROI Model Generation</div>
+                    <div class="use-case-step">
+                        <div class="step-num agent">1</div>
+                        <div class="step-content">
+                            <div class="step-type agent">AGENT</div>
+                            <div>ROI Agent receives evidence + financial data</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num agent">2</div>
+                        <div class="step-content">
+                            <div class="step-type agent">AGENT</div>
+                            <div>Benchmark Librarian provides regional metrics</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num tool">3</div>
+                        <div class="step-content">
+                            <div class="step-type tool">TOOL</div>
+                            <div>Read loads ROI examples (HNB, Seabank)</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num skill">4</div>
+                        <div class="step-content">
+                            <div class="step-type skill">SKILL</div>
+                            <div><code>/generate-roi-excel</code> creates spreadsheet</div>
+                        </div>
+                    </div>
+                    <div class="use-case-step">
+                        <div class="step-num agent">5</div>
+                        <div class="step-content">
+                            <div class="step-type agent">AGENT</div>
+                            <div>ROI Agent validates and adds assumptions</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="interaction-section" style="text-align: center;">
+            <div class="section-title">✨ Summary</div>
+            <div style="max-width: 800px; margin: 0 auto; line-height: 1.8; color: #a8b2d1;">
+                <p style="margin-bottom: 20px;">
+                    <strong style="color: #FF6B6B;">Tools</strong> are the <em>hands</em> — they perform atomic operations (read, write, search, execute).
+                </p>
+                <p style="margin-bottom: 20px;">
+                    <strong style="color: #4ECDC4;">Skills</strong> are the <em>shortcuts</em> — user-triggered workflows that combine tools for specific tasks.
+                </p>
+                <p style="margin-bottom: 20px;">
+                    <strong style="color: #45B7D1;">Agents</strong> are the <em>consultants</em> — they reason, apply methodology, and generate deliverables.
+                </p>
+                <p style="font-size: 1.1rem; color: #64ffda; margin-top: 30px;">
+                    Together, they form a <strong>complete consulting automation system</strong> that transforms raw inputs into executive-ready deliverables.
+                </p>
+            </div>
+        </div>
+
+        <p style="text-align: center; color: #8892b0; margin-top: 60px; font-size: 0.9rem;">
+            Value Consulting Agent System — Tools • Skills • Agents Working Together
+        </p>
+    </div>
+</body>
+</html>

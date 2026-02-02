@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Summary: Digital Banking Transformation</title>
+    <style>
+        :root {
+            --primary: #1A56FF;
+            --dark: #1A1F36;
+            --positive: #00B386;
+            --negative: #FF4444;
+            --warning: #FFC107;
+            --light-blue: #E8F0FF;
+            --light-gray: #F5F5F5;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: var(--light-gray);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 3rem 4rem;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 1rem;
+        }
+
+        h2 {
+            color: var(--dark);
+            font-size: 1.6rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #E0E0E0;
+        }
+
+        h3 {
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        p { margin-bottom: 1rem; }
+
+        .meta {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, var(--dark), #2D3A5A);
+            color: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+        }
+
+        .hero-title {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-recommendation {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .hero-conditional {
+            background: var(--warning);
+            color: var(--dark);
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .hero-statement {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            opacity: 0.9;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            border-left: 4px solid var(--positive);
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border-top: 4px solid var(--primary);
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .card-subtitle {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 0.25rem;
+        }
+
+        /* Journey Benefits */
+        .journey-benefits {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .journey-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .journey-header {
+            padding: 1rem 1.5rem;
+            color: white;
+            font-weight: 600;
+        }
+
+        .journey-onboarding { background: linear-gradient(135deg, #E91E63, #9C27B0); }
+        .journey-servicing { background: linear-gradient(135deg, #2196F3, #00BCD4); }
+
+        .journey-content {
+            padding: 1.5rem;
+        }
+
+        .journey-issue {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .journey-issue strong {
+            color: var(--negative);
+        }
+
+        .journey-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .journey-metric {
+            text-align: center;
+            padding: 0.75rem;
+            background: var(--light-blue);
+            border-radius: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        /* Confidence Section */
+        .confidence-section {
+            background: var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .confidence-legend {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .confidence-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .conf-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-high { background: #D4EDDA; color: #155724; }
+        .badge-med { background: #CCE5FF; color: #004085; }
+        .badge-low { background: #FFF3CD; color: #856404; }
+        .badge-critical { background: #F8D7DA; color: #721C24; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--dark);
+            color: white;
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #E0E0E0;
+        }
+
+        tr:hover { background: var(--light-blue); }
+
+        /* Decision Section */
+        .decision-section {
+            margin: 2rem 0;
+        }
+
+        .decision-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .decision-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .decision-header {
+            padding: 1rem 1.5rem;
+            color: white;
+            font-weight: 600;
+        }
+
+        .decision-nogo { background: var(--negative); }
+        .decision-risks { background: var(--warning); color: var(--dark); }
+
+        .decision-content {
+            padding: 1rem 1.5rem;
+        }
+
+        .decision-content ol {
+            margin-left: 1.25rem;
+        }
+
+        .decision-content li {
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        /* Next Steps */
+        .steps-timeline {
+            margin: 2rem 0;
+        }
+
+        .step-phase {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-marker {
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .step-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .badge-immediate { background: var(--negative); }
+        .badge-shortterm { background: var(--warning); color: var(--dark); }
+        .badge-execution { background: var(--positive); }
+
+        .step-content {
+            flex: 1;
+            padding-left: 1rem;
+            border-left: 2px solid #E0E0E0;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content ol {
+            margin-left: 1.25rem;
+        }
+
+        .step-content li {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Appendices */
+        .appendices {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .appendix-link {
+            background: var(--light-gray);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            text-decoration: none;
+            color: var(--dark);
+            transition: all 0.2s;
+        }
+
+        .appendix-link:hover {
+            background: var(--light-blue);
+            transform: translateY(-2px);
+        }
+
+        .appendix-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .appendix-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #E0E0E0;
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        /* Print styles */
+        @media print {
+            body { background: white; }
+            .container { box-shadow: none; padding: 0; }
+            .hero-section { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Executive Summary</h1>
+        <h2 style="border: none; margin-top: 0.5rem; font-size: 1.3rem; color: #666;">Digital Banking Transformation</h2>
+
+        <p class="meta">
+            <strong>Client:</strong> Retail Bank - SEA Region |
+            <strong>Date:</strong> 2026-01-13 |
+            <strong>Prepared by:</strong> Value Consulting Team
+        </p>
+
+        <!-- Hero Recommendation -->
+        <div class="hero-section">
+            <div class="hero-title">Investment Recommendation</div>
+            <div class="hero-recommendation">
+                GO <span class="hero-conditional">CONDITIONAL</span>
+            </div>
+            <div class="hero-statement">
+                "This initiative requires <strong>$8.6M investment</strong> over 5 years and is expected to deliver <strong>$3.4M in annual recurring benefits</strong>, achieving positive NPV with <strong>MEDIUM confidence</strong>, conditional on validation of key assumptions marked as LOW confidence."
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="summary-cards">
+            <div class="summary-card" style="border-top-color: var(--negative);">
+                <div class="card-title">Total Investment</div>
+                <div class="card-value">$8.6M</div>
+                <div class="card-subtitle">Over 5 years</div>
+            </div>
+            <div class="summary-card" style="border-top-color: var(--positive);">
+                <div class="card-title">Annual Benefit</div>
+                <div class="card-value">$3.4M</div>
+                <div class="card-subtitle">At steady state</div>
+            </div>
+            <div class="summary-card" style="border-top-color: var(--primary);">
+                <div class="card-title">NPV</div>
+                <div class="card-value">$3.8M</div>
+                <div class="card-subtitle">Net Present Value</div>
+            </div>
+            <div class="summary-card" style="border-top-color: var(--warning);">
+                <div class="card-title">Payback</div>
+                <div class="card-value">~2.5 yrs</div>
+                <div class="card-subtitle">Payback period</div>
+            </div>
+        </div>
+
+        <!-- The Opportunity -->
+        <h2>The Opportunity (Journey-Based)</h2>
+
+        <h3>Current State: Broken Onboarding, Expensive Servicing</h3>
+        <p>Discovery revealed two critical capability gaps costing the bank revenue and margin:</p>
+
+        <div class="journey-benefits">
+            <div class="journey-card">
+                <div class="journey-header journey-onboarding">Customer Onboarding Journey</div>
+                <div class="journey-content">
+                    <div class="journey-issue">
+                        <strong>Broken:</strong> Completion rate is "low" with significant drop-off at document stage. Cycle time exceeds 7 days in some cases. Digital investment hasn't scaled; teams use manual workarounds.
+                    </div>
+                    <div class="journey-metrics">
+                        <div class="journey-metric">
+                            <div class="metric-value">$936K</div>
+                            <div class="metric-label">Revenue</div>
+                        </div>
+                        <div class="journey-metric">
+                            <div class="metric-value">$360K</div>
+                            <div class="metric-label">Cost Reduction</div>
+                        </div>
+                        <div class="journey-metric">
+                            <div class="metric-value" style="color: var(--positive);">$1.3M</div>
+                            <div class="metric-label">Total Annual</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="journey-card">
+                <div class="journey-header journey-servicing">Customer Servicing Journey</div>
+                <div class="journey-content">
+                    <div class="journey-issue">
+                        <strong>Expensive:</strong> Simple requests still handled by call center. No visibility into customer channel behavior. Digital self-service underutilized.
+                    </div>
+                    <div class="journey-metrics">
+                        <div class="journey-metric">
+                            <div class="metric-value">$0</div>
+                            <div class="metric-label">Revenue</div>
+                        </div>
+                        <div class="journey-metric">
+                            <div class="metric-value">$2.1M</div>
+                            <div class="metric-label">Cost Reduction</div>
+                        </div>
+                        <div class="journey-metric">
+                            <div class="metric-value" style="color: var(--positive);">$2.1M</div>
+                            <div class="metric-label">Total Annual</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Confidence -->
+        <h2>Data Confidence Assessment</h2>
+
+        <div class="confidence-section">
+            <div class="confidence-legend">
+                <div class="confidence-item">
+                    <span class="conf-badge badge-high">HIGH</span>
+                    <span>From transcript / validated data</span>
+                </div>
+                <div class="confidence-item">
+                    <span class="conf-badge badge-med">MED</span>
+                    <span>Backbase benchmark</span>
+                </div>
+                <div class="confidence-item">
+                    <span class="conf-badge badge-low">LOW</span>
+                    <span>Estimate requiring validation</span>
+                </div>
+            </div>
+
+            <h3>Critical Assumptions Requiring Validation</h3>
+            <table>
+                <tr>
+                    <th>Assumption</th>
+                    <th>Value</th>
+                    <th>Confidence</th>
+                    <th>Owner</th>
+                </tr>
+                <tr>
+                    <td>Monthly application volume</td>
+                    <td>8,000</td>
+                    <td><span class="conf-badge badge-low">LOW</span></td>
+                    <td>Digital Lead</td>
+                </tr>
+                <tr>
+                    <td>Current completion rate</td>
+                    <td>40%</td>
+                    <td><span class="conf-badge badge-med">MED</span></td>
+                    <td>Digital Lead</td>
+                </tr>
+                <tr>
+                    <td>Revenue per customer (Y1)</td>
+                    <td>$200</td>
+                    <td><span class="conf-badge badge-low">LOW</span></td>
+                    <td>Finance</td>
+                </tr>
+                <tr>
+                    <td>Annual servicing volume</td>
+                    <td>890,000</td>
+                    <td><span class="conf-badge badge-low">LOW</span></td>
+                    <td>Operations Lead</td>
+                </tr>
+                <tr>
+                    <td>Cost per interaction</td>
+                    <td>$25/hr</td>
+                    <td><span class="conf-badge badge-low">LOW</span></td>
+                    <td>Finance</td>
+                </tr>
+            </table>
+
+            <p style="margin-top: 1rem; padding: 0.75rem; background: #FFF3CD; border-radius: 4px; font-size: 0.9rem;">
+                <strong>Warning:</strong> 4 of 10 core assumptions are marked LOW confidence. Validate before finalizing business case.
+            </p>
+        </div>
+
+        <!-- Decision Factors -->
+        <h2>What Would Change This Decision?</h2>
+
+        <div class="decision-grid">
+            <div class="decision-card">
+                <div class="decision-header decision-nogo">Decision Becomes "No Go" If:</div>
+                <div class="decision-content">
+                    <ol>
+                        <li>Current completion rate is already >55% (less headroom)</li>
+                        <li>Servicing volume is <400K annually (smaller opportunity)</li>
+                        <li>FTE cost per hour is <$15 (less savings potential)</li>
+                        <li>Implementation costs exceed $12M (breakeven at risk)</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="decision-card">
+                <div class="decision-header decision-risks">External Risks:</div>
+                <div class="decision-content">
+                    <ol>
+                        <li>Regulatory changes to eKYC requirements</li>
+                        <li>Core banking modernization conflicts</li>
+                        <li>Organizational change resistance (workarounds prevalent)</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <h2>Recommended Next Steps</h2>
+
+        <div class="steps-timeline">
+            <div class="step-phase">
+                <div class="step-marker">
+                    <span class="step-badge badge-immediate">Immediate</span>
+                </div>
+                <div class="step-content">
+                    <div class="step-title">Next 2 Weeks</div>
+                    <ol>
+                        <li><strong>Validate baseline metrics</strong> - Request data for DG1-DG10 (see Data Gaps sheet in Excel)</li>
+                        <li><strong>Assess existing platform</strong> - Understand current digital capabilities and constraints</li>
+                        <li><strong>Secure executive sponsorship</strong> - Confirm budget and timeline parameters</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="step-phase">
+                <div class="step-marker">
+                    <span class="step-badge badge-shortterm">Short-term</span>
+                </div>
+                <div class="step-content">
+                    <div class="step-title">4-8 Weeks</div>
+                    <ol>
+                        <li><strong>Journey mapping workshop</strong> - Detail onboarding friction points with process owners</li>
+                        <li><strong>Channel analytics deep-dive</strong> - Understand servicing volume by type and channel</li>
+                        <li><strong>Vendor assessment</strong> - Confirm Backbase fit and implementation approach</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="step-phase">
+                <div class="step-marker">
+                    <span class="step-badge badge-execution">Execution</span>
+                </div>
+                <div class="step-content">
+                    <div class="step-title">Upon Approval</div>
+                    <ol>
+                        <li><strong>Phase 1 (0-6 months):</strong> Quick wins - Self-service for top 5 tasks, document upload UX</li>
+                        <li><strong>Phase 2 (6-12 months):</strong> eKYC integration, straight-through processing</li>
+                        <li><strong>Phase 3 (12-18 months):</strong> Journey analytics, personalization</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appendices -->
+        <h2>Appendices</h2>
+
+        <div class="appendices">
+            <a href="evidence_register.html" class="appendix-link">
+                <div class="appendix-icon">📋</div>
+                <div class="appendix-title">Evidence Register</div>
+            </a>
+            <a href="capability_assessment_v2.html" class="appendix-link">
+                <div class="appendix-icon">📊</div>
+                <div class="appendix-title">Capability Assessment</div>
+            </a>
+            <a href="roi_model.xlsx" class="appendix-link">
+                <div class="appendix-icon">📈</div>
+                <div class="appendix-title">ROI Model (Excel)</div>
+            </a>
+            <a href="detailed_consulting_report.html" class="appendix-link">
+                <div class="appendix-icon">📑</div>
+                <div class="appendix-title">Detailed Report</div>
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                <strong>Prepared by:</strong> Value Consulting Team |
+                <strong>Confidence Level:</strong> MEDIUM (pending baseline data validation)
+            </p>
+        </div>
+    </div>
+</body>
+</html>

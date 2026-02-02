@@ -115,6 +115,90 @@ Use this standard scale unless client has existing framework:
 | 4 | Managed | Measured, controlled, continuously improving |
 | 5 | Optimized | Industry-leading, predictive, innovative |
 
+## Journey-Based Assessment (REQUIRED)
+
+**You MUST structure your capability assessment around customer journeys using the Acquire → Activate → Expand → Retain lifecycle.**
+
+### Customer Lifecycle Structure
+
+For each lifecycle stage, assess capabilities across end-to-end journeys:
+
+| Lifecycle Stage | Key Journeys | Assessment Focus |
+|----------------|--------------|------------------|
+| **Acquire** | Prospecting, Lead Management, Onboarding | Conversion rates, cycle times, drop-off points |
+| **Activate** | First Use, Product Activation, Early Life | Time to value, activation rates, early engagement |
+| **Expand** | Cross-sell, Upsell, Wallet Share | Product penetration, share of wallet, expansion revenue |
+| **Retain** | Servicing, Issue Resolution, Loyalty | Retention rates, cost to serve, NPS |
+
+### Journey Swimlane Analysis (CRITICAL)
+
+For each major journey, you MUST produce end-to-end swimlane analysis showing:
+
+1. **Actors/Swimlanes:**
+   - Customer/Prospect
+   - Frontline Staff (RM, Branch Officer, Call Center)
+   - Back Office / Operations
+   - Compliance / Risk
+   - Systems (automated steps)
+
+2. **For Each Step:**
+   - Time duration (active time AND elapsed time)
+   - Applications/Systems involved
+   - Handoff points between actors
+
+3. **Friction Analysis Table:**
+
+| Journey Step | Actor | Time (Active) | Time (Elapsed) | Employee Friction | Customer Friction | Systems Involved | Evidence |
+|-------------|-------|---------------|----------------|-------------------|-------------------|------------------|----------|
+| [Step name] | [Who] | [X min] | [Y days] | [Pain point] | [Pain point] | [System list] | E1, E2 |
+
+### Servicing Task Analysis (REQUIRED for Servicing Journeys)
+
+Include a servicing analysis table following the HNB/Seabank methodology:
+
+| Servicing Task | Role | Yearly Volume | Time per Interaction (hrs) | FTE Cost/Hour | Baseline Annual Cost | Backbase Impact (%) | Annual Cost Avoided |
+|---------------|------|---------------|---------------------------|---------------|---------------------|--------------------|--------------------|
+| Portfolio Review | RM | 15,700 | 0.75 | $25 | $294,375 | 30% | $88,313 |
+| Customer Queries | RM | 28,423 | 0.25 | $25 | $177,644 | 60% | $106,586 |
+| [etc.] | | | | | | | |
+
+### Journey Assessment Summary Format
+
+For each journey assessed, provide:
+
+```
+## [Journey Name] - [Lifecycle Stage]
+
+### Current State Challenges (What we heard)
+- [Quote from stakeholder with evidence ID]
+- [Business impact statement]
+
+### Employee Friction
+| Step | Friction Point | Impact | Evidence |
+|------|---------------|--------|----------|
+
+### Customer Friction
+| Step | Friction Point | Impact | Evidence |
+|------|---------------|--------|----------|
+
+### Business Impact
+- **Revenue at Risk:** $X (with calculation basis)
+- **Cost Inefficiency:** $Y (with calculation basis)
+- **Time/Effort Waste:** Z hours/month (with basis)
+
+### Recommendations & Value
+- [Recommendation 1 with expected impact]
+- [Recommendation 2 with expected impact]
+```
+
+### Load Journey Templates
+
+Always reference the journey templates from `knowledge/domains/<domain>/journey_maps.md` to:
+- Understand standard journey structures for the domain
+- Identify typical friction points
+- Apply consistent time estimates
+- Use benchmark Backbase impact percentages
+
 ## Anti-Patterns to Avoid
 
 1. **Vendor/Feature-Led Thinking**: Never frame gaps in terms of missing products or features. Frame in terms of business outcomes not achieved.

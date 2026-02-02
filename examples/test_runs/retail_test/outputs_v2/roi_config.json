@@ -1,0 +1,629 @@
+{
+  "client_name": "Retail Bank - SEA Region",
+  "date": "2026-01-13",
+  "currency": "USD",
+  "industry": "Retail Banking",
+  "analysis_years": 5,
+  "discount_rate": 0.10,
+  "selected_scenario": "Moderate",
+
+  "basic_information": {
+    "total_customers": 500000,
+    "total_customers_source": "ESTIMATE - Not provided in transcript. Assumed typical regional retail bank.",
+    "annual_revenue": 50000000,
+    "annual_revenue_source": "ESTIMATE - Not provided. Assumed based on customer base.",
+    "total_fte": 1200,
+    "total_fte_source": "ESTIMATE - Not provided. Assumed based on servicing volumes.",
+    "average_fte_rate_hour": 25,
+    "average_fte_rate_source": "ESTIMATE - SEA regional loaded cost assumed at $25/hr. REQUIRES VALIDATION.",
+    "average_revenue_per_customer": 100,
+    "average_revenue_per_customer_source": "ESTIMATE - Derived from revenue/customers. REQUIRES VALIDATION with Finance."
+  },
+
+  "backbase_loading": {
+    "implementation_curve": [0.30, 0.70, 0.80, 1.00, 1.00],
+    "effectiveness_curve": [0.15, 0.35, 0.60, 0.85, 1.00],
+    "yoy_growth": [0.08, 0.08, 0.08, 0.08, 0.08],
+    "notes": "Standard Backbase adoption curve. Conservative ramp."
+  },
+
+  "scenarios": {
+    "conservative": {
+      "description": "Pessimistic but plausible - lower adoption, smaller impact",
+      "implementation_curve": [0.20, 0.60, 0.80, 0.90, 1.00],
+      "effectiveness_curve": [0.10, 0.25, 0.45, 0.70, 0.85],
+      "backbase_impacts": {
+        "onboarding_conversion_website": 0.05,
+        "onboarding_conversion_branch": 0.05,
+        "onboarding_cost_reduction": 0.20,
+        "servicing_channel_shift": 0.20,
+        "servicing_efficiency": 0.25
+      }
+    },
+    "moderate": {
+      "description": "Most likely outcome - standard adoption, typical impact",
+      "implementation_curve": [0.30, 0.70, 0.80, 1.00, 1.00],
+      "effectiveness_curve": [0.15, 0.35, 0.60, 0.85, 1.00],
+      "backbase_impacts": {
+        "onboarding_conversion_website": 0.075,
+        "onboarding_conversion_branch": 0.075,
+        "onboarding_cost_reduction": 0.30,
+        "servicing_channel_shift": 0.30,
+        "servicing_efficiency": 0.35
+      }
+    },
+    "aggressive": {
+      "description": "Optimistic but achievable - high adoption, full impact",
+      "implementation_curve": [0.40, 0.80, 0.90, 1.00, 1.00],
+      "effectiveness_curve": [0.20, 0.45, 0.70, 0.90, 1.00],
+      "backbase_impacts": {
+        "onboarding_conversion_website": 0.10,
+        "onboarding_conversion_branch": 0.10,
+        "onboarding_cost_reduction": 0.40,
+        "servicing_channel_shift": 0.40,
+        "servicing_efficiency": 0.45
+      }
+    }
+  },
+
+  "journeys": {
+    "customer_onboarding": {
+      "journey_name": "Customer Onboarding (CASA)",
+      "evidence_ids": ["E1", "E2", "E3", "E7", "E8"],
+      "transcript_quotes": [
+        "Our onboarding completion rate is low - Head of Retail (E1)",
+        "A lot of customers drop off when documents are required - Head of Retail (E2)",
+        "It can take more than a week in some cases - Head of Retail (E3)",
+        "We launched digital onboarding, but it hasn't scaled well - Digital Lead (E7)",
+        "Teams still rely on manual workarounds - Digital Lead (E8)"
+      ],
+
+      "revenue_drivers": {
+        "increase_website_conversion": {
+          "name": "Increase Customer Conversion - Digital Channel",
+          "description": "More customers complete digital onboarding due to improved UX and document handling",
+          "inputs": {
+            "website_visits_intention_to_purchase": {
+              "value": 8000,
+              "unit": "monthly",
+              "source": "ESTIMATE - 'Low completion rate' (E1) implies significant traffic. Assumed 8K monthly applicants.",
+              "confidence": "LOW",
+              "validation_owner": "Digital Lead"
+            },
+            "current_leakage_rate": {
+              "value": 0.60,
+              "unit": "ratio",
+              "source": "TRANSCRIPT - 'A lot of customers drop off' (E2). 60% leakage assumed (40% completion).",
+              "confidence": "MEDIUM",
+              "validation_owner": "Digital Lead"
+            },
+            "average_income_per_customer": {
+              "value": 200,
+              "unit": "USD/year",
+              "source": "ESTIMATE - Industry benchmark for retail bank first-year customer value.",
+              "confidence": "LOW",
+              "validation_owner": "Finance"
+            },
+            "backbase_impact": {
+              "value": 0.075,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - 7.5% improvement in conversion from better digital experience.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            }
+          },
+          "calculation": "website_visits * 12 * leakage_rate * avg_income * backbase_impact",
+          "baseline_annual": 11520000,
+          "potential_annual_benefit": 864000
+        },
+        "increase_branch_conversion": {
+          "name": "Increase Customer Conversion - Branch Channel",
+          "description": "More branch-assisted applications complete with digital document capture",
+          "inputs": {
+            "branch_visits_per_year": {
+              "value": 24000,
+              "unit": "annual",
+              "source": "ESTIMATE - Assumed 2K monthly branch applications based on multi-channel model.",
+              "confidence": "LOW",
+              "validation_owner": "Head of Retail"
+            },
+            "current_leakage_rate": {
+              "value": 0.20,
+              "unit": "ratio",
+              "source": "ESTIMATE - Branch has lower leakage than digital but still loses 20%.",
+              "confidence": "LOW",
+              "validation_owner": "Operations Lead"
+            },
+            "average_income_per_customer": {
+              "value": 200,
+              "unit": "USD/year",
+              "source": "ESTIMATE - Same as digital channel.",
+              "confidence": "LOW",
+              "validation_owner": "Finance"
+            },
+            "backbase_impact": {
+              "value": 0.075,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - 7.5% improvement with unified branch experience.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            }
+          },
+          "calculation": "branch_visits * leakage_rate * avg_income * backbase_impact",
+          "baseline_annual": 960000,
+          "potential_annual_benefit": 72000
+        }
+      },
+
+      "cost_drivers": {
+        "reduce_branch_processing": {
+          "name": "Reduce Branch/Back Office Processing Time",
+          "description": "Digital document handling and STP reduce manual processing effort",
+          "inputs": {
+            "visits_per_year": {
+              "value": 96000,
+              "unit": "annual",
+              "source": "DERIVED - 8K digital + 2K branch monthly = 10K * 12 months * 80% requiring processing.",
+              "confidence": "LOW",
+              "validation_owner": "Operations Lead"
+            },
+            "avg_time_per_interaction_hours": {
+              "value": 0.50,
+              "unit": "hours",
+              "source": "TRANSCRIPT - 'Manual workarounds' (E8), 'more than a week' (E3) implies heavy processing. 30 min assumed.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Operations Lead"
+            },
+            "fte_cost_per_hour": {
+              "value": 25,
+              "unit": "USD",
+              "source": "ESTIMATE - SEA regional loaded cost. REQUIRES VALIDATION.",
+              "confidence": "LOW",
+              "validation_owner": "Finance/HR"
+            },
+            "backbase_impact": {
+              "value": 0.30,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - 30% reduction in processing time with digital document handling.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            }
+          },
+          "calculation": "visits * time * hourly_rate * backbase_impact",
+          "baseline_annual": 1200000,
+          "potential_annual_benefit": 360000
+        }
+      },
+
+      "totals": {
+        "revenue_generation_total": 936000,
+        "cost_reduction_total": 360000,
+        "journey_total": 1296000
+      }
+    },
+
+    "customer_servicing": {
+      "journey_name": "Customer Servicing",
+      "evidence_ids": ["E4", "E5", "E6"],
+      "transcript_quotes": [
+        "Servicing is expensive - Operations Lead (E4)",
+        "Simple requests still come through the call center - Operations Lead (E5)",
+        "We don't have a clear view of why customers choose branch or call over digital - Operations Lead (E6)"
+      ],
+
+      "servicing_analysis": {
+        "branch": {
+          "channel_name": "Branch",
+          "tasks": [
+            {
+              "task": "Balance Inquiry",
+              "yearly_volume": 60000,
+              "volume_source": "ESTIMATE - 10% of 500K customers visit branch annually for balance.",
+              "time_spent_hours": 0.08,
+              "time_source": "ESTIMATE - 5 min interaction.",
+              "fte_rate": 25,
+              "baseline_cost": 120000,
+              "backbase_impact": 0.70,
+              "impact_source": "BACKBASE BENCHMARK - 70% can be shifted to digital self-service.",
+              "cost_saved": 84000
+            },
+            {
+              "task": "Account Statement",
+              "yearly_volume": 40000,
+              "volume_source": "ESTIMATE - Based on typical statement request patterns.",
+              "time_spent_hours": 0.17,
+              "time_source": "ESTIMATE - 10 min including printing.",
+              "fte_rate": 25,
+              "baseline_cost": 170000,
+              "backbase_impact": 0.80,
+              "impact_source": "BACKBASE BENCHMARK - Statements easily digitized.",
+              "cost_saved": 136000
+            },
+            {
+              "task": "Card Block/Unblock",
+              "yearly_volume": 15000,
+              "volume_source": "ESTIMATE - Based on 3% of card base needing emergency service.",
+              "time_spent_hours": 0.17,
+              "time_source": "ESTIMATE - 10 min for card management.",
+              "fte_rate": 25,
+              "baseline_cost": 63750,
+              "backbase_impact": 0.90,
+              "impact_source": "BACKBASE BENCHMARK - Card control highly automatable.",
+              "cost_saved": 57375
+            },
+            {
+              "task": "Address/Details Change",
+              "yearly_volume": 25000,
+              "volume_source": "ESTIMATE - 5% of customers update details annually.",
+              "time_spent_hours": 0.25,
+              "time_source": "ESTIMATE - 15 min with verification.",
+              "fte_rate": 25,
+              "baseline_cost": 156250,
+              "backbase_impact": 0.50,
+              "impact_source": "BACKBASE BENCHMARK - Some verification still required.",
+              "cost_saved": 78125
+            },
+            {
+              "task": "Transaction Inquiry",
+              "yearly_volume": 30000,
+              "volume_source": "ESTIMATE - Dispute and query volume.",
+              "time_spent_hours": 0.33,
+              "time_source": "ESTIMATE - 20 min for research.",
+              "fte_rate": 25,
+              "baseline_cost": 247500,
+              "backbase_impact": 0.40,
+              "impact_source": "BACKBASE BENCHMARK - Some inquiries need staff.",
+              "cost_saved": 99000
+            }
+          ],
+          "channel_total": {
+            "yearly_volume": 170000,
+            "baseline_cost": 757500,
+            "cost_saved": 454500
+          }
+        },
+        "call_center": {
+          "channel_name": "Call Center",
+          "tasks": [
+            {
+              "task": "Balance Inquiry",
+              "yearly_volume": 200000,
+              "volume_source": "ESTIMATE - 'Simple requests still come through call center' (E5). High volume assumed.",
+              "time_spent_hours": 0.08,
+              "time_source": "ESTIMATE - 5 min call.",
+              "fte_rate": 25,
+              "baseline_cost": 400000,
+              "backbase_impact": 0.70,
+              "impact_source": "BACKBASE BENCHMARK - IVR and app can handle.",
+              "cost_saved": 280000
+            },
+            {
+              "task": "Account Statement",
+              "yearly_volume": 80000,
+              "volume_source": "ESTIMATE - Frequent call reason.",
+              "time_spent_hours": 0.12,
+              "time_source": "ESTIMATE - 7 min call.",
+              "fte_rate": 25,
+              "baseline_cost": 240000,
+              "backbase_impact": 0.80,
+              "impact_source": "BACKBASE BENCHMARK - Digital statements available.",
+              "cost_saved": 192000
+            },
+            {
+              "task": "Card Block/Unblock",
+              "yearly_volume": 50000,
+              "volume_source": "ESTIMATE - Emergency calls.",
+              "time_spent_hours": 0.12,
+              "time_source": "ESTIMATE - 7 min call.",
+              "fte_rate": 25,
+              "baseline_cost": 150000,
+              "backbase_impact": 0.90,
+              "impact_source": "BACKBASE BENCHMARK - App card controls.",
+              "cost_saved": 135000
+            },
+            {
+              "task": "Address/Details Change",
+              "yearly_volume": 40000,
+              "volume_source": "ESTIMATE - Update requests.",
+              "time_spent_hours": 0.17,
+              "time_source": "ESTIMATE - 10 min call.",
+              "fte_rate": 25,
+              "baseline_cost": 170000,
+              "backbase_impact": 0.50,
+              "impact_source": "BACKBASE BENCHMARK - Partial automation.",
+              "cost_saved": 85000
+            },
+            {
+              "task": "Transaction Inquiry",
+              "yearly_volume": 100000,
+              "volume_source": "ESTIMATE - Common call reason.",
+              "time_spent_hours": 0.17,
+              "time_source": "ESTIMATE - 10 min call.",
+              "fte_rate": 25,
+              "baseline_cost": 425000,
+              "backbase_impact": 0.60,
+              "impact_source": "BACKBASE BENCHMARK - Better search in app.",
+              "cost_saved": 255000
+            },
+            {
+              "task": "General Inquiry",
+              "yearly_volume": 150000,
+              "volume_source": "ESTIMATE - Miscellaneous calls.",
+              "time_spent_hours": 0.12,
+              "time_source": "ESTIMATE - 7 min call.",
+              "fte_rate": 25,
+              "baseline_cost": 450000,
+              "backbase_impact": 0.40,
+              "impact_source": "BACKBASE BENCHMARK - Some still need human.",
+              "cost_saved": 180000
+            }
+          ],
+          "channel_total": {
+            "yearly_volume": 620000,
+            "baseline_cost": 1835000,
+            "cost_saved": 1127000
+          }
+        },
+        "back_office": {
+          "channel_name": "Back Office",
+          "tasks": [
+            {
+              "task": "Document Processing",
+              "yearly_volume": 50000,
+              "volume_source": "ESTIMATE - Follow-up document handling.",
+              "time_spent_hours": 0.50,
+              "time_source": "TRANSCRIPT - 'Manual workarounds' (E8) suggests heavy processing.",
+              "fte_rate": 25,
+              "baseline_cost": 625000,
+              "backbase_impact": 0.50,
+              "impact_source": "BACKBASE BENCHMARK - OCR and auto-verification.",
+              "cost_saved": 312500
+            },
+            {
+              "task": "Account Updates",
+              "yearly_volume": 30000,
+              "volume_source": "ESTIMATE - Changes requiring back office.",
+              "time_spent_hours": 0.33,
+              "time_source": "ESTIMATE - 20 min processing.",
+              "fte_rate": 25,
+              "baseline_cost": 247500,
+              "backbase_impact": 0.35,
+              "impact_source": "BACKBASE BENCHMARK - Some manual work remains.",
+              "cost_saved": 86625
+            },
+            {
+              "task": "Exception Handling",
+              "yearly_volume": 20000,
+              "volume_source": "ESTIMATE - Exceptions and escalations.",
+              "time_spent_hours": 0.75,
+              "time_source": "ESTIMATE - 45 min for complex issues.",
+              "fte_rate": 25,
+              "baseline_cost": 375000,
+              "backbase_impact": 0.30,
+              "impact_source": "BACKBASE BENCHMARK - Fewer exceptions with better digital.",
+              "cost_saved": 112500
+            }
+          ],
+          "channel_total": {
+            "yearly_volume": 100000,
+            "baseline_cost": 1247500,
+            "cost_saved": 511625
+          }
+        }
+      },
+
+      "totals": {
+        "total_servicing_volume": 890000,
+        "total_baseline_cost": 3840000,
+        "total_cost_saved": 2093125
+      }
+    }
+  },
+
+  "investment": {
+    "license": {
+      "year_1": 800000,
+      "year_2": 1000000,
+      "year_3": 1000000,
+      "year_4": 1000000,
+      "year_5": 1000000,
+      "total": 4800000,
+      "source": "ESTIMATE - Typical Backbase retail banking license. REQUIRES COMMERCIAL VALIDATION."
+    },
+    "implementation": {
+      "year_1": 2500000,
+      "year_2": 500000,
+      "year_3": 250000,
+      "year_4": 250000,
+      "year_5": 250000,
+      "total": 3750000,
+      "source": "ESTIMATE - Based on scope (onboarding + servicing). REQUIRES SCOPING VALIDATION."
+    },
+    "total": 8550000
+  },
+
+  "summary": {
+    "journey_benefits": [
+      {
+        "journey": "Customer Onboarding",
+        "revenue_generation": 936000,
+        "cost_reduction": 360000,
+        "total": 1296000
+      },
+      {
+        "journey": "Customer Servicing",
+        "revenue_generation": 0,
+        "cost_reduction": 2093125,
+        "total": 2093125
+      }
+    ],
+    "total_annual_benefit_steady_state": 3389125,
+    "notes": "Benefits shown at 100% implementation and effectiveness. Year-by-year values apply curves."
+  },
+
+  "assumptions_register": [
+    {
+      "id": "A1",
+      "assumption": "Total Customer Base",
+      "value": "500,000",
+      "confidence": "LOW",
+      "source": "ESTIMATE - Not provided in transcript. Typical regional retail bank assumed.",
+      "validation_owner": "Head of Retail",
+      "sensitivity": "HIGH - Affects all per-customer calculations"
+    },
+    {
+      "id": "A2",
+      "assumption": "Monthly Digital Application Volume",
+      "value": "8,000",
+      "confidence": "LOW",
+      "source": "ESTIMATE - 'Low completion rate' (E1) implies traffic exists but not quantified.",
+      "validation_owner": "Digital Lead",
+      "sensitivity": "HIGH - Core driver of onboarding benefits"
+    },
+    {
+      "id": "A3",
+      "assumption": "Current Onboarding Completion Rate",
+      "value": "40%",
+      "confidence": "MEDIUM",
+      "source": "TRANSCRIPT - 'Low' (E1), 'A lot drop off' (E2). 40% is conservative assumption.",
+      "validation_owner": "Digital Lead",
+      "sensitivity": "HIGH - Defines improvement headroom"
+    },
+    {
+      "id": "A4",
+      "assumption": "Onboarding Cycle Time",
+      "value": ">7 days",
+      "confidence": "HIGH",
+      "source": "TRANSCRIPT - 'More than a week in some cases' (E3). Direct quote.",
+      "validation_owner": "Operations Lead",
+      "sensitivity": "MEDIUM - Affects customer experience but not directly modeled"
+    },
+    {
+      "id": "A5",
+      "assumption": "Revenue per New Customer (Year 1)",
+      "value": "$200",
+      "confidence": "LOW",
+      "source": "ESTIMATE - Industry benchmark for retail bank first-year value.",
+      "validation_owner": "Finance",
+      "sensitivity": "HIGH - Core revenue driver"
+    },
+    {
+      "id": "A6",
+      "assumption": "Loaded FTE Cost per Hour",
+      "value": "$25",
+      "confidence": "LOW",
+      "source": "ESTIMATE - SEA regional average including benefits and overhead.",
+      "validation_owner": "Finance/HR",
+      "sensitivity": "HIGH - Affects all cost calculations"
+    },
+    {
+      "id": "A7",
+      "assumption": "Total Annual Servicing Volume",
+      "value": "890,000",
+      "confidence": "LOW",
+      "source": "ESTIMATE - Based on typical ratios to customer base. Not provided in transcript.",
+      "validation_owner": "Operations Lead",
+      "sensitivity": "HIGH - Core driver of servicing benefits"
+    },
+    {
+      "id": "A8",
+      "assumption": "Simple Requests to Call Center",
+      "value": "70%",
+      "confidence": "MEDIUM",
+      "source": "TRANSCRIPT - 'Simple requests still come through call center' (E5). 70% shiftable assumed.",
+      "validation_owner": "Operations Lead",
+      "sensitivity": "HIGH - Defines channel shift opportunity"
+    },
+    {
+      "id": "A9",
+      "assumption": "Digital Channel Adoption (Current)",
+      "value": "30%",
+      "confidence": "LOW",
+      "source": "TRANSCRIPT - 'Hasn't scaled well' (E7), 'No visibility' (E6). Low adoption implied.",
+      "validation_owner": "Digital Lead",
+      "sensitivity": "MEDIUM - Defines baseline"
+    },
+    {
+      "id": "A10",
+      "assumption": "Backbase Implementation Timeline",
+      "value": "30-70-80-100-100%",
+      "confidence": "MEDIUM",
+      "source": "BACKBASE BENCHMARK - Standard adoption curve for platform implementations.",
+      "validation_owner": "Value Consulting",
+      "sensitivity": "MEDIUM - Affects timing of benefits"
+    }
+  ],
+
+  "data_gaps_for_validation": [
+    {
+      "id": "DG1",
+      "data_needed": "Actual onboarding completion rate (%)",
+      "priority": "CRITICAL",
+      "source": "Digital analytics / funnel reporting",
+      "impact": "Core input for revenue uplift calculation"
+    },
+    {
+      "id": "DG2",
+      "data_needed": "Monthly application volume by channel",
+      "priority": "CRITICAL",
+      "source": "Core banking / digital platform",
+      "impact": "Core input for benefit sizing"
+    },
+    {
+      "id": "DG3",
+      "data_needed": "Drop-off rate by onboarding step",
+      "priority": "HIGH",
+      "source": "Journey analytics / funnel data",
+      "impact": "Identifies highest-impact intervention points"
+    },
+    {
+      "id": "DG4",
+      "data_needed": "Call center volume by request type",
+      "priority": "CRITICAL",
+      "source": "Call center reporting system",
+      "impact": "Core input for servicing cost avoidance"
+    },
+    {
+      "id": "DG5",
+      "data_needed": "Branch traffic by service type",
+      "priority": "HIGH",
+      "source": "Branch operations / queue system",
+      "impact": "Sizes branch channel shift opportunity"
+    },
+    {
+      "id": "DG6",
+      "data_needed": "Cost per interaction by channel",
+      "priority": "CRITICAL",
+      "source": "Finance / activity-based costing",
+      "impact": "Core input for cost avoidance calculation"
+    },
+    {
+      "id": "DG7",
+      "data_needed": "Current digital adoption rate",
+      "priority": "HIGH",
+      "source": "Digital analytics",
+      "impact": "Defines baseline for channel shift"
+    },
+    {
+      "id": "DG8",
+      "data_needed": "Staff FTE costs (loaded)",
+      "priority": "HIGH",
+      "source": "HR / Finance",
+      "impact": "Affects all labor cost calculations"
+    },
+    {
+      "id": "DG9",
+      "data_needed": "Revenue per new customer (Year 1)",
+      "priority": "HIGH",
+      "source": "Finance / customer analytics",
+      "impact": "Core input for revenue uplift"
+    },
+    {
+      "id": "DG10",
+      "data_needed": "Onboarding processing time per application",
+      "priority": "MEDIUM",
+      "source": "Operations / process timing",
+      "impact": "Sizes processing cost reduction"
+    }
+  ]
+}

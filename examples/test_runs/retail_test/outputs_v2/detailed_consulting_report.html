@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value Consulting Report - Retail Bank SEA</title>
+    <style>
+        :root {
+            --primary: #1A56FF;
+            --dark: #1A1F36;
+            --positive: #00B386;
+            --negative: #FF4444;
+            --warning: #FFC107;
+            --light-blue: #E8F0FF;
+            --light-gray: #F5F5F5;
+            --customer: #4CAF50;
+            --frontline: #2196F3;
+            --backoffice: #9C27B0;
+            --compliance: #FF9800;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: var(--light-gray);
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: var(--dark);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-right: 3rem;
+        }
+
+        .nav-brand-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            flex: 1;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-link.active {
+            color: white;
+            background: var(--primary);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-btn-outline {
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .nav-btn-outline:hover {
+            border-color: white;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-btn-primary:hover {
+            background: #1445CC;
+        }
+
+        /* Mobile nav toggle */
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 3rem 4rem;
+            margin-top: var(--nav-height);
+        }
+
+        /* Section anchors offset for fixed nav */
+        section {
+            scroll-margin-top: calc(var(--nav-height) + 1rem);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 1rem;
+        }
+
+        h2 {
+            color: var(--dark);
+            font-size: 1.8rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #E0E0E0;
+        }
+
+        h3 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        h4 {
+            color: var(--dark);
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        p { margin-bottom: 1rem; }
+
+        .meta {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--dark);
+            color: white;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #E0E0E0;
+        }
+
+        tr:nth-child(even) { background: var(--light-gray); }
+        tr:hover { background: var(--light-blue); }
+
+        .conf-high { background-color: #D4EDDA !important; }
+        .conf-med { background-color: #CCE5FF !important; }
+        .conf-low { background-color: #FFF3CD !important; }
+        .conf-critical { background-color: #F8D7DA !important; }
+
+        blockquote {
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            background: var(--light-blue);
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+
+        /* Journey Swimlane Styles */
+        .journey-container {
+            margin: 2rem 0;
+            overflow-x: auto;
+        }
+
+        .swimlane-diagram {
+            display: grid;
+            grid-template-columns: 140px repeat(5, 1fr);
+            gap: 2px;
+            background: #E0E0E0;
+            border-radius: 12px;
+            overflow: hidden;
+            min-width: 900px;
+        }
+
+        .swimlane-header {
+            background: var(--dark);
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .swimlane-phase {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .swimlane-actor {
+            padding: 0.75rem;
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .actor-customer { background: var(--customer); }
+        .actor-frontline { background: var(--frontline); }
+        .actor-backoffice { background: var(--backoffice); }
+        .actor-compliance { background: var(--compliance); }
+
+        .swimlane-cell {
+            background: white;
+            padding: 1rem;
+            min-height: 120px;
+            position: relative;
+        }
+
+        .task {
+            background: #F8F9FA;
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            border-left: 3px solid #CCC;
+        }
+
+        .task-customer { border-left-color: var(--customer); }
+        .task-frontline { border-left-color: var(--frontline); }
+        .task-backoffice { border-left-color: var(--backoffice); }
+        .task-compliance { border-left-color: var(--compliance); }
+
+        .task-time {
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .friction-point {
+            background: #FFEBEE;
+            border: 2px solid var(--negative);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--negative);
+            font-weight: 600;
+        }
+
+        .drop-off {
+            background: var(--negative);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Actor Legend */
+        .actor-legend {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1rem 0 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        /* Channel Diagram */
+        .channel-diagram {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .channel-box {
+            flex: 1;
+            min-width: 200px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .channel-header {
+            padding: 1rem;
+            color: white;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .channel-digital { background: var(--positive); }
+        .channel-callcenter { background: var(--warning); }
+        .channel-branch { background: var(--negative); }
+
+        .channel-content {
+            padding: 1rem;
+            background: white;
+        }
+
+        .channel-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #E0E0E0;
+            font-size: 0.85rem;
+        }
+
+        .channel-stat:last-child { border-bottom: none; }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Servicing Table Visual */
+        .servicing-visual {
+            margin: 2rem 0;
+        }
+
+        .servicing-channel {
+            margin-bottom: 2rem;
+        }
+
+        .servicing-channel-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 8px 8px 0 0;
+            color: white;
+            font-weight: 600;
+        }
+
+        .branch-header { background: linear-gradient(135deg, #E91E63, #C2185B); }
+        .callcenter-header { background: linear-gradient(135deg, #FF9800, #F57C00); }
+        .backoffice-header { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+
+        .servicing-tasks {
+            background: white;
+            border: 1px solid #E0E0E0;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .servicing-task-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #F0F0F0;
+            font-size: 0.85rem;
+            align-items: center;
+        }
+
+        .servicing-task-row:hover { background: var(--light-blue); }
+
+        .servicing-task-header {
+            background: var(--light-gray);
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .impact-bar {
+            height: 8px;
+            background: #E0E0E0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .impact-fill {
+            height: 100%;
+            background: var(--positive);
+            border-radius: 4px;
+        }
+
+        .saved-amount {
+            color: var(--positive);
+            font-weight: 600;
+        }
+
+        /* Confidence Badge */
+        .conf-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-high { background: #D4EDDA; color: #155724; }
+        .badge-med { background: #CCE5FF; color: #004085; }
+        .badge-low { background: #FFF3CD; color: #856404; }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--primary);
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .card-subtitle {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 0.25rem;
+        }
+
+        /* Back to top button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(26, 86, 255, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 999;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(26, 86, 255, 0.4);
+        }
+
+        /* Table of Contents */
+        .toc {
+            background: var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin: 2rem 0;
+        }
+
+        .toc-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .toc-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+            list-style: none;
+        }
+
+        .toc-item a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .toc-item a:hover {
+            background: white;
+        }
+
+        .toc-number {
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Print styles */
+        @media print {
+            .nav { display: none; }
+            .back-to-top { display: none; }
+            body { background: white; }
+            .container {
+                box-shadow: none;
+                padding: 0;
+                margin-top: 0;
+            }
+            .swimlane-diagram { page-break-inside: avoid; }
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .nav-toggle { display: block; }
+            .nav-actions { display: none; }
+            .container { padding: 1.5rem; }
+            .summary-cards { grid-template-columns: 1fr; }
+            .swimlane-diagram {
+                grid-template-columns: 100px repeat(5, 150px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="#" class="nav-brand">
+            <span class="nav-brand-icon">B</span>
+            <span>Value Consulting</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="#summary" class="nav-link active">Summary</a></li>
+            <li><a href="#journeys" class="nav-link">Journeys</a></li>
+            <li><a href="#business-case" class="nav-link">Business Case</a></li>
+            <li><a href="#assumptions" class="nav-link">Assumptions</a></li>
+            <li><a href="#next-steps" class="nav-link">Next Steps</a></li>
+        </ul>
+        <div class="nav-actions">
+            <a href="executive_summary.html" class="nav-btn nav-btn-outline">Executive Summary</a>
+            <a href="roi_model.xlsx" class="nav-btn nav-btn-primary">Download Excel</a>
+        </div>
+        <button class="nav-toggle">☰</button>
+    </nav>
+
+    <div class="container">
+        <!-- Header -->
+        <section id="summary">
+            <h1>Value Consulting Report</h1>
+            <h2 style="border: none; margin-top: 0.5rem; font-size: 1.4rem; color: #666;">Digital Banking Transformation Assessment</h2>
+
+            <p class="meta">
+                <strong>Client:</strong> Retail Bank - SEA Region |
+                <strong>Date:</strong> 2026-01-13 |
+                <strong>Prepared by:</strong> Value Consulting Team
+            </p>
+
+            <!-- Table of Contents -->
+            <div class="toc">
+                <div class="toc-title">Quick Navigation</div>
+                <ul class="toc-list">
+                    <li class="toc-item"><a href="#summary"><span class="toc-number">1</span> Executive Summary</a></li>
+                    <li class="toc-item"><a href="#journeys"><span class="toc-number">2</span> Journey Analysis</a></li>
+                    <li class="toc-item"><a href="#onboarding"><span class="toc-number">3</span> Onboarding Journey</a></li>
+                    <li class="toc-item"><a href="#servicing"><span class="toc-number">4</span> Servicing Journey</a></li>
+                    <li class="toc-item"><a href="#business-case"><span class="toc-number">5</span> Business Case</a></li>
+                    <li class="toc-item"><a href="#assumptions"><span class="toc-number">6</span> Assumptions</a></li>
+                    <li class="toc-item"><a href="#data-gaps"><span class="toc-number">7</span> Data Gaps</a></li>
+                    <li class="toc-item"><a href="#next-steps"><span class="toc-number">8</span> Next Steps</a></li>
+                </ul>
+            </div>
+
+            <!-- Executive Summary -->
+            <h2>Executive Summary</h2>
+
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-title">Total Annual Benefit</div>
+                    <div class="card-value">$3.4M</div>
+                    <div class="card-subtitle">At steady state</div>
+                </div>
+                <div class="summary-card" style="border-left-color: var(--negative);">
+                    <div class="card-title">Total Investment</div>
+                    <div class="card-value">$8.6M</div>
+                    <div class="card-subtitle">Over 5 years</div>
+                </div>
+                <div class="summary-card" style="border-left-color: var(--positive);">
+                    <div class="card-title">NPV</div>
+                    <div class="card-value">$3.8M</div>
+                    <div class="card-subtitle">Net Present Value</div>
+                </div>
+                <div class="summary-card" style="border-left-color: var(--warning);">
+                    <div class="card-title">Payback</div>
+                    <div class="card-value">~2.5 yrs</div>
+                    <div class="card-subtitle">Payback period</div>
+                </div>
+            </div>
+
+            <h3>Recommendation: CONDITIONAL GO</h3>
+            <p><strong>Critical Condition:</strong> This case relies heavily on estimated data (marked in yellow). Before proceeding, validate assumptions marked as LOW confidence with client data.</p>
+        </section>
+
+        <!-- Journey Analysis -->
+        <section id="journeys">
+            <h2>Journey Analysis</h2>
+
+            <section id="onboarding">
+                <h3>Customer Onboarding Journey</h3>
+                <p><strong>Evidence:</strong> E1, E2, E3, E7, E8</p>
+
+                <blockquote>
+                    "Our onboarding completion rate is low. A lot of customers drop off when documents are required. It can take more than a week in some cases." — Head of Retail
+                </blockquote>
+
+                <div class="actor-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--customer);"></div>
+                        <span>Customer</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--frontline);"></div>
+                        <span>Frontline</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--backoffice);"></div>
+                        <span>Back Office</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--compliance);"></div>
+                        <span>Compliance</span>
+                    </div>
+                </div>
+
+                <div class="journey-container">
+                    <div class="swimlane-diagram">
+                        <!-- Header Row -->
+                        <div class="swimlane-header">Actor</div>
+                        <div class="swimlane-phase">Research & Apply</div>
+                        <div class="swimlane-phase">Document Collection</div>
+                        <div class="swimlane-phase">Processing</div>
+                        <div class="swimlane-phase">Verification</div>
+                        <div class="swimlane-phase">Activation</div>
+
+                        <!-- Customer Row -->
+                        <div class="swimlane-actor actor-customer">Customer</div>
+                        <div class="swimlane-cell">
+                            <div class="task task-customer">
+                                Browses products online
+                                <div class="task-time">⏱ 5-10 min</div>
+                            </div>
+                            <div class="task task-customer">
+                                Starts application
+                                <div class="task-time">⏱ 15-20 min</div>
+                            </div>
+                        </div>
+                        <div class="swimlane-cell">
+                            <div class="task task-customer">
+                                Attempts document upload
+                                <div class="task-time">⏱ 10-30 min</div>
+                            </div>
+                            <div class="drop-off">
+                                ⚠️ 30-50% DROP-OFF<br>
+                                <small>(E2)</small>
+                            </div>
+                        </div>
+                        <div class="swimlane-cell">
+                            <div class="task task-customer">
+                                Waits for processing
+                                <div class="task-time">⏱ 2-7 days elapsed (E3)</div>
+                            </div>
+                        </div>
+                        <div class="swimlane-cell">
+                            <div class="task task-customer">
+                                May be contacted for issues
+                            </div>
+                        </div>
+                        <div class="swimlane-cell">
+                            <div class="task task-customer">
+                                Receives welcome comms
+                            </div>
+                        </div>
+
+                        <!-- Frontline Row -->
+                        <div class="swimlane-actor actor-frontline">Frontline<br>(Branch/CC)</div>
+                        <div class="swimlane-cell">
+                            <div class="task task-frontline">
+                                Assisted start (if branch)
+                                <div class="task-time">⏱ 20-30 min</div>
+                            </div>
+                        </div>
+                        <div class="swimlane-cell">
+                            <div class="task task-frontline">
+                                Manual follow-up for failed docs
+                                <div class="task-time">⏱ 15-30 min/case</div>
+                            </div>
+                            <div class="friction-point">⚡ Manual workarounds (E8)</div>
+                        </div>
+                        <div class="swimlane-cell">
+                            <div class="task task-frontline">
+                                Chases back office
+                                <div class="task-time">⏱ 10-20 min/case</div>
+                            </div>
+                        </div>
+                        <div class="swimlane-cell">
+                            <div class="task task-frontline">
+                                Calls customer for corrections
+                                <div class="task-time">⏱ 10-15 min</div>
+                            </div>
+                        </div>
+                        <div class="swimlane-cell">
+                            <div class="task task-frontline">
+                                May assist with activation
+                            </div>
+                        </div>
+
+                        <!-- Back Office Row -->
+                        <div class="swimlane-actor actor-backoffice">Back Office</div>
+                        <div class="swimlane-cell"></div>
+                        <div class="swimlane-cell">
+                            <div class="task task-backoffice">
+                                Manual document review
+                                <div class="task-time">⏱ 15-30 min/app</div>
+                            </div>
+                            <div class="task task-backoffice">
+                                Requests re-submission
+                                <div class="task-time">⏱ 10-20 min</div>
+                            </div>
+                        </div>
+                        <div class="swimlane-cell">
+                            <div class="task task-backoffice">
+                                Account creation in core
+                                <div class="task-time">⏱ 10-15 min</div>
+                            </div>
+                        </div>
+                        <div class="swimlane-cell">
+                            <div class="task task-backoffice">
+                                Re-work for errors
+                                <div class="task-time">⏱ 15-20 min</div>
+                            </div>
+                        </div>
+                        <div class="swimlane-cell">
+                            <div class="task task-backoffice">
+                                Card/access setup
+                                <div class="task-time">⏱ 10-15 min</div>
+                            </div>
+                        </div>
+
+                        <!-- Compliance Row -->
+                        <div class="swimlane-actor actor-compliance">Compliance</div>
+                        <div class="swimlane-cell"></div>
+                        <div class="swimlane-cell">
+                            <div class="task task-compliance">
+                                KYC verification (manual)
+                                <div class="task-time">⏱ 20-30 min/app</div>
+                            </div>
+                        </div>
+                        <div class="swimlane-cell"></div>
+                        <div class="swimlane-cell">
+                            <div class="task task-compliance">
+                                AML check (if flagged)
+                                <div class="task-time">⏱ 15-30 min</div>
+                            </div>
+                        </div>
+                        <div class="swimlane-cell"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="servicing">
+                <h3>Customer Servicing Journey</h3>
+                <p><strong>Evidence:</strong> E4, E5, E6</p>
+
+                <blockquote>
+                    "Servicing is expensive. Simple requests still come through the call center. We don't have a clear view of why customers choose branch or call over digital." — Operations Lead
+                </blockquote>
+
+                <div class="channel-diagram">
+                    <div class="channel-box">
+                        <div class="channel-header channel-digital">
+                            📱 Digital Channel (~30%)
+                        </div>
+                        <div class="channel-content">
+                            <div class="channel-stat">
+                                <span>Customer Experience</span>
+                                <span class="stat-value">Attempts self-service</span>
+                            </div>
+                            <div class="channel-stat">
+                                <span>Outcome</span>
+                                <span style="color: var(--negative);">Often fails, escalates</span>
+                            </div>
+                            <div class="channel-stat">
+                                <span>Cost/Interaction</span>
+                                <span class="stat-value">$0.50</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="channel-box">
+                        <div class="channel-header channel-callcenter">
+                            📞 Call Center (~50%)
+                        </div>
+                        <div class="channel-content">
+                            <div class="channel-stat">
+                                <span>Customer Experience</span>
+                                <span class="stat-value">15-25 min total</span>
+                            </div>
+                            <div class="channel-stat">
+                                <span>Handles</span>
+                                <span>Simple requests (E5)</span>
+                            </div>
+                            <div class="channel-stat">
+                                <span>Cost/Interaction</span>
+                                <span class="stat-value">$2.00-4.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="channel-box">
+                        <div class="channel-header channel-branch">
+                            🏦 Branch (~20%)
+                        </div>
+                        <div class="channel-content">
+                            <div class="channel-stat">
+                                <span>Customer Experience</span>
+                                <span class="stat-value">30+ min total</span>
+                            </div>
+                            <div class="channel-stat">
+                                <span>Handles</span>
+                                <span>Routine tasks</span>
+                            </div>
+                            <div class="channel-stat">
+                                <span>Cost/Interaction</span>
+                                <span class="stat-value">$4.00-6.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- Business Case -->
+        <section id="business-case">
+            <h2>Business Case - Journey-Based ROI</h2>
+
+            <h3>Data Confidence Legend</h3>
+            <div style="display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                <div><span class="conf-badge badge-high">🟢 HIGH</span> From transcript / client data</div>
+                <div><span class="conf-badge badge-med">🔵 MED</span> Backbase benchmark</div>
+                <div><span class="conf-badge badge-low">🟡 LOW</span> Estimate - requires validation</div>
+            </div>
+
+            <h3>Servicing Analysis by Channel</h3>
+
+            <!-- Branch -->
+            <div class="servicing-visual">
+                <div class="servicing-channel">
+                    <div class="servicing-channel-header branch-header">
+                        🏦 Branch Channel
+                        <span style="margin-left: auto;">170,000 interactions | $757,500 baseline | $454,500 saved</span>
+                    </div>
+                    <div class="servicing-tasks">
+                        <div class="servicing-task-row servicing-task-header">
+                            <div>Task</div>
+                            <div>Volume</div>
+                            <div>Baseline</div>
+                            <div>Impact</div>
+                            <div>Saved</div>
+                            <div>Source</div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Balance Inquiry</div>
+                            <div>60,000</div>
+                            <div>$120,000</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 70%;"></div></div>
+                                70%
+                            </div>
+                            <div class="saved-amount">$84,000</div>
+                            <div><span class="conf-badge badge-low">EST</span></div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Account Statement</div>
+                            <div>40,000</div>
+                            <div>$170,000</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 80%;"></div></div>
+                                80%
+                            </div>
+                            <div class="saved-amount">$136,000</div>
+                            <div><span class="conf-badge badge-low">EST</span></div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Card Block/Unblock</div>
+                            <div>15,000</div>
+                            <div>$63,750</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 90%;"></div></div>
+                                90%
+                            </div>
+                            <div class="saved-amount">$57,375</div>
+                            <div><span class="conf-badge badge-low">EST</span></div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Address Change</div>
+                            <div>25,000</div>
+                            <div>$156,250</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 50%;"></div></div>
+                                50%
+                            </div>
+                            <div class="saved-amount">$78,125</div>
+                            <div><span class="conf-badge badge-low">EST</span></div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Transaction Inquiry</div>
+                            <div>30,000</div>
+                            <div>$247,500</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 40%;"></div></div>
+                                40%
+                            </div>
+                            <div class="saved-amount">$99,000</div>
+                            <div><span class="conf-badge badge-low">EST</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Call Center -->
+                <div class="servicing-channel">
+                    <div class="servicing-channel-header callcenter-header">
+                        📞 Call Center Channel
+                        <span style="margin-left: auto;">620,000 interactions | $1,835,000 baseline | $1,127,000 saved</span>
+                    </div>
+                    <div class="servicing-tasks">
+                        <div class="servicing-task-row servicing-task-header">
+                            <div>Task</div>
+                            <div>Volume</div>
+                            <div>Baseline</div>
+                            <div>Impact</div>
+                            <div>Saved</div>
+                            <div>Source</div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Balance Inquiry</div>
+                            <div>200,000</div>
+                            <div>$400,000</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 70%;"></div></div>
+                                70%
+                            </div>
+                            <div class="saved-amount">$280,000</div>
+                            <div><span class="conf-badge badge-high">E5</span></div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Account Statement</div>
+                            <div>80,000</div>
+                            <div>$240,000</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 80%;"></div></div>
+                                80%
+                            </div>
+                            <div class="saved-amount">$192,000</div>
+                            <div><span class="conf-badge badge-low">EST</span></div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Card Block/Unblock</div>
+                            <div>50,000</div>
+                            <div>$150,000</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 90%;"></div></div>
+                                90%
+                            </div>
+                            <div class="saved-amount">$135,000</div>
+                            <div><span class="conf-badge badge-low">EST</span></div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Address Change</div>
+                            <div>40,000</div>
+                            <div>$170,000</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 50%;"></div></div>
+                                50%
+                            </div>
+                            <div class="saved-amount">$85,000</div>
+                            <div><span class="conf-badge badge-low">EST</span></div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Transaction Inquiry</div>
+                            <div>100,000</div>
+                            <div>$425,000</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 60%;"></div></div>
+                                60%
+                            </div>
+                            <div class="saved-amount">$255,000</div>
+                            <div><span class="conf-badge badge-low">EST</span></div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>General Inquiry</div>
+                            <div>150,000</div>
+                            <div>$450,000</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 40%;"></div></div>
+                                40%
+                            </div>
+                            <div class="saved-amount">$180,000</div>
+                            <div><span class="conf-badge badge-low">EST</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back Office -->
+                <div class="servicing-channel">
+                    <div class="servicing-channel-header backoffice-header">
+                        🏢 Back Office Channel
+                        <span style="margin-left: auto;">100,000 interactions | $1,247,500 baseline | $511,625 saved</span>
+                    </div>
+                    <div class="servicing-tasks">
+                        <div class="servicing-task-row servicing-task-header">
+                            <div>Task</div>
+                            <div>Volume</div>
+                            <div>Baseline</div>
+                            <div>Impact</div>
+                            <div>Saved</div>
+                            <div>Source</div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Document Processing</div>
+                            <div>50,000</div>
+                            <div>$625,000</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 50%;"></div></div>
+                                50%
+                            </div>
+                            <div class="saved-amount">$312,500</div>
+                            <div><span class="conf-badge badge-high">E8</span></div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Account Updates</div>
+                            <div>30,000</div>
+                            <div>$247,500</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 35%;"></div></div>
+                                35%
+                            </div>
+                            <div class="saved-amount">$86,625</div>
+                            <div><span class="conf-badge badge-low">EST</span></div>
+                        </div>
+                        <div class="servicing-task-row">
+                            <div>Exception Handling</div>
+                            <div>20,000</div>
+                            <div>$375,000</div>
+                            <div>
+                                <div class="impact-bar"><div class="impact-fill" style="width: 30%;"></div></div>
+                                30%
+                            </div>
+                            <div class="saved-amount">$112,500</div>
+                            <div><span class="conf-badge badge-low">EST</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Table -->
+            <h3>Benefits Summary by Journey</h3>
+            <table>
+                <tr>
+                    <th>Journey</th>
+                    <th>Revenue Generation</th>
+                    <th>Cost Reduction</th>
+                    <th>Total (Annual)</th>
+                </tr>
+                <tr>
+                    <td><strong>Customer Onboarding</strong></td>
+                    <td>$936,000</td>
+                    <td>$360,000</td>
+                    <td><strong>$1,296,000</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Customer Servicing</strong></td>
+                    <td>$0</td>
+                    <td>$2,093,125</td>
+                    <td><strong>$2,093,125</strong></td>
+                </tr>
+                <tr style="background: var(--light-blue);">
+                    <td><strong>TOTAL</strong></td>
+                    <td><strong>$936,000</strong></td>
+                    <td><strong>$2,453,125</strong></td>
+                    <td style="color: var(--positive); font-size: 1.2rem;"><strong>$3,389,125</strong></td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Assumptions -->
+        <section id="assumptions">
+            <h2>Assumptions & Data Gaps</h2>
+
+            <h3>Critical Assumptions</h3>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Assumption</th>
+                    <th>Value</th>
+                    <th>Confidence</th>
+                    <th>Source</th>
+                    <th>Owner</th>
+                </tr>
+                <tr>
+                    <td>A1</td>
+                    <td>Total Customer Base</td>
+                    <td>500,000</td>
+                    <td class="conf-low">🟡 LOW</td>
+                    <td>ESTIMATE - Not provided</td>
+                    <td>Head of Retail</td>
+                </tr>
+                <tr>
+                    <td>A2</td>
+                    <td>Monthly Digital Applications</td>
+                    <td>8,000</td>
+                    <td class="conf-low">🟡 LOW</td>
+                    <td>ESTIMATE - Implied by E1</td>
+                    <td>Digital Lead</td>
+                </tr>
+                <tr>
+                    <td>A3</td>
+                    <td>Current Completion Rate</td>
+                    <td>40%</td>
+                    <td class="conf-med">🟢 MED</td>
+                    <td>TRANSCRIPT - E1, E2</td>
+                    <td>Digital Lead</td>
+                </tr>
+                <tr>
+                    <td>A4</td>
+                    <td>Onboarding Cycle Time</td>
+                    <td>>7 days</td>
+                    <td class="conf-high">🟢 HIGH</td>
+                    <td>TRANSCRIPT - E3</td>
+                    <td>Operations</td>
+                </tr>
+                <tr>
+                    <td>A5</td>
+                    <td>Revenue per Customer (Y1)</td>
+                    <td>$200</td>
+                    <td class="conf-low">🟡 LOW</td>
+                    <td>ESTIMATE - Benchmark</td>
+                    <td>Finance</td>
+                </tr>
+                <tr>
+                    <td>A6</td>
+                    <td>FTE Cost per Hour</td>
+                    <td>$25</td>
+                    <td class="conf-low">🟡 LOW</td>
+                    <td>ESTIMATE - SEA regional</td>
+                    <td>Finance/HR</td>
+                </tr>
+            </table>
+        </section>
+
+        <section id="data-gaps">
+            <h3>Data Gaps for Validation</h3>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Data Needed</th>
+                    <th>Priority</th>
+                    <th>Source</th>
+                    <th>Impact</th>
+                </tr>
+                <tr>
+                    <td>DG1</td>
+                    <td>Actual completion rate (%)</td>
+                    <td class="conf-critical">🔴 CRITICAL</td>
+                    <td>Digital analytics</td>
+                    <td>Core revenue calculation</td>
+                </tr>
+                <tr>
+                    <td>DG2</td>
+                    <td>Monthly application volume</td>
+                    <td class="conf-critical">🔴 CRITICAL</td>
+                    <td>Core banking</td>
+                    <td>Benefit sizing</td>
+                </tr>
+                <tr>
+                    <td>DG4</td>
+                    <td>Call center volume by type</td>
+                    <td class="conf-critical">🔴 CRITICAL</td>
+                    <td>CC reporting</td>
+                    <td>Servicing cost calc</td>
+                </tr>
+                <tr>
+                    <td>DG6</td>
+                    <td>Cost per interaction by channel</td>
+                    <td class="conf-critical">🔴 CRITICAL</td>
+                    <td>Finance</td>
+                    <td>Cost avoidance calc</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Next Steps -->
+        <section id="next-steps">
+            <h2>Recommended Next Steps</h2>
+
+            <h3>Immediate (Next 2 Weeks)</h3>
+            <ol>
+                <li><strong>Validate baseline metrics</strong> - Request data for DG1-DG10 (see Data Gaps sheet in Excel)</li>
+                <li><strong>Assess existing platform</strong> - Understand current digital capabilities and constraints</li>
+                <li><strong>Secure executive sponsorship</strong> - Confirm budget and timeline parameters</li>
+            </ol>
+
+            <h3>Short-term (4-8 Weeks)</h3>
+            <ol>
+                <li><strong>Journey mapping workshop</strong> - Detail onboarding friction points with process owners</li>
+                <li><strong>Channel analytics deep-dive</strong> - Understand servicing volume by type and channel</li>
+                <li><strong>Vendor assessment</strong> - Confirm Backbase fit and implementation approach</li>
+            </ol>
+
+            <h3>Execution (Upon Approval)</h3>
+            <ol>
+                <li><strong>Phase 1 (0-6 months):</strong> Quick wins - Self-service for top 5 tasks, document upload UX</li>
+                <li><strong>Phase 2 (6-12 months):</strong> eKYC integration, straight-through processing</li>
+                <li><strong>Phase 3 (12-18 months):</strong> Journey analytics, personalization</li>
+            </ol>
+        </section>
+
+        <!-- Footer -->
+        <hr style="margin-top: 3rem;">
+        <p style="color: #666; font-size: 0.85rem; margin-top: 1rem;">
+            <strong>Prepared by:</strong> Value Consulting Team |
+            <strong>Confidence Level:</strong> MEDIUM (pending baseline data validation) |
+            <strong>Report Date:</strong> 2026-01-13
+        </p>
+        <p style="color: #999; font-size: 0.8rem;">
+            This report was generated using the Backbase Value Consulting methodology. All figures are based on discovery evidence and industry benchmarks. Assumptions are color-coded by confidence level and should be validated with client data before finalizing business case.
+        </p>
+    </div>
+
+    <!-- Back to top button -->
+    <button class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
+
+    <script>
+        // Scroll-based navigation highlighting
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('section[id]');
+
+        function updateActiveNav() {
+            const scrollPos = window.scrollY + 100;
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.offsetHeight;
+                const sectionId = section.getAttribute('id');
+
+                if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === '#' + sectionId ||
+                            (sectionId === 'onboarding' || sectionId === 'servicing') && link.getAttribute('href') === '#journeys') {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+
+            // Back to top button visibility
+            const backToTop = document.querySelector('.back-to-top');
+            if (window.scrollY > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        }
+
+        window.addEventListener('scroll', updateActiveNav);
+        updateActiveNav();
+
+        // Mobile nav toggle
+        const navToggle = document.querySelector('.nav-toggle');
+        const navLinksContainer = document.querySelector('.nav-links');
+
+        navToggle.addEventListener('click', () => {
+            navLinksContainer.style.display = navLinksContainer.style.display === 'flex' ? 'none' : 'flex';
+        });
+    </script>
+</body>
+</html>

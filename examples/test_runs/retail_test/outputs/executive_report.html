@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Report | Digital Banking Transformation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bb-blue: #1A56FF;
+            --bb-dark: #1A1F36;
+            --bb-darker: #0F1219;
+            --bb-gray: #6B7280;
+            --bb-light: #F8FAFC;
+            --bb-border: #E2E8F0;
+            --bb-red: #EF4444;
+            --bb-green: #10B981;
+            --bb-orange: #F59E0B;
+            --bb-purple: #8B5CF6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bb-light);
+            color: var(--bb-dark);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        /* Print Styles */
+        @media print {
+            body { background: white; }
+            .no-print { display: none !important; }
+            .page-break { page-break-before: always; }
+            .card { break-inside: avoid; }
+        }
+
+        /* Header */
+        .report-header {
+            background: linear-gradient(135deg, var(--bb-dark) 0%, #2A3150 100%);
+            color: white;
+            padding: 60px 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        .report-badge {
+            display: inline-block;
+            background: rgba(26, 86, 255, 0.2);
+            border: 1px solid rgba(26, 86, 255, 0.4);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .report-title {
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+
+        .report-subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 600px;
+        }
+
+        .report-meta {
+            margin-top: 32px;
+            display: flex;
+            gap: 40px;
+            font-size: 13px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .meta-label {
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .meta-value {
+            font-weight: 600;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            background: white;
+            border-bottom: 1px solid var(--bb-border);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-link {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--bb-gray);
+            text-decoration: none;
+            padding: 8px 0;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--bb-blue);
+            border-bottom-color: var(--bb-blue);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 48px 0;
+        }
+
+        /* Section Styles */
+        .section {
+            margin-bottom: 48px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .section-icon.blue { background: rgba(26, 86, 255, 0.1); }
+        .section-icon.green { background: rgba(16, 185, 129, 0.1); }
+        .section-icon.orange { background: rgba(245, 158, 11, 0.1); }
+        .section-icon.red { background: rgba(239, 68, 68, 0.1); }
+        .section-icon.purple { background: rgba(139, 92, 246, 0.1); }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: var(--bb-gray);
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--bb-border);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .card-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-critical {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--bb-red);
+        }
+
+        .badge-high {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--bb-orange);
+        }
+
+        .badge-medium {
+            background: rgba(26, 86, 255, 0.1);
+            color: var(--bb-blue);
+        }
+
+        .badge-low {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--bb-gray);
+        }
+
+        /* Executive Summary Box */
+        .exec-summary {
+            background: linear-gradient(135deg, var(--bb-dark) 0%, #2A3150 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 32px;
+        }
+
+        .exec-summary h3 {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--bb-blue);
+            margin-bottom: 16px;
+        }
+
+        .exec-summary p {
+            font-size: 18px;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .exec-summary strong {
+            color: var(--bb-blue);
+        }
+
+        /* Key Metrics Row */
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--bb-border);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--bb-gray);
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .metric-value.blue { color: var(--bb-blue); }
+        .metric-value.green { color: var(--bb-green); }
+        .metric-value.red { color: var(--bb-red); }
+        .metric-value.orange { color: var(--bb-orange); }
+
+        .metric-context {
+            font-size: 12px;
+            color: var(--bb-gray);
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 12px 16px;
+            background: var(--bb-light);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--bb-gray);
+            border-bottom: 2px solid var(--bb-border);
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--bb-border);
+            vertical-align: top;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table .highlight {
+            font-weight: 700;
+        }
+
+        /* Quote Block */
+        .quote-block {
+            background: var(--bb-light);
+            border-left: 4px solid var(--bb-blue);
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .quote-text {
+            font-size: 16px;
+            font-style: italic;
+            color: var(--bb-dark);
+            margin-bottom: 8px;
+        }
+
+        .quote-source {
+            font-size: 13px;
+            color: var(--bb-gray);
+            font-weight: 600;
+        }
+
+        /* Warning Box */
+        .warning-box {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            gap: 16px;
+        }
+
+        .warning-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .warning-content h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--bb-orange);
+            margin-bottom: 8px;
+        }
+
+        .warning-content p {
+            font-size: 14px;
+            color: var(--bb-dark);
+        }
+
+        /* Phase Cards */
+        .phase-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .phase-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--bb-border);
+            overflow: hidden;
+        }
+
+        .phase-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--bb-border);
+        }
+
+        .phase-header.phase1 { background: rgba(26, 86, 255, 0.05); border-top: 4px solid var(--bb-blue); }
+        .phase-header.phase2 { background: rgba(139, 92, 246, 0.05); border-top: 4px solid var(--bb-purple); }
+        .phase-header.phase3 { background: rgba(16, 185, 129, 0.05); border-top: 4px solid var(--bb-green); }
+
+        .phase-number {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .phase-header.phase1 .phase-number { color: var(--bb-blue); }
+        .phase-header.phase2 .phase-number { color: var(--bb-purple); }
+        .phase-header.phase3 .phase-number { color: var(--bb-green); }
+
+        .phase-name {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .phase-timeline {
+            font-size: 13px;
+            color: var(--bb-gray);
+            margin-top: 4px;
+        }
+
+        .phase-body {
+            padding: 24px;
+        }
+
+        .phase-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--bb-border);
+            font-size: 14px;
+        }
+
+        .phase-metric:last-child {
+            border-bottom: none;
+        }
+
+        .phase-metric-label {
+            color: var(--bb-gray);
+        }
+
+        .phase-metric-value {
+            font-weight: 700;
+        }
+
+        /* Scenario Comparison */
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .scenario-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--bb-border);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .scenario-card.recommended {
+            border: 2px solid var(--bb-blue);
+            box-shadow: 0 4px 20px rgba(26, 86, 255, 0.15);
+        }
+
+        .scenario-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .scenario-card.conservative .scenario-label { color: var(--bb-gray); }
+        .scenario-card.recommended .scenario-label { color: var(--bb-blue); }
+        .scenario-card.aspirational .scenario-label { color: var(--bb-green); }
+
+        .scenario-value {
+            font-size: 36px;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .scenario-card.recommended .scenario-value { color: var(--bb-blue); }
+
+        .scenario-detail {
+            font-size: 14px;
+            color: var(--bb-gray);
+            margin-top: 8px;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, rgba(26, 86, 255, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+            border: 2px solid var(--bb-blue);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .cta-title {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--bb-blue);
+            margin-bottom: 16px;
+        }
+
+        .cta-amount {
+            font-size: 56px;
+            font-weight: 900;
+            color: var(--bb-dark);
+            margin-bottom: 8px;
+        }
+
+        .cta-desc {
+            font-size: 18px;
+            color: var(--bb-gray);
+            margin-bottom: 24px;
+        }
+
+        .cta-note {
+            font-size: 14px;
+            color: var(--bb-orange);
+            font-weight: 600;
+        }
+
+        /* Steps List */
+        .steps-list {
+            counter-reset: step-counter;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--bb-border);
+        }
+
+        .step-item:last-child {
+            border-bottom: none;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bb-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .step-desc {
+            font-size: 14px;
+            color: var(--bb-gray);
+        }
+
+        /* Footer */
+        .report-footer {
+            background: var(--bb-dark);
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-logo {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .footer-logo span { color: var(--bb-blue); }
+
+        .footer-meta {
+            font-size: 13px;
+            color: var(--bb-gray);
+        }
+
+        /* Assumptions Table */
+        .assumptions-table {
+            font-size: 13px;
+        }
+
+        .assumptions-table td {
+            padding: 12px 16px;
+        }
+
+        .confidence-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .confidence-high {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--bb-green);
+        }
+
+        .confidence-medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--bb-orange);
+        }
+
+        .confidence-low {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--bb-red);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 0 20px; }
+            .report-title { font-size: 28px; }
+            .metrics-row { grid-template-columns: repeat(2, 1fr); }
+            .phase-grid, .scenario-grid { grid-template-columns: 1fr; }
+            .nav-links { overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="report-header">
+        <div class="container">
+            <div class="report-badge">Executive Report</div>
+            <h1 class="report-title">Digital Banking Transformation<br>Business Case</h1>
+            <p class="report-subtitle">Value assessment for digital onboarding and customer servicing excellence</p>
+            <div class="report-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Client</span>
+                    <span class="meta-value">Retail Bank SEA</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Date</span>
+                    <span class="meta-value">January 2026</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Engagement</span>
+                    <span class="meta-value">Assessment</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Confidence</span>
+                    <span class="meta-value" style="color: var(--bb-orange);">Low-Medium</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav-bar no-print">
+        <div class="container">
+            <div class="nav-links">
+                <a href="#summary" class="nav-link active">Summary</a>
+                <a href="#findings" class="nav-link">Findings</a>
+                <a href="#assessment" class="nav-link">Assessment</a>
+                <a href="#roi" class="nav-link">ROI Model</a>
+                <a href="#roadmap" class="nav-link">Roadmap</a>
+                <a href="#decision" class="nav-link">Decision</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+
+            <!-- Executive Summary -->
+            <section id="summary" class="section">
+                <div class="exec-summary">
+                    <h3>Executive Summary</h3>
+                    <p>
+                        Discovery interviews with leadership reveal significant friction in digital onboarding and customer servicing.
+                        Customer drop-off during document collection, 7+ day onboarding times, and simple requests handled by expensive call center
+                        channels indicate an estimated <strong>$2.4M annual value leakage</strong> across acquisition and servicing.
+                    </p>
+                    <p style="margin-bottom: 0;">
+                        We recommend a two-step approach: a <strong>$50K validation phase</strong> (4 weeks) to confirm key assumptions,
+                        followed by <strong>Phase 1 investment of $800K</strong> for Digital Onboarding Excellence, which delivers standalone ROI of 90%.
+                    </p>
+                </div>
+
+                <div class="metrics-row">
+                    <div class="metric-card">
+                        <div class="metric-label">Value Leakage</div>
+                        <div class="metric-value red">$2.4M</div>
+                        <div class="metric-context">Annual (base case)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Investment</div>
+                        <div class="metric-value blue">$2.0M</div>
+                        <div class="metric-context">Total 5-year</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">NPV</div>
+                        <div class="metric-value green">$5.4M</div>
+                        <div class="metric-context">Base case @ 10%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Payback</div>
+                        <div class="metric-value blue">18mo</div>
+                        <div class="metric-context">Base case</div>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <div class="warning-icon">⚠️</div>
+                    <div class="warning-content">
+                        <h4>Confidence Level: Low-Medium</h4>
+                        <p>This analysis relies heavily on benchmark-based assumptions due to limited quantitative data in discovery. Critical data gaps require validation before full investment commitment.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Key Findings -->
+            <section id="findings" class="section page-break">
+                <div class="section-header">
+                    <div class="section-icon blue">🔍</div>
+                    <div>
+                        <h2 class="section-title">Key Findings</h2>
+                        <p class="section-subtitle">Evidence from stakeholder interviews</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Evidence Summary</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Evidence</th>
+                                <th>Source</th>
+                                <th>Stage</th>
+                                <th>Confidence</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>E1</td>
+                                <td>Onboarding completion rate is below expectations</td>
+                                <td>Head of Retail</td>
+                                <td>Acquire</td>
+                                <td><span class="confidence-badge confidence-low">Low</span></td>
+                            </tr>
+                            <tr>
+                                <td>E2</td>
+                                <td>Document requirements cause customer drop-off</td>
+                                <td>Head of Retail</td>
+                                <td>Acquire</td>
+                                <td><span class="confidence-badge confidence-medium">Medium</span></td>
+                            </tr>
+                            <tr>
+                                <td>E3</td>
+                                <td>Onboarding cycle time exceeds 7 days in some cases</td>
+                                <td>Head of Retail</td>
+                                <td>Acquire</td>
+                                <td><span class="confidence-badge confidence-medium">Medium</span></td>
+                            </tr>
+                            <tr>
+                                <td>E4</td>
+                                <td>Servicing costs are a concern for leadership</td>
+                                <td>Operations Lead</td>
+                                <td>Retain</td>
+                                <td><span class="confidence-badge confidence-low">Low</span></td>
+                            </tr>
+                            <tr>
+                                <td>E5</td>
+                                <td>Simple requests still handled by call center</td>
+                                <td>Operations Lead</td>
+                                <td>Retain</td>
+                                <td><span class="confidence-badge confidence-medium">Medium</span></td>
+                            </tr>
+                            <tr>
+                                <td>E6</td>
+                                <td>No analytics on customer channel preference</td>
+                                <td>Operations Lead</td>
+                                <td>Retain</td>
+                                <td><span class="confidence-badge confidence-medium">Medium</span></td>
+                            </tr>
+                            <tr>
+                                <td>E7</td>
+                                <td>Digital onboarding exists but scaling issues</td>
+                                <td>Digital Lead</td>
+                                <td>Acquire</td>
+                                <td><span class="confidence-badge confidence-medium">Medium</span></td>
+                            </tr>
+                            <tr>
+                                <td>E8</td>
+                                <td>Manual workarounds prevalent in operations</td>
+                                <td>Digital Lead</td>
+                                <td>Acquire</td>
+                                <td><span class="confidence-badge confidence-medium">Medium</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Pain Points Identified</div>
+                    </div>
+
+                    <div class="quote-block">
+                        <div class="quote-text">"Our onboarding completion rate is low. A lot of customers drop off when documents are required. It can take more than a week in some cases."</div>
+                        <div class="quote-source">— Head of Retail</div>
+                    </div>
+
+                    <div class="quote-block">
+                        <div class="quote-text">"Servicing is expensive. Simple requests still come through the call center. We don't have a clear view of why customers choose branch or call over digital."</div>
+                        <div class="quote-source">— Operations Lead</div>
+                    </div>
+
+                    <div class="quote-block">
+                        <div class="quote-text">"We launched digital onboarding, but it hasn't scaled well. Teams still rely on manual workarounds."</div>
+                        <div class="quote-source">— Digital Lead</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Capability Assessment -->
+            <section id="assessment" class="section page-break">
+                <div class="section-header">
+                    <div class="section-icon orange">📊</div>
+                    <div>
+                        <h2 class="section-title">Capability Assessment</h2>
+                        <p class="section-subtitle">Current state maturity and gaps</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Maturity Assessment Matrix</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Capability</th>
+                                <th>Current</th>
+                                <th>Target</th>
+                                <th>Gap</th>
+                                <th>Business Impact</th>
+                                <th>Evidence</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="highlight">Digital Onboarding</td>
+                                <td><span style="color: var(--bb-red); font-weight: 700;">2/5</span></td>
+                                <td><span style="color: var(--bb-green); font-weight: 700;">4/5</span></td>
+                                <td>-2</td>
+                                <td>High abandonment, slow cycle time</td>
+                                <td>E1, E2, E3, E7</td>
+                            </tr>
+                            <tr>
+                                <td class="highlight">Document Management</td>
+                                <td><span style="color: var(--bb-red); font-weight: 700;">2/5</span></td>
+                                <td><span style="color: var(--bb-green); font-weight: 700;">4/5</span></td>
+                                <td>-2</td>
+                                <td>Key friction point causing drop-off</td>
+                                <td>E2</td>
+                            </tr>
+                            <tr>
+                                <td class="highlight">Self-Service</td>
+                                <td><span style="color: var(--bb-red); font-weight: 700;">2/5</span></td>
+                                <td><span style="color: var(--bb-green); font-weight: 700;">4/5</span></td>
+                                <td>-2</td>
+                                <td>Simple requests to call center</td>
+                                <td>E5, E6</td>
+                            </tr>
+                            <tr>
+                                <td class="highlight">Channel Analytics</td>
+                                <td><span style="color: var(--bb-red); font-weight: 700;">1/5</span></td>
+                                <td><span style="color: var(--bb-green); font-weight: 700;">3/5</span></td>
+                                <td>-2</td>
+                                <td>No visibility into customer behavior</td>
+                                <td>E6</td>
+                            </tr>
+                            <tr>
+                                <td class="highlight">Process Automation</td>
+                                <td><span style="color: var(--bb-red); font-weight: 700;">2/5</span></td>
+                                <td><span style="color: var(--bb-green); font-weight: 700;">4/5</span></td>
+                                <td>-2</td>
+                                <td>Manual workarounds persist</td>
+                                <td>E8</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Gap Analysis: Digital Onboarding</div>
+                        <span class="card-badge badge-critical">Critical Gap</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Dimension</th>
+                                <th>Current State</th>
+                                <th>Best-in-Class</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Completion Rate</td>
+                                <td><span style="color: var(--bb-red);">~50% (estimated)</span></td>
+                                <td><span style="color: var(--bb-green);">70%+</span></td>
+                            </tr>
+                            <tr>
+                                <td>Cycle Time</td>
+                                <td><span style="color: var(--bb-red);">7+ days</span></td>
+                                <td><span style="color: var(--bb-green);"><5 days</span></td>
+                            </tr>
+                            <tr>
+                                <td>Document Collection</td>
+                                <td><span style="color: var(--bb-red);">Manual, friction-heavy</span></td>
+                                <td><span style="color: var(--bb-green);">Digital, seamless</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ROI Model -->
+            <section id="roi" class="section page-break">
+                <div class="section-header">
+                    <div class="section-icon green">💰</div>
+                    <div>
+                        <h2 class="section-title">ROI Model</h2>
+                        <p class="section-subtitle">Financial impact and business case</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Value Levers</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Lever</th>
+                                <th>Calculation</th>
+                                <th>Annual Value</th>
+                                <th>Confidence</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="highlight">1. Onboarding Completion</td>
+                                <td>+12,000 accounts/yr × $120 revenue</td>
+                                <td style="color: var(--bb-green); font-weight: 700;">$1,440,000</td>
+                                <td><span class="confidence-badge confidence-low">Low</span></td>
+                            </tr>
+                            <tr>
+                                <td class="highlight">2. Servicing Cost Reduction</td>
+                                <td>168K calls deflected × $4.05 savings</td>
+                                <td style="color: var(--bb-green); font-weight: 700;">$680,000</td>
+                                <td><span class="confidence-badge confidence-low">Low</span></td>
+                            </tr>
+                            <tr>
+                                <td class="highlight">3. Operations Efficiency</td>
+                                <td>7.5 FTEs redeployed × $35K</td>
+                                <td style="color: var(--bb-green); font-weight: 700;">$263,000</td>
+                                <td><span class="confidence-badge confidence-low">Low</span></td>
+                            </tr>
+                            <tr style="background: var(--bb-light);">
+                                <td class="highlight" style="font-weight: 800;">Total Annual Value</td>
+                                <td></td>
+                                <td style="color: var(--bb-green); font-weight: 900; font-size: 18px;">$2,383,000</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 style="margin: 32px 0 20px;">Scenario Analysis (5-Year)</h3>
+                <div class="scenario-grid">
+                    <div class="scenario-card conservative">
+                        <div class="scenario-label">Conservative</div>
+                        <div class="scenario-value">$3.6M</div>
+                        <div class="scenario-detail">NPV @ 50% realization</div>
+                        <div class="scenario-detail" style="font-weight: 700;">80% ROI</div>
+                    </div>
+                    <div class="scenario-card recommended">
+                        <div class="scenario-label">Base Case (Recommended)</div>
+                        <div class="scenario-value">$5.4M</div>
+                        <div class="scenario-detail">NPV @ 75% realization</div>
+                        <div class="scenario-detail" style="font-weight: 700;">168% ROI</div>
+                    </div>
+                    <div class="scenario-card aspirational">
+                        <div class="scenario-label">Aspirational</div>
+                        <div class="scenario-value">$7.2M</div>
+                        <div class="scenario-detail">NPV @ 100% realization</div>
+                        <div class="scenario-detail" style="font-weight: 700;">260% ROI</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 32px;">
+                    <div class="card-header">
+                        <div class="card-title">Assumptions Register</div>
+                        <span class="card-badge badge-high">Requires Validation</span>
+                    </div>
+                    <table class="data-table assumptions-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Assumption</th>
+                                <th>Value</th>
+                                <th>Confidence</th>
+                                <th>Validation Owner</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>A-001</td>
+                                <td>Monthly new account applications</td>
+                                <td>5,000/month</td>
+                                <td><span class="confidence-badge confidence-low">Low</span></td>
+                                <td>Operations Lead</td>
+                            </tr>
+                            <tr>
+                                <td>A-002</td>
+                                <td>Current onboarding completion rate</td>
+                                <td>50%</td>
+                                <td><span class="confidence-badge confidence-medium">Medium</span></td>
+                                <td>Operations Lead</td>
+                            </tr>
+                            <tr>
+                                <td>A-003</td>
+                                <td>Monthly call center volume</td>
+                                <td>80,000 calls</td>
+                                <td><span class="confidence-badge confidence-low">Low</span></td>
+                                <td>Operations Lead</td>
+                            </tr>
+                            <tr>
+                                <td>A-004</td>
+                                <td>Cost per call center interaction</td>
+                                <td>$4.50</td>
+                                <td><span class="confidence-badge confidence-medium">Medium</span></td>
+                                <td>Finance</td>
+                            </tr>
+                            <tr>
+                                <td>A-005</td>
+                                <td>Onboarding FTE count</td>
+                                <td>25 FTEs</td>
+                                <td><span class="confidence-badge confidence-low">Low</span></td>
+                                <td>HR</td>
+                            </tr>
+                            <tr>
+                                <td>A-006</td>
+                                <td>Revenue per new customer (Year 1)</td>
+                                <td>$120</td>
+                                <td><span class="confidence-badge confidence-low">Low</span></td>
+                                <td>Finance</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Roadmap -->
+            <section id="roadmap" class="section page-break">
+                <div class="section-header">
+                    <div class="section-icon purple">🗺️</div>
+                    <div>
+                        <h2 class="section-title">Implementation Roadmap</h2>
+                        <p class="section-subtitle">Phased approach over 24 months</p>
+                    </div>
+                </div>
+
+                <div class="phase-grid">
+                    <div class="phase-card">
+                        <div class="phase-header phase1">
+                            <div class="phase-number">Phase 1</div>
+                            <div class="phase-name">Digital Onboarding</div>
+                            <div class="phase-timeline">Months 1-9</div>
+                        </div>
+                        <div class="phase-body">
+                            <div class="phase-metric">
+                                <span class="phase-metric-label">Investment</span>
+                                <span class="phase-metric-value">$800K</span>
+                            </div>
+                            <div class="phase-metric">
+                                <span class="phase-metric-label">Annual Benefit</span>
+                                <span class="phase-metric-value" style="color: var(--bb-green);">$720K</span>
+                            </div>
+                            <div class="phase-metric">
+                                <span class="phase-metric-label">Standalone ROI</span>
+                                <span class="phase-metric-value" style="color: var(--bb-blue);">90%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="phase-card">
+                        <div class="phase-header phase2">
+                            <div class="phase-number">Phase 2</div>
+                            <div class="phase-name">Self-Service</div>
+                            <div class="phase-timeline">Months 6-15</div>
+                        </div>
+                        <div class="phase-body">
+                            <div class="phase-metric">
+                                <span class="phase-metric-label">Investment</span>
+                                <span class="phase-metric-value">$700K</span>
+                            </div>
+                            <div class="phase-metric">
+                                <span class="phase-metric-label">Annual Benefit</span>
+                                <span class="phase-metric-value" style="color: var(--bb-green);">$510K</span>
+                            </div>
+                            <div class="phase-metric">
+                                <span class="phase-metric-label">Target</span>
+                                <span class="phase-metric-value">+25pp containment</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="phase-card">
+                        <div class="phase-header phase3">
+                            <div class="phase-number">Phase 3</div>
+                            <div class="phase-name">Operations Excellence</div>
+                            <div class="phase-timeline">Months 12-24</div>
+                        </div>
+                        <div class="phase-body">
+                            <div class="phase-metric">
+                                <span class="phase-metric-label">Investment</span>
+                                <span class="phase-metric-value">$500K</span>
+                            </div>
+                            <div class="phase-metric">
+                                <span class="phase-metric-label">Annual Benefit</span>
+                                <span class="phase-metric-value" style="color: var(--bb-green);">$263K</span>
+                            </div>
+                            <div class="phase-metric">
+                                <span class="phase-metric-label">Target</span>
+                                <span class="phase-metric-value">-50% manual</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 32px;">
+                    <div class="card-header">
+                        <div class="card-title">Decision Gates</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Gate</th>
+                                <th>Timing</th>
+                                <th>Criteria</th>
+                                <th>Decision</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="highlight">G1</td>
+                                <td>Month 6</td>
+                                <td>Completion rate improved ≥10pp</td>
+                                <td>Proceed to Phase 2</td>
+                            </tr>
+                            <tr>
+                                <td class="highlight">G2</td>
+                                <td>Month 12</td>
+                                <td>Digital containment improved ≥15pp</td>
+                                <td>Proceed to Phase 3</td>
+                            </tr>
+                            <tr>
+                                <td class="highlight">G3</td>
+                                <td>Month 18</td>
+                                <td>STP rate improved ≥15pp</td>
+                                <td>Full rollout</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Decision Requested -->
+            <section id="decision" class="section page-break">
+                <div class="section-header">
+                    <div class="section-icon blue">✅</div>
+                    <div>
+                        <h2 class="section-title">Decision Requested</h2>
+                        <p class="section-subtitle">Recommended two-step approach</p>
+                    </div>
+                </div>
+
+                <div class="cta-section">
+                    <div class="cta-title">Step 1: Immediate Ask</div>
+                    <div class="cta-amount">$50K</div>
+                    <div class="cta-desc">4-week data validation phase to confirm key assumptions</div>
+                    <div class="cta-note">⚠️ Critical: ROI model dependent on unvalidated assumptions</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Step 2: Upon Validation</div>
+                    </div>
+                    <p style="margin-bottom: 20px;">If assumptions are validated, proceed with Phase 1 investment:</p>
+                    <div class="metrics-row" style="margin-bottom: 0;">
+                        <div class="metric-card">
+                            <div class="metric-label">Phase 1 Investment</div>
+                            <div class="metric-value blue">$800K</div>
+                            <div class="metric-context">Months 1-9</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Standalone ROI</div>
+                            <div class="metric-value green">90%</div>
+                            <div class="metric-context">Phase 1 only</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Annual Benefit</div>
+                            <div class="metric-value green">$720K</div>
+                            <div class="metric-context">From onboarding</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Payback</div>
+                            <div class="metric-value blue">~13mo</div>
+                            <div class="metric-context">Phase 1 only</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Next Steps</div>
+                    </div>
+                    <div class="steps-list">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <div class="step-title">Week 1-2: Data Collection</div>
+                                <div class="step-desc">Finance & Operations provide actual metrics (application volumes, completion rates, call volumes, costs)</div>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <div class="step-title">Week 3-4: Model Refinement</div>
+                                <div class="step-desc">Update ROI calculations with validated data, refine scenario analysis</div>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <div class="step-title">Week 5: Go/No-Go Decision</div>
+                                <div class="step-desc">Present refined business case for final investment approval</div>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <div class="step-title">Week 6+: Implementation</div>
+                                <div class="step-desc">Phase 1 kickoff upon approval - Digital Onboarding Excellence</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="report-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">Value<span>Consulting</span></div>
+                <div class="footer-meta">
+                    Confidential | Prepared January 2026 | Retail Bank SEA
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll for navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth' });
+
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Update active nav on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            let current = '';
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
