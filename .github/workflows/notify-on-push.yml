@@ -1,0 +1,36 @@
+name: Notify on Push to Main
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify owners of push to main
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pusher = context.actor;
+            const sha = context.sha.substring(0, 7);
+            const commitMsg = context.payload.head_commit?.message || 'No message';
+            const compareUrl = context.payload.compare || '';
+
+            // Don't create noisy issues for tag pushes or empty pushes
+            if (!context.payload.head_commit) return;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Push to main by ${pusher}: ${commitMsg.split('\n')[0].substring(0, 60)}`,
+              body: [
+                `**Pushed by:** @${pusher}`,
+                `**Commit:** \`${sha}\``,
+                `**Message:** ${commitMsg}`,
+                compareUrl ? `**Compare:** ${compareUrl}` : '',
+                '',
+                'cc @mayur294-lgtm @shobhitonnet'
+              ].filter(Boolean).join('\n'),
+              labels: ['push-notification']
+            });

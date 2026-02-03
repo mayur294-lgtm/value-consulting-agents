@@ -1,267 +1,495 @@
-# Quick Start Guide
+# Getting Started
 
-Welcome to the Value Consulting Agent System. This guide will get you started generating consulting outputs.
+This guide gets you from `git clone` to running your first engagement.
 
-## What This System Does
+## Prerequisites
 
-This system generates executive-ready consulting deliverables including:
-- **Value Assessments** - Capability maturity and gap analysis
-- **ROI Reports** - Financial business cases with defensible models
-- **Roadmaps** - Phased implementation plans
-- **Executive Summaries** - Decision-ready output packages
+You need **two things** installed:
 
-## System Philosophy
+1. **Claude Code** — the AI that powers this system
+   - **Option A (recommended):** Install the [Claude Code VS Code extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code)
+   - **Option B:** Install the CLI: `npm install -g @anthropic-ai/claude-code`
+   - You need access via Anthropic API key or your organization's SSO
 
-This is NOT a documentation system. This is an **output generation system** that:
-- Thinks like a senior consultant
-- Generates actual deliverables (not explanations)
-- Reasons from evidence
-- Makes assumptions explicit
-- Produces executive-grade work
+2. **Python 3.9+** (only if you need Excel ROI exports)
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## How to Use This System
+That's it. No other dependencies.
 
-### Step 1: Understand the Foundation
+## Setup (2 minutes)
 
-Read these files in order:
-1. **[README.md](README.md)** - Value Consulting principles and standards (10 min)
-2. **[CLAUDE.md](CLAUDE.md)** - How Claude operates as a consultant (5 min)
-3. **[STRUCTURE.md](STRUCTURE.md)** - Repository organization (5 min)
+```bash
+# 1. Clone the repo
+git clone <repo-url>
+cd claudevc
 
-### Step 2: Gather Your Inputs
+# 2. Open in VS Code (if using the extension)
+code .
 
-Consult these guides to understand what data you need:
-- **[Discovery Input Contract](templates/inputs/discovery_input_contract.md)** - Business context, interviews, pain points
-- **[Financial Data Schema](templates/inputs/financial_data_schema.md)** - Cost, revenue, volume metrics
-- **[Transcript Interpretation Guide](templates/inputs/transcript_interpretation_guide.md)** - How to structure interview notes
+# 3. Or start the CLI directly
+claude
+```
 
-**Minimum Required Inputs:**
-- Business context (industry, strategy, goals)
-- 3-5 stakeholder interview transcripts
+When Claude Code opens in this directory, it automatically loads:
+- The `.claude/` folder with **10 specialized agents** and **11 slash commands**
+- The `CLAUDE.md` file that makes Claude behave as a senior Value Consultant
+- All knowledge, templates, and methodologies in the repo
+
+There is nothing else to configure. The repo IS the system.
+
+## Your First Run
+
+Open Claude Code and try one of these:
+
+### Quick test — load domain knowledge
+```
+/domain-context retail
+```
+This loads the complete retail banking knowledge pack (personas, journeys, pain points, benchmarks, use cases). You'll see Claude ingest the domain and confirm it's ready.
+
+### Quick test — see an example output
+```
+Read the example engagement in examples/test_runs/retail_test/.
+Walk me through what was produced and how.
+```
+
+### Real engagement — process a transcript
+```
+I have a discovery transcript from a retail bank in Southeast Asia.
+Here's the transcript:
+
+[paste your transcript, or reference a file path]
+
+Run the full Value Assessment: evidence register, capability assessment,
+ROI model, roadmap, and executive summary.
+```
+
+Claude will route this through the agent pipeline: Discovery → Capability → ROI → Roadmap → Assembly.
+
+## Two Engagement Types
+
+Choose your path based on what you're doing:
+
+### Path A: Value Assessment (evidence-based)
+
+**When:** You have discovery transcripts, financial data, or interview notes and need to produce an assessment package.
+
+**What you provide:**
+- Business context (industry, geography, strategy)
+- Stakeholder interview transcripts (3-5 recommended)
 - Pain points with business impact
-- Current state costs (actual or estimated)
-- Budget and timeline constraints
+- Financial data (costs, volumes, revenue — actual or estimated)
 
-### Step 3: Request Outputs
+**What you get:**
+- Evidence register with sourced findings
+- Capability maturity assessment with gap analysis
+- ROI business case with sensitivity analysis
+- Phased implementation roadmap
+- Executive summary
 
-Ask Claude to generate deliverables using the templates:
+**Start with:**
+```
+Run a full Value Assessment engagement for [client].
+Here are my inputs: [provide transcripts, data, context]
+```
 
-**Example Request:**
-> "I have interview transcripts and financial data from a B2B SaaS company struggling with customer support costs. Generate a complete Value Assessment including:
-> - Capability assessment
-> - ROI analysis for self-service initiative
-> - Phased roadmap
-> - Executive summary
->
-> Use the templates in /templates/outputs/."
+### Path B: Ignite Inspire (workshop-driven)
 
-**What Claude Will Do:**
-1. Analyze your inputs using Discovery Agent methodology
-2. Assess capabilities using Capability Agent framework
-3. Build ROI model using ROI Agent standards
-4. Create roadmap using Roadmap Agent approach
-5. Package executive summary using Assembly Agent guidelines
+**When:** You're facilitating workshops with a prospect and need preparation materials, then synthesis of workshop outputs.
 
-### Step 4: Review Outputs
+**Workshop sequence:**
+1. Strategy Workshop — business priorities and digital vision
+2. Member/Customer Experience Workshop — personas, journeys, pain points
+3. Employee Experience Workshop — staff workflows and transformation
+4. Architecture Workshop — technology landscape and integration approach
 
-All outputs will include:
-- Clear recommendations
-- Supporting evidence and calculations
-- Explicit assumptions register
-- Documented data gaps
-- Executive-ready formatting
+**Start with:**
+```
+Prepare an Ignite engagement for [client name].
+They are a [type] in [region]. Here's what I know: [context].
+Start with the Strategy Workshop preparation.
+```
 
-**Quality Check:**
-- Are assumptions explicit and conservative?
-- Is ROI defensible and transparent?
-- Are recommendations clear and actionable?
-- Is output executive-readable?
+### Path C: Hybrid
 
-## Example Workflows
+Combine both. Run workshops first, then feed the outputs into a Value Assessment for quantified deliverables.
 
-### Workflow 1: Generate a Capability Assessment
+## Available Slash Commands
 
-**Inputs Needed:**
-- Interview transcripts with stakeholders
-- Business context (industry, strategy)
-- Current state process/system documentation
+These are shortcuts you can type directly in Claude Code:
 
-**Request:**
-> "Based on the attached interview transcripts, generate a Capability Assessment Report following the template at templates/outputs/capability_assessment.md. Focus on [specific domain, e.g., Customer Experience capabilities]."
+### Domain Knowledge (load context before analysis)
 
-**Output:**
-- Complete capability assessment with maturity scoring
-- Gap analysis with business impact quantification
-- Prioritized improvement recommendations
+| Command | What it does |
+|---------|-------------|
+| `/domain-context` | Load complete domain knowledge for a banking vertical (retail, SME, commercial, wealth, corporate) |
+| `/domain-benchmarks` | Query industry benchmarks and KPIs for a specific domain |
+| `/domain-pain-points` | Retrieve common pain points from customer and bank perspectives |
+| `/domain-journeys` | Get customer and operational journey maps |
+| `/domain-usecases` | Retrieve Backbase use cases for a domain |
+| `/domain-value-props` | Get value propositions and differentiation by theme |
 
-### Workflow 2: Build an ROI Business Case
+### Deliverable Generators
 
-**Inputs Needed:**
-- Current state costs and pain points
-- Proposed initiative description
-- Volume metrics and baseline data
-- Budget constraints
+| Command | What it does |
+|---------|-------------|
+| `/presentation` | Transform any content into an interactive Prezi-style HTML presentation |
+| `/generate-roi-excel` | Generate a professional Excel ROI model with scenarios and implementation curves |
+| `/prototype` | Create interactive HTML mockups for Backbase use cases |
+| `/usecase-doc` | Generate a structured 10-section use case specification document |
 
-**Request:**
-> "Build a complete ROI report for [initiative description] using the template at templates/outputs/roi_report.md. Current state: [describe costs, volumes, pain]. Proposed solution: [describe approach]."
+### Utilities
 
-**Output:**
-- Multi-year financial model
-- Benefit streams with calculations
-- Assumptions register
-- Sensitivity analysis
-- Go/no-go recommendation
+| Command | What it does |
+|---------|-------------|
+| `/chunk-document` | Break large documents (PDF, CSV, text) into manageable chunks for processing |
 
-### Workflow 3: Create a Strategic Roadmap
+## Setting Up a New Engagement
 
-**Inputs Needed:**
-- List of initiatives with value and effort estimates
-- Dependencies between initiatives
-- Resource constraints
-- Strategic priorities
+### Step 1: Create a workspace
 
-**Request:**
-> "Create a strategic roadmap for the following initiatives: [list]. Sequence them into Now/Next/Later phases using the template at templates/outputs/roadmap.md. Constraints: [budget, timeline, resources]."
+Each engagement gets its own folder:
 
-**Output:**
-- Phased roadmap with initiative cards
-- Dependency mapping
-- Resource profile over time
-- Financial timeline
-- Risk register
+```bash
+mkdir -p engagements/acme-bank/{inputs,outputs}
+```
 
-### Workflow 4: Generate Complete Engagement Package
+Your folder will look like this when ready:
 
-**Inputs Needed:**
-- All discovery inputs (transcripts, data, context)
-- Engagement scope and objectives
+```
+engagements/acme-bank/
+├── ENGAGEMENT_JOURNAL.md             # Auto-created: decision log & system memory
+├── inputs/
+│   ├── engagement_intake.md          # Client context (required)
+│   ├── transcript_cto.md             # Interview transcript
+│   ├── transcript_head_digital.md    # Interview transcript
+│   ├── transcript_ops_lead.md        # Interview transcript
+│   ├── financial_data.md             # Costs, volumes, revenue (if available)
+│   └── annual_report.pdf             # Any supporting documents
+└── outputs/                          # System generates outputs here
+```
 
-**Request:**
-> "I have a complete discovery package for [company/situation]. Generate a full consulting deliverable package including:
-> 1. Capability assessment
-> 2. ROI analysis for top 3 priority initiatives
-> 3. Phased roadmap
-> 4. Executive summary
->
-> Follow Value Consulting standards from README.md."
+### Step 2: Prepare your transcripts
 
-**Output:**
-- Complete engagement deliverable package
-- All outputs cross-referenced and consistent
-- Executive summary that enables decision-making
+This is the most important input. The system extracts all evidence from your transcripts — pain points, metrics, constraints, stakeholder priorities.
 
-## Key Principles to Remember
+**One file per interview.** If you had 5 discovery calls, create 5 transcript files. Name them by stakeholder role so it's clear who said what.
 
-### 1. Evidence-Based
-- Provide data wherever possible
-- When data is missing, state assumptions explicitly
-- Quote sources for all claims
+| File name | Content |
+|-----------|---------|
+| `transcript_cto.md` | CTO interview |
+| `transcript_head_retail.md` | Head of Retail interview |
+| `transcript_ops_lead.md` | Operations Lead interview |
+| `transcript_digital_lead.md` | Digital Lead interview |
+| `transcript_workshop_day1.md` | Group workshop notes |
 
-### 2. Conservative
-- Use conservative assumptions in ROI models
-- Show worst-case scenarios in sensitivity analysis
-- Don't oversell the benefits
+**What formats work:**
+- **Markdown or plain text** — best option, paste or type directly
+- **Word / Google Docs** — copy-paste the content into a `.md` file
+- **PDF** — drop the file into `inputs/` and Claude can read it directly
+- **Raw messy notes** — that's fine too, the system handles unstructured input
 
-### 3. Executive-Ready
-- Write for C-level audience
-- Avoid jargon
-- Lead with conclusions
-- Make recommendations clear
+**What to include in each transcript file:**
 
-### 4. Transparent
-- Show your methodology
-- Document all assumptions
-- Acknowledge limitations
-- Make uncertainty visible
+```markdown
+# Discovery Transcript — [Stakeholder Name]
 
-### 5. Actionable
-- Provide specific recommendations
-- Define clear next steps
-- Identify decision points
-- Assign ownership
-
-## Common Questions
-
-### Q: What if I don't have all the required inputs?
-
-**A:** Document what's missing and make conservative assumptions:
-1. Explicitly state the data gap
-2. Make a conservative assumption based on industry benchmarks
-3. Document the assumption in an assumptions register
-4. Flag for validation
-5. Run sensitivity analysis
-
-**Example:**
-> "Customer acquisition cost not provided. Assuming industry median CAC of $500 based on SaaS benchmarks (source: [report]). Confidence: Medium. Recommend validation with Finance team. Sensitivity: ±25% CAC changes NPV by $X."
-
-### Q: How do I know if my outputs are good enough?
-
-**A:** Use this checklist:
-- [ ] All assumptions are explicit and documented
-- [ ] ROI calculations are conservative and show methodology
-- [ ] Recommendations are clear (go/no-go is obvious)
-- [ ] Evidence is cited for all claims
-- [ ] Gaps and limitations are acknowledged
-- [ ] Output is readable by a non-technical executive
-- [ ] Next steps are specific and actionable
-
-### Q: Can I customize the templates?
-
-**A:** Yes, but maintain these standards:
-- Keep all required sections
-- Follow Value Consulting principles
-- Document any deviations
-- Ensure executive-readiness
-
-### Q: What if stakeholders disagree in interviews?
-
-**A:** Document both perspectives:
-- Present both viewpoints
-- Note areas of disagreement
-- Validate with data where possible
-- Recommend resolution approach
-- Don't pick sides without evidence
-
-### Q: How conservative should ROI models be?
-
-**A:** Very conservative:
-- Use worst-case costs, best-case benefits
-- Extend timelines beyond optimistic estimates
-- Add contingency (15-25%)
-- Show downside scenarios
-- If it feels too optimistic, it probably is
-
-## Getting Help
-
-### Reference Materials
-
-- **Value Consulting Philosophy:** [README.md](README.md)
-- **Claude's Behavior:** [CLAUDE.md](CLAUDE.md)
-- **Repository Structure:** [STRUCTURE.md](STRUCTURE.md)
-- **Agent Definitions:** [agents/definitions/](agents/definitions/)
-- **Input Guides:** [templates/inputs/](templates/inputs/)
-- **Output Templates:** [templates/outputs/](templates/outputs/)
-
-### Agent Roles
-
-When working through complex engagements, understand which agent does what:
-- **Orchestrator** - Routes work and assembles outputs
-- **Discovery** - Interprets transcripts and extracts context
-- **Capability** - Assesses maturity and identifies gaps
-- **ROI** - Builds financial models
-- **Roadmap** - Sequences initiatives
-- **Assembly** - Creates executive summaries
-
-## Next Steps
-
-1. **Review the foundation files** (README.md, CLAUDE.md, STRUCTURE.md)
-2. **Gather your inputs** using the input guides
-3. **Request your first output** following the example workflows
-4. **Iterate and refine** based on feedback
-5. **Build your own example** for future reference
+**Role:** Head of Retail Banking
+**Date:** 2026-01-15
+**Engagement:** Acme Bank Assessment
+**Interviewer:** [Your name]
 
 ---
 
-**Remember:** This system generates consulting outputs, not explanations. When you engage Claude in this repository, expect actual deliverables that meet senior consultant standards.
+Q: How would you describe the current state of your onboarding process?
 
-**Let's create some value.**
+A: "Our onboarding completion rate is low. A lot of customers drop off
+when documents are required. It can take more than a week in some cases."
+
+Q: What's the business impact of that?
+
+A: "We estimate we lose 30-40% of applicants during onboarding.
+That's thousands of potential customers per month."
+
+---
+
+[Continue with all questions and answers]
+```
+
+**Don't worry about perfection.** The system is designed to handle:
+- Rough notes with bullet points instead of full sentences
+- Combined notes from multiple people in one session
+- Missing questions (just the answers)
+- Audio transcription output (from Otter.ai, Fireflies, etc.)
+- Mix of verbatim quotes and paraphrased notes
+
+The Discovery agent will extract what it can and flag what's missing.
+
+**Large transcripts and many files — don't worry about size.** The system handles this automatically:
+- Long transcripts (2-hour calls, 50+ pages) are read in chunks — the agent processes sections, writes interim findings to disk, and consolidates
+- Multiple transcripts are processed one at a time — the system never tries to load everything into memory at once
+- Each downstream agent (Capability, ROI, Roadmap) receives only the consolidated findings, not the raw transcripts
+
+You don't need to pre-split files or use `/chunk-document` manually. Just drop your files in `inputs/` at whatever size they are, and the pipeline manages it.
+
+**If you have one big transcript with multiple stakeholders**, that works too. Just make sure each speaker is clearly identified:
+
+```markdown
+## Interview: Head of Retail
+> "Our onboarding completion rate is low..."
+
+## Interview: Operations Lead
+> "Servicing is expensive. Simple requests still come through the call center..."
+
+## Interview: Digital Lead
+> "We launched digital onboarding, but it hasn't scaled well..."
+```
+
+### Step 3: Create the engagement intake
+
+This gives the system context about the client. Create `inputs/engagement_intake.md`:
+
+```markdown
+# Engagement Intake
+
+## Domain
+- **Domain:** retail | sme | commercial | corporate | wealth
+- **Engagement type:** assessment | ignite | hybrid
+- **Primary journeys:** onboarding, lending, servicing, etc.
+
+## Client Context
+- **Client Name:** [Name]
+- **Industry:** [e.g., Retail Banking]
+- **Geography:** [e.g., Southeast Asia]
+- **Engagement Date:** [Date]
+
+## Engagement Scope
+### Objectives
+- [What are we trying to achieve?]
+
+### Key Stakeholders
+- [Who did we talk to? List roles and names]
+
+### Known Pain Points
+- [What problems surfaced?]
+
+### Constraints
+- [Budget, timeline, regulatory, organizational]
+```
+
+### Step 4: Add financial data (if available)
+
+If you have cost, volume, or revenue data, add it as `inputs/financial_data.md`. This makes the ROI model much stronger. If you don't have it, the system will use industry benchmarks and flag assumptions.
+
+### Step 5: Run the engagement
+
+```
+I'm starting a Value Assessment for Acme Bank.
+Inputs are in engagements/acme-bank/inputs/.
+Read the engagement intake and all transcripts, then run the full pipeline.
+Save outputs to engagements/acme-bank/outputs/.
+```
+
+**For a single transcript** (quick analysis):
+```
+Here's a transcript from my discovery call with the CTO at Acme Bank.
+[paste transcript or: Read engagements/acme-bank/inputs/transcript_cto.md]
+Extract the evidence register: pain points, metrics, constraints, and priorities.
+```
+
+**For multiple transcripts** (full engagement):
+```
+I have 4 discovery transcripts in engagements/acme-bank/inputs/.
+Read all of them plus the engagement intake.
+Run the complete Value Assessment pipeline and save outputs to
+engagements/acme-bank/outputs/.
+```
+
+**To add a transcript later** (incremental processing):
+```
+I have a new transcript from a follow-up call with the CFO.
+Read engagements/acme-bank/inputs/transcript_cfo.md.
+Update the evidence register and ROI model with any new findings.
+```
+
+## The Engagement Journal
+
+Every engagement automatically gets a journal file at `engagements/[client]/ENGAGEMENT_JOURNAL.md`. This is the system's persistent memory.
+
+### What it records
+
+Every time an agent runs, it writes an entry:
+- What it did and which files it read/produced
+- Key decisions and their rationale
+- Assumptions made and why
+- What the consultant asked for or approved
+- Current status and what's next
+
+### Why it matters
+
+1. **Pick up where you left off.** Close your laptop, come back in 3 months, and the journal tells you exactly what happened and where the engagement stands.
+2. **Audit trail.** Every decision is traceable. If a client asks "why did you assume 500K customers?" — it's in the journal.
+3. **Context efficiency.** When resuming, Claude reads the journal instead of re-reading all raw transcripts. Faster, cheaper, and avoids context limits.
+
+### Resuming a paused engagement
+
+```
+I'm picking up the Acme Bank engagement.
+Read the engagement journal at engagements/acme-bank/ENGAGEMENT_JOURNAL.md
+and tell me where we left off.
+```
+
+Claude will read the journal, summarize the status, and ask what you want to work on next — without needing to re-process the original transcripts.
+
+### Reviewing decisions
+
+```
+Show me all the assumptions we made in the Acme Bank engagement
+and which ones still need validation.
+```
+
+The journal's cumulative assumptions register tracks every assumption across all agents.
+
+## Reference Example
+
+The repo includes a complete worked example at:
+
+```
+examples/test_runs/retail_test/
+├── inputs/
+│   ├── engagement_intake.md      # Client context
+│   └── transcript.md             # Discovery call transcript
+└── outputs/
+    ├── evidence_register.md      # Extracted findings
+    ├── capability_assessment.md  # Maturity scoring
+    ├── roi_report.md             # Financial business case
+    ├── roadmap.md                # Implementation plan
+    ├── executive_summary.md      # Decision document
+    ├── assessment_report.md      # Full assessment
+    ├── roi_model.xlsx            # Excel ROI model
+    └── *.html                    # Presentations and dashboards
+```
+
+Review this example to understand what the system produces and the quality standard it targets.
+
+## How the Agent System Works
+
+You don't need to invoke agents directly — Claude routes automatically. But here's what's happening under the hood:
+
+```
+Your input (transcripts, data, context)
+        │
+        ▼
+┌─────────────────────┐
+│    Orchestrator      │  Routes to the right agents based on your request
+└─────────┬───────────┘
+          │
+    ┌─────┼──────┬──────────┬──────────┐
+    ▼     ▼      ▼          ▼          ▼
+Discovery  Capability  ROI Builder  Roadmap   Workshop Prep
+Agent      Agent       Agent        Agent     Agent
+    │      │           │            │         │
+    ▼      ▼           ▼            ▼         ▼
+Evidence   Maturity    Business     Phased    Facilitation
+Register   Assessment  Case         Plan      Materials
+    │      │           │            │         │
+    └──────┴───────────┴────────────┘         │
+                       │                      │
+                       ▼                      ▼
+              Executive Narrative      Workshop Synthesis
+              Assembler Agent          Agent
+                       │                      │
+                       ▼                      ▼
+              Final Deliverable        Prioritized Use Cases
+              Package                  & Recommendations
+```
+
+### Specialized agents
+
+| Agent | Role |
+|-------|------|
+| **Orchestrator** | Routes requests, coordinates workflow |
+| **Discovery** | Extracts evidence from transcripts and raw inputs |
+| **Capability Assessment** | Scores maturity, identifies gaps |
+| **ROI Builder** | Builds financial models with sensitivity analysis |
+| **Roadmap** | Sequences initiatives by value, feasibility, dependencies |
+| **Executive Assembler** | Packages everything into decision-ready deliverables |
+| **Workshop Prep** | Prepares facilitation materials for Ignite workshops |
+| **Workshop Synthesizer** | Consolidates findings across all workshops |
+| **Use Case Designer** | Designs detailed use cases validated against Backbase portfolio |
+| **Benchmark Librarian** | Curates and validates industry benchmarks |
+
+## Key Principles
+
+Every output from this system must be:
+
+1. **Evidence-based** — grounded in provided data, not invented
+2. **Conservative** — assumptions err on the side of caution
+3. **Transparent** — all assumptions documented, methodology visible
+4. **Executive-ready** — written for C-level decision-makers
+5. **Actionable** — clear recommendations with next steps
+
+When data is missing, the system makes conservative assumptions, documents them explicitly, and flags them for validation.
+
+## Common Workflows
+
+### "I just finished a discovery call"
+```
+Here's the transcript from my discovery call with [Client].
+Extract the evidence register: pain points, metrics, constraints,
+and stakeholder priorities. Flag any data gaps.
+```
+
+### "I need a presentation for the client"
+```
+/presentation
+Transform the executive summary at engagements/acme-bank/outputs/executive_summary.md
+into an interactive presentation for the CTO meeting.
+```
+
+### "I need the ROI in Excel"
+```
+/generate-roi-excel
+Build an Excel ROI model from the roi_report.md in engagements/acme-bank/outputs/.
+```
+
+### "What benchmarks should I use?"
+```
+/domain-benchmarks retail
+I need onboarding completion rates and cost-to-serve benchmarks
+for retail banks in Asia Pacific.
+```
+
+### "I need a prototype to show the client"
+```
+/prototype
+Create an interactive mockup for the digital account opening use case
+based on the use case doc at engagements/acme-bank/outputs/usecase_digital_onboarding.md
+```
+
+## Troubleshooting
+
+### "Claude isn't acting like a consultant"
+Make sure you opened Claude Code from the `claudevc/` directory. The `CLAUDE.md` and `.claude/` folder must be in the working directory for the system to activate.
+
+### "Commands like /presentation aren't available"
+Slash commands come from `.claude/commands/`. Ensure you're in the repo root and using Claude Code (not regular Claude chat).
+
+### "Excel generation fails"
+Install the Python dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+### "I want to add a new domain vertical"
+Create files in `knowledge/domains/[new-domain]/` following the pattern of existing domains (retail, sme, etc.). Each domain needs: personas, journeys, pain_points, benchmarks, use_cases, and value_propositions files.
+
+## Further Reading
+
+- [README.md](README.md) — Value Consulting philosophy and standards
+- [CLAUDE.md](CLAUDE.md) — How Claude operates as a consultant in this repo
+- [STRUCTURE.md](STRUCTURE.md) — Detailed repository organization
+- [agents/README.md](agents/README.md) — Agent system design
+- [knowledge/Ignite Inspire/README.md](knowledge/Ignite%20Inspire/README.md) — Workshop system documentation

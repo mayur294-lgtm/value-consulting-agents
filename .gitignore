@@ -1,0 +1,40 @@
+# macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Claude Code local settings (agents and commands ARE tracked)
+.claude/settings.local.json
+
+# Engagement data (client-confidential — never commit)
+engagements/
+
+# Temporary files
+*.tmp
+/tmp/
+interim_*.md
+
+# OS-generated
+Thumbs.db
+Desktop.ini
+
+# Miscellaneous
+*.webloc

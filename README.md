@@ -1,4 +1,6 @@
-# Value Consulting Agent System
+# Value Consulting AgenticOS
+
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
 
 ## What is Value Consulting?
 
