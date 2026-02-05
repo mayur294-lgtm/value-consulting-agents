@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment & Solutioning Report — Retail Bank SEA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bb-blue: #3366FF;
+            --bb-navy: #091C35;
+            --bb-cyan: #69FEFF;
+            --bb-coral: #FF7262;
+            --bb-dark: #0B1D37;
+            --bb-gray: #6B7280;
+            --bb-gray-light: #9CA3AF;
+            --bb-light: #F5F6FA;
+            --bb-white: #FFFFFF;
+            --bb-text: #1F2937;
+            --bb-text-light: #4B5563;
+            --bb-green: #2A9D8F;
+            --bb-amber: #E9C46A;
+            --bb-amber-red: #F4A261;
+            --bb-red: #E63946;
+            --sidebar-w: 260px;
+        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bb-light); color: var(--bb-text); line-height: 1.6; }
+
+        /* SIDEBAR NAV */
+        .sidebar {
+            position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh;
+            background: var(--bb-navy); color: white; overflow-y: auto; z-index: 100;
+            padding: 24px 0; transition: transform 0.3s;
+        }
+        .sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
+        .sidebar-logo span { font-weight: 800; font-size: 18px; letter-spacing: -0.5px; }
+        .sidebar-logo .accent { color: var(--bb-cyan); }
+        .nav-section { padding: 8px 20px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--bb-gray-light); margin-top: 8px; }
+        .nav-item {
+            display: block; padding: 8px 20px 8px 28px; font-size: 13px; color: rgba(255,255,255,0.7);
+            text-decoration: none; border-left: 3px solid transparent; transition: all 0.2s; cursor: pointer;
+        }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.05); border-left-color: var(--bb-cyan); }
+        .nav-item.active { color: var(--bb-cyan); border-left-color: var(--bb-cyan); background: rgba(105,254,255,0.05); }
+        .nav-act { font-weight: 600; color: rgba(255,255,255,0.9); padding-left: 20px; margin-top: 4px; }
+
+        /* MAIN CONTENT */
+        .main { margin-left: var(--sidebar-w); min-height: 100vh; }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, var(--bb-navy) 0%, #0F2B4F 50%, var(--bb-navy) 100%);
+            color: white; padding: 80px 60px 60px; position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: -50%; right: -20%; width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(51,102,255,0.15) 0%, transparent 70%); border-radius: 50%;
+        }
+        .hero-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--bb-cyan); margin-bottom: 16px; font-weight: 600; }
+        .hero h1 { font-size: 42px; font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
+        .hero h1 .blue { color: var(--bb-blue); }
+        .hero .subtitle { font-size: 16px; color: rgba(255,255,255,0.7); max-width: 600px; }
+        .hero-meta { display: flex; gap: 32px; margin-top: 32px; flex-wrap: wrap; }
+        .hero-meta-item { font-size: 13px; color: rgba(255,255,255,0.6); }
+        .hero-meta-item strong { color: white; display: block; font-size: 14px; margin-bottom: 2px; }
+
+        /* SECTION HEADERS */
+        .act-header {
+            background: var(--bb-navy); color: white; padding: 48px 60px; position: relative;
+        }
+        .act-header .act-num { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--bb-cyan); font-weight: 600; }
+        .act-header h2 { font-size: 32px; font-weight: 800; margin-top: 8px; }
+        .act-header .act-sub { font-size: 15px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+
+        /* CONTENT SECTIONS */
+        .section { padding: 40px 60px; background: white; border-bottom: 1px solid #E5E7EB; }
+        .section.alt { background: var(--bb-light); }
+        .section h3 { font-size: 22px; font-weight: 700; color: var(--bb-navy); margin-bottom: 20px; }
+        .section h4 { font-size: 17px; font-weight: 600; color: var(--bb-navy); margin-bottom: 12px; margin-top: 24px; }
+        .section h4:first-child { margin-top: 0; }
+        .section p { margin-bottom: 14px; color: var(--bb-text-light); max-width: 900px; }
+        .section ul, .section ol { margin-bottom: 14px; padding-left: 24px; color: var(--bb-text-light); }
+        .section li { margin-bottom: 6px; }
+
+        /* TABLES */
+        table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 14px; }
+        th { background: var(--bb-navy); color: white; text-align: left; padding: 10px 14px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 10px 14px; border-bottom: 1px solid #E5E7EB; color: var(--bb-text); vertical-align: top; }
+        tr:hover td { background: rgba(51,102,255,0.03); }
+        .table-compact td, .table-compact th { padding: 8px 12px; font-size: 13px; }
+
+        /* STAT CARDS */
+        .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 24px 0; }
+        .stat-card {
+            background: white; border: 1px solid #E5E7EB; border-radius: 12px; padding: 24px;
+            transition: all 0.2s; position: relative; overflow: hidden;
+        }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--bb-blue); }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--bb-gray); font-weight: 600; }
+        .stat-value { font-size: 32px; font-weight: 800; color: var(--bb-navy); margin: 8px 0 4px; }
+        .stat-context { font-size: 13px; color: var(--bb-gray-light); }
+        .stat-card.negative::before { background: var(--bb-red); }
+        .stat-card.positive::before { background: var(--bb-green); }
+        .stat-card.highlight::before { background: var(--bb-cyan); }
+
+        /* QUOTE BLOCK */
+        .quote-block {
+            background: var(--bb-navy); color: white; border-radius: 12px; padding: 32px 40px; margin: 24px 0;
+            position: relative;
+        }
+        .quote-block::before { content: '"'; position: absolute; top: 12px; left: 20px; font-size: 48px; color: var(--bb-cyan); opacity: 0.4; font-family: Georgia, serif; }
+        .quote-text { font-size: 18px; font-style: italic; line-height: 1.6; padding-left: 20px; }
+        .quote-attr { font-size: 13px; color: var(--bb-cyan); margin-top: 12px; padding-left: 20px; }
+
+        /* PERSONA CARDS */
+        .persona-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px; margin: 24px 0; }
+        .persona-card {
+            background: white; border: 1px solid #E5E7EB; border-radius: 12px; padding: 28px;
+            transition: all 0.2s; position: relative;
+        }
+        .persona-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        .persona-name { font-size: 18px; font-weight: 700; color: var(--bb-navy); }
+        .persona-type { font-size: 12px; color: var(--bb-blue); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .persona-quote { font-style: italic; color: var(--bb-text-light); font-size: 14px; margin: 12px 0; padding: 12px; background: var(--bb-light); border-radius: 8px; border-left: 3px solid var(--bb-blue); }
+        .persona-detail { font-size: 13px; color: var(--bb-text-light); margin: 4px 0; }
+        .persona-detail strong { color: var(--bb-text); }
+        .persona-opp { font-size: 13px; color: var(--bb-blue); font-weight: 600; margin-top: 12px; padding-top: 12px; border-top: 1px solid #E5E7EB; }
+
+        /* JOURNEY MAP */
+        .journey-block { background: white; border: 1px solid #E5E7EB; border-radius: 12px; padding: 32px; margin: 24px 0; }
+        .journey-title { font-size: 20px; font-weight: 700; color: var(--bb-navy); margin-bottom: 4px; }
+        .journey-actors { font-size: 13px; color: var(--bb-gray); margin-bottom: 16px; }
+        .journey-actors strong { color: var(--bb-text); }
+        .journey-metrics { display: flex; gap: 24px; flex-wrap: wrap; margin: 16px 0; padding: 16px; background: var(--bb-light); border-radius: 8px; }
+        .journey-metric { font-size: 13px; color: var(--bb-text-light); }
+        .journey-metric strong { color: var(--bb-navy); font-size: 15px; display: block; }
+        .friction-badge { display: inline-block; background: #FEE2E2; color: var(--bb-red); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+
+        /* HEATMAP */
+        .heatmap-container { margin: 24px 0; }
+        .heatmap-legend { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--bb-gray); }
+        .legend-dot { width: 14px; height: 14px; border-radius: 3px; }
+        .score-0 { background: #E63946; }
+        .score-1 { background: #F4A261; }
+        .score-2 { background: #E9C46A; }
+        .score-3 { background: #2A9D8F; }
+        .score-4 { background: #0066FF; }
+        .heatmap-row { display: grid; grid-template-columns: 200px 1fr 50px 50px 50px 60px 160px; gap: 1px; align-items: center; padding: 0; margin-bottom: 1px; cursor: pointer; transition: all 0.15s; }
+        .heatmap-row:hover { transform: translateX(4px); }
+        .heatmap-row.domain-header { grid-template-columns: 1fr; background: var(--bb-navy); color: white; padding: 8px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: default; border-radius: 4px; margin-top: 12px; }
+        .heatmap-row.domain-header:hover { transform: none; }
+        .heatmap-cell { padding: 10px 14px; background: white; font-size: 13px; border-bottom: 1px solid #E5E7EB; }
+        .heatmap-cell.cap-name { font-weight: 600; color: var(--bb-navy); }
+        .heatmap-cell.score { text-align: center; color: white; font-weight: 700; font-size: 14px; }
+        .heatmap-cell.overall { font-weight: 800; font-size: 15px; text-align: center; color: white; }
+        .heatmap-cell.problems { font-size: 11px; color: var(--bb-gray); }
+        .heatmap-detail { display: none; background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; padding: 20px 24px; margin-bottom: 8px; margin-top: -1px; animation: slideDown 0.25s ease; }
+        .heatmap-detail.open { display: block; }
+        @keyframes slideDown { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 500px; } }
+        .heatmap-detail h5 { font-size: 13px; font-weight: 600; color: var(--bb-navy); margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .heatmap-detail h5:first-child { margin-top: 0; }
+        .detail-layers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+        .detail-layer { background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 12px; }
+        .detail-layer-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .detail-layer-note { font-size: 12px; color: var(--bb-text-light); }
+        .probing-q { display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 4px 0; color: var(--bb-text-light); }
+        .probing-q .pass { color: var(--bb-green); font-weight: 600; }
+        .probing-q .fail { color: var(--bb-red); font-weight: 600; }
+        .evidence-tag { display: inline-block; background: var(--bb-blue); color: white; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 3px; margin: 1px; }
+        .confidence-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .confidence-high { background: #D1FAE5; color: #065F46; }
+        .confidence-medium { background: #FEF3C7; color: #92400E; }
+        .confidence-low { background: #FEE2E2; color: #991B1B; }
+
+        /* PROBLEM FILTER BAR */
+        .problem-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+        .problem-chip {
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;
+            border: 2px solid var(--bb-blue); color: var(--bb-blue); background: white; transition: all 0.2s;
+        }
+        .problem-chip:hover { background: var(--bb-blue); color: white; }
+        .problem-chip.active { background: var(--bb-blue); color: white; }
+        .problem-chip.unconsidered { border-style: dashed; border-color: var(--bb-coral); color: var(--bb-coral); }
+        .problem-chip.unconsidered:hover, .problem-chip.unconsidered.active { background: var(--bb-coral); color: white; }
+        .problem-chip.clear { border-color: var(--bb-gray-light); color: var(--bb-gray); }
+        .problem-chip.clear:hover { background: var(--bb-gray-light); color: white; }
+        .heatmap-row.dimmed .heatmap-cell { opacity: 0.2; }
+        .heatmap-row.dimmed:hover { transform: none; }
+
+        /* ROADMAP TIMELINE */
+        .timeline { position: relative; margin: 32px 0; padding-left: 40px; }
+        .timeline::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--bb-blue), var(--bb-cyan)); border-radius: 3px; }
+        .timeline-item { position: relative; margin-bottom: 32px; }
+        .timeline-dot { position: absolute; left: -33px; top: 4px; width: 18px; height: 18px; border-radius: 50%; background: var(--bb-blue); border: 3px solid white; box-shadow: 0 0 0 2px var(--bb-blue); }
+        .timeline-phase { font-size: 12px; font-weight: 700; color: var(--bb-blue); text-transform: uppercase; letter-spacing: 1px; }
+        .timeline-title { font-size: 18px; font-weight: 700; color: var(--bb-navy); margin: 4px 0; }
+        .timeline-desc { font-size: 14px; color: var(--bb-text-light); }
+        .timeline-milestones { margin-top: 8px; font-size: 13px; color: var(--bb-gray); }
+
+        /* SCENARIO CARDS */
+        .scenario-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 24px 0; }
+        .scenario-card { border: 1px solid #E5E7EB; border-radius: 12px; padding: 24px; background: white; position: relative; overflow: hidden; }
+        .scenario-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+        .scenario-card.conservative::before { background: var(--bb-amber); }
+        .scenario-card.base::before { background: var(--bb-green); }
+        .scenario-card.aspirational::before { background: var(--bb-blue); }
+        .scenario-name { font-size: 14px; font-weight: 700; color: var(--bb-navy); text-transform: uppercase; letter-spacing: 0.5px; }
+        .scenario-value { font-size: 28px; font-weight: 800; color: var(--bb-navy); margin: 8px 0; }
+        .scenario-metrics { font-size: 13px; color: var(--bb-text-light); }
+        .scenario-metrics div { margin: 4px 0; }
+
+        /* ACCORDION */
+        .accordion { margin: 16px 0; }
+        .accordion-item { border: 1px solid #E5E7EB; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+        .accordion-header { padding: 14px 20px; background: white; cursor: pointer; font-weight: 600; color: var(--bb-navy); display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+        .accordion-header:hover { background: var(--bb-light); }
+        .accordion-header .arrow { transition: transform 0.3s; font-size: 12px; color: var(--bb-gray); }
+        .accordion-header.open .arrow { transform: rotate(180deg); }
+        .accordion-body { display: none; padding: 0 20px 20px; }
+        .accordion-body.open { display: block; }
+
+        /* MOBILE */
+        .menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 200; background: var(--bb-navy); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 18px; }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; }
+            .menu-toggle { display: block; }
+            .hero, .section, .act-header { padding-left: 30px; padding-right: 30px; }
+            .heatmap-row { grid-template-columns: 160px 1fr 40px 40px 40px 50px 100px; font-size: 12px; }
+            .scenario-grid { grid-template-columns: 1fr; }
+            .persona-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            <span>Back<span class="accent">base</span></span>
+        </div>
+        <div class="nav-section">Act 1</div>
+        <a class="nav-item nav-act" href="#act1">Strategic Alignment</a>
+        <a class="nav-item" href="#objectives">Strategic Objectives</a>
+        <a class="nav-item" href="#opportunity">The Opportunity</a>
+        <a class="nav-item" href="#challenges">Key Challenges</a>
+        <a class="nav-item" href="#legacy">Legacy Trap</a>
+        <div class="nav-section">Act 2</div>
+        <a class="nav-item nav-act" href="#act2">The Vision</a>
+        <a class="nav-item" href="#modernization">Progressive Modernization</a>
+        <div class="nav-section">Act 3</div>
+        <a class="nav-item nav-act" href="#act3">The Lighthouse</a>
+        <a class="nav-item" href="#scope">In-Scope Capabilities</a>
+        <a class="nav-item" href="#birdseye">Bird's-Eye Benefits</a>
+        <div class="nav-section">Act 4</div>
+        <a class="nav-item nav-act" href="#act4">Deep-Dive Assessment</a>
+        <a class="nav-item" href="#acquire">Acquire</a>
+        <a class="nav-item" href="#activate">Activate</a>
+        <a class="nav-item" href="#expand">Expand</a>
+        <a class="nav-item" href="#retain">Retain</a>
+        <a class="nav-item" href="#personas">Personas</a>
+        <a class="nav-item" href="#journey-onboarding">Journey: Onboarding</a>
+        <a class="nav-item" href="#journey-servicing">Journey: Servicing</a>
+        <a class="nav-item" href="#architecture">Architecture</a>
+        <div class="nav-section">Act 5</div>
+        <a class="nav-item nav-act" href="#act5">Capability Assessment</a>
+        <a class="nav-item" href="#problem-map">Problem Map</a>
+        <a class="nav-item" href="#heatmap">F/M/B Heatmap</a>
+        <a class="nav-item" href="#traceability">Traceability</a>
+        <a class="nav-item" href="#path-target">Path to Target</a>
+        <a class="nav-item" href="#data-ai">Data & AI Readiness</a>
+        <div class="nav-section">Act 6</div>
+        <a class="nav-item nav-act" href="#act6">Delivery Roadmap</a>
+        <div class="nav-section">Act 7</div>
+        <a class="nav-item nav-act" href="#act7">Benefits Case</a>
+        <a class="nav-item" href="#scenarios">Scenario Analysis</a>
+        <a class="nav-item" href="#assumptions">Assumptions</a>
+        <div class="nav-section">Appendix</div>
+        <a class="nav-item" href="#evidence">Evidence Register</a>
+        <a class="nav-item" href="#glossary">Glossary</a>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+        <!-- HERO -->
+        <div class="hero">
+            <div class="hero-label">Ignite Assess — Assessment & Solutioning Report</div>
+            <h1>Digital Banking<br><span class="blue">Transformation</span></h1>
+            <p class="subtitle">Retail Onboarding & Servicing — a front-to-back assessment of capabilities, journeys, and business value for a Tier-2 retail bank in Southeast Asia.</p>
+            <div class="hero-meta">
+                <div class="hero-meta-item"><strong>Client</strong>Retail Bank — SEA Region</div>
+                <div class="hero-meta-item"><strong>Date</strong>February 2026</div>
+                <div class="hero-meta-item"><strong>Engagement</strong>Ignite Assess</div>
+                <div class="hero-meta-item"><strong>Prepared by</strong>Backbase Value Consulting</div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- ACT 1: STRATEGIC ALIGNMENT                   -->
+        <!-- ============================================ -->
+        <div class="act-header" id="act1">
+            <div class="act-num">Act 1</div>
+            <h2>Strategic Alignment</h2>
+            <div class="act-sub">Our understanding of the bank's goals and hurdles</div>
+        </div>
+
+        <div class="section" id="objectives">
+            <h3>Strategic Objectives</h3>
+            <p>Group-level objectives synthesized from detailed assessment interviews with the Head of Retail, Operations Lead, and Digital Lead:</p>
+            <div class="stat-row">
+                <div class="stat-card"><div class="stat-label">Priority #1</div><div class="stat-value" style="font-size:22px;">Digital-First Acquisition</div><div class="stat-context">Improve onboarding to increase customer acquisition and reduce time-to-activate. Digital onboarding launched but hasn't scaled (E7).</div></div>
+                <div class="stat-card"><div class="stat-label">Priority #2</div><div class="stat-value" style="font-size:22px;">Cost-Efficient Servicing</div><div class="stat-context">Reduce cost-to-serve by shifting simple transactions from call center/branch to digital self-service (E4, E5).</div></div>
+                <div class="stat-card"><div class="stat-label">Priority #3</div><div class="stat-value" style="font-size:22px;">Data-Driven Operations</div><div class="stat-context">Build visibility into customer behavior across channels to enable systematic optimization (E6).</div></div>
+                <div class="stat-card"><div class="stat-label">Priority #4</div><div class="stat-value" style="font-size:22px;">Operational Efficiency</div><div class="stat-context">Eliminate manual workarounds that prevent digital processes from scaling (E8).</div></div>
+            </div>
+        </div>
+
+        <div class="section alt" id="opportunity">
+            <h3>The Opportunity</h3>
+            <p>The bank serves a growing retail market in Southeast Asia — one of the fastest-growing digital banking markets globally.</p>
+            <table>
+                <tr><th>Segment</th><th>Current State</th><th>Potential</th></tr>
+                <tr><td><strong>New-to-bank customers</strong></td><td>Low onboarding completion, 7+ day cycle time — losing ~35-50% of applicants at document stage</td><td>+30,000 additional customers annually with &lt;48hr digital onboarding</td></tr>
+                <tr><td><strong>Existing customers (servicing)</strong></td><td>~80% of simple requests go to call center/branch at ~$10/transaction</td><td>$5.8M annual savings by shifting 40,000 monthly transactions to $1 digital self-service</td></tr>
+                <tr><td><strong>Digital adoption</strong></td><td>Launched digital channel but adoption stalled (E7)</td><td>60%+ digital containment (vs. ~20% today) unlocks scalability without linear cost</td></tr>
+            </table>
+            <div class="stat-row">
+                <div class="stat-card highlight"><div class="stat-label">Total Value at Stake</div><div class="stat-value">$8.2M</div><div class="stat-context">Annual value from onboarding + servicing improvements alone — before analytics, personalization, or AI</div></div>
+                <div class="stat-card negative"><div class="stat-label">Monthly Cost of Delay</div><div class="stat-value">$680K</div><div class="stat-context">Lost revenue and excess servicing costs every month of inaction</div></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>The Catalyst</h3>
+            <p>The bank has already made the decision to go digital. Digital onboarding was launched, digital channels exist. But the investment is not delivering returns:</p>
+            <div class="quote-block">
+                <div class="quote-text">We launched digital onboarding, but it hasn't scaled well.</div>
+                <div class="quote-attr">— Digital Lead (E7)</div>
+            </div>
+            <div class="quote-block">
+                <div class="quote-text">Teams still rely on manual workarounds.</div>
+                <div class="quote-attr">— Digital Lead (E8)</div>
+            </div>
+            <p>This is the classic <strong>"digital veneer"</strong> problem: the front-end is modern, but the middle and back layers have not been transformed. The result is a digital experience that looks good but doesn't work — driving customers back to branch and call center.</p>
+            <p><strong>Why now:</strong> Every month of delay costs the bank approximately $680K in lost revenue and excess servicing costs. Digital-first competitors (GXS, Trust Bank, DBS digibank) are setting a &lt;24-hour onboarding standard. The gap is widening.</p>
+        </div>
+
+        <div class="section alt" id="challenges">
+            <h3>Key Challenges Faced Today</h3>
+            <table>
+                <tr><th>Challenge</th><th>Description</th><th>Business Impact</th></tr>
+                <tr><td><strong>Low onboarding completion</strong></td><td>Customers drop off when documents are required (E1, E2)</td><td>Lost customer acquisition — estimated 2,500+ applicants/month abandoning</td></tr>
+                <tr><td><strong>Extended cycle times</strong></td><td>Onboarding takes 7+ days in some cases (E3)</td><td>Poor time-to-value, customer frustration, competitive disadvantage</td></tr>
+                <tr><td><strong>Expensive servicing</strong></td><td>Simple requests still come through the call center (E4, E5)</td><td>$3-5M annual excess cost; scalability constrained</td></tr>
+                <tr><td><strong>No customer insights</strong></td><td>No clear view of why customers choose branch/call over digital (E6)</td><td>Cannot optimize what you cannot measure</td></tr>
+                <tr><td><strong>Manual workarounds</strong></td><td>Teams rely on manual processes despite digital launch (E8)</td><td>Digital investment not delivering ROI; workaround culture</td></tr>
+                <tr><td><strong>Digital adoption failure</strong></td><td>Digital onboarding launched but hasn't scaled (E7)</td><td>Strategic initiative underperforming; confidence at risk</td></tr>
+            </table>
+        </div>
+
+        <div class="section" id="legacy">
+            <h3>The Legacy Trap</h3>
+            <p>The bank is caught in a siloed systems architecture that blocks CX and productivity gains:</p>
+            <table>
+                <tr><th>Layer</th><th>What Exists Today</th><th>Pain</th></tr>
+                <tr><td><strong>Customer Channels</strong></td><td>Mobile app, internet banking, branch</td><td>Fragmented — each channel operates independently, no shared state</td></tr>
+                <tr><td><strong>Employee Tools</strong></td><td>Multiple back-office systems, CRM, manual checklists</td><td>Context switching — staff toggle between 4-6 systems per transaction</td></tr>
+                <tr><td><strong>Integration</strong></td><td>Point-to-point connections, batch files, manual handoffs</td><td>No orchestration — every handoff is a potential failure point</td></tr>
+                <tr><td><strong>Core Systems</strong></td><td>Core banking, KYC platform, document management</td><td>Legacy — limited API exposure, batch processing, no real-time capabilities</td></tr>
+            </table>
+            <p><strong>The result: a digital front door leading to an analog back office.</strong> The front layer says "digital bank." The middle and back layers say "1990s operations."</p>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- ACT 2: THE VISION                            -->
+        <!-- ============================================ -->
+        <div class="act-header" id="act2">
+            <div class="act-num">Act 2</div>
+            <h2>The Vision</h2>
+            <div class="act-sub">A unified banking platform for long-term transformation</div>
+        </div>
+
+        <div class="section">
+            <h3>The Bank Tomorrow</h3>
+            <p>The target state is a <strong>unified intelligent frontline</strong> that runs end-to-end journeys across all channels — replacing today's fragmented customer and staff apps with a single platform that orchestrates every interaction from first click to fulfillment.</p>
+            <div class="stat-row">
+                <div class="stat-card"><div class="stat-label">Principle 1</div><div class="stat-value" style="font-size:18px;">Journey-Based</div><div class="stat-context">Organize around customer journeys (onboarding, servicing, engagement), not products or channels</div></div>
+                <div class="stat-card"><div class="stat-label">Principle 2</div><div class="stat-value" style="font-size:18px;">Front-to-Back</div><div class="stat-context">Every journey orchestrated end-to-end — experience, capability, and integration layers working as one</div></div>
+                <div class="stat-card"><div class="stat-label">Principle 3</div><div class="stat-value" style="font-size:18px;">Incremental</div><div class="stat-context">Progressive modernization, not big-bang replacement — build on existing digital investment</div></div>
+                <div class="stat-card"><div class="stat-label">Principle 4</div><div class="stat-value" style="font-size:18px;">Platform-First</div><div class="stat-context">Build once, reuse across journeys and segments — onboarding orchestration today, lending tomorrow</div></div>
+            </div>
+        </div>
+
+        <div class="section alt" id="modernization">
+            <h3>Progressive Modernization Approach</h3>
+            <table>
+                <tr><th>Phase</th><th>Focus</th><th>Outcome</th></tr>
+                <tr><td><strong>Set the Foundation</strong></td><td>Workflow orchestration, API layer, data foundation, core journey automation</td><td>Modern orchestration layer sitting between existing front-end and core systems</td></tr>
+                <tr><td><strong>Build Differentiation</strong></td><td>Self-service expansion, channel orchestration, journey analytics, 360 view</td><td>Data-driven engagement, measurable improvement, proactive service</td></tr>
+                <tr><td><strong>Accelerate Growth</strong></td><td>AI-powered personalization, agentic workflows, predictive servicing</td><td>Self-optimizing, proactive banking — human-in-the-loop for exceptions only</td></tr>
+            </table>
+            <h4>Progressive Modernization Across Lines of Business</h4>
+            <table>
+                <tr><th></th><th>Phase 1 (Lighthouse)</th><th>Phase 2</th><th>Phase 3</th></tr>
+                <tr><td><strong>Retail — Onboarding</strong></td><td>Digital onboarding automation, eKYC, STP</td><td>Full lifecycle management</td><td>AI-powered lead scoring</td></tr>
+                <tr><td><strong>Retail — Servicing</strong></td><td>Self-service expansion, channel orchestration</td><td>Proactive engagement</td><td>Conversational AI, copilots</td></tr>
+                <tr><td><strong>Future LoB (SME/Wealth)</strong></td><td>—</td><td>Reuse platform for SME onboarding</td><td>Extend to wealth/advisory</td></tr>
+            </table>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- ACT 3: THE LIGHTHOUSE                        -->
+        <!-- ============================================ -->
+        <div class="act-header" id="act3">
+            <div class="act-num">Act 3 — The Lighthouse</div>
+            <h2>Phase 1: Retail Digital Banking</h2>
+            <div class="act-sub">The starting point for transformation</div>
+        </div>
+
+        <div class="section">
+            <h3>Why Start Here</h3>
+            <div class="stat-row">
+                <div class="stat-card"><div class="stat-label">Reason 1</div><div class="stat-value" style="font-size:16px;">Highest Pain, Highest Value</div><div class="stat-context">$8.2M annually from the two journeys all stakeholders identified as critical</div></div>
+                <div class="stat-card"><div class="stat-label">Reason 2</div><div class="stat-value" style="font-size:16px;">Existing Investment</div><div class="stat-context">Digital onboarding already launched (E7) — optimize rather than rebuild</div></div>
+                <div class="stat-card"><div class="stat-label">Reason 3</div><div class="stat-value" style="font-size:16px;">Platform Reuse</div><div class="stat-context">Workflow + API layer built for retail reuses for servicing, then future LoB</div></div>
+                <div class="stat-card"><div class="stat-label">Reason 4</div><div class="stat-value" style="font-size:16px;">Organizational Readiness</div><div class="stat-context">All three stakeholders (Head of Retail, Operations Lead, Digital Lead) aligned</div></div>
+            </div>
+        </div>
+
+        <div class="section alt" id="scope">
+            <h3>In-Scope for Phase 1</h3>
+            <table>
+                <tr><th>Journey</th><th>Capability</th><th>OOTB / Custom</th><th>Priority</th></tr>
+                <tr><td>Digital Onboarding</td><td>Workflow orchestration, eKYC, STP rules</td><td>OOTB + Extend</td><td><strong>P1</strong></td></tr>
+                <tr><td>Digital Onboarding</td><td>Document capture & verification</td><td>OOTB + Integrate</td><td><strong>P1</strong></td></tr>
+                <tr><td>Digital Self-Service</td><td>Top 20 servicing transactions</td><td>OOTB + Extend</td><td><strong>P1</strong></td></tr>
+                <tr><td>Channel Orchestration</td><td>Intelligent routing, deflection</td><td>Extend</td><td>P2</td></tr>
+                <tr><td>Journey Analytics</td><td>Funnel tracking, channel analytics</td><td>OOTB + Configure</td><td><strong>P1</strong></td></tr>
+                <tr><td>Customer 360</td><td>Unified profile for staff</td><td>OOTB + Integrate</td><td>P2</td></tr>
+            </table>
+
+            <h4>Core Value Proposition Across the Lifecycle</h4>
+            <table>
+                <tr><th>Lifecycle Stage</th><th>Key Capability</th><th>Business Outcome</th></tr>
+                <tr><td><strong>Acquire</strong></td><td>Digital onboarding with eKYC and STP</td><td>Completion rate 40% → 65%, cycle time 7 days → &lt;48 hours</td></tr>
+                <tr><td><strong>Activate</strong></td><td>Workflow orchestration, real-time status</td><td>Faster time-to-value, transparent process, reduced manual work</td></tr>
+                <tr><td><strong>Expand</strong></td><td>Customer 360, journey analytics</td><td>Staff can see full relationship, identify cross-sell, proactive outreach</td></tr>
+                <tr><td><strong>Retain</strong></td><td>Digital self-service, channel orchestration</td><td>60% digital containment, $5.8M cost savings, scalable operations</td></tr>
+            </table>
+        </div>
+
+        <div class="section" id="birdseye">
+            <h3>Bird's-Eye Benefits View</h3>
+            <p><strong>The bank stands to gain $18M over 3 years from Phase 1</strong></p>
+            <div class="stat-row">
+                <div class="stat-card positive"><div class="stat-label">Channel Shift Savings</div><div class="stat-value">$13.0M</div><div class="stat-context">Digital self-service cost avoidance over 3 years</div></div>
+                <div class="stat-card positive"><div class="stat-label">Onboarding Uplift</div><div class="stat-value">$5.0M</div><div class="stat-context">Revenue from improved conversion over 3 years</div></div>
+                <div class="stat-card"><div class="stat-label">Total Investment</div><div class="stat-value">$12.0M</div><div class="stat-context">3-year total cost of ownership</div></div>
+                <div class="stat-card highlight"><div class="stat-label">Net Value</div><div class="stat-value">$6.0M</div><div class="stat-context">ROI: 42% IRR | Payback: 18 months | NPV: $5.2M</div></div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- ACT 4: DEEP-DIVE ASSESSMENT                  -->
+        <!-- ============================================ -->
+        <div class="act-header" id="act4">
+            <div class="act-num">Act 4 — Deep Dive</div>
+            <h2>Assessment & Solutioning</h2>
+            <div class="act-sub">Challenges, impact, and recommendations across the customer lifecycle</div>
+        </div>
+
+        <div class="section">
+            <h3>Engagement Approach</h3>
+            <p>Backbase Value Consulting conducted a structured assessment engagement comprising:</p>
+            <ul>
+                <li><strong>Discovery interviews</strong> with 3 senior stakeholders (Head of Retail, Operations Lead, Digital Lead)</li>
+                <li><strong>Evidence-based analysis</strong> producing an 8-item evidence register (E1-E8)</li>
+                <li><strong>Capability assessment</strong> using BIAN-aligned 0-4 maturity scale across Front/Middle/Back layers</li>
+                <li><strong>Financial modeling</strong> with conservative benchmarks (MEDIUM confidence)</li>
+                <li><strong>Roadmap development</strong> phased by value, dependencies, and organizational capacity</li>
+            </ul>
+            <table>
+                <tr><th>Deliverable</th><th>Description</th></tr>
+                <tr><td><strong>Business Case</strong></td><td>3-year financial model with scenario analysis — $5.2M NPV, 42% IRR</td></tr>
+                <tr><td><strong>Capability Assessment</strong></td><td>Front-to-back maturity heatmap: 17 capabilities scored, overall maturity 0.9/4.0</td></tr>
+                <tr><td><strong>Journey Assessment</strong></td><td>Current-state process maps for onboarding and servicing with friction analysis</td></tr>
+                <tr><td><strong>Solution Architecture</strong></td><td>Proposed platform architecture and integration approach</td></tr>
+                <tr><td><strong>Delivery Roadmap</strong></td><td>18-month phased implementation: Foundation → Scale → Optimize</td></tr>
+            </table>
+        </div>
+
+        <!-- ACQUIRE -->
+        <div class="section alt" id="acquire">
+            <h3>Acquire — Challenges & Impact</h3>
+            <table>
+                <tr><th>Challenge</th><th>Customer Impact</th><th>Employee Impact</th><th>Evidence</th></tr>
+                <tr><td><strong>Low onboarding completion</strong></td><td>Customers abandon when documents required — estimated 35-50% drop-off</td><td>Wasted processing effort on incomplete applications</td><td>E1, E2</td></tr>
+                <tr><td><strong>Extended cycle times</strong></td><td>7+ days to open an account — customers move to competitors</td><td>Manual review and workarounds consume staff time</td><td>E3, E8</td></tr>
+                <tr><td><strong>Digital hasn't scaled</strong></td><td>Inconsistent experience — digital starts but branch finishes</td><td>Staff revert to manual processes, undermining digital investment</td><td>E7, E8</td></tr>
+            </table>
+            <div class="stat-row">
+                <div class="stat-card negative"><div class="stat-label">Revenue at Risk</div><div class="stat-value">$2.4M</div><div class="stat-context">~30,000 applicants/year abandoning × $80 annual revenue per customer</div></div>
+                <div class="stat-card negative"><div class="stat-label">Cost per Application</div><div class="stat-value">$150</div><div class="stat-context">Manual processing vs. $30 benchmark for STP</div></div>
+                <div class="stat-card negative"><div class="stat-label">Competitive Gap</div><div class="stat-value">10x</div><div class="stat-context">Digital-first banks onboard in &lt;24 hours vs. 7+ days</div></div>
+            </div>
+
+            <h4>Acquire — Recommendations & Value</h4>
+            <table>
+                <tr><th>#</th><th>Recommendation</th><th>Expected Impact</th><th>Effort</th></tr>
+                <tr><td>1</td><td>Automate end-to-end onboarding with workflow orchestration</td><td>25pp completion rate improvement, $2.4M annual revenue</td><td>L</td></tr>
+                <tr><td>2</td><td>Deploy eKYC with automated document verification</td><td>70% reduction in document-related drop-offs</td><td>M</td></tr>
+                <tr><td>3</td><td>Implement STP rules for low-risk applications</td><td>30-40% of applications auto-approved in &lt;24 hours</td><td>M</td></tr>
+                <tr><td>4</td><td>Add save & resume with real-time status tracking</td><td>Recover 15-20% of abandoned applications</td><td>S</td></tr>
+            </table>
+            <h4>How Benefits Are Calculated</h4>
+            <table class="table-compact">
+                <tr><th>Metric</th><th>Current</th><th>Target</th><th>Delta</th><th>Annual Value</th></tr>
+                <tr><td>Onboarding completion rate</td><td>~40%</td><td>~65%</td><td>+25pp</td><td>—</td></tr>
+                <tr><td>Additional customers/year</td><td>—</td><td>30,000</td><td>+30,000</td><td>—</td></tr>
+                <tr><td>Revenue per customer/year</td><td>—</td><td>$80</td><td>—</td><td><strong>$2.4M</strong></td></tr>
+            </table>
+        </div>
+
+        <!-- ACTIVATE -->
+        <div class="section" id="activate">
+            <h3>Activate — Challenges & Impact</h3>
+            <table>
+                <tr><th>Challenge</th><th>Customer Impact</th><th>Employee Impact</th><th>Evidence</th></tr>
+                <tr><td><strong>Manual onboarding fulfillment</strong></td><td>7+ days from application to active account</td><td>Staff spend 40+ minutes per application on manual steps</td><td>E3, E8</td></tr>
+                <tr><td><strong>No process orchestration</strong></td><td>Customer has no visibility into application status</td><td>Handoffs between teams are email/paper-based, things get lost</td><td>E8</td></tr>
+                <tr><td><strong>Workaround culture</strong></td><td>Inconsistent experience — some fast, some stuck for weeks</td><td>Staff develop own shortcuts, no standardization</td><td>E8</td></tr>
+            </table>
+            <div class="stat-row">
+                <div class="stat-card negative"><div class="stat-label">Cost per Application</div><div class="stat-value">$150</div><div class="stat-context">Manual process vs. $30 benchmark (automated)</div></div>
+                <div class="stat-card negative"><div class="stat-label">Staff Hours Wasted</div><div class="stat-value">400+</div><div class="stat-context">Hours/month on manual onboarding workarounds</div></div>
+                <div class="stat-card negative"><div class="stat-label">Activation Delay</div><div class="stat-value">7+ days</div><div class="stat-context">Delayed revenue and higher early-stage churn</div></div>
+            </div>
+
+            <h4>Activate — Recommendations & Value</h4>
+            <table>
+                <tr><th>#</th><th>Recommendation</th><th>Expected Impact</th><th>Effort</th></tr>
+                <tr><td>1</td><td>Deploy BPM/workflow engine for onboarding orchestration</td><td>Cycle time from 7 days to &lt;48 hours</td><td>L</td></tr>
+                <tr><td>2</td><td>Automate KYC/AML screening with API integration</td><td>80% of screenings completed in &lt;5 minutes</td><td>M</td></tr>
+                <tr><td>3</td><td>Implement real-time status tracking for customers</td><td>Reduce "where's my application" calls by 50%</td><td>S</td></tr>
+            </table>
+            <h4>How Benefits Are Calculated</h4>
+            <table class="table-compact">
+                <tr><th>Metric</th><th>Current</th><th>Target</th><th>Delta</th><th>Annual Value</th></tr>
+                <tr><td>Avg cycle time</td><td>7+ days</td><td>&lt;2 days</td><td>-5 days</td><td>CX improvement</td></tr>
+                <tr><td>Manual processing cost/app</td><td>~$150</td><td>~$30</td><td>-$120</td><td><strong>$1.2M</strong> (est. 10K apps/yr)</td></tr>
+                <tr><td>Staff hours on workarounds</td><td>400 hrs/mo</td><td>100 hrs/mo</td><td>-300 hrs/mo</td><td><strong>$540K</strong> (at $150/hr loaded)</td></tr>
+            </table>
+        </div>
+
+        <!-- EXPAND -->
+        <div class="section alt" id="expand">
+            <h3>Expand — Challenges & Impact</h3>
+            <table>
+                <tr><th>Challenge</th><th>Customer Impact</th><th>Employee Impact</th><th>Evidence</th></tr>
+                <tr><td><strong>No customer 360 view</strong></td><td>Bank doesn't know full relationship — treats every interaction as new</td><td>Staff toggle between 4-6 systems to piece together customer picture</td><td>E6</td></tr>
+                <tr><td><strong>No behavioral analytics</strong></td><td>Bank can't identify customers at risk or ready for next product</td><td>No data to drive proactive outreach or segment-specific campaigns</td><td>E6</td></tr>
+                <tr><td><strong>Silent churn (unconsidered)</strong></td><td>Customers disengage gradually — bank doesn't detect until account closure</td><td>No early warning system for disengagement</td><td>UN-R-01</td></tr>
+            </table>
+            <h4>Expand — Recommendations & Value</h4>
+            <table>
+                <tr><th>#</th><th>Recommendation</th><th>Expected Impact</th><th>Effort</th></tr>
+                <tr><td>1</td><td>Build unified customer profile (360 view) for staff</td><td>20-30% reduction in staff context-switching time</td><td>L</td></tr>
+                <tr><td>2</td><td>Deploy journey analytics for funnel and channel visibility</td><td>Enable data-driven optimization for first time</td><td>M</td></tr>
+                <tr><td>3</td><td>Implement basic engagement scoring and alerts</td><td>Early detection of disengagement, proactive retention</td><td>M</td></tr>
+            </table>
+        </div>
+
+        <!-- RETAIN -->
+        <div class="section" id="retain">
+            <h3>Retain — Challenges & Impact</h3>
+            <table>
+                <tr><th>Challenge</th><th>Customer Impact</th><th>Employee Impact</th><th>Evidence</th></tr>
+                <tr><td><strong>Simple requests go to call center</strong></td><td>Customers forced to high-effort channel for basic tasks</td><td>Skilled agents handle routine work (balance checks, statements)</td><td>E4, E5</td></tr>
+                <tr><td><strong>No channel orchestration</strong></td><td>If customer starts in app and gets stuck, must restart in branch</td><td>No context passing between channels</td><td>E6</td></tr>
+                <tr><td><strong>High cost-to-serve</strong></td><td>$10+ per call center transaction vs. $1 for digital self-service</td><td>Budget consumed by volume, not value</td><td>E4</td></tr>
+            </table>
+            <div class="stat-row">
+                <div class="stat-card negative"><div class="stat-label">Annual Excess Cost</div><div class="stat-value">$5.8M</div><div class="stat-context">From channel misallocation — call center handling digital-ready requests</div></div>
+                <div class="stat-card negative"><div class="stat-label">Containment Rate</div><div class="stat-value">~20%</div><div class="stat-context">Only 1 in 5 interactions handled digitally</div></div>
+                <div class="stat-card negative"><div class="stat-label">Cost per Call</div><div class="stat-value">$10</div><div class="stat-context">vs. $1 digital self-service (10x gap)</div></div>
+            </div>
+
+            <h4>Retain — Recommendations & Value</h4>
+            <table>
+                <tr><th>#</th><th>Recommendation</th><th>Expected Impact</th><th>Effort</th></tr>
+                <tr><td>1</td><td>Expand digital self-service to cover top 20 servicing transactions</td><td>Shift 40,000 monthly transactions to digital</td><td>L</td></tr>
+                <tr><td>2</td><td>Deploy intelligent channel routing and proactive deflection</td><td>60% digital containment (up from ~20%)</td><td>M</td></tr>
+                <tr><td>3</td><td>Implement in-app help, contextual guidance, and smart search</td><td>Reduce "give up and call" behavior by 40%</td><td>M</td></tr>
+            </table>
+            <h4>How Benefits Are Calculated</h4>
+            <table class="table-compact">
+                <tr><th>Metric</th><th>Current</th><th>Target (Yr3)</th><th>Delta</th><th>Annual Value</th></tr>
+                <tr><td>Digital containment rate</td><td>~20%</td><td>~60%</td><td>+40pp</td><td>—</td></tr>
+                <tr><td>Monthly transactions shifted</td><td>0</td><td>40,000</td><td>+40,000</td><td>—</td></tr>
+                <tr><td>Cost savings per transaction</td><td>—</td><td>~$9 ($10→$1)</td><td>$9/txn</td><td><strong>$5.8M</strong> (Yr3 run rate)</td></tr>
+            </table>
+        </div>
+
+        <!-- PERSONAS -->
+        <div class="section alt" id="personas">
+            <h3>Who to Serve — Persona Mapping</h3>
+            <h4>Addressable Market</h4>
+            <table>
+                <tr><th>Segment</th><th>% of Customer Base</th><th>Revenue Contribution</th><th>Strategic Priority</th></tr>
+                <tr><td>Mass market (salary/savings)</td><td>70%</td><td>35%</td><td>Medium — volume driver</td></tr>
+                <tr><td><strong>Emerging affluent (young professionals)</strong></td><td>20%</td><td>40%</td><td><strong>High — growth driver, most digital</strong></td></tr>
+                <tr><td>Established affluent / HNW</td><td>10%</td><td>25%</td><td>High — revenue driver, advisory-led</td></tr>
+            </table>
+
+            <h4>Customer & Employee Personas</h4>
+            <div class="persona-grid">
+                <div class="persona-card">
+                    <div class="persona-type">Emerging Affluent — Digital Native</div>
+                    <div class="persona-name">Mei Lin</div>
+                    <div class="persona-quote">"I just want to open an account on my phone in 5 minutes, not fill out forms at a branch."</div>
+                    <div class="persona-detail"><strong>Profile:</strong> 28, software engineer, monthly income $4,000+, dual citizen (Malaysia/Singapore)</div>
+                    <div class="persona-detail"><strong>Banking Needs:</strong> Current account, savings, beginner investments, remittances</div>
+                    <div class="persona-detail"><strong>Current Pain:</strong> Tried to open account digitally, got stuck at document upload, gave up after 3 days of no response</div>
+                    <div class="persona-detail"><strong>Digital Expectation:</strong> Instant. If it takes more than 10 minutes, something is wrong. Benchmarks against Grab, Shopee, not other banks.</div>
+                    <div class="persona-opp">Opportunity: This is the customer the bank loses at a rate of 2,500/month. Fix onboarding = capture Mei Lin.</div>
+                </div>
+                <div class="persona-card">
+                    <div class="persona-type">Mass Affluent — Busy Professional</div>
+                    <div class="persona-name">Arjun</div>
+                    <div class="persona-quote">"I don't mind going to the branch for big decisions, but don't make me call a hotline to check my balance."</div>
+                    <div class="persona-detail"><strong>Profile:</strong> 42, regional sales director, monthly income $8,000+, family with mortgage and insurance</div>
+                    <div class="persona-detail"><strong>Banking Needs:</strong> Multi-product relationship, transaction support, advisory for life events</div>
+                    <div class="persona-detail"><strong>Current Pain:</strong> Calls the call center for things he should be able to do in the app. Has been told "please visit the branch" three times this month.</div>
+                    <div class="persona-detail"><strong>Digital Expectation:</strong> Complete self-service for routine tasks. Human interaction for complex advice.</div>
+                    <div class="persona-opp">Opportunity: Arjun costs $120/year in unnecessary call center transactions. He represents 100,000+ customers.</div>
+                </div>
+                <div class="persona-card">
+                    <div class="persona-type">Digital Hesitant — Branch-First</div>
+                    <div class="persona-name">Siti</div>
+                    <div class="persona-quote">"I downloaded the app but I don't trust it for important things. I want to see a person."</div>
+                    <div class="persona-detail"><strong>Profile:</strong> 55, small business owner, limited English, prefers local language</div>
+                    <div class="persona-detail"><strong>Banking Needs:</strong> Cash management, fixed deposits, branch-based relationship</div>
+                    <div class="persona-detail"><strong>Current Pain:</strong> Branch queue times are long because staff are handling requests that should be digital</div>
+                    <div class="persona-detail"><strong>Digital Expectation:</strong> Minimal — but willing to try if someone shows her and it's in her language</div>
+                    <div class="persona-opp">Opportunity: Not the primary digital target, but beneficiary: when Mei Lin and Arjun go digital, branch staff have time for Siti.</div>
+                </div>
+                <div class="persona-card">
+                    <div class="persona-type">Employee — Call Center Agent</div>
+                    <div class="persona-name">Farah</div>
+                    <div class="persona-quote">"I spend half my day answering questions customers should be able to see in their app."</div>
+                    <div class="persona-detail"><strong>Profile:</strong> 26, call center agent, 18 months tenure, handles 60+ calls/day</div>
+                    <div class="persona-detail"><strong>Needs (as employee):</strong> Customer context before the call, ability to resolve in one interaction</div>
+                    <div class="persona-detail"><strong>Current Pain:</strong> Toggles between 4 systems per call, no customer 360 view, repeats information customer already provided</div>
+                    <div class="persona-opp">Opportunity: With self-service handling routine queries, Farah handles complex cases — more satisfying work, lower attrition.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JOURNEY: ONBOARDING -->
+        <div class="section" id="journey-onboarding">
+            <h3>Journey: Digital Onboarding (Account Opening)</h3>
+            <div class="journey-block">
+                <div class="journey-title">Current-State Journey Map (As-Is)</div>
+                <p><strong>Actors:</strong> Customer, Branch/Frontline Staff, Back-Office Operations, Compliance/KYC</p>
+                <p><strong>Applications:</strong> Mobile App, Core Banking, Document Management, KYC Platform, Excel, Email</p>
+                <table>
+                    <tr><th>Stage</th><th>Customer</th><th>Frontline Staff</th><th>Back-Office</th><th>Compliance</th></tr>
+                    <tr><td><strong>Research & Apply</strong></td><td>Searches online, downloads app, starts application (15-20 min)</td><td>N/A for digital; assists in-branch (20-30 min)</td><td>—</td><td>—</td></tr>
+                    <tr><td><strong>Document Collection</strong></td><td>Uploads documents — frequent failures, unclear requirements (10-30 min)</td><td>Helps with docs if branch visit (30-60 min)</td><td>—</td><td>—</td></tr>
+                    <tr><td><strong>Document Review</strong></td><td>Waits — no status visibility (2-3 days)</td><td>Checks status manually, calls customer for re-submission (10-20 min/day)</td><td>Reviews documents manually (15-30 min/app), requests re-submission if issues</td><td>—</td></tr>
+                    <tr><td><strong>KYC & Screening</strong></td><td>Waits — no status visibility (1-2 days)</td><td>—</td><td>—</td><td>KYC verification (20-30 min/app), AML screening (5-10 min/app)</td></tr>
+                    <tr><td><strong>Account Creation</strong></td><td>Waits (1-2 days)</td><td>—</td><td>Creates account in core banking (10-15 min), generates card request</td><td>—</td></tr>
+                    <tr><td><strong>Confirmation</strong></td><td>Receives welcome pack, funds account (5 min)</td><td>Sends welcome message</td><td>—</td><td>—</td></tr>
+                </table>
+
+                <div class="journey-metrics">
+                    <div class="journey-metric"><strong>7+ days</strong>Total end-to-end time</div>
+                    <div class="journey-metric"><strong>6+</strong>Manual handoffs per application</div>
+                    <div class="journey-metric"><strong>5+</strong>Systems with no integration</div>
+                    <div class="journey-metric"><strong>90-120 min</strong>Staff time per application</div>
+                    <div class="journey-metric"><strong>&lt;5%</strong>STP rate</div>
+                </div>
+            </div>
+
+            <h4>Friction Points</h4>
+            <table>
+                <tr><th>#</th><th>Friction Point</th><th>Stage</th><th>Actor Affected</th><th>Customer Impact</th><th>Employee Impact</th><th>Evidence</th></tr>
+                <tr><td><span class="friction-badge">F1</span></td><td>Document upload failures, unclear requirements</td><td>Document Collection</td><td>Customer</td><td>35-50% drop-off at this stage</td><td>Re-work, manual follow-up</td><td>E1, E2</td></tr>
+                <tr><td><span class="friction-badge">F2</span></td><td>No real-time status — customer waits in the dark</td><td>Review → Creation</td><td>Customer</td><td>Anxiety, duplicate calls to check status</td><td>Handles "where's my application" calls</td><td>E3</td></tr>
+                <tr><td><span class="friction-badge">F3</span></td><td>Manual document review — no OCR or auto-classification</td><td>Document Review</td><td>Back-Office</td><td>Slow processing adds days</td><td>15-30 min per application manual review</td><td>E8</td></tr>
+                <tr><td><span class="friction-badge">F4</span></td><td>Manual KYC — no eKYC or digital ID verification</td><td>KYC & Screening</td><td>Compliance</td><td>Additional delays, may require branch visit</td><td>20-30 min per application manual verification</td><td>E8</td></tr>
+                <tr><td><span class="friction-badge">F5</span></td><td>No orchestration — handoffs via email/Excel</td><td>All stages</td><td>All</td><td>Process unpredictable, things get lost</td><td>Manual tracking, workarounds, no SLA visibility</td><td>E8</td></tr>
+                <tr><td><span class="friction-badge">F6</span></td><td>No STP — every application requires manual intervention</td><td>Account Creation</td><td>Back-Office</td><td>No instant activation, even for simple cases</td><td>Every application is manual</td><td>E3, E8</td></tr>
+            </table>
+
+            <h4>Business Benefits</h4>
+            <div class="stat-row">
+                <div class="stat-card positive"><div class="stat-label">Revenue Uplift</div><div class="stat-value">$2.4M</div><div class="stat-context">30,000 additional customers × $80 annual revenue</div></div>
+                <div class="stat-card positive"><div class="stat-label">Cost Avoidance</div><div class="stat-value">$1.2M</div><div class="stat-context">$120 savings per application × 10,000 applications/year</div></div>
+                <div class="stat-card highlight"><div class="stat-label">Total Annual Benefit</div><div class="stat-value">$3.6M</div><div class="stat-context">From onboarding journey improvements alone</div></div>
+            </div>
+            <table class="table-compact">
+                <tr><th>Metric</th><th>Current</th><th>Target</th><th>Delta</th><th>Annual Value</th></tr>
+                <tr><td>Completion rate</td><td>~40%</td><td>~65%</td><td>+25pp</td><td>+30,000 customers → $2.4M</td></tr>
+                <tr><td>Cycle time</td><td>7+ days</td><td>&lt;48 hours</td><td>-5 days</td><td>CX improvement</td></tr>
+                <tr><td>Cost per application</td><td>~$150</td><td>~$30</td><td>-$120</td><td>$1.2M</td></tr>
+                <tr><td>STP rate</td><td>&lt;5%</td><td>30-40%</td><td>+25-35pp</td><td>Operational efficiency</td></tr>
+            </table>
+
+            <h4>Proposed Solution</h4>
+            <ol>
+                <li><strong>Workflow orchestration (BPM)</strong> — End-to-end process automation replacing email/Excel handoffs</li>
+                <li><strong>eKYC with digital ID verification</strong> — Automated document capture, OCR, and identity verification</li>
+                <li><strong>STP decision engine</strong> — Risk-based auto-approval for low-risk applications (&lt;24 hours)</li>
+                <li><strong>Save & resume with real-time status</strong> — Customer can pause and resume; always knows where they stand</li>
+                <li><strong>Case management for exceptions</strong> — Staff handle only exceptions with full context</li>
+            </ol>
+            <div class="stat-row">
+                <div class="stat-card"><div class="stat-label">End-to-End Time</div><div class="stat-value" style="font-size:18px;">7d → &lt;48hr</div><div class="stat-context">STP: &lt;24 hours</div></div>
+                <div class="stat-card"><div class="stat-label">Completion Rate</div><div class="stat-value" style="font-size:18px;">40% → 65%</div><div class="stat-context">+25pp improvement</div></div>
+                <div class="stat-card"><div class="stat-label">STP Rate</div><div class="stat-value" style="font-size:18px;">&lt;5% → 40%</div><div class="stat-context">Auto-approved low-risk apps</div></div>
+                <div class="stat-card"><div class="stat-label">Staff Time/App</div><div class="stat-value" style="font-size:18px;">90m → 20m</div><div class="stat-context">Exceptions only</div></div>
+            </div>
+        </div>
+
+        <!-- JOURNEY: SERVICING -->
+        <div class="section alt" id="journey-servicing">
+            <h3>Journey: Customer Servicing (Routine Transactions)</h3>
+            <div class="journey-block">
+                <div class="journey-title">Current-State Journey Map (As-Is)</div>
+                <p><strong>Actors:</strong> Customer, Call Center Agent, Branch Staff, Back-Office</p>
+                <p><strong>Applications:</strong> Mobile App (limited), IVR, Call Center CRM, Core Banking, Branch Systems</p>
+                <table>
+                    <tr><th>Stage</th><th>Customer</th><th>Call Center Agent</th><th>Branch Staff</th><th>Back-Office</th></tr>
+                    <tr><td><strong>Request Initiation</strong></td><td>Tries app — feature not available. Calls hotline (5-15 min wait) OR visits branch (30 min travel + queue)</td><td>Answers call, asks for identification, pulls up account (3-5 min)</td><td>Greets customer, asks reason for visit (5 min)</td><td>—</td></tr>
+                    <tr><td><strong>Authentication</strong></td><td>Provides ID details over phone or presents card at branch</td><td>Verifies identity in CRM (2-3 min)</td><td>Checks ID, verifies in system (3-5 min)</td><td>—</td></tr>
+                    <tr><td><strong>Request Processing</strong></td><td>Explains what they need — often re-explains if transferred</td><td>Toggles between 3-4 systems (5-10 min). May say "let me check"</td><td>Processes in core banking (5-15 min). May need to call another dept.</td><td>Receives escalation by email (15-30 min turnaround)</td></tr>
+                    <tr><td><strong>Resolution</strong></td><td>Receives confirmation — may need to call back for status</td><td>Confirms resolution or advises "we'll call you back"</td><td>Confirms on screen or provides paper receipt</td><td>Completes processing, notifies via email</td></tr>
+                </table>
+
+                <div class="journey-metrics">
+                    <div class="journey-metric"><strong>15-45 min</strong>Per call center interaction</div>
+                    <div class="journey-metric"><strong>45-90 min</strong>Per branch visit</div>
+                    <div class="journey-metric"><strong>100K+</strong>Monthly call volume</div>
+                    <div class="journey-metric"><strong>~20%</strong>Digital containment</div>
+                    <div class="journey-metric"><strong>$10/call</strong>vs. $1 digital</div>
+                </div>
+            </div>
+
+            <h4>Friction Points</h4>
+            <table>
+                <tr><th>#</th><th>Friction Point</th><th>Stage</th><th>Actor Affected</th><th>Customer Impact</th><th>Employee Impact</th><th>Evidence</th></tr>
+                <tr><td><span class="friction-badge">F1</span></td><td>Simple requests not available in app</td><td>Initiation</td><td>Customer</td><td>Forced to call or visit for basic tasks</td><td>Handles routine queries that should be self-service</td><td>E5</td></tr>
+                <tr><td><span class="friction-badge">F2</span></td><td>No context passing between channels</td><td>Initiation</td><td>Customer, Agent</td><td>Must re-explain if switching channels</td><td>No visibility into what customer tried in app</td><td>E6</td></tr>
+                <tr><td><span class="friction-badge">F3</span></td><td>Agent toggles between 3-4 systems</td><td>Processing</td><td>Call Center Agent</td><td>Longer call duration</td><td>5-10 min per call just navigating systems</td><td>E8</td></tr>
+                <tr><td><span class="friction-badge">F4</span></td><td>No customer 360 view</td><td>Processing</td><td>All staff</td><td>Bank doesn't know full relationship</td><td>Cannot personalize or cross-sell</td><td>E6</td></tr>
+                <tr><td><span class="friction-badge">F5</span></td><td>Back-office escalations by email</td><td>Resolution</td><td>Customer, All</td><td>"We'll call you back" — delay, uncertainty</td><td>Manual handoff, no tracking</td><td>E8</td></tr>
+            </table>
+
+            <h4>Business Benefits</h4>
+            <div class="stat-row">
+                <div class="stat-card positive"><div class="stat-label">Cost Avoidance (Yr3)</div><div class="stat-value">$5.8M</div><div class="stat-context">40K monthly transactions × $9 cost delta × 12 months</div></div>
+                <div class="stat-card positive"><div class="stat-label">Productivity Gain</div><div class="stat-value">$0.4M</div><div class="stat-context">Staff freed for complex cases, lower attrition</div></div>
+                <div class="stat-card highlight"><div class="stat-label">Total Annual (Yr3)</div><div class="stat-value">~$6.2M</div><div class="stat-context">At steady-state digital containment of 60%</div></div>
+            </div>
+
+            <h4>Proposed Solution</h4>
+            <ol>
+                <li><strong>Self-service expansion</strong> — Top 20 servicing transactions available in-app</li>
+                <li><strong>Channel orchestration</strong> — Context passes between channels; agent sees what customer tried</li>
+                <li><strong>Proactive deflection</strong> — In-app guidance, contextual help, smart search</li>
+                <li><strong>Agent workspace</strong> — Unified customer view for call center with full context, single screen</li>
+            </ol>
+            <div class="stat-row">
+                <div class="stat-card"><div class="stat-label">Digital Containment</div><div class="stat-value" style="font-size:18px;">20% → 60%</div><div class="stat-context">+40pp improvement</div></div>
+                <div class="stat-card"><div class="stat-label">Blended Cost/Txn</div><div class="stat-value" style="font-size:18px;">$10 → $4</div><div class="stat-context">60% reduction</div></div>
+                <div class="stat-card"><div class="stat-label">Call Volume</div><div class="stat-value" style="font-size:18px;">100K → 60K</div><div class="stat-context">Per month</div></div>
+                <div class="stat-card"><div class="stat-label">Handle Time</div><div class="stat-value" style="font-size:18px;">-30%</div><div class="stat-context">With unified workspace</div></div>
+            </div>
+        </div>
+
+        <!-- ARCHITECTURE -->
+        <div class="section" id="architecture">
+            <h3>Application Architecture</h3>
+            <h4>Current State (As-Is)</h4>
+            <table>
+                <tr><th>Layer</th><th>Systems</th><th>Integration</th><th>Pain Points</th></tr>
+                <tr><td><strong>Channels</strong></td><td>Mobile app, internet banking, branch, IVR</td><td>Siloed — each has own session, no shared state</td><td>No omnichannel, features vary by channel</td></tr>
+                <tr><td><strong>Orchestration</strong></td><td>None — manual handoffs via email/Excel</td><td>Point-to-point, batch files</td><td>No workflow engine, no STP, no process visibility</td></tr>
+                <tr><td><strong>Core Systems</strong></td><td>Core banking, KYC platform, doc management, CRM</td><td>Limited API exposure, batch processing</td><td>Legacy integration, no real-time, brittle connections</td></tr>
+            </table>
+            <h4>Proposed State (To-Be)</h4>
+            <table>
+                <tr><th>Layer</th><th>Proposed</th><th>Integration</th><th>Benefit</th></tr>
+                <tr><td><strong>Unified Frontline</strong></td><td>Backbase web + mobile apps (customer), employee portal (staff)</td><td>Unified UX layer with shared state</td><td>Consistent CX, single codebase, omnichannel</td></tr>
+                <tr><td><strong>Orchestration</strong></td><td>Backbase platform + BPM engine, decision engine, STP rules</td><td>API-first, event-driven, real-time</td><td>End-to-end journey automation, workflow visibility</td></tr>
+                <tr><td><strong>Integration</strong></td><td>Integration layer / API gateway</td><td>REST APIs, real-time event bus</td><td>Decoupled, scalable, future-proof</td></tr>
+                <tr><td><strong>Core Systems</strong></td><td>Existing core banking — no change required</td><td>Wrapped with APIs by integration layer</td><td>Protect investment, progressive modernization</td></tr>
+            </table>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- ACT 5: CAPABILITY ASSESSMENT                 -->
+        <!-- ============================================ -->
+        <div class="act-header" id="act5">
+            <div class="act-num">Act 5</div>
+            <h2>Capability Assessment</h2>
+            <div class="act-sub">Front-to-back maturity heatmap with problem traceability</div>
+        </div>
+
+        <div class="section">
+            <h3>Assessment Methodology</h3>
+            <div class="stat-row">
+                <div class="stat-card"><div class="stat-label">Scale</div><div class="stat-value" style="font-size:16px;">0-4 Maturity</div><div class="stat-context">Absent → Fragmented → Defined → Orchestrated → Intelligent</div></div>
+                <div class="stat-card"><div class="stat-label">Structure</div><div class="stat-value" style="font-size:16px;">Front / Middle / Back</div><div class="stat-context">Experience / Orchestration / Integration layers</div></div>
+                <div class="stat-card"><div class="stat-label">Scoring Rule</div><div class="stat-value" style="font-size:16px;">Weakest Link</div><div class="stat-context">Overall = weakest layer. Chain breaks at weakest.</div></div>
+                <div class="stat-card"><div class="stat-label">Bias</div><div class="stat-value" style="font-size:16px;">Conservative</div><div class="stat-context">Score what exists, not what's planned.</div></div>
+            </div>
+        </div>
+
+        <div class="section alt" id="problem-map">
+            <h3>Problem Map</h3>
+            <h4>Considered Needs (What the Bank Already Knows)</h4>
+            <table>
+                <tr><th>#</th><th>Problem</th><th>Severity</th><th>Impact</th><th>Evidence</th><th>Related Capabilities</th></tr>
+                <tr><td><strong>CN-01</strong></td><td>Low onboarding completion — customers drop off at document stage</td><td style="color:#E63946;font-weight:700;">Critical</td><td>Lost acquisition — est. 2,500 applicants/month</td><td>E1, E2</td><td>CAP-R-CL-01, CAP-R-RC-01</td></tr>
+                <tr><td><strong>CN-02</strong></td><td>Expensive servicing — simple requests through call center</td><td style="color:#F4A261;font-weight:700;">High</td><td>$3-5M annual excess cost</td><td>E4, E5</td><td>CAP-R-CE-01, CAP-R-EE-01, CAP-R-CE-02</td></tr>
+                <tr><td><strong>CN-03</strong></td><td>Digital hasn't scaled — manual workarounds persist</td><td style="color:#F4A261;font-weight:700;">High</td><td>Digital investment not delivering ROI</td><td>E7, E8</td><td>CAP-R-PO-01, CAP-R-CL-01</td></tr>
+            </table>
+
+            <h4>Unconsidered Needs (What We Surfaced)</h4>
+            <table>
+                <tr><th>#</th><th>Problem</th><th>Severity</th><th>Why They Miss It</th><th>Indicators</th><th>Related Capabilities</th></tr>
+                <tr><td><strong>UN-R-01</strong></td><td>Silent customer churn — gradual disengagement undetected</td><td style="color:#F4A261;font-weight:700;">High</td><td>Bank measures churn as closure, not behavioral decline</td><td>No behavioral analytics (E6)</td><td>CAP-R-CL-03, CAP-R-DI-01</td></tr>
+                <tr><td><strong>UN-R-03</strong></td><td>No front-to-back journey visibility</td><td style="color:#F4A261;font-weight:700;">High</td><td>Each department sees only their part</td><td>Three stakeholders describe three separate problems</td><td>CAP-R-PO-01, CAP-R-DI-02</td></tr>
+                <tr><td><strong>UN-R-04</strong></td><td>Data exists but isn't used — insights trapped in silos</td><td style="color:#F4A261;font-weight:700;">High</td><td>Banks have data but no intelligence layer</td><td>E6: can't analyze channel behavior</td><td>CAP-R-DI-01, CAP-R-CL-03</td></tr>
+                <tr><td><strong>UN-R-06</strong></td><td>No AI strategy</td><td style="color:#E9C46A;font-weight:700;">Medium</td><td>AI ignored or stuck in pilot purgatory</td><td>No mention of AI in any interview</td><td>CAP-R-AI-01/02/03</td></tr>
+            </table>
+        </div>
+
+        <!-- INTERACTIVE HEATMAP -->
+        <div class="section" id="heatmap">
+            <h3>Front-to-Back Capability Heatmap</h3>
+
+            <div class="heatmap-legend">
+                <div class="legend-item"><div class="legend-dot score-0"></div>0 — Absent</div>
+                <div class="legend-item"><div class="legend-dot score-1"></div>1 — Fragmented</div>
+                <div class="legend-item"><div class="legend-dot score-2"></div>2 — Defined</div>
+                <div class="legend-item"><div class="legend-dot score-3"></div>3 — Orchestrated</div>
+                <div class="legend-item"><div class="legend-dot score-4"></div>4 — Intelligent</div>
+            </div>
+
+            <p style="font-size:13px;color:var(--bb-gray);margin-bottom:16px;">Filter by problem — click a chip. Click any capability row to expand details.</p>
+
+            <div class="problem-bar" id="problemBar">
+                <span class="problem-chip clear" data-filter="all" onclick="filterProblems('all')">Show All</span>
+                <span class="problem-chip" data-filter="CN-01" onclick="filterProblems('CN-01')">CN-01: Low Onboarding</span>
+                <span class="problem-chip" data-filter="CN-02" onclick="filterProblems('CN-02')">CN-02: Expensive Servicing</span>
+                <span class="problem-chip" data-filter="CN-03" onclick="filterProblems('CN-03')">CN-03: Digital Not Scaled</span>
+                <span class="problem-chip unconsidered" data-filter="UN-01" onclick="filterProblems('UN-01')">UN-01: Silent Churn</span>
+                <span class="problem-chip unconsidered" data-filter="UN-03" onclick="filterProblems('UN-03')">UN-03: No Visibility</span>
+                <span class="problem-chip unconsidered" data-filter="UN-04" onclick="filterProblems('UN-04')">UN-04: Data Silos</span>
+                <span class="problem-chip unconsidered" data-filter="UN-06" onclick="filterProblems('UN-06')">UN-06: No AI</span>
+            </div>
+
+            <div class="heatmap-container" id="heatmapContainer">
+                <!-- HEADER ROW -->
+                <div class="heatmap-row" style="cursor:default;font-weight:700;font-size:12px;">
+                    <div class="heatmap-cell" style="background:var(--bb-light);font-weight:700;">Capability</div>
+                    <div class="heatmap-cell" style="background:var(--bb-light);font-weight:700;">Domain</div>
+                    <div class="heatmap-cell" style="background:var(--bb-light);font-weight:700;text-align:center;font-size:11px;">F</div>
+                    <div class="heatmap-cell" style="background:var(--bb-light);font-weight:700;text-align:center;font-size:11px;">M</div>
+                    <div class="heatmap-cell" style="background:var(--bb-light);font-weight:700;text-align:center;font-size:11px;">B</div>
+                    <div class="heatmap-cell" style="background:var(--bb-light);font-weight:700;text-align:center;font-size:11px;">OVR</div>
+                    <div class="heatmap-cell" style="background:var(--bb-light);font-weight:700;font-size:11px;">Problems</div>
+                </div>
+
+                <!-- Customer Channels -->
+                <div class="heatmap-row domain-header">Customer Channels</div>
+
+                <div class="heatmap-row" data-problems="CN-02" onclick="toggleDetail('d-ce01')">
+                    <div class="heatmap-cell cap-name">Digital Channel Availability</div>
+                    <div class="heatmap-cell">CAP-R-CE-01</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell overall score-1">1</div>
+                    <div class="heatmap-cell problems">CN-02</div>
+                </div>
+                <div class="heatmap-detail" id="d-ce01">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">Mobile app exists but limited features drive customers to call center</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Front (1)</div><div class="detail-layer-note">Mobile app launched, limited self-service features</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Middle (1)</div><div class="detail-layer-note">No orchestration behind digital channel</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Back (1)</div><div class="detail-layer-note">Point-to-point integrations, no unified API layer</div></div>
+                    </div>
+                    <h5>Probing Questions</h5>
+                    <div class="probing-q"><span class="pass">✓ PASS</span> 0→1: Does a digital channel exist for servicing? (E5)</div>
+                    <div class="probing-q"><span class="fail">✗ FAIL</span> 1→2: Can customers complete top 20 tasks digitally? (E5)</div>
+                    <div style="margin-top:8px;"><span class="evidence-tag">E4</span> <span class="evidence-tag">E5</span> <span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <div class="heatmap-row" data-problems="CN-02" onclick="toggleDetail('d-ce02')">
+                    <div class="heatmap-cell cap-name">Employee Workspace</div>
+                    <div class="heatmap-cell">CAP-R-CE-02</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell overall score-1">1</div>
+                    <div class="heatmap-cell problems">CN-02</div>
+                </div>
+                <div class="heatmap-detail" id="d-ce02">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">Staff toggle between 4-6 systems per transaction</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Front (1)</div><div class="detail-layer-note">Multiple separate applications per role</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Middle (1)</div><div class="detail-layer-note">No unified context or task management</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Back (1)</div><div class="detail-layer-note">Each system has own data store, no integration</div></div>
+                    </div>
+                    <h5>Probing Questions</h5>
+                    <div class="probing-q"><span class="pass">✓ PASS</span> 0→1: Do employees have digital tools? (E8)</div>
+                    <div class="probing-q"><span class="fail">✗ FAIL</span> 1→2: Is there a unified workspace with customer 360? (E6)</div>
+                    <div style="margin-top:8px;"><span class="evidence-tag">E8</span> <span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <div class="heatmap-row" data-problems="CN-02" onclick="toggleDetail('d-ce03')">
+                    <div class="heatmap-cell cap-name">Contact Center</div>
+                    <div class="heatmap-cell">CAP-R-CE-03</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell overall score-1">1</div>
+                    <div class="heatmap-cell problems">CN-02</div>
+                </div>
+                <div class="heatmap-detail" id="d-ce03">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">Contact center handles 100K+ transactions/month at $10/call</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Front (1)</div><div class="detail-layer-note">IVR + CRM-based agent interface</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Middle (1)</div><div class="detail-layer-note">No context from digital channel, no intelligent routing</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Back (1)</div><div class="detail-layer-note">Separate CRM, no shared state with digital</div></div>
+                    </div>
+                    <h5>Probing Questions</h5>
+                    <div class="probing-q"><span class="pass">✓ PASS</span> 0→1: Does a contact center exist? (E4)</div>
+                    <div class="probing-q"><span class="fail">✗ FAIL</span> 1→2: Is it integrated with digital channels? (E6)</div>
+                    <div style="margin-top:8px;"><span class="evidence-tag">E4</span> <span class="evidence-tag">E5</span> <span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <!-- Customer Lifecycle -->
+                <div class="heatmap-row domain-header">Customer Lifecycle</div>
+
+                <div class="heatmap-row" data-problems="CN-01,CN-03" onclick="toggleDetail('d-cl01')">
+                    <div class="heatmap-cell cap-name">Digital Onboarding</div>
+                    <div class="heatmap-cell">CAP-R-CL-01</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell overall score-1">1</div>
+                    <div class="heatmap-cell problems">CN-01, CN-03</div>
+                </div>
+                <div class="heatmap-detail" id="d-cl01">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">Digital launched but broken middle/back. 40% completion, 7+ day cycle, &lt;5% STP</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Front (1)</div><div class="detail-layer-note">Mobile app with application form — document upload problematic</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Middle (1)</div><div class="detail-layer-note">Manual review, email handoffs, no workflow engine</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Back (1)</div><div class="detail-layer-note">Batch integration with core banking, manual KYC</div></div>
+                    </div>
+                    <h5>Probing Questions</h5>
+                    <div class="probing-q"><span class="pass">✓ PASS</span> 0→1: Does digital onboarding exist? (E7)</div>
+                    <div class="probing-q"><span class="fail">✗ FAIL</span> 1→2: Is it end-to-end automated with STP? (E3)</div>
+                    <div class="probing-q"><span class="fail">✗ FAIL</span> 1→2: Completion rate above 50%? (E1)</div>
+                    <div style="margin-top:8px;"><span class="evidence-tag">E1</span> <span class="evidence-tag">E2</span> <span class="evidence-tag">E3</span> <span class="evidence-tag">E7</span> <span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <div class="heatmap-row" data-problems="UN-04" onclick="toggleDetail('d-cl02')">
+                    <div class="heatmap-cell cap-name">Customer 360</div>
+                    <div class="heatmap-cell">CAP-R-CL-02</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell overall score-0">0</div>
+                    <div class="heatmap-cell problems">UN-04</div>
+                </div>
+                <div class="heatmap-detail" id="d-cl02">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">No unified customer profile. Staff cannot see full relationship.</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Front (0)</div><div class="detail-layer-note">No 360 view in any channel</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Middle (0)</div><div class="detail-layer-note">No data aggregation or profile engine</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Back (0)</div><div class="detail-layer-note">Data trapped in source systems</div></div>
+                    </div>
+                    <h5>Probing Questions</h5>
+                    <div class="probing-q"><span class="fail">✗ FAIL</span> 0→1: Does any unified customer view exist? (E6)</div>
+                    <div style="margin-top:8px;"><span class="evidence-tag">E6</span> <span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <div class="heatmap-row" data-problems="UN-01,UN-04" onclick="toggleDetail('d-cl03')">
+                    <div class="heatmap-cell cap-name">Behavioral Insights</div>
+                    <div class="heatmap-cell">CAP-R-CL-03</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell overall score-0">0</div>
+                    <div class="heatmap-cell problems">UN-01, UN-04</div>
+                </div>
+                <div class="heatmap-detail" id="d-cl03">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">Cannot measure customer behavior. Silent churn undetected.</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Front (0)</div><div class="detail-layer-note">No engagement dashboards</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Middle (0)</div><div class="detail-layer-note">No analytics engine or behavioral models</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Back (0)</div><div class="detail-layer-note">No data warehouse or data lake</div></div>
+                    </div>
+                    <h5>Probing Questions</h5>
+                    <div class="probing-q"><span class="fail">✗ FAIL</span> 0→1: Does any behavioral analytics capability exist? (E6)</div>
+                    <div style="margin-top:8px;"><span class="evidence-tag">E6</span> <span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <!-- Retail Services -->
+                <div class="heatmap-row domain-header">Retail Services</div>
+
+                <div class="heatmap-row" data-problems="" onclick="toggleDetail('d-rs01')">
+                    <div class="heatmap-cell cap-name">Deposits & Savings</div>
+                    <div class="heatmap-cell">CAP-R-RS-01</div>
+                    <div class="heatmap-cell score score-2">2</div>
+                    <div class="heatmap-cell score score-2">2</div>
+                    <div class="heatmap-cell score score-2">2</div>
+                    <div class="heatmap-cell overall score-2">2</div>
+                    <div class="heatmap-cell problems">—</div>
+                </div>
+                <div class="heatmap-detail" id="d-rs01">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">Core banking products functional, not differentiated</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E9C46A;">Front (2)</div><div class="detail-layer-note">Available in app and branch</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E9C46A;">Middle (2)</div><div class="detail-layer-note">Standard product engine in core</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E9C46A;">Back (2)</div><div class="detail-layer-note">Core banking integration established</div></div>
+                    </div>
+                    <div style="margin-top:8px;"><span class="confidence-badge confidence-medium">MEDIUM</span></div>
+                </div>
+
+                <div class="heatmap-row" data-problems="" onclick="toggleDetail('d-rs02')">
+                    <div class="heatmap-cell cap-name">Payments & Transfers</div>
+                    <div class="heatmap-cell">CAP-R-RS-02</div>
+                    <div class="heatmap-cell score score-2">2</div>
+                    <div class="heatmap-cell score score-2">2</div>
+                    <div class="heatmap-cell score score-2">2</div>
+                    <div class="heatmap-cell overall score-2">2</div>
+                    <div class="heatmap-cell problems">—</div>
+                </div>
+                <div class="heatmap-detail" id="d-rs02">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">Standard payment rails, batch processing for some</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E9C46A;">Front (2)</div><div class="detail-layer-note">Available in mobile and IB</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E9C46A;">Middle (2)</div><div class="detail-layer-note">Standard payment engine</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E9C46A;">Back (2)</div><div class="detail-layer-note">Connected to payment rails</div></div>
+                    </div>
+                    <div style="margin-top:8px;"><span class="confidence-badge confidence-medium">MEDIUM</span></div>
+                </div>
+
+                <!-- Risk & Compliance -->
+                <div class="heatmap-row domain-header">Risk & Compliance</div>
+
+                <div class="heatmap-row" data-problems="CN-01" onclick="toggleDetail('d-rc01')">
+                    <div class="heatmap-cell cap-name">KYC / AML</div>
+                    <div class="heatmap-cell">CAP-R-RC-01</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell overall score-1">1</div>
+                    <div class="heatmap-cell problems">CN-01</div>
+                </div>
+                <div class="heatmap-detail" id="d-rc01">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">Manual KYC process, 20-30 min per application</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Front (1)</div><div class="detail-layer-note">Paper/scan document collection</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Middle (1)</div><div class="detail-layer-note">Manual review, no decision engine</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Back (1)</div><div class="detail-layer-note">KYC platform exists but not integrated digitally</div></div>
+                    </div>
+                    <h5>Probing Questions</h5>
+                    <div class="probing-q"><span class="pass">✓ PASS</span> 0→1: Does KYC process exist? (E8)</div>
+                    <div class="probing-q"><span class="fail">✗ FAIL</span> 1→2: Is it automated with eKYC? (E8)</div>
+                    <div style="margin-top:8px;"><span class="evidence-tag">E8</span> <span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <!-- Process Orchestration -->
+                <div class="heatmap-row domain-header">Process Orchestration</div>
+
+                <div class="heatmap-row" data-problems="CN-03,UN-03" onclick="toggleDetail('d-po01')">
+                    <div class="heatmap-cell cap-name">Workflow & BPM</div>
+                    <div class="heatmap-cell">CAP-R-PO-01</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell overall score-1">1</div>
+                    <div class="heatmap-cell problems">CN-03, UN-03</div>
+                </div>
+                <div class="heatmap-detail" id="d-po01">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">Manual workarounds ARE the process. Email, Excel, personal checklists.</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Front (1)</div><div class="detail-layer-note">No task management UIs, no SLA dashboards</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Middle (1)</div><div class="detail-layer-note">No BPM engine, no rules engine</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Back (1)</div><div class="detail-layer-note">No unified audit trail, no SLA tracking</div></div>
+                    </div>
+                    <h5>Probing Questions</h5>
+                    <div class="probing-q"><span class="pass">✓ PASS</span> 0→1: Are there any defined processes? (E8)</div>
+                    <div class="probing-q"><span class="fail">✗ FAIL</span> 1→2: Is there a BPM engine? (E8)</div>
+                    <div style="margin-top:8px;"><span class="evidence-tag">E8</span> <span class="evidence-tag">E3</span> <span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <!-- Employee Enablement -->
+                <div class="heatmap-row domain-header">Employee Enablement</div>
+
+                <div class="heatmap-row" data-problems="CN-02" onclick="toggleDetail('d-ee01')">
+                    <div class="heatmap-cell cap-name">Staff Productivity</div>
+                    <div class="heatmap-cell">CAP-R-EE-01</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell score score-1">1</div>
+                    <div class="heatmap-cell overall score-1">1</div>
+                    <div class="heatmap-cell problems">CN-02</div>
+                </div>
+                <div class="heatmap-detail" id="d-ee01">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">Staff toggle 4-6 systems, rely on manual workarounds</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Front (1)</div><div class="detail-layer-note">Multiple separate applications per role</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Middle (1)</div><div class="detail-layer-note">No unified task queue or case management</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#F4A261;">Back (1)</div><div class="detail-layer-note">Siloed data across systems</div></div>
+                    </div>
+                    <div style="margin-top:8px;"><span class="evidence-tag">E8</span> <span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <!-- Data & Intelligence -->
+                <div class="heatmap-row domain-header">Data & Intelligence</div>
+
+                <div class="heatmap-row" data-problems="UN-04,UN-01" onclick="toggleDetail('d-di01')">
+                    <div class="heatmap-cell cap-name">Data Foundation</div>
+                    <div class="heatmap-cell">CAP-R-DI-01</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell overall score-0">0</div>
+                    <div class="heatmap-cell problems">UN-04, UN-01</div>
+                </div>
+                <div class="heatmap-detail" id="d-di01">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">No data warehouse, no self-service analytics, no governance</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Front (0)</div><div class="detail-layer-note">No BI tools or dashboards</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Middle (0)</div><div class="detail-layer-note">No MDM, no data quality rules</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Back (0)</div><div class="detail-layer-note">No data warehouse, no ETL pipelines</div></div>
+                    </div>
+                    <div style="margin-top:8px;"><span class="evidence-tag">E6</span> <span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <div class="heatmap-row" data-problems="UN-03" onclick="toggleDetail('d-di02')">
+                    <div class="heatmap-cell cap-name">Analytics & Reporting</div>
+                    <div class="heatmap-cell">CAP-R-DI-02</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell overall score-0">0</div>
+                    <div class="heatmap-cell problems">UN-03</div>
+                </div>
+                <div class="heatmap-detail" id="d-di02">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">Cannot measure problems, cannot discover new ones</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Front (0)</div><div class="detail-layer-note">No analytics dashboards</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Middle (0)</div><div class="detail-layer-note">No analytics engine</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Back (0)</div><div class="detail-layer-note">Data trapped in source systems</div></div>
+                    </div>
+                    <div style="margin-top:8px;"><span class="evidence-tag">E6</span> <span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <!-- AI & Agentic -->
+                <div class="heatmap-row domain-header">AI & Agentic</div>
+
+                <div class="heatmap-row" data-problems="UN-06" onclick="toggleDetail('d-ai01')">
+                    <div class="heatmap-cell cap-name">Conversational AI</div>
+                    <div class="heatmap-cell">CAP-R-AI-01</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell overall score-0">0</div>
+                    <div class="heatmap-cell problems">UN-06</div>
+                </div>
+                <div class="heatmap-detail" id="d-ai01">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">No AI capabilities deployed. Requires data foundation first.</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Front (0)</div><div class="detail-layer-note">No chatbot or virtual assistant</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Middle (0)</div><div class="detail-layer-note">No NLP engine</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Back (0)</div><div class="detail-layer-note">No training data infrastructure</div></div>
+                    </div>
+                    <div style="margin-top:8px;"><span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <div class="heatmap-row" data-problems="UN-06" onclick="toggleDetail('d-ai02')">
+                    <div class="heatmap-cell cap-name">AI Copilots</div>
+                    <div class="heatmap-cell">CAP-R-AI-02</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell overall score-0">0</div>
+                    <div class="heatmap-cell problems">UN-06</div>
+                </div>
+                <div class="heatmap-detail" id="d-ai02">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">No employee AI tools. Future phase after data foundation.</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Front (0)</div><div class="detail-layer-note">No AI-assisted interfaces</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Middle (0)</div><div class="detail-layer-note">No recommendation engines</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Back (0)</div><div class="detail-layer-note">No ML infrastructure</div></div>
+                    </div>
+                    <div style="margin-top:8px;"><span class="confidence-badge confidence-high">HIGH</span></div>
+                </div>
+
+                <div class="heatmap-row" data-problems="UN-06" onclick="toggleDetail('d-ai03')">
+                    <div class="heatmap-cell cap-name">AI Governance</div>
+                    <div class="heatmap-cell">CAP-R-AI-03</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell score score-0">0</div>
+                    <div class="heatmap-cell overall score-0">0</div>
+                    <div class="heatmap-cell problems">UN-06</div>
+                </div>
+                <div class="heatmap-detail" id="d-ai03">
+                    <p style="font-size:13px;color:var(--bb-text-light);margin-bottom:12px;">No AI governance, ethics framework, or model management</p>
+                    <div class="detail-layers">
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Front (0)</div><div class="detail-layer-note">No AI transparency interfaces</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Middle (0)</div><div class="detail-layer-note">No model governance or bias detection</div></div>
+                        <div class="detail-layer"><div class="detail-layer-title" style="color:#E63946;">Back (0)</div><div class="detail-layer-note">No model registry or monitoring</div></div>
+                    </div>
+                    <div style="margin-top:8px;"><span class="confidence-badge confidence-medium">MEDIUM</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MATURITY SUMMARY -->
+        <div class="section alt">
+            <h3>Overall Maturity Summary</h3>
+            <div class="stat-row">
+                <div class="stat-card negative"><div class="stat-label">Current State</div><div class="stat-value">0.9/4.0</div><div class="stat-context">Between Absent and Fragmented</div></div>
+                <div class="stat-card negative"><div class="stat-label">Absent (Score 0)</div><div class="stat-value">47%</div><div class="stat-context">8 of 17 capabilities — Red zone</div></div>
+                <div class="stat-card"><div class="stat-label">Fragmented (Score 1)</div><div class="stat-value">41%</div><div class="stat-context">7 capabilities — Amber-Red</div></div>
+                <div class="stat-card"><div class="stat-label">Defined (Score 2)</div><div class="stat-value">12%</div><div class="stat-context">2 capabilities — Amber</div></div>
+            </div>
+
+            <h4>Layer Pattern Analysis</h4>
+            <table>
+                <tr><th>Layer</th><th>Avg Score</th><th>Pattern</th></tr>
+                <tr><td><strong>Front</strong></td><td>0.9</td><td><strong>"Digital veneer"</strong> — front-ends exist for basic functions but are incomplete</td></tr>
+                <tr><td><strong>Middle</strong></td><td>0.9</td><td><strong>"Manual middle"</strong> — people, not automation, connecting front to back</td></tr>
+                <tr><td><strong>Back</strong></td><td>0.9</td><td><strong>"Integration desert"</strong> — point-to-point, batch, no orchestration layer</td></tr>
+            </table>
+            <div class="quote-block">
+                <div class="quote-text">Front, Middle, and Back are equally weak. This is NOT a "glass front, broken back" problem — it's a uniformly low maturity across all layers. The entire stack needs investment.</div>
+                <div class="quote-attr">Key Insight</div>
+            </div>
+        </div>
+
+        <!-- TRACEABILITY -->
+        <div class="section" id="traceability">
+            <h3>Problem → Capability Traceability</h3>
+            <table>
+                <tr><th>Problem</th><th>Type</th><th>Severity</th><th>Solving Capabilities</th><th>Current Score</th><th>Gap Action</th></tr>
+                <tr><td><strong>CN-01:</strong> Low onboarding completion</td><td>Considered</td><td style="color:#E63946;font-weight:700;">Critical</td><td>CAP-R-CL-01, CAP-R-RC-01</td><td>1, 1</td><td>Automate onboarding + eKYC</td></tr>
+                <tr><td><strong>CN-02:</strong> Expensive servicing</td><td>Considered</td><td style="color:#F4A261;font-weight:700;">High</td><td>CAP-R-CE-01, CAP-R-CE-02, CAP-R-EE-01</td><td>1, 1, 1</td><td>Self-service + employee workspace</td></tr>
+                <tr><td><strong>CN-03:</strong> Digital hasn't scaled</td><td>Considered</td><td style="color:#F4A261;font-weight:700;">High</td><td>CAP-R-PO-01, CAP-R-CL-01</td><td>1, 1</td><td>Workflow orchestration</td></tr>
+                <tr><td><strong>UN-R-01:</strong> Silent churn</td><td>Unconsidered</td><td style="color:#F4A261;font-weight:700;">High</td><td>CAP-R-CL-03, CAP-R-DI-01</td><td>0, 0</td><td>Analytics + behavioral insights</td></tr>
+                <tr><td><strong>UN-R-03:</strong> No journey visibility</td><td>Unconsidered</td><td style="color:#F4A261;font-weight:700;">High</td><td>CAP-R-PO-01, CAP-R-DI-02</td><td>1, 0</td><td>Process analytics + BPM</td></tr>
+                <tr><td><strong>UN-R-04:</strong> Data trapped in silos</td><td>Unconsidered</td><td style="color:#F4A261;font-weight:700;">High</td><td>CAP-R-DI-01, CAP-R-CL-03</td><td>0, 0</td><td>Data foundation + customer 360</td></tr>
+                <tr><td><strong>UN-R-06:</strong> No AI strategy</td><td>Unconsidered</td><td style="color:#E9C46A;font-weight:700;">Medium</td><td>CAP-R-AI-01/02/03</td><td>0, 0, 0</td><td>Future — after data foundation</td></tr>
+            </table>
+        </div>
+
+        <!-- PATH TO TARGET -->
+        <div class="section alt" id="path-target">
+            <h3>Path to Target State (Top Priorities)</h3>
+
+            <div class="accordion">
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>Priority 1: CAP-R-PO-01 Workflow & BPM — Current 1 → Target 2</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p><strong>What Level 1 Looks Like Today:</strong> Manual workarounds are the process. Staff use email, Excel, and personal checklists. No enterprise workflow engine, no SLA tracking, no process visibility.</p>
+                        <p><strong>What Level 2 Looks Like:</strong> Enterprise BPM platform deployed. Onboarding modeled and automated end-to-end. Top 10 servicing processes orchestrated. SLA tracking and alerting in place. 50-60% reduction in manual handoffs.</p>
+                        <table class="table-compact">
+                            <tr><th>Layer</th><th>Current</th><th>Target</th><th>Specific Changes</th></tr>
+                            <tr><td>Front</td><td>1</td><td>2</td><td>Task management UIs, SLA dashboards for staff</td></tr>
+                            <tr><td>Middle</td><td>1</td><td>2</td><td>Deploy BPM engine, rules engine, process orchestration</td></tr>
+                            <tr><td>Back</td><td>1</td><td>2</td><td>Integrate all systems via API layer, unified audit trail</td></tr>
+                        </table>
+                        <p><strong>Dependencies:</strong> None — this IS the foundation.</p>
+                        <p><strong>Business Outcomes:</strong> Onboarding cycle time 7 days → &lt;2 days; 30-40% STP rate; staff time savings 300+ hrs/month</p>
+                        <p><strong>Effort:</strong> L — 12-18 months</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>Priority 2: CAP-R-DI-01 Data Foundation — Current 0 → Target 2</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p><strong>What Level 0 Looks Like Today:</strong> No data warehouse or lake. Cannot answer basic questions about customer behavior. Data trapped in source systems.</p>
+                        <p><strong>What Level 2 Looks Like:</strong> Modern data warehouse deployed. ETL pipelines from major systems. Self-service BI tools. Data governance framework.</p>
+                        <table class="table-compact">
+                            <tr><th>Layer</th><th>Current</th><th>Target</th><th>Specific Changes</th></tr>
+                            <tr><td>Front</td><td>0</td><td>2</td><td>Self-service BI tools, executive dashboards</td></tr>
+                            <tr><td>Middle</td><td>0</td><td>2</td><td>MDM, data quality rules, governance</td></tr>
+                            <tr><td>Back</td><td>0</td><td>2</td><td>Data warehouse, ETL pipelines, unified schema</td></tr>
+                        </table>
+                        <p><strong>Dependencies:</strong> None — foundational.</p>
+                        <p><strong>Business Outcomes:</strong> Time to insight from weeks to minutes; enables all analytics and AI capabilities.</p>
+                        <p><strong>Effort:</strong> L — 12-18 months (parallel with P1)</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>Priority 3: CAP-R-CL-01 Digital Onboarding — Current 1 → Target 2</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p><strong>What Level 1 Looks Like Today:</strong> Digital channel exists (E7) but broken middle/back. Low completion (E1), document friction (E2), 7+ day cycle (E3).</p>
+                        <p><strong>What Level 2 Looks Like:</strong> Standardized end-to-end onboarding. Automated document verification with eKYC. 30-40% STP. &lt;48 hours for all applications.</p>
+                        <table class="table-compact">
+                            <tr><th>Layer</th><th>Current</th><th>Target</th><th>Specific Changes</th></tr>
+                            <tr><td>Front</td><td>1</td><td>2</td><td>Improved UX, mobile document capture, real-time status</td></tr>
+                            <tr><td>Middle</td><td>1</td><td>2</td><td>Workflow orchestration, eKYC, decision engine, STP rules</td></tr>
+                            <tr><td>Back</td><td>1</td><td>2</td><td>API integration layer, automated screening, unified audit trail</td></tr>
+                        </table>
+                        <p><strong>Dependencies:</strong> CRITICAL — CAP-R-PO-01 (workflow) must reach Level 2 first.</p>
+                        <p><strong>Business Outcomes:</strong> Completion rate 40% → 65% = 30,000 additional customers/year = $2.4M revenue.</p>
+                        <p><strong>Effort:</strong> L — 12-18 months (overlaps with P1 deployment)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATA & AI -->
+        <div class="section" id="data-ai">
+            <h3>Data & Intelligence Assessment</h3>
+            <div class="stat-row">
+                <div class="stat-card negative"><div class="stat-label">Data Foundation</div><div class="stat-value" style="font-size:16px;">0 — Absent</div><div class="stat-context">No data warehouse, no self-service analytics, no data governance. The bank operates entirely on source-system reports and manual Excel analysis.</div></div>
+                <div class="stat-card negative"><div class="stat-label">Analytics</div><div class="stat-value" style="font-size:16px;">0 — Absent</div><div class="stat-context">No journey analytics, no funnel tracking, no channel behavior analysis. The bank cannot measure the problems it knows about.</div></div>
+                <div class="stat-card negative"><div class="stat-label">AI & Agentic</div><div class="stat-value" style="font-size:16px;">0 — Absent</div><div class="stat-context">No AI capabilities deployed. AI requires data foundation at Level 2+ before deployment. Realistic timeline: 18-24 months.</div></div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- ACT 6: DELIVERY ROADMAP                      -->
+        <!-- ============================================ -->
+        <div class="act-header" id="act6">
+            <div class="act-num">Act 6</div>
+            <h2>Delivery Roadmap</h2>
+            <div class="act-sub">18-month phased implementation plan</div>
+        </div>
+
+        <div class="section">
+            <h3>MVP Scope</h3>
+            <table>
+                <tr><th></th><th>MVP 1 (Foundation + Onboarding)</th><th>MVP 2 (Self-Service + Analytics)</th></tr>
+                <tr><td><strong>Journeys</strong></td><td>Digital onboarding end-to-end</td><td>Self-service expansion, channel orchestration</td></tr>
+                <tr><td><strong>Capabilities</strong></td><td>Workflow orchestration, eKYC, STP, save & resume</td><td>Top 20 self-service features, proactive deflection, journey analytics</td></tr>
+                <tr><td><strong>Duration</strong></td><td>Months 0-12 (foundation + scale)</td><td>Months 7-18 (parallel + optimize)</td></tr>
+            </table>
+
+            <h3>Project Timeline</h3>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-phase">Months 0-6</div>
+                    <div class="timeline-title">Foundation</div>
+                    <div class="timeline-desc">Data validation, workflow platform, analytics setup, eKYC integration, pilot in 1 market</div>
+                    <div class="timeline-milestones"><strong>Milestone:</strong> Pilot live, baseline metrics validated</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-phase">Months 7-12</div>
+                    <div class="timeline-title">Scale</div>
+                    <div class="timeline-desc">Onboarding rollout, self-service expansion, channel orchestration</div>
+                    <div class="timeline-milestones"><strong>Milestone:</strong> Onboarding automated, self-service live</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-phase">Months 13-18</div>
+                    <div class="timeline-title">Optimize</div>
+                    <div class="timeline-desc">Full deployment, journey optimization, customer 360</div>
+                    <div class="timeline-milestones"><strong>Milestone:</strong> Full value realization, continuous improvement</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background:var(--bb-cyan);box-shadow:0 0 0 2px var(--bb-cyan);"></div>
+                    <div class="timeline-phase">Months 19+</div>
+                    <div class="timeline-title">Sustain</div>
+                    <div class="timeline-desc">AI exploration, advanced analytics, continuous improvement, platform reuse for future LoB</div>
+                    <div class="timeline-milestones"><strong>Milestone:</strong> Platform reuse for SME/Wealth</div>
+                </div>
+            </div>
+
+            <h4>Investment Summary</h4>
+            <table>
+                <tr><th>Phase</th><th>Investment</th><th>Cumulative</th><th>Expected Annual Benefits</th></tr>
+                <tr><td>Foundation (0-6)</td><td>$4.5M</td><td>$4.5M</td><td>$0 (building)</td></tr>
+                <tr><td>Scale (7-12)</td><td>$3.0M</td><td>$7.5M</td><td>$3.1M (ramping)</td></tr>
+                <tr><td>Optimize (13-18)</td><td>$0.5M</td><td>$8.0M</td><td>$6.7M (maturing)</td></tr>
+                <tr><td>Sustain (19+)</td><td>$1.8M/year</td><td>—</td><td>$8.2M (steady state)</td></tr>
+            </table>
+        </div>
+
+        <div class="section alt">
+            <h3>Dependencies & Risks</h3>
+            <table>
+                <tr><th>Dependency</th><th>Impact if Delayed</th><th>Mitigation</th></tr>
+                <tr><td><strong>Baseline data validation (DG1-DG10)</strong></td><td>ROI model unvalidated, investment case weakened</td><td>Phase 0 data gathering sprint (Weeks 1-4)</td></tr>
+                <tr><td><strong>eKYC regulatory approval</strong></td><td>Cannot automate onboarding identity verification</td><td>Early regulatory engagement, parallel path with enhanced manual KYC</td></tr>
+                <tr><td><strong>Change management commitment</strong></td><td>Staff revert to workarounds (E8 repeats)</td><td>Executive sponsorship, dedicated change team, pilot-first approach</td></tr>
+                <tr><td><strong>Core banking API availability</strong></td><td>Integration delays, manual workarounds persist</td><td>API-first integration layer, adapter pattern for legacy systems</td></tr>
+            </table>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- ACT 7: BENEFITS CASE                         -->
+        <!-- ============================================ -->
+        <div class="act-header" id="act7">
+            <div class="act-num">Act 7</div>
+            <h2>Benefits Case</h2>
+            <div class="act-sub">3-year financial projection with scenario analysis</div>
+        </div>
+
+        <div class="section">
+            <h3>Business Benefits Projected Over 3 Years</h3>
+            <table>
+                <tr><th>Year</th><th>Investment</th><th>Benefits</th><th>Net</th><th>Cumulative</th></tr>
+                <tr><td><strong>Year 0</strong></td><td>$4.5M</td><td>$0.0M</td><td style="color:#E63946;">-$4.5M</td><td style="color:#E63946;">-$4.5M</td></tr>
+                <tr><td><strong>Year 1</strong></td><td>$3.9M</td><td>$3.1M</td><td style="color:#E63946;">-$0.8M</td><td style="color:#E63946;">-$5.3M</td></tr>
+                <tr><td><strong>Year 2</strong></td><td>$1.8M</td><td>$6.7M</td><td style="color:#2A9D8F;">+$4.9M</td><td style="color:#E63946;">-$0.4M</td></tr>
+                <tr><td><strong>Year 3</strong></td><td>$1.8M</td><td>$8.2M</td><td style="color:#2A9D8F;">+$6.4M</td><td style="color:#2A9D8F;font-weight:700;">+$6.0M</td></tr>
+                <tr style="background:#F0F4FF;"><td><strong>Total</strong></td><td><strong>$12.0M</strong></td><td><strong>$18.0M</strong></td><td style="color:#2A9D8F;font-weight:700;"><strong>+$6.0M</strong></td><td></td></tr>
+            </table>
+
+            <h4>Financial Summary</h4>
+            <div class="stat-row">
+                <div class="stat-card"><div class="stat-label">Total Investment</div><div class="stat-value">$12M</div><div class="stat-context">3-year total cost</div></div>
+                <div class="stat-card positive"><div class="stat-label">Total Benefits</div><div class="stat-value">$18M</div><div class="stat-context">3-year total return</div></div>
+                <div class="stat-card positive"><div class="stat-label">NPV (10%)</div><div class="stat-value">$5.2M</div><div class="stat-context">Net present value</div></div>
+                <div class="stat-card highlight"><div class="stat-label">IRR</div><div class="stat-value">42%</div><div class="stat-context">Payback at 18 months</div></div>
+            </div>
+
+            <h4>Value Drivers</h4>
+            <table>
+                <tr><th>#</th><th>Value Driver</th><th>Annual Run-Rate (Yr3)</th><th>Type</th><th>Confidence</th></tr>
+                <tr><td>1</td><td>Digital self-service channel shift</td><td><strong>$5.8M</strong></td><td>Cost Avoidance</td><td>Medium</td></tr>
+                <tr><td>2</td><td>Improved onboarding conversion</td><td><strong>$2.4M</strong></td><td>Revenue Uplift</td><td>Medium</td></tr>
+                <tr style="background:#F0F4FF;"><td></td><td><strong>Total</strong></td><td><strong>$8.2M</strong></td><td></td><td></td></tr>
+            </table>
+        </div>
+
+        <div class="section alt" id="scenarios">
+            <h3>Scenario Analysis</h3>
+            <div class="scenario-grid">
+                <div class="scenario-card conservative">
+                    <div class="scenario-name">Conservative</div>
+                    <div class="scenario-value">$2.0M</div>
+                    <div class="scenario-metrics">
+                        <div><strong>IRR:</strong> 22% &nbsp; <strong>NPV:</strong> $1.8M</div>
+                        <div style="margin-top:8px;font-size:12px;">15pp completion improvement, 20pp containment shift, 6-month delay</div>
+                    </div>
+                </div>
+                <div class="scenario-card base" style="border-color:var(--bb-green);">
+                    <div class="scenario-name">Base (Moderate)</div>
+                    <div class="scenario-value">$6.0M</div>
+                    <div class="scenario-metrics">
+                        <div><strong>IRR:</strong> 42% &nbsp; <strong>NPV:</strong> $5.2M</div>
+                        <div style="margin-top:8px;font-size:12px;">25pp completion improvement, 40pp containment shift, on-schedule</div>
+                    </div>
+                </div>
+                <div class="scenario-card aspirational">
+                    <div class="scenario-name">Aspirational</div>
+                    <div class="scenario-value">$10.5M</div>
+                    <div class="scenario-metrics">
+                        <div><strong>IRR:</strong> 65% &nbsp; <strong>NPV:</strong> $8.8M</div>
+                        <div style="margin-top:8px;font-size:12px;">30pp completion, 50pp containment, faster adoption, +2 value levers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="assumptions">
+            <h3>Key Assumptions</h3>
+            <table>
+                <tr><th>#</th><th>Assumption</th><th>Value Used</th><th>Source</th><th>Sensitivity</th></tr>
+                <tr><td>A1</td><td>Onboarding completion rate baseline</td><td>~40%</td><td>Inferred from E1 "low"</td><td style="color:#E63946;font-weight:600;">High — validate with client data</td></tr>
+                <tr><td>A2</td><td>Monthly onboarding volume</td><td>~10,000 apps</td><td>Tier-2 SEA bank estimate</td><td style="color:#E63946;font-weight:600;">High — drives revenue model</td></tr>
+                <tr><td>A3</td><td>Revenue per retail customer/year</td><td>$80</td><td>SEA retail benchmark</td><td>Medium</td></tr>
+                <tr><td>A4</td><td>Digital containment rate (current)</td><td>~20%</td><td>Inferred from E5</td><td style="color:#E63946;font-weight:600;">High — drives servicing model</td></tr>
+                <tr><td>A5</td><td>Monthly servicing transaction volume</td><td>~100,000</td><td>Tier-2 SEA bank estimate</td><td style="color:#E63946;font-weight:600;">High — drives cost model</td></tr>
+                <tr><td>A6</td><td>Cost per call center transaction</td><td>$10</td><td>Global benchmark</td><td style="color:#E63946;font-weight:600;">High — core ROI driver</td></tr>
+                <tr><td>A7</td><td>Cost per digital self-service transaction</td><td>$1</td><td>Industry standard</td><td>Low</td></tr>
+                <tr><td>A8</td><td>Implementation timeline</td><td>18 months</td><td>Standard for scope</td><td>Medium</td></tr>
+                <tr><td>A9</td><td>Discount rate (WACC)</td><td>10%</td><td>Assumption — validate with CFO</td><td>Medium</td></tr>
+                <tr><td>A10</td><td>No major regulatory blockers to eKYC</td><td>Yes</td><td>Standard SEA banking</td><td>Medium</td></tr>
+            </table>
+            <div class="quote-block">
+                <div class="quote-text">Overall Confidence: MEDIUM — Benefits model uses global proxy benchmarks where client-specific data was unavailable (DG1-DG10). Validation of assumptions A1-A6 with actual client data is required before final investment approval.</div>
+                <div class="quote-attr">Recommendation: Conditional Go</div>
+            </div>
+        </div>
+
+        <!-- NEXT STEPS -->
+        <div class="section alt">
+            <h3>Recommended Next Steps</h3>
+            <div class="stat-row">
+                <div class="stat-card"><div class="stat-label">Step 1</div><div class="stat-value" style="font-size:16px;">Validate Data</div><div class="stat-context">4-week sprint to validate 10 data gaps (DG1-DG10) and firm up the ROI model with actual client metrics</div></div>
+                <div class="stat-card"><div class="stat-label">Step 2</div><div class="stat-value" style="font-size:16px;">Foundation Sprint</div><div class="stat-context">Begin Phase 0: workflow platform setup, API layer, eKYC integration, pilot environment</div></div>
+                <div class="stat-card"><div class="stat-label">Step 3</div><div class="stat-value" style="font-size:16px;">Executive Alignment</div><div class="stat-context">Present validated business case to steering committee for full investment approval</div></div>
+            </div>
+            <div class="quote-block" style="background:linear-gradient(135deg, #091C35 0%, #0F2B4F 100%);">
+                <div class="quote-text" style="font-size:22px;">Every month of delay costs <span style="color:var(--bb-cyan);font-weight:800;">$680K</span> in lost revenue and excess servicing costs.</div>
+                <div class="quote-attr">The cost of doing nothing</div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- APPENDIX                                     -->
+        <!-- ============================================ -->
+        <div class="act-header" id="appendix">
+            <div class="act-num">Appendix</div>
+            <h2>Supporting Data</h2>
+            <div class="act-sub">Evidence register, methodology, and glossary</div>
+        </div>
+
+        <div class="section" id="evidence">
+            <h3>Evidence Register</h3>
+            <table>
+                <tr><th>ID</th><th>Source</th><th>Quote</th><th>Lifecycle</th><th>Confidence</th></tr>
+                <tr><td><strong>E1</strong></td><td>Head of Retail</td><td>"Our onboarding completion rate is low"</td><td>Acquire</td><td>Medium</td></tr>
+                <tr><td><strong>E2</strong></td><td>Head of Retail</td><td>"A lot of customers drop off when documents are required"</td><td>Acquire</td><td>High</td></tr>
+                <tr><td><strong>E3</strong></td><td>Head of Retail</td><td>"It can take more than a week in some cases"</td><td>Activate</td><td>Medium</td></tr>
+                <tr><td><strong>E4</strong></td><td>Operations Lead</td><td>"Servicing is expensive"</td><td>Retain</td><td>Medium</td></tr>
+                <tr><td><strong>E5</strong></td><td>Operations Lead</td><td>"Simple requests still come through the call center"</td><td>Retain</td><td>High</td></tr>
+                <tr><td><strong>E6</strong></td><td>Operations Lead</td><td>"We don't have a clear view of why customers choose branch or call over digital"</td><td>Retain</td><td>High</td></tr>
+                <tr><td><strong>E7</strong></td><td>Digital Lead</td><td>"We launched digital onboarding, but it hasn't scaled well"</td><td>Acquire</td><td>High</td></tr>
+                <tr><td><strong>E8</strong></td><td>Digital Lead</td><td>"Teams still rely on manual workarounds"</td><td>Activate</td><td>High</td></tr>
+            </table>
+        </div>
+
+        <div class="section alt">
+            <h3>Methodology</h3>
+            <table>
+                <tr><th>Aspect</th><th>Detail</th></tr>
+                <tr><td><strong>Capability Scale</strong></td><td>BIAN-aligned 0-4 (Absent → Fragmented → Defined → Orchestrated → Intelligent)</td></tr>
+                <tr><td><strong>Layer Structure</strong></td><td>Front (Experience) / Middle (Orchestration) / Back (Integration + Systems of Record)</td></tr>
+                <tr><td><strong>Scoring Rule</strong></td><td>Overall = weakest layer. Conservative bias applied.</td></tr>
+                <tr><td><strong>Problem-First</strong></td><td>Capabilities assessed in context of identified business problems (3 CN + 4 UN)</td></tr>
+                <tr><td><strong>Reference</strong></td><td>capability_taxonomy.md v2.0</td></tr>
+            </table>
+        </div>
+
+        <div class="section" id="glossary">
+            <h3>Glossary</h3>
+            <table class="table-compact">
+                <tr><th>Term</th><th>Definition</th></tr>
+                <tr><td><strong>F/M/B</strong></td><td>Front Layer / Middle Layer / Back Layer — the three architectural planes assessed</td></tr>
+                <tr><td><strong>STP</strong></td><td>Straight-Through Processing — end-to-end automation without manual intervention</td></tr>
+                <tr><td><strong>RAG</strong></td><td>Red/Amber/Green — color-coded maturity indicators</td></tr>
+                <tr><td><strong>BIAN</strong></td><td>Banking Industry Architecture Network — standard for banking capability taxonomy</td></tr>
+                <tr><td><strong>eKYC</strong></td><td>Electronic Know Your Customer — digital identity verification</td></tr>
+                <tr><td><strong>BPM</strong></td><td>Business Process Management — workflow automation engine</td></tr>
+                <tr><td><strong>CAP-R-XX-NN</strong></td><td>Capability ID format: R=Retail, XX=Domain, NN=Sequence</td></tr>
+                <tr><td><strong>CN-XX</strong></td><td>Considered Need — a problem the bank has already identified</td></tr>
+                <tr><td><strong>UN-R-XX</strong></td><td>Unconsidered Need — a problem we surfaced that the bank hasn't raised</td></tr>
+            </table>
+        </div>
+
+        <!-- FOOTER -->
+        <div style="background:var(--bb-navy);color:white;padding:40px 60px;text-align:center;">
+            <p style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:8px;">Assessment & Solutioning Report — Ignite Assess</p>
+            <p style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:8px;">Retail Bank SEA | February 2026 | Version 2.0</p>
+            <p style="font-size:13px;color:rgba(255,255,255,0.5);">Classification: Confidential | Prepared by Backbase Value Consulting</p>
+            <p style="font-weight:800;font-size:18px;margin-top:16px;">Back<span style="color:var(--bb-cyan);">base</span></p>
+        </div>
+
+    </div><!-- end .main -->
+
+    <script>
+        // Heatmap drill-down toggle
+        function toggleDetail(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.toggle('open');
+        }
+
+        // Problem filter
+        function filterProblems(filter) {
+            document.querySelectorAll('.problem-chip').forEach(c => c.classList.remove('active'));
+            if (filter !== 'all') {
+                document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+            } else {
+                document.querySelector('[data-filter="all"]').classList.add('active');
+            }
+            document.querySelectorAll('.heatmap-row[data-problems]').forEach(row => {
+                if (filter === 'all') {
+                    row.classList.remove('dimmed');
+                } else {
+                    const problems = row.getAttribute('data-problems');
+                    if (problems && problems.includes(filter)) {
+                        row.classList.remove('dimmed');
+                    } else {
+                        row.classList.add('dimmed');
+                    }
+                }
+            });
+        }
+
+        // Accordion toggle
+        function toggleAccordion(header) {
+            header.classList.toggle('open');
+            const body = header.nextElementSibling;
+            body.classList.toggle('open');
+        }
+
+        // Active nav on scroll
+        const sections = document.querySelectorAll('[id]');
+        const navItems = document.querySelectorAll('.nav-item');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const top = section.offsetTop - 100;
+                if (window.scrollY >= top) current = section.getAttribute('id');
+            });
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('href') === '#' + current) item.classList.add('active');
+            });
+        });
+
+        // Close mobile sidebar on nav click
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelector('.sidebar').classList.remove('open');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -23,11 +23,37 @@ Every journey should be mapped using swimlane diagrams that show:
    - Customer friction (customer pain points)
    - System friction (integration issues)
 
+4. **Front / Middle / Back Layer Indicators:**
+   Each journey step involves one or more architectural layers:
+   - **Front Layer** (Experience Plane): What the customer or employee sees and interacts with
+   - **Middle Layer** (Capability Plane): What orchestrates, decides, and controls behind the scenes
+   - **Back Layer** (Integration Plane + Systems of Record): What connects, stores, and processes
+
+5. **Problem Statement Linkage:**
+   Each journey links to problems (considered + unconsidered) and capabilities:
+   - **Problem IDs**: CN-XX (considered needs), UN-XX (unconsidered needs)
+   - **Capability IDs**: CAP-R-XX-NN from `knowledge/standards/capability_taxonomy.md`
+   - **Strategic Theme**: Which business objective this journey serves (Acquire/Activate/Expand/Retain)
+
 ---
 
 ## Customer Acquisition Journeys
 
 ### J1: Account Opening Journey (Digital + Branch)
+
+**Lifecycle Stage:** Acquire
+**Strategic Theme:** Reduce acquisition cost, improve conversion
+**Linked Capabilities:** CAP-R-CL-01 (Digital Onboarding), CAP-R-RC-01 (KYC/AML), CAP-R-PO-01 (Workflow & BPM)
+**Linked Problems:** [Map during assessment — e.g., CN-01: Slow onboarding, UN-R-03: No front-to-back visibility]
+
+#### Front-to-Back Layer View
+
+| Journey Phase | Front Layer | Middle Layer | Back Layer |
+|--------------|-------------|-------------|------------|
+| Research & Apply | Website, mobile app, branch UI | Application workflow, feature flagging | API gateway, session management |
+| Document Collection | Upload UI, camera capture, branch scanner | OCR validation, document classification, workflow routing | Document management system, KYC vendor integration |
+| Processing | Status tracking in app | Decision engine (auto-approve/refer/decline), STP rules | Core banking account creation, AML screening, credit bureau |
+| Activation | Welcome experience, digital card | Notification orchestration, activation workflow | Card processor, core posting, regulatory reporting |
 
 #### Current State Flow
 
@@ -111,6 +137,21 @@ Every journey should be mapped using swimlane diagrams that show:
 
 ### J2: Card Acquisition Journey
 
+**Lifecycle Stage:** Acquire
+**Strategic Theme:** Reduce card-to-hand time, improve activation rates
+**Linked Capabilities:** CAP-R-RB-02 (Card Management), CAP-R-DL-01 (Consumer Loan Origination — if credit card), CAP-R-RC-01 (KYC/AML)
+**Linked Problems:** [Map during assessment]
+
+#### Front-to-Back Layer View
+
+| Journey Phase | Front Layer | Middle Layer | Back Layer |
+|--------------|-------------|-------------|------------|
+| Application | Online/branch application form | Application workflow, eligibility rules | CRM, core banking |
+| Verification | Document upload UI | Verification workflow, income validation | Credit bureau, document management |
+| Decisioning | Decision notification | Credit scoring engine, underwriting rules | Risk scoring system, regulatory reporting |
+| Production | Tracking UI | Card lifecycle orchestration | Card processor, payment network (Visa/MC) |
+| Activation | Digital activation, wallet provisioning | Activation workflow, PIN management | Card processor, digital wallet API |
+
 #### Current State Flow
 
 ```
@@ -142,6 +183,20 @@ Every journey should be mapped using swimlane diagrams that show:
 ## Servicing Journeys
 
 ### J3: Money Movement Journey (Transfers & Payments)
+
+**Lifecycle Stage:** Activate / Expand
+**Strategic Theme:** Reduce cost-to-serve, improve digital adoption
+**Linked Capabilities:** CAP-R-PT-01 (Domestic Payments), CAP-R-CE-01 (Digital Channel Availability)
+**Linked Problems:** [Map during assessment]
+
+#### Front-to-Back Layer View
+
+| Journey Phase | Front Layer | Middle Layer | Back Layer |
+|--------------|-------------|-------------|------------|
+| Initiate | Mobile/web payment form, beneficiary picker | Payment type routing, limits checking | API gateway, account inquiry |
+| Authorize | OTP/biometric, step-up authentication | Fraud rules, authorization logic | Authentication service, fraud detection |
+| Process | Loading/confirmation screen | Payment orchestration, scheduling, STP rules | Payment network (ACH/RTP/SEPA), core posting, AML screening |
+| Confirm | Receipt, notification | Notification engine, reconciliation | Core banking confirmation, regulatory reporting |
 
 #### Current State Flow
 
@@ -185,6 +240,20 @@ Every journey should be mapped using swimlane diagrams that show:
 
 ### J4: Issue Resolution / Dispute Journey
 
+**Lifecycle Stage:** Retain
+**Strategic Theme:** Reduce cost-to-serve, improve customer satisfaction
+**Linked Capabilities:** CAP-R-EE-01 (Case Management), CAP-R-CE-02 (Employee Workspace), CAP-R-CE-03 (Contact Center), CAP-R-AI-01 (Conversational AI)
+**Linked Problems:** [Map during assessment — e.g., UN-R-02: Employee context-switching tax]
+
+#### Front-to-Back Layer View
+
+| Journey Phase | Front Layer | Middle Layer | Back Layer |
+|--------------|-------------|-------------|------------|
+| Report Issue | Mobile/web dispute form, call center | Case creation, classification, routing | Case management system, CRM |
+| Investigation | Status tracking for customer, case workspace for staff | Investigation workflow, evidence collection, SLA monitoring | Transaction systems, fraud detection, correspondence |
+| Resolution | Resolution notification | Resolution workflow, refund orchestration, approval rules | Core banking adjustment, regulatory complaint tracking |
+| Communication | In-app notification, email/SMS | Notification orchestration | Correspondence system, audit trail |
+
 #### Current State Flow
 
 ```
@@ -219,18 +288,110 @@ Every journey should be mapped using swimlane diagrams that show:
 
 ### Summary Table: Time per Servicing Task
 
-| Servicing Task | Yearly Volume | Branch Time (hrs) | Call Center Time (hrs) | Back Office Time (hrs) | Backbase Impact |
-|---------------|---------------|-------------------|----------------------|----------------------|-----------------|
-| Balance Inquiry | 500,000 | 0.08 | 0.08 | - | 70% ↓ |
-| Statement Request | 200,000 | 0.17 | 0.17 | - | 80% ↓ |
-| Card Block/Unblock | 50,000 | 0.17 | 0.08 | - | 90% ↓ |
-| PIN Reset | 30,000 | 0.25 | 0.17 | - | 80% ↓ |
-| Address/Details Change | 100,000 | 0.25 | 0.17 | 0.17 | 50% ↓ |
-| Transaction Dispute | 20,000 | 0.33 | 0.25 | 0.75 | 30% ↓ |
-| Standing Order Setup | 40,000 | 0.25 | 0.17 | - | 70% ↓ |
-| Cheque Book Request | 25,000 | 0.17 | 0.08 | 0.08 | 80% ↓ |
-| Loan Inquiry | 80,000 | 0.33 | 0.25 | - | 40% ↓ |
-| Account Closure | 15,000 | 0.50 | - | 0.33 | 20% ↓ |
+| Servicing Task | Yearly Volume | Branch Time (hrs) | Call Center Time (hrs) | Back Office Time (hrs) | Backbase Impact | Linked Capabilities |
+|---------------|---------------|-------------------|----------------------|----------------------|-----------------|---------------------|
+| Balance Inquiry | 500,000 | 0.08 | 0.08 | - | 70% ↓ | CAP-R-RB-01, CAP-R-CE-01 |
+| Statement Request | 200,000 | 0.17 | 0.17 | - | 80% ↓ | CAP-R-RB-01, CAP-R-CE-01 |
+| Card Block/Unblock | 50,000 | 0.17 | 0.08 | - | 90% ↓ | CAP-R-RB-02, CAP-R-CE-01 |
+| PIN Reset | 30,000 | 0.25 | 0.17 | - | 80% ↓ | CAP-R-RB-02, CAP-R-CE-01 |
+| Address/Details Change | 100,000 | 0.25 | 0.17 | 0.17 | 50% ↓ | CAP-R-CL-02, CAP-R-PO-01 |
+| Transaction Dispute | 20,000 | 0.33 | 0.25 | 0.75 | 30% ↓ | CAP-R-EE-01, CAP-R-CE-02 |
+| Standing Order Setup | 40,000 | 0.25 | 0.17 | - | 70% ↓ | CAP-R-PT-01, CAP-R-CE-01 |
+| Cheque Book Request | 25,000 | 0.17 | 0.08 | 0.08 | 80% ↓ | CAP-R-RB-01, CAP-R-CE-01 |
+| Loan Inquiry | 80,000 | 0.33 | 0.25 | - | 40% ↓ | CAP-R-DL-01, CAP-R-AI-01 |
+| Account Closure | 15,000 | 0.50 | - | 0.33 | 20% ↓ | CAP-R-CL-01, CAP-R-PO-01 |
+| Beneficiary Management | 60,000 | 0.17 | 0.08 | - | 70% ↓ | CAP-R-PT-01, CAP-R-CE-01 |
+| Direct Debit Management | 45,000 | 0.17 | 0.08 | 0.08 | 60% ↓ | CAP-R-PT-01, CAP-R-PO-01 |
+| Travel Notification | 35,000 | 0.08 | 0.08 | - | 90% ↓ | CAP-R-RB-02, CAP-R-CE-01 |
+| Limit Increase Request | 40,000 | 0.25 | 0.17 | 0.17 | 50% ↓ | CAP-R-RB-02, CAP-R-DL-01 |
+| KYC Periodic Review | 20,000 | 0.50 | - | 0.75 | 40% ↓ | CAP-R-RC-01, CAP-R-PO-01 |
+| Loan Modification/Forbearance | 10,000 | 0.50 | 0.25 | 0.50 | 25% ↓ | CAP-R-DL-01, CAP-R-PO-01 |
+
+### Regional Servicing Variations
+
+Volumes and task types vary by market. The assessment agent should adapt based on the client's region:
+
+#### US Market
+| Regional Task | Description | Linked Capabilities |
+|--------------|-------------|---------------------|
+| Mobile Check Deposit | Remote deposit capture via mobile camera | CAP-R-CE-01, CAP-R-PT-01 |
+| Zelle / P2P Disputes | Real-time payment disputes (Reg E) | CAP-R-EE-01, CAP-R-PT-01 |
+| Wire Transfer Requests | Domestic/international wire initiation | CAP-R-PT-01, CAP-R-RC-01 |
+| Tax Form Requests (1099/W-9) | Year-end tax document generation and delivery | CAP-R-DI-02, CAP-R-CE-01 |
+| Overdraft Protection Management | Opt-in/opt-out, linked account setup | CAP-R-RB-01, CAP-R-CE-01 |
+| ACH Dispute / Return | ACH origination disputes and returns | CAP-R-EE-01, CAP-R-PT-01 |
+| eStatement Enrollment | Paper-to-digital statement migration | CAP-R-RB-01, CAP-R-CE-01 |
+
+**US-Specific Regulatory Context:** Reg E (electronic transfers), Reg CC (check holds), TILA (lending disclosures), CRA (community reinvestment), Dodd-Frank, CFPB oversight. Assessment should check for compliance automation maturity.
+
+#### EMEA Market
+| Regional Task | Description | Linked Capabilities |
+|--------------|-------------|---------------------|
+| SEPA Direct Debit Management | Mandate management, R-transactions | CAP-R-PT-01, CAP-R-PO-01 |
+| Open Banking Consent Management | PSD2/AISP/PISP consent lifecycle | CAP-R-RC-01, CAP-R-CE-01 |
+| Verification of Payee | Confirmation of payee before payment execution | CAP-R-PT-01, CAP-R-RC-01 |
+| GDPR Data Requests (SAR/DSAR) | Subject access requests, right to erasure | CAP-R-CL-02, CAP-R-RC-01 |
+| Instant Payment (SCT Inst / Faster Payments) | Real-time payment with immediate confirmation | CAP-R-PT-01 |
+
+**EMEA-Specific Regulatory Context:** PSD2/PSD3 (open banking), GDPR (data protection), DORA (digital resilience), MiCA (crypto). Assessment should check for open banking readiness and consent management.
+
+#### APAC Market
+| Regional Task | Description | Linked Capabilities |
+|--------------|-------------|---------------------|
+| QR Payment Setup | PayNow/PromptPay/UPI QR code generation | CAP-R-PT-01, CAP-R-CE-01 |
+| E-Wallet Linkage | Link/delink digital wallets (GoPay, GrabPay, etc.) | CAP-R-PT-01, CAP-R-CE-01 |
+| Mobile Number Transfer | Transfer money by mobile number (UPI, PayNow) | CAP-R-PT-01 |
+| Remittance Services | Cross-border worker remittances | CAP-R-PT-01, CAP-R-RC-01 |
+
+**APAC-Specific Context:** Mobile-first markets, QR payment adoption high, super-app integration common, varying KYC regimes. Assessment should check for mobile-first readiness and real-time payment support.
+
+#### LATAM Market
+| Regional Task | Description | Linked Capabilities |
+|--------------|-------------|---------------------|
+| Pix Payments (Brazil) | Instant payment system management | CAP-R-PT-01 |
+| Boleto Management (Brazil) | Boleto issuance and tracking | CAP-R-PT-01, CAP-R-RB-01 |
+| Currency Controls | FX and remittance regulatory compliance | CAP-R-PT-01, CAP-R-RC-01 |
+
+---
+
+## Cross-Sell & Expansion Journeys
+
+### J5: Cross-Sell / Product Expansion Journey
+
+**Lifecycle Stage:** Expand
+**Strategic Theme:** Grow share of wallet, increase product penetration
+**Linked Capabilities:** CAP-R-CL-03 (Customer Behavioral Insights), CAP-R-DI-01 (Data Foundation), CAP-R-AI-02 (AI Copilots), CAP-R-CE-02 (Employee Workspace)
+**Linked Problems:** [Map during assessment — e.g., UN-R-01: Silent churn, UN-R-04: Data exists but isn't used]
+
+**From Seabank engagement:** CLO (Cross-Lending Origination) was the single largest value lever at $7.7M over 5 years, demonstrating that cross-sell is a primary revenue driver when done well.
+
+#### Front-to-Back Layer View
+
+| Journey Phase | Front Layer | Middle Layer | Back Layer |
+|--------------|-------------|-------------|------------|
+| Trigger Detection | In-app banner, push notification, RM alert | Propensity model, event detection, next-best-action engine | Customer data, transaction history, behavioral analytics |
+| Offer Presentation | Personalized offer in app/web, RM conversation | Offer orchestration, eligibility rules, pricing engine | Product catalog, credit scoring, regulatory rules |
+| Application | Pre-filled application form | Application workflow (pre-approved = shortened), cross-product rules | Core banking, credit bureau, document management |
+| Fulfillment | Confirmation, product activation | Product activation workflow, welcome sequence | Core banking, card processor, LMS |
+
+---
+
+### J6: Loyalty & Retention Journey
+
+**Lifecycle Stage:** Retain
+**Strategic Theme:** Reduce churn, deepen engagement
+**Linked Capabilities:** CAP-R-CL-03 (Behavioral Insights), CAP-R-AI-01 (Conversational AI), CAP-R-CE-01 (Digital Channels)
+**Linked Problems:** [Map during assessment — e.g., UN-R-01: Silent customer churn]
+
+**From Seabank engagement:** Loyalty & Retention was the second largest value lever at $6.38M over 5 years.
+
+#### Front-to-Back Layer View
+
+| Journey Phase | Front Layer | Middle Layer | Back Layer |
+|--------------|-------------|-------------|------------|
+| Engagement Monitoring | Financial wellness dashboard, spending insights | Engagement scoring, churn prediction model | Transaction analytics, behavioral data |
+| Proactive Intervention | Personalized nudges, savings goals, rewards | Trigger engine, campaign orchestration, NBO | CRM, marketing automation, loyalty platform |
+| Win-Back | Special offer, RM outreach | Win-back workflow, escalation to RM for high-value | CRM, product catalog, core banking |
 
 ---
 

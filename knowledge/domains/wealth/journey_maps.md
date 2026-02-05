@@ -23,6 +23,18 @@ Every journey should be mapped using swimlane diagrams that show:
    - Customer friction (client pain points)
    - System friction (integration issues)
 
+4. **Front / Middle / Back Layer Indicators:**
+   Each journey step involves one or more architectural layers:
+   - **Front Layer** (Experience Plane): What the client or RM sees and interacts with
+   - **Middle Layer** (Capability Plane): What orchestrates, decides, and controls behind the scenes
+   - **Back Layer** (Integration Plane + Systems of Record): What connects, stores, and processes
+
+5. **Problem Statement Linkage:**
+   Each journey links to problems (considered + unconsidered) and capabilities:
+   - **Problem IDs**: CN-XX (considered needs), UN-XX (unconsidered needs)
+   - **Capability IDs**: CAP-W-XX-NN from `knowledge/standards/capability_taxonomy.md`
+   - **Strategic Theme**: Which business objective this journey serves (Acquire/Activate/Expand/Retain)
+
 ---
 
 ## Customer Lifecycle: Acquire → Activate → Expand → Retain
@@ -41,6 +53,20 @@ Every journey should be mapped using swimlane diagrams that show:
 ## Acquire Stage Journeys
 
 ### J1: Prospecting - Events
+
+**Lifecycle Stage:** Acquire
+**Strategic Theme:** Improve lead conversion, reduce cost of acquisition
+**Linked Capabilities:** CAP-W-CE-03 (Referral & Lead Management), CAP-W-CL-03 (Client Behavioral Intelligence), CAP-W-AI-01 (Conversational AI)
+**Linked Problems:** [Map during assessment — e.g., UN-W-04: Referral decay]
+
+#### Front-to-Back Layer View
+
+| Journey Phase | Front Layer | Middle Layer | Back Layer |
+|--------------|-------------|-------------|------------|
+| Pre-Event & Invitation | Email platform, WhatsApp broadcast | Campaign orchestration, target audience selection, compliance review | CRM, client data, marketing automation |
+| Event Execution | Event registration, check-in | Attendance tracking, engagement scoring | Event platform, CRM update |
+| Post-Event Lead Capture | Lead capture form, RM notification | Lead scoring, auto-assignment, pipeline creation | CRM, core banking (existing client check) |
+| Follow-up | RM workspace, communication templates | Follow-up workflow, SLA management, nurture sequencing | CRM, correspondence system, audit trail |
 
 #### Current State Flow
 
@@ -89,6 +115,20 @@ Every journey should be mapped using swimlane diagrams that show:
 
 ### J2: Prospecting - Referrals
 
+**Lifecycle Stage:** Acquire
+**Strategic Theme:** Reduce referral decay, improve speed-to-contact
+**Linked Capabilities:** CAP-W-CE-03 (Referral & Lead Management), CAP-W-CE-02 (RM/Advisor Workspace), CAP-W-PO-01 (Workflow & BPM)
+**Linked Problems:** [Map during assessment — e.g., UN-W-04: Referral decay, UN-W-01: Advisors spend more time on admin]
+
+#### Front-to-Back Layer View
+
+| Journey Phase | Front Layer | Middle Layer | Back Layer |
+|--------------|-------------|-------------|------------|
+| Opportunity ID | Branch referral form, RM notification | Referral intake, duplicate check, auto-routing | CRM, core banking (existing relationship check) |
+| Lead Qualification | RM workspace with lead details | Lead scoring, qualification rules, SLA triggers | CRM, external data enrichment |
+| Lead Management | RM task list, engagement tracker | Nurture workflow, activity tracking | CRM, correspondence, audit trail |
+| Conversion | Onboarding initiation in workspace | Conversion workflow, handoff to onboarding | CRM, core banking, KYC systems |
+
 #### Current State Flow
 
 ```
@@ -134,6 +174,21 @@ Every journey should be mapped using swimlane diagrams that show:
 ---
 
 ### J3: Onboarding - Primarily Existing Customer Upgrade
+
+**Lifecycle Stage:** Acquire / Activate
+**Strategic Theme:** Reduce onboarding time, improve client experience
+**Linked Capabilities:** CAP-W-CL-01 (Client Onboarding), CAP-W-RC-01 (KYC/AML), CAP-W-PO-01 (Workflow & BPM), CAP-W-CE-02 (RM Workspace)
+**Linked Problems:** [Map during assessment — e.g., UN-W-01: Advisors spend more time on admin than clients]
+
+#### Front-to-Back Layer View
+
+| Journey Phase | Front Layer | Middle Layer | Back Layer |
+|--------------|-------------|-------------|------------|
+| Confirmation | RM workspace — eligibility check | Eligibility rules, AUM threshold validation | Core banking (balance inquiry) |
+| Form Filling & Doc Collection | Digital forms (or paper), document upload | Form validation, document classification, pre-fill from existing data | Document management, CRM, core banking |
+| Processing | Status tracking (RM view, client view) | KYC workflow, account creation orchestration, STP rules | Core banking, KYC vendor, AML screening, regulatory reporting |
+| Audit | RM re-check workspace | Audit workflow, compliance review rules | Document management, compliance systems |
+| Activation | Welcome experience, card delivery tracking | Activation workflow, card issuance orchestration | Card processor, core posting, digital wallet |
 
 #### Current State Flow
 
@@ -194,6 +249,21 @@ Every journey should be mapped using swimlane diagrams that show:
 
 ### J4: Portfolio Review / Client Servicing
 
+**Lifecycle Stage:** Expand / Retain
+**Strategic Theme:** Increase RM productivity, improve client engagement quality
+**Linked Capabilities:** CAP-W-WI-01 (Portfolio Management), CAP-W-CE-02 (RM Workspace), CAP-W-DI-01 (Data Foundation), CAP-W-AI-02 (AI Copilots), CAP-W-AI-04 (Advice Copilot)
+**Linked Problems:** [Map during assessment — e.g., UN-W-01: Advisors on admin, UN-W-03: Client assets leaking undetected]
+
+#### Front-to-Back Layer View
+
+| Journey Phase | Front Layer | Middle Layer | Back Layer |
+|--------------|-------------|-------------|------------|
+| Request | Client portal/app, WhatsApp, call | Request routing, SLA trigger | CRM, case management |
+| Data Collation | RM workspace with client 360 | Data aggregation from multiple sources, portfolio calculation | Core banking, securities system, insurance system, custody |
+| Report Prep | Auto-generated portfolio report | Report engine, performance calculation, benchmark comparison | Data warehouse, analytics engine |
+| Client Update | Client portal (self-serve), RM presentation | Meeting scheduling, document sharing, secure messaging | CRM, document management, correspondence |
+| Clarifications | Secure messaging, follow-up tracker | Follow-up workflow, action tracking | CRM, case management, audit trail |
+
 #### Current State Flow
 
 ```
@@ -250,21 +320,78 @@ Every journey should be mapped using swimlane diagrams that show:
 
 ### J5: Customer Servicing Summary
 
+**Lifecycle Stage:** Retain
+**Strategic Theme:** Reduce cost-to-serve, shift RM time from admin to advice
+**Linked Capabilities:** CAP-W-CE-02 (RM Workspace), CAP-W-EE-01 (Advisor Productivity), CAP-W-AI-02 (AI Copilots), CAP-W-AI-04 (Advice Copilot), CAP-W-DI-01 (Data Foundation)
+**Linked Problems:** [Map during assessment — e.g., UN-W-01: Admin vs. client time, UN-W-05: Complexity mismatch]
+
 #### Servicing Task Analysis
 
-| Servicing Task | RM Time | RM Asst Time | BO Time | Employee Friction | Customer Friction |
-|---------------|---------|--------------|---------|-------------------|-------------------|
-| **Portfolio Review** | ⬤ High | ⬤ Medium | ⬤ Low | RMs stitch data from multiple systems | No consolidated view |
-| **Relationship Maintenance** | ⬤ High | ⬤ Low | ⬤ Low | Follow-ups rely on RM memory | Inconsistent service |
-| **Sales & Advisory** | ⬤ High | ⬤ Medium | ⬤ Low | Manual research, no digital catalog | Wait for RM suggestions |
-| **Customer Queries** | ⬤ High | ⬤ Medium | ⬤ Low | RMs are first line, no case tracking | No clear route if RM busy |
-| **Transaction Support** | ⬤ Medium | ⬤ High | ⬤ High | Paper mandates, manual checks | Re-sign forms, no visibility |
-| **Reporting & Statements** | ⬤ High | ⬤ Medium | ⬤ Medium | Manual data pull from multiple systems | Fragmented statements |
-| **Meeting Prep** | ⬤ High | ⬤ Low | ⬤ Low | Significant data collection time | Quality varies by prep time |
-| **Internal Coordination** | ⬤ High | ⬤ Medium | ⬤ Medium | Chase teams via calls/emails | Slow, opaque processes |
-| **Compliance & Consent** | ⬤ Medium | ⬤ High | ⬤ High | Paper-heavy KYC, repeated rework | Long doc lists, re-submissions |
+| Servicing Task | RM Time | RM Asst Time | BO Time | Employee Friction | Customer Friction | Linked Capabilities |
+|---------------|---------|--------------|---------|-------------------|-------------------|---------------------|
+| **Portfolio Review** | ⬤ High | ⬤ Medium | ⬤ Low | RMs stitch data from multiple systems | No consolidated view | CAP-W-WI-01, CAP-W-DI-01, CAP-W-CE-02 |
+| **Relationship Maintenance** | ⬤ High | ⬤ Low | ⬤ Low | Follow-ups rely on RM memory | Inconsistent service | CAP-W-CL-03, CAP-W-CE-02, CAP-W-AI-04 |
+| **Sales & Advisory** | ⬤ High | ⬤ Medium | ⬤ Low | Manual research, no digital catalog | Wait for RM suggestions | CAP-W-WI-02, CAP-W-AI-02, CAP-W-CL-03 |
+| **Customer Queries** | ⬤ High | ⬤ Medium | ⬤ Low | RMs are first line, no case tracking | No clear route if RM busy | CAP-W-EE-01, CAP-W-AI-01, CAP-W-CE-02 |
+| **Transaction Support** | ⬤ Medium | ⬤ High | ⬤ High | Paper mandates, manual checks | Re-sign forms, no visibility | CAP-W-WI-03, CAP-W-PO-01 |
+| **Reporting & Statements** | ⬤ High | ⬤ Medium | ⬤ Medium | Manual data pull from multiple systems | Fragmented statements | CAP-W-DI-01, CAP-W-DI-02, CAP-W-CE-01 |
+| **Meeting Prep** | ⬤ High | ⬤ Low | ⬤ Low | Significant data collection time | Quality varies by prep time | CAP-W-AI-04, CAP-W-DI-01, CAP-W-CE-02 |
+| **Internal Coordination** | ⬤ High | ⬤ Medium | ⬤ Medium | Chase teams via calls/emails | Slow, opaque processes | CAP-W-PO-01, CAP-W-EE-01 |
+| **Compliance & Consent** | ⬤ Medium | ⬤ High | ⬤ High | Paper-heavy KYC, repeated rework | Long doc lists, re-submissions | CAP-W-RC-01, CAP-W-CL-01, CAP-W-AI-03 |
+| **Wealth Planning / Fact-Finding** | ⬤ High | ⬤ Low | ⬤ Low | 90 min per session (Schroders: 4.5x benchmark) | Manual data entry, delayed plans | CAP-W-WI-02, CAP-W-AI-04, CAP-W-DI-01 |
+| **Reasons-Why / Annual Review Letters** | ⬤ High | ⬤ Medium | ⬤ Low | 3 hrs per letter (Schroders: 6x benchmark) | Long wait for documentation | CAP-W-AI-04, CAP-W-AI-02, CAP-W-DI-01 |
+| **Corporate Actions Processing** | ⬤ Low | ⬤ Medium | ⬤ High | Manual booking, cross-system reconciliation | No visibility on corporate events | CAP-W-WI-03, CAP-W-PO-01, CAP-W-DI-01 |
+| **Trade Execution & Settlement** | ⬤ Medium | ⬤ Medium | ⬤ High | Manual order entry, reconciliation | No self-service trading | CAP-W-WI-03, CAP-W-CE-01 |
+| **Suitability Reassessment** | ⬤ Medium | ⬤ High | ⬤ Medium | Periodic review manual and paper-based | Repeated questionnaires | CAP-W-RC-01, CAP-W-CL-02, CAP-W-AI-03 |
+| **Fee Disclosure & Reporting** | ⬤ Low | ⬤ Medium | ⬤ High | Fee reports manually compiled | Lack of transparency | CAP-W-DI-02, CAP-W-CE-01 |
 
 Legend: ⬤ High = Significant time/friction | ⬤ Medium = Moderate | ⬤ Low = Minimal
+
+### Engagement Benchmarks (From Past Engagements)
+
+These benchmarks from actual Backbase engagements provide reference points for capability assessment:
+
+| Metric | Schroders (UK) | ISPWM (Luxembourg) | HNB (Sri Lanka) | Goodbody (Ireland) |
+|--------|---------------|--------------------|-----------------|--------------------|
+| RM effort per onboarding | 4.5 hrs (benchmark: 1 hr) | N/A | 3 hrs | N/A |
+| Ops effort per onboarding | 5 hrs (benchmark: 1 hr) | N/A | 1 hr | N/A |
+| Onboarding rejection rate | 35% (benchmark: 5%) | N/A | N/A | N/A |
+| Review prep time | 4-6 hrs (benchmark: 1.5 hrs) | N/A | 1-2 hrs | N/A |
+| Data sources for review | 6-7 systems | Multiple | Multiple | Multiple |
+| Fact-finding time | 90 min (benchmark: 20 min) | N/A | N/A | N/A |
+| Annual review letter | 3 hrs (benchmark: 30 min) | N/A | N/A | N/A |
+| Non-value task time | N/A | 65% of RM time | 5.4 hrs/day | N/A |
+| Digital adoption | N/A | <30% (target: >80%) | 15% initial | 44% paperless |
+| Churn rate | 4% (target: 3%) | >10% (target: <5%) | N/A | N/A |
+
+### Regional Considerations for Wealth
+
+#### US Market
+| Task | Description | Regulatory |
+|------|-------------|------------|
+| Tax-Loss Harvesting | Periodic portfolio review for tax optimization | IRS rules, wash sale |
+| 1099/K-1 Reporting | Year-end tax document preparation and delivery | IRS reporting |
+| RMD (Required Minimum Distribution) | Retirement account mandatory distributions | IRS age-based rules |
+| Form ADV / CRS Delivery | Annual regulatory disclosure delivery | SEC/FINRA |
+| Beneficiary Designation Updates | Estate planning document updates | State law variations |
+| DOL Fiduciary Compliance | Best interest documentation for retirement accounts | DOL rules |
+
+#### EMEA Market
+| Task | Description | Regulatory |
+|------|-------------|------------|
+| MiFID II Suitability | Periodic suitability assessment and documentation | MiFID II |
+| Cost & Charges Disclosure | Annual ex-post cost disclosure to clients | MiFID II Art 50 |
+| ESG Preference Assessment | Sustainability preference questionnaire | SFDR / MiFID II |
+| Cross-Border Tax Reporting | CRS/FATCA reporting for multi-jurisdiction clients | CRS, FATCA |
+| PRIIPs KID Delivery | Key Information Document for packaged products | PRIIPs Regulation |
+
+#### APAC / Emerging Markets
+| Task | Description | Context |
+|------|-------------|---------|
+| Multi-Currency Portfolio | Multi-currency consolidation and FX management | Common in HK, SG |
+| Islamic Banking Compliance | Shariah-compliant investment screening | GCC, Malaysia, Indonesia |
+| NRI/NRE Account Management | Non-resident investment account servicing | India-specific |
+| Family Office Services | Multi-generational wealth structure management | Growing APAC segment |
 
 ---
 

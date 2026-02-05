@@ -1,503 +1,889 @@
-# Capability Assessment Report
+# Assessment & Solutioning Report
+## Ignite Assess Engagement Deliverable
 
-**Client:** Retail Bank - SEA Region
-**Engagement:** Digital Banking Transformation Assessment
-**Date:** 2026-01-13
-**Prepared by:** Value Consulting Team
-
----
-
-## Executive Summary
-
-### Overall Assessment
-
-**Overall Maturity Score: 2.2 / 5.0** (Developing - Level 2)
-
-The bank operates at an early-stage digital maturity with foundational capabilities deployed but significant execution gaps preventing value realization. Digital onboarding exists but fails to scale (E7), servicing remains channel-inefficient (E4, E5), and critical analytics capabilities are absent (E6).
-
-The assessment reveals three critical capability gaps:
-1. **Onboarding journey orchestration (1.5/5.0)** causing low completion rates and extended cycle times
-2. **Digital self-service and channel optimization (1.5/5.0)** driving high servicing costs
-3. **Journey analytics and data-driven optimization (1.0/5.0)** preventing systematic improvement
-
-### Critical Gaps
-
-1. **Digital Onboarding Performance:** Low completion rates (E1), document verification friction (E2), and cycle times exceeding 7 days (E3) indicate fragmented, manual-heavy processes losing customer acquisition opportunities worth $6M annually.
-
-2. **Servicing Cost Structure:** Expensive servicing model (E4) with simple requests routed to high-cost channels (E5) represents $4-5M annual cost inefficiency. Digital containment estimated at 20% vs. industry benchmark 60%.
-
-3. **Analytics and Insights Deficit:** No visibility into customer journey behavior (E6) prevents data-driven optimization. Bank operates reactively based on anecdotes rather than systematic measurement.
-
-### Top Priorities
-
-1. **Fix Onboarding Journey (High Priority):** Implement workflow automation, eKYC, and straight-through processing to improve completion rate from 40% to 65%, acquiring 30,000 additional customers annually.
-
-2. **Enable Digital Self-Service (High Priority):** Expand self-service transactions and channel orchestration to shift 40,000 monthly transactions to digital, saving $5.8M annually.
-
-3. **Build Analytics Foundation (Medium Priority):** Establish journey tracking and measurement capability to enable continuous optimization and future personalization.
-
-### Recommended Focus
-
-**Immediate focus: Onboarding and Self-Service Capabilities** - These address the most urgent business pain points (customer acquisition friction, servicing costs) with measurable ROI. Parallel investment in analytics foundation enables measurement and optimization. Phased approach balances quick wins with foundational infrastructure, managing risk through pilot validation before enterprise scaling.
+**Client:** Retail Bank — SEA Region
+**Date:** February 2026
+**Engagement:** Digital Banking Transformation — Onboarding & Servicing
+**Engagement Type:** Ignite Assess
+**Prepared by:** Backbase Value Consulting
 
 ---
 
-## Assessment Summary
+## Table of Contents
 
-### Overall Maturity Score
-
-**Current State Maturity: 2.2 / 5.0** (Developing - Level 2)
-
-The bank has moved beyond ad-hoc processes (Level 1) with digital channels launched and basic workflows defined. However, execution is inconsistent, automation incomplete, and significant manual intervention remains. Success depends on individual workarounds (E8) rather than systematic processes. The gap from current state (2.2) to target state (3.0-3.5) requires foundational investment in workflow orchestration, process automation, and measurement.
-
-**Industry Context:** Global average for retail banks is 3.0/5.0; regional digital leaders (DBS, CIMB digital) operate at 4.0+/5.0. Bank is 0.8 points below global average and 1.8-2.0 points behind regional leaders, representing a 12-24 month transformation effort.
-
-### Critical Gaps Ranked by Business Impact
-
-1. **Digital Onboarding Journey (Current 1.5, Target 3.5, Gap 2.0)** - $2.4M annual revenue opportunity
-2. **Digital Self-Service (Current 1.5, Target 3.5, Gap 2.0)** - $5.8M annual cost savings opportunity
-3. **Process Automation & Workflow (Current 1.5-2.0, Target 3.5-4.0, Gap 2.0+)** - Foundational enabler
-4. **Journey Analytics (Current 1.0, Target 3.0, Gap 2.0)** - Enabling capability for optimization
-5. **Channel Orchestration (Current 1.5, Target 3.0, Gap 1.5)** - Cost optimization enabler
-
-### Quick Wins Identified
-
-Given significant foundational gaps, true "quick wins" are limited. However, priority actions in first 6 months:
-
-1. **Data Validation & Baseline Establishment (Months 0-2, Low Effort):** Close data gaps (DG1-DG10), establish measurement baselines, refine ROI model - enables all downstream work.
-
-2. **eKYC Vendor Selection & Integration Start (Months 0-6, Medium Effort):** Directly addresses document verification friction (E2) - highest-impact single pain point.
-
-3. **Journey Analytics PoC (Months 1-5, Medium Effort):** Implement event tracking and dashboards for onboarding funnel - provides immediate visibility into drop-off points (addressing E6).
+| # | Section | Purpose |
+|---|---------|---------|
+| **01** | Strategic Goals | Alignment on your strategy and what you want to achieve |
+| **02** | The Vision | Unified platform to support long-term growth |
+| **03** | Phase 1 — The Lighthouse | Retail digital banking transformation as the starting point |
+| **04** | Deep-Dive: Assessment & Solutioning | Challenges, impact, recommendations across the customer lifecycle |
+| **05** | Capability Assessment | Front-to-back maturity heatmap with problem traceability |
+| **06** | Delivery Roadmap | Phased delivery plan |
+| **07** | Benefits Case | Detailed business benefits case |
+| | Appendix | Supporting data and methodology |
 
 ---
 
-## Capability Maturity Scorecard
-
-| Capability Domain | Current | Target | Gap | Business Impact | Priority |
-|-------------------|---------|--------|-----|-----------------|----------|
-| **Customer Acquisition** | | | | | |
-| Digital Onboarding Journey | 1.5 | 3.5 | 2.0 | High - $2.4M revenue opportunity | High |
-| Identity Verification & KYC | 1.5 | 3.0 | 1.5 | Medium - Key friction point (E2) | High |
-| Application Processing | 2.0 | 3.5 | 1.5 | Medium - Cycle time impact | Medium |
-| **Customer Servicing** | | | | | |
-| Digital Self-Service | 1.5 | 3.5 | 2.0 | High - $5.8M cost opportunity | High |
-| Channel Orchestration | 1.5 | 3.0 | 1.5 | High - Cost optimization | High |
-| Service Request Management | 2.5 | 3.5 | 1.0 | Medium - Process exists but inefficient | Medium |
-| **Data & Analytics** | | | | | |
-| Customer Journey Analytics | 1.0 | 3.0 | 2.0 | Medium - Enabling capability | Medium |
-| Channel Behavior Analytics | 1.0 | 3.0 | 2.0 | Medium - Supports cost reduction | Medium |
-| Performance Dashboards | 1.5 | 3.0 | 1.5 | Low - Measurement enabler | Low |
-| **Operational Excellence** | | | | | |
-| Process Automation | 2.0 | 4.0 | 2.0 | High - Foundation for efficiency | High |
-| Workflow Orchestration | 1.5 | 3.5 | 2.0 | High - Foundation for all automation | High |
-| Change Management | 2.0 | 3.0 | 1.0 | Medium - Critical for adoption (E7) | Medium |
-
-**Overall Average: 2.2 / 5.0**
-
-**Color-Coding:**
-- Red (1.0-2.0): 6 capabilities - Critical gaps requiring immediate attention
-- Yellow (2.1-3.5): 3 capabilities - Developing, opportunity for improvement
-- Green (3.6-5.0): 0 capabilities - None at adequate or leading maturity
-
-**Interpretation:** The bank has significant capability gaps across all domains with no capabilities at adequate maturity (3.6+). This indicates a comprehensive transformation is required, not isolated improvements. However, gaps represent opportunity - closing to industry average (3.0) would yield $8M+ in annual benefits.
+# SECTION 1: Bank Vision
 
 ---
 
-## Detailed Assessment Summary
+## 01. Level Setting — Our Understanding of the Bank's Goals & Hurdles
 
-### Domain 1: Customer Acquisition Capabilities
+### Strategic Objectives
 
-**Domain Maturity: 1.7 / 5.0** (Initial/Ad Hoc)
+Group-level objectives synthesized from detailed assessment interviews with the Head of Retail, Operations Lead, and Digital Lead:
 
-**Assessment:** Digital onboarding exists but performs poorly due to manual processes, fragmented workflows, and document verification friction. Completion rate is low (E1), customers drop off at document verification (E2), and cycle times exceed 7 days (E3). Digital investment made but scaling issues (E7) and reliance on workarounds (E8) prevent value realization.
+1. **Digital-first customer acquisition:** Improve onboarding to increase customer acquisition and reduce time-to-activate. The bank has invested in digital onboarding but it has not scaled as expected (E7).
 
-**Key Capabilities:**
+2. **Cost-efficient servicing at scale:** Reduce cost-to-serve by shifting simple servicing transactions from expensive channels (call center, branch) to digital self-service (E4, E5).
 
-**Digital Onboarding Journey (1.5/5.0):**
-- **Current:** Manual-heavy, fragmented journey with low completion (estimated 40%) and extended cycle times (7+ days)
-- **Evidence:** E1 (low completion), E2 (drop-off at documents), E3 (7+ days), E7 (hasn't scaled), E8 (workarounds)
-- **Gap:** No end-to-end orchestration, manual document review, no straight-through processing
-- **Impact:** Losing 30,000 customers annually = $6M revenue opportunity in first year alone
+3. **Data-driven operations:** Build visibility into customer behavior across channels to enable systematic optimization rather than reactive fixes (E6).
 
-**Identity Verification & KYC (1.5/5.0):**
-- **Current:** Manual document review creating primary friction point (E2)
-- **Gap:** No eKYC, biometric verification, or automated validation
-- **Impact:** Document stage causes material customer drop-off (E2)
+4. **Operational efficiency:** Eliminate manual workarounds that prevent digital processes from scaling (E8).
 
-**Application Processing (2.0/5.0):**
-- **Current:** Process exists but manual, no risk-based automation
-- **Gap:** No automated decisioning, all applications follow same path
-- **Impact:** Extended cycle times (E3), operational inefficiency
+### The Opportunity
 
-**Priority Improvement:** Implement workflow orchestration + eKYC integration to automate end-to-end onboarding, targeting 65% completion rate and <48 hour cycle time for digital applications.
+The bank serves a growing retail market in Southeast Asia — one of the fastest-growing digital banking markets globally. The opportunity is threefold:
 
----
+| Segment | Current State | Potential |
+|---------|---------------|-----------|
+| **New-to-bank customers** | Low onboarding completion, 7+ day cycle time — losing ~35-50% of applicants at document stage | +30,000 additional customers annually with <48hr digital onboarding |
+| **Existing customers (servicing)** | ~80% of simple requests go to call center/branch at ~$10/transaction | $5.8M annual savings by shifting 40,000 monthly transactions to $1 digital self-service |
+| **Digital adoption** | Launched digital channel but adoption stalled (E7) | 60%+ digital containment (vs. ~20% today) unlocks scalability without linear cost |
 
-### Domain 2: Customer Servicing Capabilities
+**Total value at stake: $8.2M annually** from onboarding + servicing improvements alone — before analytics, personalization, or AI capabilities.
 
-**Domain Maturity: 1.8 / 5.0** (Initial/Ad Hoc to Developing)
+### The Catalyst
 
-**Assessment:** Servicing is expensive (E4) with simple requests routed to high-cost channels (E5) indicating minimal digital self-service adoption and no channel optimization strategy. Bank has no visibility into why customers choose specific channels (E6), preventing systematic improvement.
+The bank has already made the decision to go digital. Digital onboarding was launched, digital channels exist. But the investment is not delivering returns:
 
-**Key Capabilities:**
+> *"We launched digital onboarding, but it hasn't scaled well."* — Digital Lead (E7)
 
-**Digital Self-Service (1.5/5.0):**
-- **Current:** Minimal self-service functionality or highly underutilized (estimated 20% digital containment)
-- **Evidence:** E4 (expensive), E5 (simple requests to call center), E6 (no channel visibility)
-- **Gap:** Limited transaction types available, poor usability, no proactive deflection
-- **Impact:** 80,000 monthly transactions unnecessarily handled through $10 channels vs. $1 digital = $4.3M annual cost inefficiency
+> *"Teams still rely on manual workarounds."* — Digital Lead (E8)
 
-**Channel Orchestration (1.5/5.0):**
-- **Current:** No orchestration capability; channels operate in silos
-- **Evidence:** E5 (no deflection), E6 (no insight into channel behavior)
-- **Gap:** No intelligent routing, customer journey visibility, or channel preference tracking
-- **Impact:** Cannot optimize cost-to-serve; every unnecessary high-cost transaction costs $9
+This is the classic "digital veneer" problem: the front-end is modern, but the middle and back layers have not been transformed. The result is a digital experience that looks good but doesn't work — driving customers back to branch and call center.
 
-**Service Request Management (2.5/5.0):**
-- **Current:** Process defined and operating but inefficient
-- **Gap:** Manual processing, no routing optimization, channel silos
-- **Impact:** Requests handled but at high cost (E4)
+**Why now:** Every month of delay costs the bank approximately $680K in lost revenue and excess servicing costs. Digital-first competitors (GXS, Trust Bank, DBS digibank) are setting a <24-hour onboarding standard. The gap is widening.
 
-**Priority Improvement:** Expand digital self-service to top 20 transactions + implement channel orchestration to achieve 60% digital containment, saving $5.8M annually.
+### Key Challenges Faced Today
 
----
+| Challenge | Description | Business Impact |
+|-----------|-------------|-----------------|
+| **Low onboarding completion** | Customers drop off when documents are required (E1, E2) | Lost customer acquisition — estimated 2,500+ applicants/month abandoning |
+| **Extended cycle times** | Onboarding takes 7+ days in some cases (E3) | Poor time-to-value, customer frustration, competitive disadvantage |
+| **Expensive servicing** | Simple requests still come through the call center (E4, E5) | $3-5M annual excess cost; scalability constrained |
+| **No customer insights** | No clear view of why customers choose branch/call over digital (E6) | Cannot optimize what you cannot measure |
+| **Manual workarounds** | Teams rely on manual processes despite digital launch (E8) | Digital investment not delivering ROI; workaround culture |
+| **Digital adoption failure** | Digital onboarding launched but hasn't scaled (E7) | Strategic initiative underperforming; confidence at risk |
 
-### Domain 3: Data & Analytics Capabilities
+### The Legacy Trap
 
-**Domain Maturity: 1.2 / 5.0** (Initial)
+The bank is caught in a siloed systems architecture that blocks CX and productivity gains:
 
-**Assessment:** Critical deficit in journey analytics and customer insights. Bank has "no clear view" of channel behavior (E6), cannot measure journey performance granularly, and makes decisions based on anecdotes rather than data. This prevents systematic optimization and future personalization.
+**Current State Architecture (Simplified):**
 
-**Key Capabilities:**
+| Layer | What Exists Today | Pain |
+|-------|-------------------|------|
+| **Customer Channels** | Mobile app, internet banking, branch | Fragmented — each channel operates independently, no shared state |
+| **Employee Tools** | Multiple back-office systems, CRM, manual checklists | Context switching — staff toggle between 4-6 systems per transaction |
+| **Integration** | Point-to-point connections, batch files, manual handoffs | No orchestration — every handoff is a potential failure point |
+| **Core Systems** | Core banking, KYC platform, document management | Legacy — limited API exposure, batch processing, no real-time capabilities |
 
-**Customer Journey Analytics (1.0/5.0):**
-- **Current:** No journey tracking or analytics capability
-- **Evidence:** E6 (no visibility into channel choice), E1 (knows completion is "low" but not why/where)
-- **Gap:** No event capture, journey visualization, funnel analysis, or cohort tracking
-- **Impact:** Cannot identify drop-off points (E2 root cause), optimize journeys, or measure improvement impact
-
-**Channel Behavior Analytics (1.0/5.0):**
-- **Current:** No channel analytics
-- **Evidence:** E6 (explicit statement of no visibility)
-- **Gap:** No channel usage tracking, preference modeling, or segmentation
-- **Impact:** Cannot execute channel shift strategy or measure ROI
-
-**Performance Dashboards (1.5/5.0):**
-- **Current:** Limited high-level tracking
-- **Evidence:** Knows completion is "low" (E1) and servicing "expensive" (E4) but lacks granular metrics (DG1-DG10)
-- **Gap:** No detailed operational metrics, real-time visibility, or self-service BI
-- **Impact:** Limited accountability and slow response to issues
-
-**Priority Improvement:** Implement journey analytics platform with event tracking, dashboards, and self-service BI to enable data-driven optimization.
+The result: **a digital front door leading to an analog back office.** The front layer says "digital bank." The middle and back layers say "1990s operations."
 
 ---
 
-### Domain 4: Operational Excellence
-
-**Domain Maturity: 1.8 / 5.0** (Developing)
-
-**Assessment:** Basic automation exists with digital channels launched but significant manual intervention remains. Teams rely on workarounds (E8) indicating incomplete automation. No enterprise workflow orchestration preventing end-to-end process automation.
-
-**Key Capabilities:**
-
-**Process Automation (2.0/5.0):**
-- **Current:** Basic automation exists but significant manual work remains
-- **Evidence:** E8 (manual workarounds), E3 (manual delays), E4 (high costs suggest manual operations)
-- **Gap:** Incomplete end-to-end automation, limited RPA, poor integration
-- **Impact:** Higher cost per transaction, longer cycle times, scalability constraints
-
-**Workflow Orchestration (1.5/5.0):**
-- **Current:** No enterprise orchestration; systems operate independently
-- **Evidence:** E8 (workarounds suggest broken automation), E3 (manual handoffs cause delays)
-- **Gap:** No workflow engine, manual handoffs, no exception handling automation
-- **Impact:** Cannot automate end-to-end journeys; manual intervention required
-
-**Change Management (2.0/5.0):**
-- **Current:** Basic change management exists but insufficient for digital transformation
-- **Evidence:** E7 (digital "hasn't scaled well"), E8 (workaround behavior indicates incomplete adoption)
-- **Gap:** Insufficient training, no adoption measurement, weak change reinforcement
-- **Impact:** Technology investments not realizing value due to adoption failure
-
-**Priority Improvement:** Implement enterprise workflow orchestration platform as foundation for all process automation + invest 15-20% of program budget in change management to drive adoption.
+# SECTION 2: The Vision
 
 ---
 
-## Priority Matrix
+## 02. The Unified Banking Platform — Long-Term Transformation
 
-**Visual Representation:**
+### The Bank Tomorrow
 
-```
-High Impact
-    ^
-    |
-    |  [Digital Onboarding]     [Digital Self-Service]
-    |  [Workflow Platform]      [Process Automation]
-    |
-    |  [Channel Orchestration]  [Journey Analytics]
-    |  [eKYC]
-    |
-    |  [Change Management]
-    |                           [Dashboards]
-    |
-    +----------------------------------------> High Effort
-    Low Effort
-```
+The target state is a **unified intelligent frontline** that runs end-to-end journeys across all channels — replacing today's fragmented customer and staff apps with a single platform that orchestrates every interaction from first click to fulfillment.
 
-**Quick Wins (High Impact, Low Effort):**
-- None identified - foundational gaps require significant effort
+**Key principles:**
+- **Journey-based:** Organize around customer journeys (onboarding, servicing, engagement), not products or channels
+- **Front-to-back:** Every journey orchestrated end-to-end — experience layer, capability layer, integration layer working as one
+- **Incremental:** Progressive modernization, not big-bang replacement — build on existing digital investment
+- **Platform-first:** Build once, reuse across journeys and segments — onboarding orchestration today, lending tomorrow
 
-**Strategic Priorities (High Impact, High Effort):**
-- Digital Onboarding Journey (Impact: $2.4M revenue, Effort: 12-18mo, 8-12 FTE)
-- Digital Self-Service (Impact: $5.8M cost savings, Effort: 12-18mo, 10-15 FTE)
-- Workflow Orchestration Platform (Impact: Enables all automation, Effort: 6mo, 3-5 FTE)
-- Process Automation (Impact: Foundation for efficiency, Effort: Ongoing)
+### Progressive Modernization Approach
 
-**Fill-Ins (Low Impact, Low Effort):**
-- Performance Dashboards (useful but not blocking)
+| Phase | Focus | Outcome |
+|-------|-------|---------|
+| **Set the Foundation** | Workflow orchestration, API layer, data foundation, core journey automation | Modern orchestration layer sitting between existing front-end and core systems |
+| **Build Differentiation** | Self-service expansion, channel orchestration, journey analytics, 360 view | Data-driven engagement, measurable improvement, proactive service |
+| **Accelerate Growth** | AI-powered personalization, agentic workflows, predictive servicing | Self-optimizing, proactive banking — human-in-the-loop for exceptions only |
 
-**Moderate Priority (Medium Impact, Medium Effort):**
-- eKYC Integration (Impact: Fixes E2 friction, Effort: 6mo)
-- Channel Orchestration (Impact: Optimizes cost reduction, Effort: 6-9mo)
-- Journey Analytics (Impact: Enables optimization, Effort: 9-12mo)
-- Change Management (Impact: Critical for adoption, Effort: Ongoing)
+### Progressive Modernization Across Lines of Business
+
+| | Phase 1 (Lighthouse) | Phase 2 | Phase 3 |
+|---|---|---|---|
+| **Retail — Onboarding** | Digital onboarding automation, eKYC, STP | Full lifecycle management | AI-powered lead scoring |
+| **Retail — Servicing** | Self-service expansion, channel orchestration | Proactive engagement | Conversational AI, copilots |
+| **Future LoB (SME/Wealth)** | — | Reuse platform for SME onboarding | Extend to wealth/advisory |
 
 ---
 
-## Improvement Recommendations
-
-See [Capability Assessment (Full)](capability_assessment.md) for detailed capability-by-capability improvement recommendations.
-
-**Priority 1: Digital Onboarding Journey Optimization**
-- **Target:** 1.5 → 3.5 maturity, 40% → 65% completion rate, 7 days → <48 hours cycle time
-- **Approach:** Workflow automation + eKYC + straight-through processing
-- **Investment:** $4.1M
-- **Timeline:** 18 months
-- **Expected Benefit:** $2.4M annually (30,000 additional customers)
-
-**Priority 2: Digital Self-Service Enablement**
-- **Target:** 1.5 → 3.5 maturity, 20% → 60% digital containment
-- **Approach:** Expand self-service transactions + channel orchestration + adoption campaign
-- **Investment:** $2.8M
-- **Timeline:** 18 months
-- **Expected Benefit:** $5.8M annually (channel shift savings)
-
-**Priority 3: Journey Analytics Foundation**
-- **Target:** 1.0 → 3.0 maturity, 0% → 100% journey visibility
-- **Approach:** Event tracking + analytics platform + dashboards + self-service BI
-- **Investment:** $0.6M
-- **Timeline:** 12 months
-- **Expected Benefit:** Enabling capability for continuous optimization (indirect)
+# SECTION 3: Phase 1 — The Lighthouse
 
 ---
 
-## Cross-Cutting Themes
+## 03. Retail Digital Banking Transformation as the Starting Point
 
-### Theme 1: Incomplete Digital Transformation
+### Why Start Here
 
-**Observation:** Digital capabilities launched but fail to deliver value. Digital onboarding exists but doesn't scale (E7), teams resort to workarounds (E8), customers don't adopt digital channels (implied by E5).
+1. **Highest pain, highest value:** Onboarding and servicing are the two journeys stakeholders identified as critical. Combined value at stake: $8.2M annually.
+2. **Existing investment:** Digital onboarding is already launched (E7) — optimize rather than rebuild.
+3. **Platform reuse:** Workflow orchestration and API layer built for retail onboarding can be reused for servicing, then for future lines of business.
+4. **Organizational readiness:** All three stakeholders (Head of Retail, Operations Lead, Digital Lead) aligned on these priorities.
 
-**Impact:** Technology investments made but operating like traditional bank. ROI unrealized, competitive advantage negated.
+### In-Scope for Phase 1
 
-**Recommendation:** Shift from "launch" to "adoption and optimization" mindset. Measure and reward adoption, not just deployment. Invest in change management, training, and continuous improvement. Ensure executive sponsorship for business outcomes, not just technology delivery.
+| Journey | Capability | OOTB / Custom | Priority |
+|---------|------------|---------------|----------|
+| Digital Onboarding | Workflow orchestration, eKYC, STP rules | OOTB + Extend | P1 |
+| Digital Onboarding | Document capture & verification | OOTB + Integrate | P1 |
+| Digital Self-Service | Top 20 servicing transactions | OOTB + Extend | P1 |
+| Channel Orchestration | Intelligent routing, deflection | Extend | P2 |
+| Journey Analytics | Funnel tracking, channel analytics | OOTB + Configure | P1 |
+| Customer 360 | Unified profile for staff | OOTB + Integrate | P2 |
 
----
+### Core Value Proposition Across the Lifecycle
 
-### Theme 2: Lack of Process Automation Foundation
+| Lifecycle Stage | Key Capability | Business Outcome |
+|----------------|----------------|------------------|
+| **Acquire** | Digital onboarding with eKYC and STP | Completion rate 40% → 65%, cycle time 7 days → <48 hours |
+| **Activate** | Workflow orchestration, real-time status | Faster time-to-value, transparent process, reduced manual work |
+| **Expand** | Customer 360, journey analytics | Staff can see full relationship, identify cross-sell, proactive outreach |
+| **Retain** | Digital self-service, channel orchestration | 60% digital containment, $5.8M cost savings, scalable operations |
 
-**Observation:** Manual workarounds prevalent (E8), extended cycle times (E3), high costs (E4) all point to insufficient automation and workflow orchestration.
+### Bird's-Eye Benefits View
 
-**Impact:** Cannot scale efficiently. Every new customer/transaction requires proportional headcount increase.
+**The bank stands to gain $18M over 3 years from Phase 1**
 
-**Recommendation:** Invest in enterprise workflow orchestration platform as foundation. Implement RPA for repetitive tasks. Build API-first integrations. Automate exception handling. Measure and reduce manual touchpoints systematically.
+| Value Driver | 3-Year Value | Type |
+|-------------|-------------|------|
+| Digital self-service channel shift | $13.0M | Cost Avoidance |
+| Improved onboarding conversion | $5.0M | Revenue Uplift |
+| **Total Benefits** | **$18.0M** | |
+| Total Investment | ($12.0M) | |
+| **Net Value** | **$6.0M** | |
 
----
-
-### Theme 3: Data and Analytics Deficit
-
-**Observation:** No visibility into customer behavior (E6), cannot measure journey performance (DG1-DG10), decision-making based on anecdotes.
-
-**Impact:** Cannot optimize systematically. Flying blind.
-
-**Recommendation:** Treat data and analytics as strategic capability, not IT project. Build journey analytics foundation early. Establish data-driven culture with metrics and accountability. Invest in self-service analytics. Use A/B testing to validate changes.
-
----
-
-## Benchmarking Insights
-
-**Note:** No SEA-specific retail banking benchmarks available. Using global benchmarks as proxy with MEDIUM confidence. All benchmarks require regional validation.
-
-| Capability | Client (Estimated) | Global Average | Global Leaders | Gap to Average | Gap to Leaders |
-|------------|-------------------|----------------|----------------|----------------|----------------|
-| Digital Onboarding Completion | 40% | 65% | 80-85% | -25pp | -40-45pp |
-| Digital Onboarding Cycle Time | 7+ days | 3-5 days | <24 hours | 2-4 days | 6-7 days |
-| Digital Self-Service Containment | 20% | 55% | 75-80% | -35pp | -55-60pp |
-| Cost per Service Transaction | $10 (blended) | $6 | $3 | +$4 | +$7 |
-| Overall Digital Maturity | 2.2/5.0 | 3.0/5.0 | 4.5/5.0 | -0.8 | -2.3 |
-
-**Sources:** Gartner Banking Technology Studies (2024-2025), Forrester Digital Banking Benchmark (2024) - Global proxies, MEDIUM confidence
-
-**Interpretation:** Client significantly lags global averages, particularly in self-service containment and onboarding efficiency. Gap to leaders is substantial (2+ maturity levels = multi-year transformation). However, gaps represent opportunity - improving to average would yield $8M+ annual benefits.
-
-**Regional Context:** SEA market highly competitive with digital-first banks (GXS, Trust Bank, Aspirasi) and regional leaders (DBS, CIMB digital) setting high standards. Client's current state likely below regional average. Urgency to close gap is high.
+**ROI: 42% IRR | Payback: 18 months | NPV: $5.2M**
 
 ---
 
-## Assumptions Register
-
-See [ROI Report - Assumptions Register](roi_report.md#assumptions-register) for comprehensive list.
-
-**Critical Assumptions Affecting Assessment:**
-
-| Assumption | Impact | Confidence | Validation Needed |
-|------------|--------|------------|-------------------|
-| "Low" completion rate = 40% | High - drives maturity score and benefit sizing | Low | Validate with client data (DG1) |
-| "Expensive" servicing = $10/transaction | High - drives cost reduction opportunity | Low | Validate with finance (DG5, DG10) |
-| Digital containment currently 20% | High - baseline for channel shift | Low | Validate with operations (DG6, DG7) |
-| Target maturity 3.0-3.5 appropriate for competitive positioning | Medium - affects target setting | Medium | Benchmark against regional leaders |
-
-All high-impact assumptions require validation in Phase 0 (Months 0-3) before full investment approval.
+# SECTION 4: Deep-Dive — Assessment & Solutioning
 
 ---
 
-## Implementation Considerations
+## 04. Engagement Approach
 
-### Organizational Readiness
+Backbase Value Consulting conducted a structured assessment engagement comprising:
 
-**Strengths:**
-- Leadership awareness of problems (E1, E4, E6, E7)
-- Investment appetite (digital onboarding launched)
-- Cross-functional stakeholder engagement
-- Existing digital foundation (not starting from zero)
+- **Discovery interviews** with 3 senior stakeholders (Head of Retail, Operations Lead, Digital Lead)
+- **Evidence-based analysis** producing an 8-item evidence register (E1-E8)
+- **Capability assessment** using BIAN-aligned 0-4 maturity scale across Front/Middle/Back layers
+- **Financial modeling** with conservative benchmarks (MEDIUM confidence)
+- **Roadmap development** phased by value, dependencies, and organizational capacity
 
-**Challenges:**
-- Change fatigue (digital onboarding launched but didn't deliver)
-- Workaround culture (teams bypass tools - E8)
-- Limited analytics maturity (cannot measure impact)
-- Unclear accountability for digital adoption
-- Likely resource constraints
+### Deliverables Produced
 
-**Recommendations:**
-1. Assign single C-level owner for digital transformation with P&L accountability
-2. Deliver visible improvements in 90 days to rebuild confidence
-3. Invest 15-20% of budget in change management and adoption
-4. Establish clear KPIs with monthly business reviews
-5. Build team capability through training and upskilling
-6. Use agile, iterative approach with frequent releases and feedback
+| Deliverable | Description |
+|-------------|-------------|
+| **Business Case** | 3-year financial model with scenario analysis — $5.2M NPV, 42% IRR |
+| **Capability Assessment** | Front-to-back maturity heatmap: 17 capabilities scored, overall maturity 0.9/4.0 |
+| **Journey Assessment** | Current-state process maps for onboarding and servicing with friction analysis |
+| **Solution Architecture** | Proposed platform architecture and integration approach |
+| **Delivery Roadmap** | 18-month phased implementation: Foundation → Scale → Optimize |
 
 ---
 
-### Sequencing & Dependencies
+## 05. Summary — Challenges & Impact, Recommendations & Value
 
-**Foundation First (Months 0-6):**
-- Workflow orchestration platform (prerequisite for all automation)
-- Journey analytics foundation (enables measurement)
-- API layer/integration (connects systems)
-- Data governance and quality (ensures reliable insights)
-
-**Parallel Opportunities (Months 0-12):**
-- Digital onboarding fixes (depends on workflow)
-- Self-service expansion (depends on APIs)
-- eKYC implementation (narrower scope, parallel)
-
-**Sequential Dependencies:**
-- Advanced personalization requires journey analytics
-- Proactive channel deflection requires channel behavior analytics
-- Straight-through processing requires automated decisioning + workflow orchestration
-
-**Long-Term Vision (18-24+ months):**
-- AI-driven insights and next-best-action
-- Predictive analytics for fraud, risk, churn
-- Hyper-personalized journeys
-- Open banking and ecosystem integration
+### Across the Customer Lifecycle
 
 ---
 
-## Risks & Mitigations
+### Acquire — Challenges & Impact
 
-See [ROI Report - Risk Factors](roi_report.md#risk-factors) for comprehensive risk register.
+**Current Challenges:**
 
-**Top Capability-Specific Risks:**
+| Challenge | Customer Impact | Employee Impact | Evidence |
+|-----------|-----------------|-----------------|----------|
+| Low onboarding completion | Customers abandon when documents required — estimated 35-50% drop-off | Wasted processing effort on incomplete applications | E1, E2 |
+| Extended cycle times | 7+ days to open an account — customers move to competitors | Manual review and workarounds consume staff time | E3, E8 |
+| Digital hasn't scaled | Inconsistent experience — digital starts but branch finishes | Staff revert to manual processes, undermining digital investment | E7, E8 |
 
-1. **Adoption Challenges:** Digital capabilities built but customers/employees don't adopt (E7 pattern repeats)
-   - **Mitigation:** Intensive change management, simple UX, incentives, pilot validation, executive mandate
-
-2. **Integration Complexity:** Legacy system integration harder than expected
-   - **Mitigation:** Technical discovery in Phase 0, API-first approach, phased rollout, vendor expertise
-
-3. **Data Quality Issues:** Analytics insights unreliable due to poor data quality
-   - **Mitigation:** Data quality framework, MDM, phased rollout, manual validation initially
-
----
-
-## Next Steps
-
-### Immediate Actions (Next 30 Days)
-
-1. **Validate Critical Baseline Data** - Program Lead, Finance, Operations - Weeks 1-4
-   - Close data gaps (DG1-DG10) to confirm/refine assessment and business case
-
-2. **Conduct Detailed Capability Deep-Dives** - Functional Leads - Weeks 2-4
-   - Validate maturity scores with process walkthroughs and system demos
-
-3. **Benchmark Against Regional Peers** - Strategy Team - Weeks 3-4
-   - Obtain SEA-specific benchmarks to replace global proxies
-
-4. **Present Assessment and Recommendations** - Executive Sponsor, Program Lead - Week 4
-   - Share findings with steering committee; obtain approval to proceed with ROI modeling and roadmap
-
-### Near-Term Actions (Next 90 Days)
-
-See [Roadmap - Next Steps](roadmap.md#next-steps) for detailed implementation planning.
+**Business Impact:**
+- **Revenue at risk:** ~$2.4M annually from lost customers (est. 30,000 applicants/year abandoning × $80 annual revenue per customer)
+- **Cost inefficiency:** High cost per acquisition due to manual processing (~$150/completed application vs. $30 benchmark for STP)
+- **Competitive gap:** Digital-first banks onboard in <24 hours. Current 7+ day cycle is 10x slower.
 
 ---
 
-## Appendices
+### Acquire — Recommendations & Value
 
-### Appendix A: Assessment Methodology
+| # | Recommendation | Expected Impact | Effort |
+|---|---------------|----------------|--------|
+| 1 | Automate end-to-end onboarding with workflow orchestration | 25pp completion rate improvement, $2.4M annual revenue | L |
+| 2 | Deploy eKYC with automated document verification | 70% reduction in document-related drop-offs | M |
+| 3 | Implement STP rules for low-risk applications | 30-40% of applications auto-approved in <24 hours | M |
+| 4 | Add save & resume with real-time status tracking | Recover 15-20% of abandoned applications | S |
 
-**Approach:**
-- Evidence-based scoring using stakeholder interviews (E1-E8) and engagement intake
-- Conservative bias when data limited (scores are floor, not ceiling)
-- 5-level maturity model (Initial/Developing/Defined/Managed/Optimizing)
-- Focus on business outcomes, not just process existence
-- Global benchmarks applied as proxy (SEA-specific data unavailable)
+**How Benefits Are Calculated:**
 
-**Maturity Model:**
-See [Capability Assessment - Maturity Model](capability_assessment.md#maturity-model) for detailed level definitions.
+| Metric | Current | Target | Delta | Annual Value |
+|--------|---------|--------|-------|-------------|
+| Onboarding completion rate | ~40% | ~65% | +25pp | — |
+| Additional customers/year | — | 30,000 | +30,000 | — |
+| Revenue per customer/year | — | $80 | — | $2.4M |
 
-**Limitations:**
-- No access to systems or detailed process documentation
-- Baseline metrics unavailable (DG1-DG10) requiring assumptions
-- Global benchmarks used as proxy for regional data
-- Single-point-in-time assessment (capabilities may be changing)
+---
 
-### Appendix B: Evidence Summary
+### Activate — Challenges & Impact
 
-See [Evidence Register](evidence_register.md) for comprehensive evidence catalog.
+**Current Challenges:**
 
-**Key Quotes:**
-- E1: "Our onboarding completion rate is low" (Head of Retail)
-- E2: "A lot of customers drop off when documents are required" (Head of Retail)
-- E3: "It can take more than a week in some cases" (Head of Retail)
-- E4: "Servicing is expensive" (Operations Lead)
-- E5: "Simple requests still come through the call center" (Operations Lead)
-- E6: "We don't have a clear view of why customers choose branch or call over digital" (Operations Lead)
-- E7: "We launched digital onboarding, but it hasn't scaled well" (Digital Lead)
-- E8: "Teams still rely on manual workarounds" (Digital Lead)
+| Challenge | Customer Impact | Employee Impact | Evidence |
+|-----------|-----------------|-----------------|----------|
+| Manual onboarding fulfillment | 7+ days from application to active account | Staff spend 40+ minutes per application on manual steps | E3, E8 |
+| No process orchestration | Customer has no visibility into application status | Handoffs between teams are email/paper-based, things get lost | E8 |
+| Workaround culture | Inconsistent experience — some fast, some stuck for weeks | Staff develop own shortcuts, no standardization | E8 |
 
-### Appendix C: Glossary
+**Business Impact:**
+- **Cost inefficiency:** ~$150 per completed application (manual process) vs. $30 benchmark (automated)
+- **Time waste:** Estimated 400+ staff hours/month on manual onboarding workarounds
+- **Customer risk:** 7+ day activation means delayed revenue and higher early-stage churn
 
-See [ROI Report - Glossary](roi_report.md#appendix-d-glossary) for comprehensive definitions.
+---
+
+### Activate — Recommendations & Value
+
+| # | Recommendation | Expected Impact | Effort |
+|---|---------------|----------------|--------|
+| 1 | Deploy BPM/workflow engine for onboarding orchestration | Cycle time from 7 days to <48 hours | L |
+| 2 | Automate KYC/AML screening with API integration | 80% of screenings completed in <5 minutes | M |
+| 3 | Implement real-time status tracking for customers | Reduce "where's my application" calls by 50% | S |
+
+**How Benefits Are Calculated:**
+
+| Metric | Current | Target | Delta | Annual Value |
+|--------|---------|--------|-------|-------------|
+| Avg cycle time | 7+ days | <2 days | -5 days | CX improvement |
+| Manual processing cost/app | ~$150 | ~$30 | -$120 | $1.2M (est. 10K apps/yr) |
+| Staff hours on workarounds | 400 hrs/mo | 100 hrs/mo | -300 hrs/mo | $540K (at $150/hr loaded) |
+
+---
+
+### Expand — Challenges & Impact
+
+**Current Challenges:**
+
+| Challenge | Customer Impact | Employee Impact | Evidence |
+|-----------|-----------------|-----------------|----------|
+| No customer 360 view | Bank doesn't know full relationship — treats every interaction as new | Staff toggle between 4-6 systems to piece together customer picture | E6 |
+| No behavioral analytics | Bank can't identify customers at risk or ready for next product | No data to drive proactive outreach or segment-specific campaigns | E6 |
+| Silent churn (unconsidered) | Customers disengage gradually — bank doesn't detect until account closure | No early warning system for disengagement | UN-R-01 |
+
+**Business Impact:**
+- **Revenue at risk:** Cross-sell/upsell opportunities missed — no data to identify ready customers
+- **Strategic risk:** Competitors with 360 view and analytics will capture share of wallet
+
+---
+
+### Expand — Recommendations & Value
+
+| # | Recommendation | Expected Impact | Effort |
+|---|---------------|----------------|--------|
+| 1 | Build unified customer profile (360 view) for staff | 20-30% reduction in staff context-switching time | L |
+| 2 | Deploy journey analytics for funnel and channel visibility | Enable data-driven optimization for first time | M |
+| 3 | Implement basic engagement scoring and alerts | Early detection of disengagement, proactive retention | M |
+
+---
+
+### Retain — Challenges & Impact
+
+**Current Challenges:**
+
+| Challenge | Customer Impact | Employee Impact | Evidence |
+|-----------|-----------------|-----------------|----------|
+| Simple requests go to call center | Customers forced to high-effort channel for basic tasks | Skilled agents handle routine work (balance checks, statements) | E4, E5 |
+| No channel orchestration | If customer starts in app and gets stuck, must restart in branch | No context passing between channels | E6 |
+| High cost-to-serve | $10+ per call center transaction vs. $1 for digital self-service | Budget consumed by volume, not value | E4 |
+
+**Business Impact:**
+- **Cost inefficiency:** ~$5.8M annual excess cost from channel misallocation
+- **Scalability constraint:** Cannot grow customer base without proportional cost increase
+- **Churn risk:** Friction-heavy servicing pushes digitally-savvy customers to competitors
+
+---
+
+### Retain — Recommendations & Value
+
+| # | Recommendation | Expected Impact | Effort |
+|---|---------------|----------------|--------|
+| 1 | Expand digital self-service to cover top 20 servicing transactions | Shift 40,000 monthly transactions to digital | L |
+| 2 | Deploy intelligent channel routing and proactive deflection | 60% digital containment (up from ~20%) | M |
+| 3 | Implement in-app help, contextual guidance, and smart search | Reduce "give up and call" behavior by 40% | M |
+
+**How Benefits Are Calculated:**
+
+| Metric | Current | Target | Delta | Annual Value |
+|--------|---------|--------|-------|-------------|
+| Digital containment rate | ~20% | ~50% (Yr2), ~60% (Yr3) | +30-40pp | — |
+| Monthly transactions shifted | 0 | 40,000 | +40,000 | — |
+| Cost savings per transaction | — | ~$9 ($10 call → $1 digital) | $9/txn | $5.8M (Yr3 run rate) |
+
+---
+
+## 06. Who to Serve — Persona Mapping
+
+### Addressable Market
+
+| Segment | % of Customer Base | Revenue Contribution | Strategic Priority |
+|---------|-------------------|---------------------|-------------------|
+| Mass market (salary/savings) | 70% | 35% | Medium — volume driver |
+| Emerging affluent (young professionals) | 20% | 40% | **High** — growth driver, most digital |
+| Established affluent / HNW | 10% | 25% | High — revenue driver, advisory-led |
+
+### Customer Personas
+
+#### Mei Lin — The Digital Native (Emerging Affluent)
+
+> *"I just want to open an account on my phone in 5 minutes, not fill out forms at a branch."*
+
+- **Profile:** 28, software engineer, monthly income $4,000+, dual citizen (Malaysia/Singapore)
+- **Banking Needs:** Current account, savings, beginner investments, remittances
+- **Current Pain:** Tried to open account digitally, got stuck at document upload, gave up after 3 days of no response
+- **Digital Expectation:** Instant. If it takes more than 10 minutes, something is wrong. Benchmarks against Grab, Shopee, not other banks.
+- **Opportunity:** This is the customer the bank loses at a rate of 2,500/month. Fix onboarding = capture Mei Lin.
+
+#### Arjun — The Busy Professional (Mass Affluent)
+
+> *"I don't mind going to the branch for big decisions, but don't make me call a hotline to check my balance."*
+
+- **Profile:** 42, regional sales director, monthly income $8,000+, family with mortgage and insurance
+- **Banking Needs:** Multi-product relationship, transaction support, advisory for life events
+- **Current Pain:** Calls the call center for things he should be able to do in the app. Has been told "please visit the branch" three times this month.
+- **Digital Expectation:** Complete self-service for routine tasks. Human interaction for complex advice.
+- **Opportunity:** Arjun costs $120/year in unnecessary call center transactions. He represents 100,000+ customers.
+
+#### Siti — The Branch-First Customer (Digital Hesitant)
+
+> *"I downloaded the app but I don't trust it for important things. I want to see a person."*
+
+- **Profile:** 55, small business owner, limited English, prefers local language
+- **Banking Needs:** Cash management, fixed deposits, branch-based relationship
+- **Current Pain:** Branch queue times are long because staff are handling requests that should be digital
+- **Digital Expectation:** Minimal — but willing to try if someone shows her and it's in her language
+- **Opportunity:** Not the primary digital target, but beneficiary: when Mei Lin and Arjun go digital, branch staff have time for Siti.
+
+#### Farah — The Call Center Agent (Employee)
+
+> *"I spend half my day answering questions customers should be able to see in their app."*
+
+- **Profile:** 26, call center agent, 18 months tenure, handles 60+ calls/day
+- **Banking Needs (as employee):** Customer context before the call, ability to resolve in one interaction
+- **Current Pain:** Toggles between 4 systems per call, no customer 360 view, repeats information customer already provided
+- **Opportunity:** With self-service handling routine queries, Farah handles complex cases — more satisfying work, lower attrition.
+
+---
+
+## 07. How to Serve Them — Journey Assessment
+
+---
+
+### Journey: Digital Onboarding (Account Opening)
+
+#### Journey Map (As-Is)
+
+**Actors Involved:** Customer, Branch/Frontline Staff, Back-Office Operations, Compliance/KYC
+**Applications Involved:** Mobile App, Core Banking, Document Management System, KYC Platform, Excel (workarounds), Email
+
+| Stage | Customer | Frontline Staff | Back-Office | Compliance |
+|-------|----------|-----------------|-------------|------------|
+| **Research & Apply** | Searches online, downloads app, starts application (15-20 min) | N/A for digital; assists in-branch (20-30 min) | — | — |
+| **Document Collection** | Uploads documents — frequent failures, unclear requirements (10-30 min) | Helps with docs if branch visit (30-60 min) | — | — |
+| **Document Review** | Waits — no status visibility (2-3 days) | Checks status manually, calls customer for re-submission (10-20 min/day) | Reviews documents manually (15-30 min/app), requests re-submission if issues (10-20 min) | — |
+| **KYC & Screening** | Waits — no status visibility (1-2 days) | — | — | KYC verification (20-30 min/app), AML screening (5-10 min/app) |
+| **Account Creation** | Waits (1-2 days) | — | Creates account in core banking (10-15 min), generates card request (5 min) | — |
+| **Confirmation** | Receives welcome pack, funds account (5 min) | Sends welcome message | — | — |
+
+**Total end-to-end time:** 7+ days (some cases 2+ weeks)
+
+#### Friction Points
+
+| # | Friction Point | Stage | Actor Affected | Customer Impact | Employee Impact | Evidence |
+|---|---------------|-------|----------------|-----------------|-----------------|----------|
+| F1 | Document upload failures, unclear requirements | Document Collection | Customer | 35-50% drop-off at this stage | Re-work, manual follow-up | E1, E2 |
+| F2 | No real-time status — customer waits in the dark | Document Review → Account Creation | Customer | Anxiety, duplicate calls to check status | Handles "where's my application" calls | E3 |
+| F3 | Manual document review — no OCR or auto-classification | Document Review | Back-Office | Slow processing adds days | 15-30 min per application manual review | E8 |
+| F4 | Manual KYC — no eKYC or digital ID verification | KYC & Screening | Compliance | Additional delays, may require branch visit | 20-30 min per application manual verification | E8 |
+| F5 | No orchestration — handoffs via email/Excel | All stages | All | Process unpredictable, things get lost | Manual tracking, workarounds, no SLA visibility | E8 |
+| F6 | No STP — every application requires manual intervention | Account Creation | Back-Office | No instant activation, even for simple cases | Every application is manual, no risk-based routing | E3, E8 |
+
+**Manual handoffs:** 6+ per application
+**Systems involved:** 5+ with no integration
+**Staff time per application:** ~90-120 minutes across all actors
+**STP rate:** <5% (assumption A-CAP-02)
+
+#### Business Benefits
+
+**Total Annual Benefits: $2.4M (revenue uplift) + $1.2M (cost avoidance) = $3.6M**
+
+| Benefit Category | Annual Impact | Basis |
+|-----------------|---------------|-------|
+| **Revenue uplift** | $2.4M | 30,000 additional customers × $80 annual revenue |
+| **Cost avoidance** | $1.2M | $120 savings per application × 10,000 applications/year |
+| **Total** | **$3.6M** | |
+
+**How Benefits Are Calculated:**
+
+| Metric | Current | Target | Delta | Annual Value |
+|--------|---------|--------|-------|-------------|
+| Completion rate | ~40% | ~65% | +25pp | +30,000 customers → $2.4M |
+| Cycle time | 7+ days | <48 hours | -5 days | CX improvement |
+| Cost per application | ~$150 | ~$30 | -$120 | $1.2M |
+| STP rate | <5% | 30-40% | +25-35pp | Operational efficiency |
+
+#### Proposed Solution
+
+**Key capabilities deployed:**
+1. **Workflow orchestration (BPM)** — End-to-end process automation replacing email/Excel handoffs
+2. **eKYC with digital ID verification** — Automated document capture, OCR, and identity verification
+3. **STP decision engine** — Risk-based auto-approval for low-risk applications (<24 hours)
+4. **Save & resume with real-time status** — Customer can pause and resume; always knows where they stand
+5. **Case management for exceptions** — Staff handle only exceptions with full context, no toggling
+
+**Target outcomes:**
+- End-to-end time: 7+ days → <48 hours (STP: <24 hours)
+- Completion rate: 40% → 65%
+- STP rate: <5% → 30-40%
+- Staff time per application: 90+ min → 20 min (exceptions only)
+
+---
+
+### Journey: Customer Servicing (Routine Transactions)
+
+#### Journey Map (As-Is)
+
+**Actors Involved:** Customer, Call Center Agent, Branch Staff, Back-Office
+**Applications Involved:** Mobile App (limited), IVR, Call Center CRM, Core Banking, Branch Systems
+
+| Stage | Customer | Call Center Agent | Branch Staff | Back-Office |
+|-------|----------|-------------------|-------------|------------|
+| **Request Initiation** | Tries app — feature not available. Calls hotline (5-15 min wait) OR visits branch (30 min travel + queue) | Answers call, asks for identification, pulls up account in CRM (3-5 min) | Greets customer, asks reason for visit, logs into systems (5 min) | — |
+| **Authentication** | Provides ID details over phone or presents card at branch | Verifies identity in CRM system (2-3 min) | Checks ID, verifies in system (3-5 min) | — |
+| **Request Processing** | Explains what they need — often re-explains if transferred | Toggles between 3-4 systems to find information (5-10 min). May say "let me check with back-office" | Processes in core banking (5-15 min). May need to call another department. | Receives escalation by email, processes request (15-30 min turnaround) |
+| **Resolution** | Receives confirmation — may need to call back for status | Confirms resolution or advises "we'll call you back" (2 min) | Confirms on screen or provides paper receipt | Completes processing, notifies via email |
+
+**Total end-to-end time:** 15-45 minutes per interaction (call center); 45-90 minutes (branch visit)
+
+#### Friction Points
+
+| # | Friction Point | Stage | Actor Affected | Customer Impact | Employee Impact | Evidence |
+|---|---------------|-------|----------------|-----------------|-----------------|----------|
+| F1 | Simple requests not available in app (balance, statements, card controls) | Request Initiation | Customer | Forced to call or visit for basic tasks | Handles routine queries that should be self-service | E5 |
+| F2 | No context passing between channels | Request Initiation | Customer, Agent | Must re-explain if switching from app to call | No visibility into what customer tried in app | E6 |
+| F3 | Agent toggles between 3-4 systems | Request Processing | Call Center Agent | Longer call duration, perceived incompetence | 5-10 min per call just navigating systems | E8 |
+| F4 | No customer 360 view | Request Processing | All staff | Bank doesn't know full relationship | Cannot personalize, cross-sell, or prioritize | E6 |
+| F5 | Back-office escalations by email | Resolution | Customer, All staff | "We'll call you back" — delay, uncertainty | Manual handoff, no tracking, things get lost | E8 |
+
+**Monthly call center volume (estimated):** 100,000+ transactions
+**Digital containment rate:** ~20%
+**Average cost per call center transaction:** ~$10
+**Average cost per digital self-service transaction:** ~$1
+
+#### Business Benefits
+
+**Total Annual Benefits: $5.8M (cost avoidance at steady state — Year 3)**
+
+| Benefit Category | Annual Impact (Yr3) | Basis |
+|-----------------|---------------------|-------|
+| **Cost avoidance** | $5.8M | 40,000 monthly transactions × $9 cost delta × 12 months |
+| **Productivity gain** | $0.4M | Staff time freed for complex cases, lower attrition |
+| **Total** | **~$6.2M** | |
+
+**How Benefits Are Calculated:**
+
+| Metric | Current | Target (Yr3) | Delta | Annual Value |
+|--------|---------|--------------|-------|-------------|
+| Digital containment | ~20% | ~60% | +40pp | — |
+| Transactions shifted/month | 0 | 40,000 | +40,000 | — |
+| Cost per transaction saved | — | $9 ($10→$1) | $9/txn | $4.3M |
+| Call volume reduction | 100K/mo | 60K/mo | -40K | $1.5M additional staffing avoidance |
+
+#### Proposed Solution
+
+**Key capabilities deployed:**
+1. **Self-service expansion** — Top 20 servicing transactions available in-app (balance, statements, card controls, address change, beneficiary management, etc.)
+2. **Channel orchestration** — Context passes between channels; if customer starts in app and calls, agent sees what they tried
+3. **Proactive deflection** — In-app guidance, contextual help, smart search to contain customers digitally
+4. **Agent workspace** — Unified customer view for call center with full context, single screen
+
+**Target outcomes:**
+- Digital containment: 20% → 60%
+- Cost per transaction (blended): $10 → $4
+- Call volume: 100K → 60K monthly
+- Agent handle time: reduced 30% with unified workspace
+
+---
+
+## 08. Application Architecture
+
+### Current State (As-Is)
+
+| Layer | Systems | Integration | Pain Points |
+|-------|---------|-------------|-------------|
+| **Channels** | Mobile app, internet banking, branch systems, IVR | Siloed — each channel has own session, no shared state | No omnichannel experience, features vary by channel |
+| **Orchestration** | None — manual handoffs via email/Excel | Point-to-point, batch files | No workflow engine, no STP, no process visibility |
+| **Core Systems** | Core banking, KYC platform, document management, CRM | Limited API exposure, batch processing | Legacy integration, no real-time, brittle connections |
+
+### Proposed State (To-Be)
+
+| Layer | Proposed | Integration | Benefit |
+|-------|----------|-------------|---------|
+| **Unified Frontline** | Backbase web + mobile apps (customer), employee portal (staff) | Unified UX layer with shared state | Consistent CX, single codebase, omnichannel |
+| **Orchestration** | Backbase platform + BPM engine, decision engine, STP rules | API-first, event-driven, real-time | End-to-end journey automation, workflow visibility |
+| **Integration** | Integration layer / API gateway | REST APIs, real-time event bus | Decoupled, scalable, future-proof |
+| **Core Systems** | Existing core banking — no change required | Wrapped with APIs by integration layer | Protect investment, progressive modernization |
+
+---
+
+# SECTION 5: Capability Assessment
+
+---
+
+## 09. Front-to-Back Capability Heatmap
+
+### Assessment Methodology
+
+**Scale:** 0-4 Maturity (Absent → Fragmented → Defined → Orchestrated → Intelligent)
+**Structure:** Every capability assessed across Front Layer (Experience) / Middle Layer (Orchestration) / Back Layer (Integration + Systems of Record)
+**Scoring Rule:** Overall score = weakest layer. The chain breaks at the weakest link.
+**Bias:** Conservative. Score what exists, not what's planned.
+**Mode:** Transcript Inference — scores inferred from evidence with confidence ratings.
+
+### Problem Map
+
+**Considered Needs** (What the Bank Already Knows):
+
+| # | Problem | Severity | Impact | Evidence | Related Capabilities |
+|---|---------|----------|--------|----------|---------------------|
+| CN-01 | Low onboarding completion — customers drop off at document stage | Critical | Lost acquisition — est. 2,500 applicants/month | E1, E2 | CAP-R-CL-01, CAP-R-RC-01 |
+| CN-02 | Expensive servicing — simple requests through call center | High | $3-5M annual excess cost | E4, E5 | CAP-R-CE-01, CAP-R-EE-01, CAP-R-CE-02 |
+| CN-03 | Digital hasn't scaled — manual workarounds persist | High | Digital investment not delivering ROI | E7, E8 | CAP-R-PO-01, CAP-R-CL-01 |
+
+**Unconsidered Needs** (What We Surfaced):
+
+| # | Problem | Severity | Why They Miss It | Indicators | Related Capabilities |
+|---|---------|----------|------------------|------------|---------------------|
+| UN-R-01 | Silent customer churn — gradual disengagement undetected | High | Bank measures churn as closure, not behavioral decline | No behavioral analytics (E6); can't see engagement trends | CAP-R-CL-03, CAP-R-DI-01 |
+| UN-R-03 | No front-to-back journey visibility | High | Each department sees only their part | Three stakeholders describe three separate problems with no end-to-end view | CAP-R-PO-01, CAP-R-DI-02 |
+| UN-R-04 | Data exists but isn't used — insights trapped in silos | High | Banks have data but no intelligence layer | E6: can't analyze channel behavior despite having transaction data | CAP-R-DI-01, CAP-R-CL-03 |
+| UN-R-06 | No AI strategy | Medium | AI ignored or stuck in pilot purgatory | No mention of AI in any interview; competitors deploying AI | CAP-R-AI-01, CAP-R-AI-02, CAP-R-AI-03 |
+
+### Capability Heatmap (RAG — Front / Middle / Back)
+
+**Color Legend:**
+- **0 — Absent** (Red #E63946): Capability doesn't exist
+- **1 — Fragmented** (Amber-Red #F4A261): Ad-hoc, person-dependent
+- **2 — Defined** (Amber #E9C46A): Standardized, repeatable, but handoffs manual
+- **3 — Orchestrated** (Green #2A9D8F): End-to-end, automated, measured
+- **4 — Intelligent** (Blue #0066FF): AI-native, predictive, self-optimizing
+
+| Domain | Capability | Front | Middle | Back | Overall | Problems |
+|--------|-----------|-------|--------|------|---------|----------|
+| **Customer Channels** | | | | | | |
+| | CAP-R-CE-01: Digital Channel Availability | 1 | 1 | 1 | **1** | CN-02 |
+| | CAP-R-CE-02: Employee Workspace | 1 | 1 | 1 | **1** | CN-02 |
+| | CAP-R-CE-03: Contact Center | 1 | 1 | 1 | **1** | CN-02 |
+| **Customer Lifecycle** | | | | | | |
+| | CAP-R-CL-01: Digital Onboarding | 1 | 1 | 1 | **1** | CN-01, CN-03 |
+| | CAP-R-CL-02: Customer 360 | 0 | 0 | 0 | **0** | UN-R-04 |
+| | CAP-R-CL-03: Behavioral Insights | 0 | 0 | 0 | **0** | UN-R-01, UN-R-04 |
+| **Retail Services** | | | | | | |
+| | CAP-R-RS-01: Deposit & Savings | 2 | 2 | 2 | **2** | — |
+| | CAP-R-RS-02: Payments & Transfers | 2 | 2 | 2 | **2** | — |
+| **Risk & Compliance** | | | | | | |
+| | CAP-R-RC-01: KYC/AML | 1 | 1 | 1 | **1** | CN-01 |
+| **Process Orchestration** | | | | | | |
+| | CAP-R-PO-01: Workflow & BPM | 1 | 1 | 1 | **1** | CN-03, UN-R-03 |
+| **Employee Enablement** | | | | | | |
+| | CAP-R-EE-01: Staff Productivity | 1 | 1 | 1 | **1** | CN-02 |
+| **Data & Intelligence** | | | | | | |
+| | CAP-R-DI-01: Data Foundation | 0 | 0 | 0 | **0** | UN-R-04 |
+| | CAP-R-DI-02: Analytics & Reporting | 0 | 0 | 0 | **0** | UN-R-03 |
+| **AI & Agentic** | | | | | | |
+| | CAP-R-AI-01: Conversational AI | 0 | 0 | 0 | **0** | UN-R-06 |
+| | CAP-R-AI-02: AI Copilots | 0 | 0 | 0 | **0** | UN-R-06 |
+| | CAP-R-AI-03: AI Governance | 0 | 0 | 0 | **0** | UN-R-06 |
+
+### Overall Maturity Summary
+
+**Current State Maturity: 0.9 / 4.0 — Between Absent and Fragmented**
+
+| Level | Label | Count | % |
+|-------|-------|-------|---|
+| 0 — Absent | Red | 8 | 47% |
+| 1 — Fragmented | Amber-Red | 7 | 41% |
+| 2 — Defined | Amber | 2 | 12% |
+| 3 — Orchestrated | Green | 0 | 0% |
+| 4 — Intelligent | Blue | 0 | 0% |
+
+### Layer Pattern Analysis
+
+| Layer | Avg Score | Pattern |
+|-------|-----------|---------|
+| Front | 0.9 | **"Digital veneer"** — front-ends exist for basic functions but are incomplete |
+| Middle | 0.9 | **"Manual middle"** — people, not automation, connecting front to back |
+| Back | 0.9 | **"Integration desert"** — point-to-point, batch, no orchestration layer |
+
+**Key insight:** Front, Middle, and Back are equally weak. This is NOT a "glass front, broken back" problem — it's a uniformly low maturity across all layers. The entire stack needs investment.
+
+### Problem → Capability Traceability
+
+| Problem | Type | Severity | Solving Capabilities | Current Score | Gap Action |
+|---------|------|----------|---------------------|---------------|------------|
+| CN-01: Low onboarding completion | Considered | Critical | CAP-R-CL-01, CAP-R-RC-01 | 1, 1 | Automate onboarding + eKYC |
+| CN-02: Expensive servicing | Considered | High | CAP-R-CE-01, CAP-R-CE-02, CAP-R-EE-01 | 1, 1, 1 | Self-service + employee workspace |
+| CN-03: Digital hasn't scaled | Considered | High | CAP-R-PO-01, CAP-R-CL-01 | 1, 1 | Workflow orchestration |
+| UN-R-01: Silent churn | Unconsidered | High | CAP-R-CL-03, CAP-R-DI-01 | 0, 0 | Analytics + behavioral insights |
+| UN-R-03: No journey visibility | Unconsidered | High | CAP-R-PO-01, CAP-R-DI-02 | 1, 0 | Process analytics + BPM |
+| UN-R-04: Data trapped in silos | Unconsidered | High | CAP-R-DI-01, CAP-R-CL-03 | 0, 0 | Data foundation + customer 360 |
+| UN-R-06: No AI strategy | Unconsidered | Medium | CAP-R-AI-01/02/03 | 0, 0, 0 | Future — after data foundation |
+
+### Path to Target State (Top Priorities)
+
+#### Priority 1: CAP-R-PO-01 Workflow & BPM — Current 1 → Target 2
+
+**What Level 1 Looks Like Today:** Manual workarounds are the process. Staff use email, Excel, and personal checklists to move applications forward. No enterprise workflow engine, no SLA tracking, no process visibility.
+
+**What Level 2 Looks Like:** Enterprise BPM platform deployed. Onboarding process modeled and automated end-to-end. Top 10 servicing processes orchestrated. SLA tracking and alerting in place. 50-60% reduction in manual handoffs.
+
+| Layer | Current | Target | Specific Changes |
+|-------|---------|--------|-----------------|
+| Front | 1 | 2 | Task management UIs, SLA dashboards for staff |
+| Middle | 1 | 2 | Deploy BPM engine, rules engine, process orchestration |
+| Back | 1 | 2 | Integrate all systems via API layer, unified audit trail |
+
+**Dependencies:** None — this IS the foundation.
+**Business Outcomes:** Onboarding cycle time 7 days → <2 days; 30-40% STP rate; staff time savings 300+ hrs/month
+**Effort:** L — 12-18 months
+
+#### Priority 2: CAP-R-DI-01 Data Foundation — Current 0 → Target 2
+
+**What Level 0 Looks Like Today:** No data warehouse or lake. Cannot answer basic questions about customer behavior. Data trapped in source systems.
+
+**What Level 2 Looks Like:** Modern data warehouse deployed. ETL pipelines from major systems. Self-service BI tools. Data governance framework.
+
+| Layer | Current | Target | Specific Changes |
+|-------|---------|--------|-----------------|
+| Front | 0 | 2 | Self-service BI tools, executive dashboards |
+| Middle | 0 | 2 | MDM, data quality rules, governance |
+| Back | 0 | 2 | Data warehouse, ETL pipelines, unified schema |
+
+**Dependencies:** None — foundational.
+**Business Outcomes:** Time to insight from weeks to minutes; enables all analytics and AI capabilities.
+**Effort:** L — 12-18 months (parallel with P1)
+
+#### Priority 3: CAP-R-CL-01 Digital Onboarding — Current 1 → Target 2
+
+**What Level 1 Looks Like Today:** Digital channel exists (E7) but broken middle/back. Low completion (E1), document friction (E2), 7+ day cycle (E3).
+
+**What Level 2 Looks Like:** Standardized end-to-end onboarding. Automated document verification with eKYC. 30-40% STP. <48 hours for all applications.
+
+| Layer | Current | Target | Specific Changes |
+|-------|---------|--------|-----------------|
+| Front | 1 | 2 | Improved UX, mobile document capture, real-time status |
+| Middle | 1 | 2 | Workflow orchestration, eKYC, decision engine, STP rules |
+| Back | 1 | 2 | API integration layer, automated screening, unified audit trail |
+
+**Dependencies:** CRITICAL — CAP-R-PO-01 (workflow) must reach Level 2 first.
+**Business Outcomes:** Completion rate 40% → 65% = 30,000 additional customers/year = $2.4M revenue.
+**Effort:** L — 12-18 months (overlaps with P1 deployment)
+
+### Data & Intelligence Assessment
+
+**Data Foundation Maturity: 0 — Absent.** No data warehouse, no self-service analytics, no data governance. The bank operates entirely on source-system reports and manual Excel analysis. This blocks all downstream intelligence capabilities.
+
+**Analytics Maturity: 0 — Absent.** No journey analytics, no funnel tracking, no channel behavior analysis. The bank cannot measure the problems it knows about (E6), let alone discover new ones.
+
+**AI & Agentic Readiness: 0 — Absent.** No AI capabilities deployed. No conversational AI, no employee copilots, no predictive models. AI requires data foundation at Level 2+ before deployment. Realistic timeline: 18-24 months.
+
+---
+
+# SECTION 6: Delivery Roadmap
+
+---
+
+## 10. Phased Delivery Plan
+
+### MVP Scope
+
+| | MVP 1 (Foundation + Onboarding) | MVP 2 (Self-Service + Analytics) |
+|---|---|---|
+| **Journeys** | Digital onboarding end-to-end | Self-service expansion, channel orchestration |
+| **Capabilities** | Workflow orchestration, eKYC, STP, save & resume | Top 20 self-service features, proactive deflection, journey analytics |
+| **Duration** | 6 months (Months 0-6 foundation + Months 7-12 scale) | 6 months (Months 7-12 parallel + Months 13-18 optimize) |
+
+### Project Timeline
+
+| Phase | Months | Focus | Key Milestones |
+|-------|--------|-------|---------------|
+| **Foundation** | 0-6 | Data validation, workflow platform, analytics setup, eKYC integration, pilot in 1 market | Pilot live, baseline metrics validated |
+| **Scale** | 7-12 | Onboarding rollout, self-service expansion, channel orchestration | Onboarding automated, self-service live |
+| **Optimize** | 13-18 | Full deployment, journey optimization, customer 360 | Full value realization, continuous improvement |
+| **Sustain** | 19+ | AI exploration, advanced analytics, continuous improvement | Platform reuse for future LoB |
+
+### Investment Summary
+
+| Phase | Investment | Cumulative | Expected Annual Benefits |
+|-------|-----------|------------|------------------------|
+| Foundation (0-6) | $4.5M | $4.5M | $0 (building) |
+| Scale (7-12) | $3.0M | $7.5M | $3.1M (ramping) |
+| Optimize (13-18) | $0.5M | $8.0M | $6.7M (maturing) |
+| Sustain (19+) | $1.8M/year | — | $8.2M (steady state) |
+
+### Dependencies & Risks
+
+| Dependency | Impact if Delayed | Mitigation |
+|-----------|-------------------|------------|
+| Baseline data validation (DG1-DG10) | ROI model unvalidated, investment case weakened | Phase 0 data gathering sprint (Weeks 1-4) |
+| eKYC regulatory approval | Cannot automate onboarding identity verification | Early regulatory engagement, parallel path with enhanced manual KYC |
+| Change management commitment | Staff revert to workarounds (E8 repeats) | Executive sponsorship, dedicated change team, pilot-first approach |
+| Core banking API availability | Integration delays, manual workarounds persist | API-first integration layer, adapter pattern for legacy systems |
+
+---
+
+# SECTION 7: Benefits Case
+
+---
+
+## 11. Detailed Business Benefits Case
+
+### Business Benefits Projected Over 3 Years
+
+| Year | Investment | Benefits | Net | Cumulative |
+|------|-----------|---------|-----|------------|
+| Year 0 | $4.5M | $0.0M | -$4.5M | -$4.5M |
+| Year 1 | $3.9M | $3.1M | -$0.8M | -$5.3M |
+| Year 2 | $1.8M | $6.7M | +$4.9M | -$0.4M |
+| Year 3 | $1.8M | $8.2M | +$6.4M | +$6.0M |
+| **Total** | **$12.0M** | **$18.0M** | **+$6.0M** | |
+
+### Financial Summary
+
+| Metric | Value |
+|--------|-------|
+| **Total Investment (3-year)** | $12.0M |
+| **Total Benefits (3-year)** | $18.0M |
+| **Net Benefit** | $6.0M |
+| **ROI (IRR)** | 42% |
+| **NPV (10% discount)** | $5.2M |
+| **Payback Period** | 18 months |
+| **Recommendation** | **Conditional Go** |
+
+### Value Drivers Overview
+
+| # | Value Driver | Annual Run-Rate (Yr3) | Type | Confidence |
+|---|-------------|----------------------|------|------------|
+| 1 | Digital self-service channel shift | $5.8M | Cost Avoidance | Medium |
+| 2 | Improved onboarding conversion | $2.4M | Revenue Uplift | Medium |
+| **Total** | | **$8.2M** | | |
+
+### Scenario Analysis
+
+| Scenario | 3-Year Net | IRR | NPV | Key Assumptions |
+|----------|-----------|-----|-----|----------------|
+| **Conservative** | $2.0M | 22% | $1.8M | 15pp completion improvement, 20pp containment shift, 6-month delay |
+| **Base (Moderate)** | $6.0M | 42% | $5.2M | 25pp completion improvement, 40pp containment shift, on-schedule |
+| **Aspirational** | $10.5M | 65% | $8.8M | 30pp completion, 50pp containment, faster adoption, 2 additional value levers |
+
+### Key Assumptions
+
+| # | Assumption | Value Used | Source | Sensitivity |
+|---|-----------|-----------|--------|-------------|
+| A1 | Onboarding completion rate baseline | ~40% | Inferred from E1 "low" | High — validate with client data |
+| A2 | Monthly onboarding volume | ~10,000 applications | Tier-2 SEA bank estimate | High — drives revenue model |
+| A3 | Revenue per retail customer/year | $80 | SEA retail benchmark (MEDIUM) | Medium |
+| A4 | Digital containment rate (current) | ~20% | Inferred from E5 | High — drives servicing model |
+| A5 | Monthly servicing transaction volume | ~100,000 | Tier-2 SEA bank estimate | High — drives cost model |
+| A6 | Cost per call center transaction | $10 | Global benchmark (MEDIUM) | High — core ROI driver |
+| A7 | Cost per digital self-service transaction | $1 | Industry standard | Low |
+| A8 | Implementation timeline | 18 months | Standard for comparable scope | Medium |
+| A9 | Discount rate (WACC) | 10% | Assumption — validate with CFO | Medium |
+| A10 | No major regulatory blockers to eKYC | Yes | Standard SEA banking | Medium — varies by country |
+
+**Overall Confidence: MEDIUM** — Benefits model uses global proxy benchmarks where client-specific data was unavailable (DG1-DG10). Validation of assumptions A1-A6 with actual client data is required before final investment approval.
+
+---
+
+# APPENDIX
+
+---
+
+## Appendix A: Assessment Methodology
+
+**Capability Assessment Scale:** BIAN-aligned 0-4 (Absent → Fragmented → Defined → Orchestrated → Intelligent)
+**Layer Structure:** Front (Experience Plane) / Middle (Capability/Orchestration Plane) / Back (Integration Plane + Systems of Record)
+**Scoring Rule:** Overall = weakest layer. Conservative bias applied.
+**Problem-First:** Capabilities assessed in context of identified business problems (3 considered + 4 unconsidered needs)
+**Reference:** `knowledge/standards/capability_taxonomy.md` v2.0
+
+## Appendix B: Evidence Register
+
+| ID | Source | Quote | Lifecycle | Confidence |
+|----|--------|-------|-----------|------------|
+| E1 | Head of Retail | "Our onboarding completion rate is low" | Acquire | Medium |
+| E2 | Head of Retail | "A lot of customers drop off when documents are required" | Acquire | High |
+| E3 | Head of Retail | "It can take more than a week in some cases" | Activate | Medium |
+| E4 | Operations Lead | "Servicing is expensive" | Retain | Medium |
+| E5 | Operations Lead | "Simple requests still come through the call center" | Retain | High |
+| E6 | Operations Lead | "We don't have a clear view of why customers choose branch or call over digital" | Retain | High |
+| E7 | Digital Lead | "We launched digital onboarding, but it hasn't scaled well" | Acquire | High |
+| E8 | Digital Lead | "Teams still rely on manual workarounds" | Activate | High |
+
+## Appendix C: Assumptions Register (Full)
+
+| ID | Assumption | Made By | Basis | Impact if Wrong | Validation Owner | Status |
+|----|-----------|---------|-------|-----------------|------------------|--------|
+| A-CAP-01 | No workflow orchestration engine exists | Capability Agent | E8 workarounds, E3 delays | High — changes priority sequence | CTO | Open |
+| A-CAP-02 | Onboarding STP rate <5% | Capability Agent | E3 all apps >7 days | High — baseline for ROI | Ops Lead | Open |
+| A-CAP-03 | Digital onboarding deployed 12-24 months ago | Capability Agent | E7 scaling issue implies recent | Low — timeline context | Digital Lead | Open |
+| A-CAP-04 | No unified customer data platform exists | Capability Agent | E6 no behavior view | High — blocks analytics | CTO | Open |
+| A-CAP-05 | Digital containment rate ~20% | Capability Agent | E5 simple requests to call center | High — baseline for servicing ROI | Ops Lead | Open |
+| A-CAP-06 | Call center handles >60% of servicing | Capability Agent | E4 expensive, E5 digital avoidance | High — cost baseline | Ops Lead | Open |
+| A-CAP-07 | Onboarding completion rate ~40% | Capability Agent | E1 "low", severity of concern | High — baseline for onboarding ROI | Digital Lead | Open |
+| A-CAP-08 | No AI/ML capabilities deployed | Capability Agent | No mention in any interview | Medium — future timing | CTO | Open |
+| A-CAP-09 | Monthly onboarding volume ~10K | Capability Agent | Tier-2 SEA bank estimate | High — sizing for ROI | Finance | Open |
+| A-CAP-10 | Cost per call center transaction ~$10 | Capability Agent | Global benchmark (MEDIUM) | High — servicing ROI driver | Finance | Open |
+
+## Appendix D: Glossary
+
+| Term | Definition |
+|------|-----------|
+| F/M/B | Front Layer / Middle Layer / Back Layer — the three architectural planes assessed |
+| STP | Straight-Through Processing — end-to-end automation without manual intervention |
+| RAG | Red/Amber/Green — color-coded maturity indicators |
+| BIAN | Banking Industry Architecture Network — standard for banking capability taxonomy |
+| eKYC | Electronic Know Your Customer — digital identity verification |
+| BPM | Business Process Management — workflow automation engine |
+| CAP-R-XX-NN | Capability ID format: R=Retail, XX=Domain, NN=Sequence |
+| CN-XX | Considered Need — a problem the bank has already identified |
+| UN-R-XX | Unconsidered Need — a problem we surfaced that the bank hasn't raised |
 
 ---
 
 **Document Control:**
-- Version: 1.0
-- Last Updated: 2026-01-13
-- Next Review: After data validation in Phase 0 (Month 1-2)
+- Version: 2.0
+- Methodology: 0-4 Scale, BIAN-aligned, Front/Middle/Back Layer Assessment
+- Engagement Type: Ignite Assess
+- Last Updated: February 2026
 - Classification: Confidential
-
----
-
-*This assessment is based on stakeholder interviews and engagement intake as of 2026-01-13. Significant data gaps exist (DG1-DG10) requiring client validation. Assessment uses MEDIUM-confidence global benchmarks as SEA-specific data unavailable. Detailed capability-by-capability assessment available in [Full Capability Assessment](capability_assessment.md).*
+- Next Review: After data validation (DG1-DG10) with client

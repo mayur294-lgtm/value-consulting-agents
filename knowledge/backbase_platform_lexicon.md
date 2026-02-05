@@ -22,14 +22,14 @@ A single customer operating system that transforms fragmented frontline systems 
 
 ### Customer Lifecycle Model
 
-The Backbase platform orchestrates the entire customer lifecycle:
+The Backbase platform orchestrates the entire customer lifecycle through four stages. Each stage spans multiple product lines — the quadrant mapping below shows the *primary* quadrant, but products from all quadrants participate in every stage.
 
-| Stage | Description | Platform Quadrant |
-|-------|-------------|-------------------|
-| **Acquire** | Attract and convert prospects | Onboarding & Origination |
-| **Activate** | Enable and engage new customers | Digital Banking |
-| **Expand** | Grow share of wallet | Engagement & Expansion |
-| **Retain** | Prevent churn and deepen loyalty | Human Assist |
+| Stage | Definition | Primary Quadrant | What This Stage Covers |
+|-------|-----------|------------------|----------------------|
+| **Acquire** | Attract prospects, convert them into customers, and complete their onboarding | Onboarding & Origination | Prospecting, lead management, marketing, application, origination, KYC/onboarding, account creation, initial product setup |
+| **Activate** | Enable customers to use the platform for daily banking and complete their first key transactions | Digital Banking | Account activation, first transaction, digital channel adoption, daily banking operations (payments, transfers, cash management), initial product usage |
+| **Expand** | Grow share of wallet through cross-sell, upsell, and proactive engagement based on customer needs | Engagement & Expansion | Cross-sell/upsell origination, next best action, pre-approved offers, product bundling, engagement campaigns, life-event triggers, AUM growth (wealth) |
+| **Retain** | Reduce cost-to-serve through self-service, resolve issues efficiently, and prevent churn through proactive engagement | Human Assist + Digital Banking | Self-service operations, issue resolution, dispute management, portfolio reviews, proactive retention, loyalty programs, churn prediction, cost-to-serve optimization |
 
 ### The Unified Banking Suite (Four Quadrants)
 
@@ -43,63 +43,152 @@ expand←  │  & Expansion    │     Assist      │ ←retain
          └─────────────────┴─────────────────┘
 ```
 
+> **Note:** The quadrant model shows primary associations. In practice, Digital Banking serves Activate, Expand, AND Retain (self-service). Human Assist participates in Expand (RM-driven cross-sell) as well as Retain. Engagement & Expansion drives Retain (proactive retention) as well as Expand. The lifecycle stages are *customer outcome-oriented*; the quadrants are *platform architecture-oriented*.
+
+### Lifecycle Stage → Product Lines & Solution Components
+
+#### ACQUIRE — Convert Prospects to Customers
+
+| Product Line | Solution Components | What It Does in This Stage |
+|-------------|-------------------|---------------------------|
+| **Digital Onboarding** | Guided Application Flow, Document Upload & OCR, eIDV (Jumio/Onfido), AML Screening, Decision Engine (auto-approve/refer/decline), eSignature, Welcome Experience | End-to-end digital account opening with straight-through processing for low-risk applicants |
+| **Digital Lending** | Loan Application Flow, Income Verification, Credit Decisioning, Offer Presentation, Loan Booking | Origination of credit products (personal loans, mortgages, credit cards, business loans, credit facilities) |
+| **Flow Foundation** | Journey Orchestrator, Form Builder, Business Rules Engine | Low-code configuration of acquisition journeys and business rules |
+| **Platform Identity** | Biometric Enrollment, FIDO2/Passkeys, Device Registration | Secure identity establishment during onboarding |
+| **Grand Central** | Core Banking Connectors, KYC/AML Vendor Connectors, Credit Bureau Connectors, Company Registry APIs | Integration to systems of record for account creation, verification, and decisioning |
+| **Digital Engage** | Campaign Orchestration, Prospect Portal, Lead Capture Forms | Pre-acquisition marketing and prospect engagement |
+| **Digital Assist** | RM/Advisor Workspace (Lead Management, Pipeline Visibility, Referral Tracking, Event Manager) | Employee-side tools for prospecting, lead tracking, and onboarding support |
+
+**Domain Variations:**
+- **Retail:** Focus on self-service digital onboarding with high STP rates. Key metric: time-to-account, completion rate.
+- **Wealth:** RM-assisted hybrid onboarding. Prospect Lounge for self-qualification. Key metric: lead conversion, onboarding TAT.
+- **SME:** Business account opening with KYB (beneficial owners, company structure). Key metric: time-to-account, documents required.
+- **Commercial:** Complex multi-entity onboarding with user provisioning, entitlements, and system integration (ERP/TMS). Key metric: weeks to go-live.
+
+#### ACTIVATE — Get Customers Transacting
+
+| Product Line | Solution Components | What It Does in This Stage |
+|-------------|-------------------|---------------------------|
+| **Digital Banking - Retail** | Account Dashboard, Transaction History, Payments (P2P, Bill Pay, Transfers), Card Activation, Card Controls, Notifications, Statements | Core daily banking experience that drives digital adoption |
+| **Digital Banking - Business** | Cash Position Dashboard, Payment Initiation (Bulk/Single), Beneficiary Management, User Administration, Multi-Entity Views, Reconciliation | Business banking operations that replace branch/manual processes |
+| **Digital Invest** | Portfolio Overview, First Investment Flow, Market Data, Order Execution | Investment platform activation (wealth clients) |
+| **Platform Identity** | Biometric Login, Step-Up Authentication, Device Management, Session Management | Secure, frictionless access to banking services |
+| **Digital Engage** | Welcome Journey, Onboarding Nudges, Feature Discovery, Push Notifications | Guided activation sequence to drive feature adoption |
+| **Grand Central** | Payment Network Connectors (ACH/RTP/SEPA/Faster Payments), Card Processor Connectors | Integration to payment rails and card processors for transaction execution |
+
+**Domain Variations:**
+- **Retail:** Mobile-first experience. Key metric: digital adoption rate, active users, transactions per user.
+- **Wealth:** First investment / portfolio setup. Key metric: time to first trade, AUM activation rate.
+- **SME:** Cash flow management, first invoice, first payment. Key metric: digital payment adoption, monthly active users.
+- **Commercial:** Cash visibility, payment operations, user provisioning. Key metric: payment STP rate, digital vs. manual ratio.
+
+#### EXPAND — Grow Share of Wallet
+
+| Product Line | Solution Components | What It Does in This Stage |
+|-------------|-------------------|---------------------------|
+| **Digital Lending** | Pre-Approved Offers, Cross-Lending Origination (CLO), Limit Increase Flow, Product Bundling | New product origination for existing customers with pre-filled data and shortened workflows |
+| **Digital Engage** | Next Best Action (NBA) Engine, Engagement Scoring, Campaign Orchestration, Life-Event Triggers, Behavioral Nudges | Proactive, data-driven engagement to drive cross-sell at the right moment |
+| **Digital Invest** | Portfolio Expansion, New Fund Subscription, Robo-Advisory, Goal-Based Investing | Wealth product expansion and AUM growth |
+| **Data Foundations** | Customer Behavioral Analytics, Propensity Models, Product Affinity Scoring, Engagement Scoring | Intelligence layer that powers personalized cross-sell and identifies expansion opportunities |
+| **Digital Assist** | RM/Advisor Workspace (Client 360, Opportunity Pipeline, Next Best Action Alerts, Pre-Approved Product View) | Employee tools for relationship-driven cross-sell and advisory |
+| **Wealth Management** | Advisory Workflow, Investment Proposal, Suitability Assessment, Portfolio Rebalancing | Wealth-specific expansion through advisory and AUM growth |
+
+**Domain Variations:**
+- **Retail:** Product cross-sell (savings→loans→cards→investments). Key metric: products per customer, cross-sell conversion. *Seabank example: CLO was the single largest value lever at $7.7M over 5 years.*
+- **Wealth:** AUM growth, new asset classes, family wealth. Key metric: NNA (Net New Assets), product penetration.
+- **SME:** Credit line increases, merchant services, insurance, trade products. Key metric: revenue per client, product penetration.
+- **Commercial:** Trade finance, supply chain finance, FX, structured products. Key metric: fee income, facility utilization.
+
+#### RETAIN — Serve Efficiently and Prevent Churn
+
+| Product Line | Solution Components | What It Does in This Stage |
+|-------------|-------------------|---------------------------|
+| **Digital Banking - Retail** | Self-Service Hub (Card Block/Unblock, PIN Reset, Address Change, Standing Orders, Statements, Travel Notifications), In-App Support, FAQ/Help | Digital self-service that deflects branch/call center volume and reduces cost-to-serve |
+| **Digital Banking - Business** | Self-Service Portal, User Management, Mandate Management, Statement Downloads | Business client self-service that reduces RM/operations overhead |
+| **Digital Assist** | CSR Workspace (Customer 360, Case Management, Interaction History, Dispute Handling), RM Workspace (Portfolio Review, Client Health Score, Meeting Prep) | Employee productivity tools for efficient service delivery |
+| **Digital Engage** | Retention Campaigns, Churn Risk Alerts, Win-Back Offers, Financial Wellness Nudges, Loyalty Programs | Proactive engagement that prevents silent churn |
+| **Data Foundations** | Churn Prediction Models, Customer Health Scoring, Engagement Analytics, Cost-to-Serve Analytics | Intelligence that identifies at-risk customers and measures service efficiency |
+| **Wealth Management** | Portfolio Review Automation, Reasons-Why Letter Generation, Suitability Reassessment, Client Reporting | Wealth-specific servicing that shifts RM time from admin to advice |
+| **AI & Agentic** | Conversational AI (Chatbot), AI Copilots for CSR/RM, Intelligent Routing, Auto-Resolution | AI-powered service that handles routine queries and assists employees |
+
+**Domain Variations:**
+- **Retail:** Self-service digital deflection. Key metric: containment rate, cost-to-serve, NPS. *Target: 20%→60% digital containment.*
+- **Wealth:** RM productivity (admin→advice shift). Key metric: non-value task time, review prep time, churn rate. *ISPWM example: 65% non-value time → target 35%.*
+- **SME:** Digital self-service + relationship support. Key metric: digital adoption, support ticket volume.
+- **Commercial:** Self-service portal + dedicated RM. Key metric: client satisfaction, issue resolution time.
+
 ---
 
 ## Part 2: Platform Architecture
 
-### Architecture Layers
+### Platform Evolution
 
-The Backbase platform is organized into three primary planes:
+The Backbase platform has evolved through distinct eras:
 
-#### 1. Experience Plane (System of Engagement)
-Customer-facing and employee-facing interfaces:
+| Era | Period | Platform Identity | Key Innovation |
+|-----|--------|-------------------|----------------|
+| **Bank 2.0 Portal** | 2011-2013 | Widget App Store | Vertical specialization into financial services |
+| **CXP** | 2016-2019 | Customer Experience Platform | Omnichannel orchestration |
+| **Engagement Banking** | 2022-2023 | Engagement Banking Platform (EBP) | Model Banks, platform economics (€120M funding) |
+| **AI-Native** | 2024-2025 | AI-powered Banking Platform | Agentic autonomy, Intelligence Fabric, Agent Studio |
+| **Semantic Intelligence** | 2026+ | AI-native Banking Operating System | **NEXUS**, Semantic Fabric, autonomous banking |
 
-| Component | Description |
-|-----------|-------------|
-| **Customer Apps** | Online & Mobile Banking Applications |
-| **Employee Workspaces** | CSR, RM/Advisor, Operations workspaces |
-| **Prospect Portal** | Pre-customer engagement |
-| **Broker Workspace** | Third-party partner access |
-| **Agentic AI** | AI-powered assistants and agents |
+### Architecture — Three Fabrics
 
-#### 2. Capability Plane (System of Intelligence)
-The intelligence and orchestration layer:
+The current Backbase architecture is organized into **three fabrics** (evolved from the earlier three-plane model):
 
-| Component | Description |
-|-----------|-------------|
-| **HELIX (Customer Brain)** | Unified frontline control plane - single source of truth |
-| **Customer State Graph** | Real-time customer truth across channels & systems |
-| **Semantic Banking Ontology** | Shared language for every system & model |
-| **Entitlements & Policies** | Access control and business rules |
-| **Events & Actions** | What can be done exposed to every UI and AI |
-| **Business Process Orchestration** | Front-to-back workflow coordination |
-| **Data Foundation** | Unified data lakehouse and management |
+| Fabric | Assessment Layer | What It Covers | Key Components |
+|--------|-----------------|----------------|----------------|
+| **Digital Banking Fabric** | **Front Layer** | Customer and employee experiences across channels | Customer Apps (Mobile + Web), Employee Workspaces (CSR, RM/Advisor, Operations), Prospect Portal, AI Co-Pilots, Model Bank Apps |
+| **Data + AI Fabric** | **Middle Layer** | Intelligence, orchestration, semantic understanding, and agentic execution | **NEXUS** (Customer State Graph, Semantic Banking Ontology), Agent Studio, Agent Orchestration, Process Automation (Flow), Entitlements & Access Control, Data Foundation, Intelligence Fabric |
+| **Integration Fabric** | **Back Layer** | Connectivity to systems of record and third-party services | **Grand Central** (iPaaS), Connector Studio, 100+ Pre-built Connectors, Unified Domain Model, API Management, Fintech Marketplace |
 
-#### 3. Integration Plane (System of Integration)
-Connectivity to systems of record:
+> **Assessment mapping:** For capability assessments, the three fabrics map directly to Front/Middle/Back (F/M/B) scoring layers. The overall capability score = the weakest layer (weakest-link principle).
 
-| Component | Description |
-|-----------|-------------|
-| **Grand Central** | Integration Platform-as-a-Service (iPaaS) |
-| **Unified Domain Model** | Standardized data model across integrations |
-| **API Management** | API gateway and management |
-| **100+ Connectors** | Pre-built integrations to core systems, CRM, payments, fintech |
-| **Fintech Marketplace** | Ecosystem of partner integrations |
+### Horizontal Service Layers
 
-### HELIX - The Customer Brain (2026+)
+Across the three fabrics, the platform exposes these horizontal service layers:
 
-HELIX is the central intelligence layer that governs frontline operations:
+| Service Layer | Description | Key Components |
+|--------------|-------------|----------------|
+| **Presentation Services** | UI frameworks and app shells | Model Bank Apps, AI Co-Pilots, Widget Engine, Design System |
+| **Banking Services** | Composable banking microservices | Accounts, Payments, Cards, Lending, Investing |
+| **Process Automation Services** | Journey and workflow orchestration | Flow Foundation, Business Rules Engine, Form Builder |
+| **Agentic Services** | AI agent development and execution | Agent Studio, Agent Orchestration, Agent Marketplace |
+| **Semantic Services** | Customer intelligence and ontology | **NEXUS** — Customer State Graph, Semantic Banking Ontology |
+| **Integration Services** | System connectivity | Grand Central, Connector Studio, Unified Domain Model |
+| **Entitlements Services** | Access control and permissions | Role-based access, multi-level approvals, limits management |
+| **Security Services** | Identity and authentication | Platform Identity, FIDO2, Biometric, Fraud Prevention |
+| **Marketplace** | Partner ecosystem | Fintech integrations, add-on connectors |
+| **Managed Hosting** | Cloud operations | Banking-as-a-Service (BaaS), cloud infrastructure |
+| **Agentic SDLC** | AI-assisted development | Upgrade agents, Knowledge agents (Ask IO), legacy modernization |
+
+### NEXUS — The Semantic Fabric (2026+)
+
+NEXUS is the next evolution of the Customer Brain (previously called HELIX). It provides the semantic intelligence layer that makes autonomous banking possible:
 
 **Core Components:**
 
-| Layer | Function |
-|-------|----------|
-| **Semantic Banking Ontology** | Shared language for every system & model |
-| **Shared Customer State Graph** | One real-time truth across channels & systems |
-| **Action & Behavior Layer** | Exposes "what can be done" to every UI and AI |
-| **Agentic Intelligence Layer** | Real-time decisions, recommendations, automation |
-| **Trust & Control Layer** | Policy enforcement, audit, secure orchestration |
-| **Unified Journeys & Workflows** | Consistent operations across channels & systems |
+| Component | Function |
+|-----------|----------|
+| **Customer State Graph** | Single real-time truth about every customer — across all channels, products, and systems. This is the "one customer view" that every AI agent and human employee accesses. |
+| **Semantic Banking Ontology** | Shared domain language for every system and AI model. Ensures that "savings account" means the same thing to the core banking system, the mobile app, and the AI agent. |
+| **Action & Behavior Layer** | Exposes "what can be done" to every UI and AI — a catalog of available actions (open account, make payment, file dispute) that any interface can invoke. |
+| **Agentic Intelligence Layer** | Real-time decisioning, recommendations, and automation. Powers next-best-action, risk scoring, churn prediction, and autonomous case handling. |
+| **Trust & Control Layer** | Policy enforcement, audit trails, and secure orchestration. Ensures AI agents operate within governance boundaries. |
+| **Unified Journeys & Workflows** | Consistent end-to-end operations across channels and systems. A journey started on mobile continues on web, in-branch, or via AI agent with full context. |
+
+> **NEXUS vs. HELIX:** NEXUS is the evolution of the HELIX concept (Customer Brain). While HELIX focused on being a "unified frontline control plane," NEXUS adds the semantic layer that enables true autonomous banking — AI agents that understand banking domain concepts natively.
+
+### Legacy Plane Terminology (for reference)
+
+Earlier Backbase documentation uses a "three plane" model. This maps to the current fabric model:
+
+| Legacy Term | Current Term | Assessment Layer |
+|------------|-------------|-----------------|
+| Experience Plane (System of Engagement) | Digital Banking Fabric | Front Layer |
+| Capability Plane (System of Intelligence) | Data + AI Fabric | Middle Layer |
+| Integration Plane (System of Integration) | Integration Fabric | Back Layer |
 
 ### Grand Central - Integration Platform
 
@@ -142,6 +231,8 @@ Grand Central provides unified connectivity to:
 ---
 
 ## Part 3: Product Lines
+
+> **Detailed Feature Reference:** For feature-level product detail (3,117 sub-features with tier availability and platform support), consult `knowledge/domains/Product Directory (1).csv`. The CSV is organized by Journey (e.g., "Payments", "Card Management", "Authentication") and shows each feature's availability across Essential/Premium/Signature tiers and Mobile/Web platforms.
 
 ### 13 Product Lines Overview
 
@@ -273,6 +364,18 @@ Grand Central provides unified connectivity to:
 4. **Run Agents**: Agent compute, CI/CD, API management
 5. **Govern Agents**: AI guardrails, AI Gateway, Red teaming, Observability
 
+### Agentic AI Platform Components
+
+| Component | Description |
+|-----------|-------------|
+| **Agent Studio** | Development environment for building, testing, and deploying AI agents within the Backbase platform |
+| **Agent Orchestration** | Runtime coordination of multiple AI agents working together to complete complex tasks |
+| **Agent Marketplace** | Library of pre-built agent templates and partner integrations |
+| **MCP (Model Context Protocol)** | Tool catalog standard enabling AI agents to access banking capabilities securely |
+| **Intelligence Fabric** | Unified data and intelligence layer that feeds AI models, agents, and decisioning engines |
+| **Connector Studio** | Visual integration builder for connecting to external AI services, LLMs, and data sources |
+| **Agentic SDLC** | AI-assisted software development lifecycle for building and upgrading Backbase implementations |
+
 ### Zero Trust AI Architecture
 
 | Component | Function |
@@ -283,6 +386,8 @@ Grand Central provides unified connectivity to:
 | AI Gateway | Centralized AI access control |
 | Explainability | Audit trails and reasoning transparency |
 | Observability | Monitoring and alerting |
+| Red Teaming | Adversarial testing of AI behaviors |
+| AI Audit Trail | Complete record of AI decisions and actions for compliance |
 
 ---
 
@@ -410,12 +515,15 @@ Backbase advocates a "start small, get a win" approach:
 | Term | Definition |
 |------|------------|
 | **AUM** | Assets Under Management |
-| **CLO** | Customer Lifecycle Orchestration |
+| **BIAN** | Banking Industry Architecture Network — industry-standard service landscape (~322 service domains). Backbase's capability taxonomy is BIAN-aligned (v13). See `knowledge/standards/capability_taxonomy.md`. |
+| **CLO** | (1) Customer Lifecycle Orchestration; (2) Cross-Lending Origination — originating a new lending product for an existing customer using pre-filled data. Context determines meaning. |
 | **CPS** | Customer Profile Service |
 | **CSR** | Customer Service Representative |
 | **EBP** | Engagement Banking Platform |
 | **FTE** | Full-Time Equivalent |
-| **HELIX** | Backbase's Customer Brain - unified frontline control plane |
+| **HELIX** | Legacy name for Backbase's Customer Brain — now evolved into NEXUS |
+| **NEXUS** | Backbase's Semantic Fabric (2026+) — Customer State Graph + Semantic Banking Ontology. The intelligence layer enabling autonomous banking. Evolution of HELIX. |
+| **NBA** | Next Best Action — AI-driven recommendation of the optimal action for a customer at a given moment |
 | **iPaaS** | Integration Platform as a Service |
 | **KYB** | Know Your Business |
 | **KYC** | Know Your Customer |
@@ -431,13 +539,21 @@ Backbase advocates a "start small, get a win" approach:
 
 | Term | Definition |
 |------|------------|
-| **Grand Central** | Backbase integration platform (iPaaS) |
+| **Digital Banking Fabric** | Front layer of the three-fabric architecture — customer and employee experiences |
+| **Data + AI Fabric** | Middle layer — intelligence, orchestration, NEXUS, Agent Studio, Process Automation |
+| **Integration Fabric** | Back layer — Grand Central, connectors, API management |
+| **Grand Central** | Backbase integration platform (iPaaS) — industry's first iPaaS designed for banking |
+| **Connector Studio** | Visual integration builder enabling non-technical employees to build integrations |
 | **Flow Foundation** | Low-code journey orchestration engine |
-| **Data Fabric** | Unified data layer for reporting, analytics, AI |
+| **Data Fabric / Data Foundation** | Unified data layer for reporting, analytics, AI |
+| **Intelligence Fabric** | AI-ready data and model layer powering agents, decisioning, and intelligence across the platform |
 | **Unified Frontline** | Vision of single customer operating system |
-| **Customer Brain** | HELIX - intelligence layer for customer lifecycle |
-| **Semantic Banking Ontology** | Standardized banking domain model |
-| **Customer State Graph** | Real-time customer data across all systems |
+| **Customer Brain** | Legacy term for NEXUS/HELIX — intelligence layer for customer lifecycle |
+| **Semantic Banking Ontology** | Standardized banking domain model — shared language for every system and AI model |
+| **Customer State Graph** | Real-time customer data across all systems — single source of truth |
+| **Agent Studio** | Development environment for building and deploying AI agents |
+| **Agent Orchestration** | Runtime coordination of multiple AI agents for complex task completion |
+| **Agentic SDLC** | AI-assisted software development lifecycle using upgrade agents and knowledge agents |
 
 ### Product Terms
 
@@ -454,30 +570,31 @@ Backbase advocates a "start small, get a win" approach:
 
 ## Part 10: Reference Architecture Diagrams
 
-### High-Level Platform Stack
+### High-Level Platform Stack (Three Fabrics)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    EXPERIENCE PLANE                          │
+│              DIGITAL BANKING FABRIC (Front Layer)             │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────────┐│
-│  │  Customer   │ │  Employee   │ │      Agentic AI         ││
-│  │    Apps     │ │ Workspaces  │ │                         ││
+│  │  Customer   │ │  Employee   │ │    AI Co-Pilots &       ││
+│  │    Apps     │ │ Workspaces  │ │    Agentic AI           ││
+│  │ (Mobile+Web)│ │ (CSR/RM/Ops)│ │                         ││
 │  └─────────────┘ └─────────────┘ └─────────────────────────┘│
 ├─────────────────────────────────────────────────────────────┤
-│                    CAPABILITY PLANE                          │
+│              DATA + AI FABRIC (Middle Layer)                  │
 │  ┌─────────────────────────────────────────────────────────┐│
-│  │                    HELIX                                 ││
-│  │  Customer State Graph | Ontology | Events & Actions     ││
+│  │                    NEXUS                                  ││
+│  │  Customer State Graph | Semantic Ontology | Actions      ││
 │  └─────────────────────────────────────────────────────────┘│
 │  ┌─────────────────────────────────────────────────────────┐│
-│  │  Banking Microservices | Process Orchestration          ││
-│  │  Identity & Entitlements | Data Foundation              ││
+│  │  Agent Studio | Flow Engine | Banking Services           ││
+│  │  Entitlements | Data Foundation | Intelligence Fabric    ││
 │  └─────────────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────────────┤
-│                    INTEGRATION PLANE                         │
+│              INTEGRATION FABRIC (Back Layer)                  │
 │  ┌─────────────────────────────────────────────────────────┐│
 │  │              GRAND CENTRAL                               ││
-│  │  Unified APIs | Connectors | Fintech Marketplace        ││
+│  │  Connector Studio | Unified APIs | Fintech Marketplace   ││
 │  └─────────────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────────────┤
 │                   SYSTEMS OF RECORD                          │

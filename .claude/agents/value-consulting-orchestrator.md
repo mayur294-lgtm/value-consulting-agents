@@ -53,11 +53,13 @@ The orchestrator supports THREE engagement types. Detect the type from user sign
 
 **Workflow:**
 ```
-Discovery Transcript Interpreter → Capability Assessment → ROI Business Case → Roadmap → Assembly
+Discovery Transcript Interpreter → Market Context Researcher* → Capability Assessment → ROI Business Case → Roadmap → Assembly
 ```
+*Market Context Researcher runs after Discovery (needs pain points + metrics as input) and can run in parallel with Capability/ROI/Roadmap since they are independent. It produces optional enrichment for the Assembly Agent.
 
 **Deliverables:**
 - Evidence Register
+- Market Context Brief (consultant-validated, optional)
 - Capability Assessment
 - ROI Report with Scenarios
 - Implementation Roadmap
@@ -185,11 +187,15 @@ For any single file over 1000 lines (transcripts, PDFs, reports):
 Agents pass work through files, not through context:
 ```
 Discovery Agent → writes evidence_register.md, pain_points.md, metrics.md
-Capability Agent → reads those files (NOT raw transcripts)
+Market Context Researcher → reads discovery outputs + does web research → writes market_context_brief.md
+  → Consultant reviews → writes market_context_validated.md (or SKIPPED)
+Capability Agent → reads discovery outputs (NOT raw transcripts)
 ROI Agent → reads capability output + metrics (NOT raw transcripts)
 Roadmap Agent → reads ROI output + capability output
-Assembly Agent → reads all output files
+Assembly Agent → reads all output files + market_context_validated.md (if exists)
 ```
+
+**Parallel execution opportunity:** After Discovery completes, Market Context Researcher, Capability Agent, and ROI Agent can all run in parallel since they read from Discovery outputs independently.
 
 This ensures each agent starts with a clean context containing only what it needs.
 
@@ -204,6 +210,14 @@ Route work to specialized agents based on engagement type:
 - Output: Evidence register, pain points, stakeholder map, business context
 - **Context rule:** Process one transcript per invocation, write interim output to disk
 
+**Market Context Researcher (OPTIONAL — runs after Discovery):**
+- Input: Engagement context (country, domain, bank name, size tier) + discovery outputs (pain points, metrics, objectives)
+- Output: Validated market context brief with financial metric correlations, outside-in CX research (if available for domain), competitor capabilities (if available), and consultant-validated positioning angles
+- **Key behavior:** Presents findings to consultant for validation before passing to Assembly. Consultant can accept, modify, request more research, or skip entirely.
+- **Domain awareness:** Adapts research depth to domain reality (rich data for retail, limited for wealth/commercial). Returns `NO_RELEVANT_DATA` gracefully when outside-in data isn't available rather than forcing irrelevant data.
+- **Pipeline position:** Runs after Discovery completes. Can run in PARALLEL with Capability, ROI, and Roadmap agents since they are independent workstreams.
+- **Consultant interaction:** ALWAYS requires consultant review before output flows to Assembly. This is creative positioning work that needs human judgment.
+
 **Capability Assessment Agent:**
 - Input: Evidence from discovery, domain context
 - Output: Maturity scores, gap analysis, capability heat map
@@ -217,8 +231,9 @@ Route work to specialized agents based on engagement type:
 - Output: Phased roadmap, value milestones, resource profiles
 
 **Assembly Agent:**
-- Input: All subagent outputs
+- Input: All required subagent outputs + optional validated market context
 - Output: Cohesive, executive-ready final deliverables
+- **Market context handling:** If `market_context_validated.md` exists, weave into Act 1 narrative and Act 7 metrics bridge. If not, build Act 1 from discovery findings and domain knowledge only.
 
 #### Ignite Inspire Agents
 

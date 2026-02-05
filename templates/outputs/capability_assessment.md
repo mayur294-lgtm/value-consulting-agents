@@ -1,8 +1,10 @@
 # Capability Assessment: [Domain/Organization Name]
 
+**Client:** [Client Name]
+**Domain:** [Retail Banking / Wealth Management / SME Banking / Commercial Banking]
 **Date:** [Date]
-**Prepared for:** [Client Name]
 **Prepared by:** [Consultant Name]
+**Assessment Mode:** [Workshop / Transcript Inference]
 **Assessment Period:** [Date Range]
 
 ---
@@ -11,106 +13,141 @@
 
 ### Overall Assessment
 
-**Overall Maturity Score:** [X.X] / 5.0
+**Overall Maturity: [X.X] / 4.0** (Range: [lowest] – [highest] across capabilities)
 
-**Current State:** [One paragraph summarizing where the organization is today across assessed capabilities]
+[2-3 sentences summarizing where the organization stands today. Be specific — don't say "moderate maturity," say "most capabilities are Fragmented (Level 1) with manual handoffs and person-dependent processes across the middle and back layers."]
 
-**Critical Gaps:** [2-3 sentences highlighting the most important capability gaps and their business impact]
+### Critical Findings
 
-**Strategic Priorities:** [Top 3-5 capability areas requiring immediate focus]
+1. **[Finding 1]:** [Business impact, not technology gap]
+2. **[Finding 2]:** [Business impact]
+3. **[Finding 3]:** [Business impact]
 
-### Key Findings
+### Unconsidered Needs Surfaced
 
-1. **[Finding 1]:** [Impact and implication]
-2. **[Finding 2]:** [Impact and implication]
-3. **[Finding 3]:** [Impact and implication]
+We identified [X] problems the organization has not yet raised but should address:
+1. **[Unconsidered Need 1]:** [One-line business impact]
+2. **[Unconsidered Need 2]:** [One-line business impact]
+3. **[Unconsidered Need 3]:** [One-line business impact]
 
-### Recommended Focus Areas
+### Top Priority Actions
 
-1. **[Capability Area]** - [Why prioritized]
-2. **[Capability Area]** - [Why prioritized]
-3. **[Capability Area]** - [Why prioritized]
-
----
-
-## Assessment Scope & Methodology
-
-### Scope
-
-**Capability Domains Assessed:**
-- [Domain 1, e.g., Customer Experience]
-- [Domain 2, e.g., Operational Excellence]
-- [Domain 3, e.g., Technology Platform]
-
-**Assessment Approach:**
-- Stakeholder interviews: [X interviews with roles]
-- Documentation review: [Systems reviewed]
-- Data analysis: [Metrics analyzed]
-- Industry benchmarking: [Sources used]
-
-### Maturity Model
-
-**Maturity Levels:**
-
-- **Level 1 - Initial/Ad Hoc:** Processes are reactive, unpredictable; success depends on individuals; no standardization
-- **Level 2 - Developing:** Basic processes defined; some repeatability; limited tooling; inconsistent execution
-- **Level 3 - Defined:** Standardized processes organization-wide; clear roles; adequate tooling; consistent execution
-- **Level 4 - Managed:** Processes measured and controlled; data-driven decisions; integrated tooling; continuous improvement
-- **Level 5 - Optimizing:** Proactive optimization; innovation and experimentation; automated insights; industry-leading
-
-**Scoring Approach:**
-- Evidence-based scoring using interview data, metrics, and observations
-- Conservative bias when data is limited
-- Context-aware targets based on business strategy
-- Focus on outcomes, not just process existence
+1. **[Priority 1]:** [What to do and why it matters most]
+2. **[Priority 2]:** [What to do and business rationale]
+3. **[Priority 3]:** [What to do and business rationale]
 
 ---
 
-## Capability Maturity Scorecard
+## Problem Map
 
-| Capability | Current | Target | Gap | Business Impact | Priority |
-|------------|---------|--------|-----|-----------------|----------|
-| **[Domain 1: e.g., Customer Experience]** | | | | | |
-| [Capability 1.1] | [X.X] | [Y.Y] | [Gap] | [$ or qualitative impact] | [H/M/L] |
-| [Capability 1.2] | [X.X] | [Y.Y] | [Gap] | [$ or qualitative impact] | [H/M/L] |
-| [Capability 1.3] | [X.X] | [Y.Y] | [Gap] | [$ or qualitative impact] | [H/M/L] |
-| **[Domain 2: e.g., Operations]** | | | | | |
-| [Capability 2.1] | [X.X] | [Y.Y] | [Gap] | [$ or qualitative impact] | [H/M/L] |
-| [Capability 2.2] | [X.X] | [Y.Y] | [Gap] | [$ or qualitative impact] | [H/M/L] |
-| **[Domain 3: e.g., Technology]** | | | | | |
-| [Capability 3.1] | [X.X] | [Y.Y] | [Gap] | [$ or qualitative impact] | [H/M/L] |
+### Considered Needs
+
+Problems the organization has identified and is actively working to solve.
+
+| # | Problem | Severity | Evidence | Stakeholder Quote | Related Capabilities |
+|---|---------|----------|----------|-------------------|---------------------|
+| CN-01 | [Problem title] | Critical/High/Medium/Low | E1, E3 | "[Quote]" — [Role] | CAP-X-XX-NN |
+| CN-02 | [Problem title] | | | | |
+
+### Unconsidered Needs
+
+Problems the organization has not raised but evidence suggests they exist. These create new urgency and differentiate the assessment.
+
+| # | Problem | Severity | Why They Miss It | Indicators Present | Related Capabilities |
+|---|---------|----------|------------------|--------------------|---------------------|
+| UN-01 | [Problem title] | Critical/High/Medium/Low | [Why this blind spot exists] | [Evidence suggesting the problem is real] | CAP-X-XX-NN |
+| UN-02 | [Problem title] | | | | |
+
+---
+
+## Capability Heatmap
+
+### Domain-Level RAG View
 
 **Color Legend:**
-- 🔴 Red (1.0-2.0): Critical gap, significant business impact
-- 🟡 Yellow (2.1-3.5): Developing, opportunity for improvement
-- 🟢 Green (3.6-5.0): Adequate to leading, maintain and optimize
+- 🔴 **0 — Absent** (Red #E63946): Capability doesn't exist
+- 🟠 **1 — Fragmented** (Amber-Red #F4A261): Ad-hoc, person-dependent, inconsistent
+- 🟡 **2 — Defined** (Amber #E9C46A): Standardized but manual handoffs, limited measurement
+- 🟢 **3 — Orchestrated** (Green #2A9D8F): End-to-end automated, measured, cross-system
+- 🔵 **4 — Intelligent** (Backbase Blue #0066FF): AI-native, predictive, self-optimizing
+
+### [Domain 1: e.g., Customer Channels & Engagement]
+
+| Capability | Front | Middle | Back | Overall | Key Gap |
+|------------|-------|--------|------|---------|---------|
+| [CAP-X-XX-01: Name] | [0-4] | [0-4] | [0-4] | [0-4] | [One-line gap description] |
+| [CAP-X-XX-02: Name] | [0-4] | [0-4] | [0-4] | [0-4] | [One-line gap description] |
+
+### [Domain 2: e.g., Customer Lifecycle Management]
+
+| Capability | Front | Middle | Back | Overall | Key Gap |
+|------------|-------|--------|------|---------|---------|
+| | | | | | |
+
+### [Domain 3: e.g., Retail Banking Services]
+
+| Capability | Front | Middle | Back | Overall | Key Gap |
+|------------|-------|--------|------|---------|---------|
+| | | | | | |
+
+### [Domain N: Continue for all assessed domains]
+
+| Capability | Front | Middle | Back | Overall | Key Gap |
+|------------|-------|--------|------|---------|---------|
+| | | | | | |
+
+### Data & Intelligence (MANDATORY)
+
+| Capability | Front | Middle | Back | Overall | Key Gap |
+|------------|-------|--------|------|---------|---------|
+| Data Foundation & Fabric | [0-4] | [0-4] | [0-4] | [0-4] | |
+| Analytics & Reporting | [0-4] | [0-4] | [0-4] | [0-4] | |
+
+### AI & Agentic Readiness (MANDATORY)
+
+| Capability | Front | Middle | Back | Overall | Key Gap |
+|------------|-------|--------|------|---------|---------|
+| Conversational AI & Virtual Assistants | [0-4] | [0-4] | [0-4] | [0-4] | |
+| AI Copilots for Employees | [0-4] | [0-4] | [0-4] | [0-4] | |
+| AI Governance & Trust | [0-4] | [0-4] | [0-4] | [0-4] | |
 
 ---
 
-## Detailed Assessment by Domain
+## Detailed Capability Assessments
 
-### Domain 1: [e.g., Customer Experience Capabilities]
+### CAP-X-XX-NN: [Capability Name]
 
-#### Capability: [Specific Capability, e.g., "Omnichannel Engagement"]
+**Domain:** [BIAN Business Area → Backbase Capability Domain]
+**Overall Score: [0-4] — [Absent/Fragmented/Defined/Orchestrated/Intelligent]**
 
-**Current Maturity: [X.X] / 5.0**
+#### Current State Description
 
-**Current State Description:**
+[2-3 paragraphs describing what exists today. Be specific about what works, what doesn't, and how it affects the business. Reference evidence throughout.]
 
-[2-3 paragraphs describing what exists today, how it works, what tools/processes are in place, and how it performs]
+#### Layer Assessment
 
-**Evidence:**
-- [Quote or data point from interviews]
-- [Metric or observation from systems]
-- [Supporting documentation reference]
+| Layer | Score | Label | Evidence | Notes |
+|-------|-------|-------|----------|-------|
+| **Front** | [0-4] | [Label] | E1, E5 | [What exists at the experience layer, what's missing] |
+| **Middle** | [0-4] | [Label] | E3, Assumed | [What orchestration/logic exists, what's missing] |
+| **Back** | [0-4] | [Label] | E7 | [What integration/data exists, what's missing] |
 
-**Strengths:**
-- [What's working well]
+#### Probing Question Results
+
+| Gate | Question | Answer | Evidence | Result |
+|------|----------|--------|----------|--------|
+| 0→1 | [Question from taxonomy] | [Observed answer] | E1, E2 | Pass/Fail |
+| 1→2 | [Question from taxonomy] | [Observed answer] | E3 | Pass/Fail |
+| 2→3 | [Question from taxonomy] | [Observed answer] | Assumed | Pass/Fail |
+| 3→4 | [Question from taxonomy] | [Observed answer] | — | Pass/Fail |
+
+#### Strengths
+- [What's working well — be specific]
 - [Positive aspects to build on]
 
-**Gaps:**
-- **Gap 1:** [Description of what's missing or underperforming]
-  - **Root Cause:** [Why this gap exists - process, technology, people, data]
+#### Gaps
+- **Gap 1:** [Description]
+  - **Root Cause:** [Why — process, technology, people, or data]
   - **Business Impact:** [Cost, revenue, risk, or strategic consequence]
   - **Evidence:** [Supporting data or quotes]
 
@@ -119,111 +156,87 @@
   - **Business Impact:** [Consequence]
   - **Evidence:** [Support]
 
-**Business Impact Quantification:**
+#### Business Impact Quantification
 
 [Where possible, quantify the gap impact:]
 - Current state cost/inefficiency: $[X] annually or [Y] hours per transaction
 - Potential improvement value: $[Z] in savings or [A]% increase in metric
 - Risk exposure: $[B] in potential losses or compliance penalties
 
-**Maturity Scoring Rationale:**
+#### Assumptions
 
-[Explain why this specific score was assigned, referencing maturity criteria:]
-- Scored [X] because [evidence against maturity level definition]
-- Did not score higher because [what's missing for next level]
-- Target of [Y] is appropriate because [business justification]
+| # | Assumption | Basis | Sensitivity | Validation Owner |
+|---|-----------|-------|-------------|-----------------|
+| 1 | [Assumption text] | [Why assumed] | High/Medium/Low | [Who should validate] |
 
-**Dependencies:**
+#### Linked Problems
+- **Considered:** CN-01, CN-03
+- **Unconsidered:** UN-02
 
-- **Depends on:** [Other capabilities that must exist first]
-- **Enables:** [What this capability unlocks]
+#### Dependencies
+- **Depends on:** [Other capabilities that must exist/improve first]
+- **Enables:** [What this capability unlocks when improved]
 
-**Improvement Path:**
-
-To reach target maturity:
-1. [Action 1] - [Expected outcome]
-2. [Action 2] - [Expected outcome]
-3. [Action 3] - [Expected outcome]
-
-**Effort Estimate:** [S / M / L / XL]
-
-**Priority Rationale:** [High/Medium/Low based on impact, urgency, feasibility]
+#### Confidence Level
+**[High / Medium / Low]** — [Explanation of evidence quality]
 
 ---
 
-#### Capability: [Next Capability in Domain]
-
-[Repeat full structure above]
+*[Repeat the above section for each assessed capability]*
 
 ---
 
-### Domain 2: [Next Domain]
+## Problem → Capability Traceability
 
-[Repeat domain structure with all capabilities]
+### Traceability Matrix
 
----
+| Problem | Type | Severity | Related Capabilities | Current Scores | Weakest Link | Required Improvement |
+|---------|------|----------|---------------------|----------------|--------------|---------------------|
+| [Problem title] | Considered | C/H/M/L | CAP-X-XX-01, CAP-X-XX-03 | 1, 2 | CAP-X-XX-01 (1) | Must reach Level 2+ |
+| [Problem title] | Unconsidered | C/H/M/L | CAP-X-XX-02, CAP-X-XX-05 | 0, 1 | CAP-X-XX-02 (0) | Must reach Level 2+ |
 
-## Priority Matrix
+### Problem Resolution Readiness
 
-### Capability Prioritization
+**Well-Positioned (capability exists to address):**
+- [Problem] → Capabilities at Level 2+, needs orchestration improvement
 
-Visual representation of capabilities plotted by:
-- **X-Axis:** Implementation Effort (Low → High)
-- **Y-Axis:** Business Impact (Low → High)
+**At Risk (significant capability gaps):**
+- [Problem] → Capabilities at Level 0-1, requires foundational build
 
-**Quadrant Interpretation:**
-
-**Quick Wins (High Impact, Low Effort):**
-- [Capability 1]
-- [Capability 2]
-- **Action:** Prioritize these for immediate implementation
-
-**Strategic Priorities (High Impact, High Effort):**
-- [Capability 3]
-- [Capability 4]
-- **Action:** Plan phased approach, secure funding and resources
-
-**Fill-Ins (Low Impact, Low Effort):**
-- [Capability 5]
-- **Action:** Address if capacity allows
-
-**Reconsider (Low Impact, High Effort):**
-- [Capability 6]
-- **Action:** Defer or eliminate unless strategic mandate
+**Blocked (no capability exists):**
+- [Problem] → Core capability absent, must build from scratch
 
 ---
 
-## Improvement Recommendations
+## Path to Target State
 
-### Priority 1: [Capability Area]
+### Priority 1: [Capability Name]
 
-**Current State:** [Maturity score and brief description]
+**Current: Level [X] ([Label]) → Target: Level [Y] ([Label])**
 
-**Target State:** [Desired maturity and description of future state]
+**What Level [X] Looks Like Today:**
+[Evidence-based description of the current reality — what stakeholders experience day to day]
+
+**What Level [Y] Looks Like:**
+[Concrete, tangible description of the future state — not abstract, but specific]
+
+**What Changes:**
+
+| Layer | Current | Target | Specific Changes Required |
+|-------|---------|--------|--------------------------|
+| **Front** | [Current description] | [Target description] | [Specific actions] |
+| **Middle** | [Current description] | [Target description] | [Specific actions] |
+| **Back** | [Current description] | [Target description] | [Specific actions] |
+
+**Dependencies:** [Other capabilities that must improve first or in parallel]
 
 **Business Outcomes:**
-- [Outcome 1: revenue, cost, risk, strategic benefit]
-- [Outcome 2]
-- [Outcome 3]
+- [Revenue impact with basis]
+- [Cost impact with basis]
+- [Risk reduction with basis]
+- [Strategic benefit]
 
-**Key Improvement Actions:**
-1. **[Action]:** [Description, scope, approach]
-2. **[Action]:** [Description, scope, approach]
-3. **[Action]:** [Description, scope, approach]
-
-**Success Metrics:**
-- [Metric 1: target value and timeframe]
-- [Metric 2: target value and timeframe]
-
-**Prerequisites:**
-- [Dependency 1]
-- [Dependency 2]
-
-**Estimated Effort:** [T-shirt size or story points]
-
-**Estimated Timeline:** [Duration in months]
-
-**Estimated Investment:** $[Range]
+**Effort:** [S / M / L / XL]
 
 **Key Risks:**
 - [Risk 1 and mitigation]
@@ -231,151 +244,270 @@ Visual representation of capabilities plotted by:
 
 ---
 
-### Priority 2: [Capability Area]
+### Priority 2: [Capability Name]
 
 [Repeat structure]
 
 ---
 
-### Priority 3: [Capability Area]
+### Priority 3: [Capability Name]
 
 [Repeat structure]
 
 ---
 
-## Cross-Cutting Themes
+## Data & Intelligence Assessment
 
-### Theme 1: [e.g., "Data Integration Challenges"]
+### Current State
 
-**Observation:** [What pattern was seen across multiple capability areas]
+[Description of the organization's data maturity — where data lives, how it's governed, how it's used (or not used)]
 
-**Impact:** [How this affects multiple capabilities or domains]
+### Capability Scores
 
-**Recommendation:** [How to address this systematically]
+#### Data Foundation & Fabric (CAP-X-DI-01)
+
+**Overall Score: [0-4] — [Label]**
+
+| Layer | Score | Evidence | Notes |
+|-------|-------|----------|-------|
+| Front | [0-4] | | [Dashboards, self-service analytics] |
+| Middle | [0-4] | | [Data pipelines, quality rules, governance] |
+| Back | [0-4] | | [Data warehouse, streaming, lineage] |
+
+[Detailed assessment following standard structure]
+
+#### Analytics & Reporting (CAP-X-DI-02)
+
+**Overall Score: [0-4] — [Label]**
+
+| Layer | Score | Evidence | Notes |
+|-------|-------|----------|-------|
+| Front | [0-4] | | [Executive/operational dashboards] |
+| Middle | [0-4] | | [Reporting engine, KPI tracking, alerting] |
+| Back | [0-4] | | [BI platform, data warehouse queries] |
+
+[Detailed assessment following standard structure]
+
+### Data Readiness for AI
+
+[Assessment of whether the data foundation can support AI/ML use cases — data quality, accessibility, governance, real-time availability]
 
 ---
 
-### Theme 2: [e.g., "Change Management Readiness"]
+## AI & Agentic Readiness Assessment
 
-[Repeat structure]
+### Current State
+
+[Description of where the organization stands on AI adoption — pilots, production use, strategy, skills, governance]
+
+### Capability Scores
+
+#### Conversational AI & Virtual Assistants (CAP-X-AI-01)
+
+**Overall Score: [0-4] — [Label]**
+
+| Layer | Score | Evidence | Notes |
+|-------|-------|----------|-------|
+| Front | [0-4] | | [Chatbot, voice assistant, employee AI] |
+| Middle | [0-4] | | [NLU, RAG, escalation logic, guardrails] |
+| Back | [0-4] | | [LLM infrastructure, knowledge base, audit] |
+
+[Detailed assessment]
+
+#### AI Copilots for Employees (CAP-X-AI-02)
+
+**Overall Score: [0-4] — [Label]**
+
+| Layer | Score | Evidence | Notes |
+|-------|-------|----------|-------|
+| Front | [0-4] | | [AI suggestions, auto-drafts, next-best-action] |
+| Middle | [0-4] | | [Context-aware engine, compliance checking] |
+| Back | [0-4] | | [CRM integration, LLM service, audit trail] |
+
+[Detailed assessment]
+
+#### AI Governance & Trust (CAP-X-AI-03)
+
+**Overall Score: [0-4] — [Label]**
+
+| Layer | Score | Evidence | Notes |
+|-------|-------|----------|-------|
+| Front | [0-4] | | [Transparency, explainability, opt-out] |
+| Middle | [0-4] | | [Guardrails, HITL, bias detection, monitoring] |
+| Back | [0-4] | | [Model registry, audit trail, red teaming] |
+
+[Detailed assessment]
+
+### AI Readiness Summary
+
+| Dimension | Rating | Commentary |
+|-----------|--------|------------|
+| Data readiness for AI | [Ready / Partial / Not Ready] | [Why] |
+| AI skills and talent | [Ready / Partial / Not Ready] | [Why] |
+| AI governance maturity | [Ready / Partial / Not Ready] | [Why] |
+| Organizational appetite | [High / Medium / Low] | [Why] |
+| Regulatory readiness | [Ready / Partial / Not Ready] | [Why] |
 
 ---
 
-## Benchmarking Insights
+## Journey Impact Summary
 
-### Industry Comparison
+### [Journey Name] — [Lifecycle Stage: Acquire/Activate/Expand/Retain]
 
-| Capability | Your Organization | Industry Average | Industry Leaders | Gap to Average | Gap to Leaders |
-|------------|-------------------|------------------|------------------|----------------|----------------|
-| [Capability 1] | [X.X] | [Y.Y] | [Z.Z] | [Delta] | [Delta] |
-| [Capability 2] | [X.X] | [Y.Y] | [Z.Z] | [Delta] | [Delta] |
+#### Current State (What We Heard)
+- "[Stakeholder quote]" — [Role] (E1)
+- [Business impact statement with evidence]
 
-**Sources:** [Industry reports, analyst firms, peer benchmarks]
+#### Capability Gaps Affecting This Journey
 
-**Interpretation:** [What the benchmarking reveals about competitive position and urgency]
+| Capability | Current | Target | Gap Impact on This Journey |
+|------------|---------|--------|---------------------------|
+| [CAP-X-XX-NN] | [0-4] | [0-4] | [How this gap affects the journey] |
+| [CAP-X-XX-NN] | [0-4] | [0-4] | [How this gap affects the journey] |
+
+#### Business Impact
+- **Revenue at Risk:** $[X] ([calculation basis])
+- **Cost Inefficiency:** $[Y] ([calculation basis])
+- **Time/Effort Waste:** [Z] hours/month ([basis])
+
+#### Recommendations
+1. [Recommendation with expected impact]
+2. [Recommendation with expected impact]
+
+---
+
+*[Repeat for each major journey affected]*
 
 ---
 
 ## Assumptions Register
 
-| # | Assumption | Basis | Impact on Assessment | Validation Needed |
-|---|------------|-------|----------------------|-------------------|
-| 1 | [Assumption about current state] | [Interview data or document] | [High/Medium/Low] | [How to validate] |
-| 2 | [Assumption about industry benchmark] | [Source] | [High/Medium/Low] | [How to validate] |
-| 3 | [Assumption about target maturity] | [Strategic rationale] | [High/Medium/Low] | [How to validate] |
+| # | Assumption | Basis | Impact on Assessment | Sensitivity | Validation Owner | Validation Approach |
+|---|-----------|-------|---------------------|-------------|-----------------|---------------------|
+| A1 | [Assumption text] | [Why assumed — evidence, industry norm, inference] | [Which scores or findings it affects] | High/Medium/Low | [Suggested owner] | [How to validate] |
+| A2 | | | | | | |
 
-**High Impact Assumptions:**
-- [Assumption requiring immediate validation]
+**High-Sensitivity Assumptions:**
+- [Assumption requiring immediate validation — if wrong, materially changes the assessment]
 - [Assumption with highest uncertainty]
 
 ---
 
-## Implementation Considerations
+## Priority Matrix
 
-### Organizational Readiness
+### Capability Prioritization
 
-**Strengths:**
-- [Cultural or organizational factors that support change]
-- [Existing capabilities to build on]
+**Quadrant Interpretation:**
 
-**Challenges:**
-- [Organizational barriers to capability improvement]
-- [Resource or skill constraints]
+**Quick Wins (High Impact, Low Effort):**
+- [Capability]: [Why it's a quick win]
+- [Capability]: [Why]
+- **Action:** Prioritize for immediate implementation
 
-**Recommendations:**
-- [Change management approach]
-- [Skill development needs]
-- [Governance and ownership]
+**Strategic Priorities (High Impact, High Effort):**
+- [Capability]: [Why strategic]
+- [Capability]: [Why]
+- **Action:** Plan phased approach, secure funding
 
-### Sequencing & Dependencies
+**Fill-Ins (Low Impact, Low Effort):**
+- [Capability]: [Context]
+- **Action:** Address if capacity allows
 
-**Foundation First:**
-- [Capabilities that must be built before others]
-
-**Parallel Opportunities:**
-- [Capabilities that can be developed simultaneously]
-
-**Long-Term Vision:**
-- [Capabilities for future phases]
+**Reconsider (Low Impact, High Effort):**
+- [Capability]: [Context]
+- **Action:** Defer unless strategic mandate
 
 ---
 
-## Risks & Mitigations
+## Cross-Cutting Themes
 
-| Risk | Impact | Likelihood | Mitigation Strategy |
-|------|--------|------------|---------------------|
-| [Risk 1: e.g., Resource constraints] | [Business impact] | [H/M/L] | [Specific mitigation actions] |
-| [Risk 2: e.g., Stakeholder alignment] | [Business impact] | [H/M/L] | [Specific mitigation actions] |
-| [Risk 3: e.g., Technical complexity] | [Business impact] | [H/M/L] | [Specific mitigation actions] |
+### Theme 1: [e.g., "Front-to-Back Disconnect"]
+
+**Observation:** [Pattern seen across multiple capabilities — e.g., "Customer-facing UIs are modern but every capability breaks down at the middle layer where manual handoffs dominate"]
+
+**Impact:** [How this affects the overall organization]
+
+**Recommendation:** [Systemic fix, not point solution]
+
+### Theme 2: [e.g., "Data Readiness Blocks AI Ambition"]
+
+**Observation:** [What was observed]
+
+**Impact:** [Business consequence]
+
+**Recommendation:** [What to do about it]
 
 ---
 
 ## Next Steps
 
 ### Immediate Actions (Next 30 Days)
-
-1. **[Action]** - [Owner] - [Purpose]
-2. **[Action]** - [Owner] - [Purpose]
-3. **[Action]** - [Owner] - [Purpose]
+1. **[Action]** — [Owner] — [Purpose]
+2. **[Action]** — [Owner] — [Purpose]
+3. **[Action]** — [Owner] — [Purpose]
 
 ### Near-Term Actions (Next 90 Days)
-
-1. **[Action]** - [Owner] - [Purpose]
-2. **[Action]** - [Owner] - [Purpose]
+1. **[Action]** — [Owner] — [Purpose]
+2. **[Action]** — [Owner] — [Purpose]
 
 ### Decision Points
-
-1. **[Decision needed]** - [Decision maker] - [Timeline] - [Information required]
-2. **[Decision needed]** - [Decision maker] - [Timeline] - [Information required]
+1. **[Decision needed]** — [Decision maker] — [Information required]
+2. **[Decision needed]** — [Decision maker] — [Information required]
 
 ---
 
 ## Appendices
 
-### Appendix A: Detailed Maturity Criteria
+### Appendix A: Assessment Methodology
 
-[Full rubric for each maturity level by capability domain]
+**Maturity Model:** BIAN-aligned 0-4 scale (Absent → Fragmented → Defined → Orchestrated → Intelligent)
 
-### Appendix B: Interview Summary
+**Assessment Structure:** Each capability assessed across three architectural layers:
+- **Front Layer** (Experience Plane): Customer/employee-facing interfaces
+- **Middle Layer** (Capability Plane): Orchestration, business logic, decisioning
+- **Back Layer** (Integration Plane + Systems of Record): Connectivity, data, core systems
 
-[List of stakeholders interviewed, dates, key themes]
+**Scoring Approach:**
+- Evidence-based using probing questions from capability taxonomy
+- Conservative bias when data is limited
+- Overall score = weakest layer (the chain breaks at the weakest link)
+- Problem-first: capabilities are assessed in context of business problems they solve
 
-### Appendix C: Data Sources
+**Reference:** `knowledge/standards/capability_taxonomy.md`
 
-[List of systems analyzed, documents reviewed, reports referenced]
+### Appendix B: Evidence Summary
+
+| Evidence ID | Source | Type | Key Content | Used For |
+|-------------|--------|------|-------------|----------|
+| E1 | [Stakeholder, Role] | Interview | [Key quote or data point] | [Which capability scores] |
+| E2 | [Document name] | Document | [Key finding] | [Which capability scores] |
+
+### Appendix C: Capability Taxonomy Reference
+
+[List of all CAP-IDs assessed with domain mapping]
 
 ### Appendix D: Glossary
 
-[Definition of terms, acronyms, technical concepts]
+| Term | Definition |
+|------|-----------|
+| BIAN | Banking Industry Architecture Network — industry standard for banking service domains |
+| Front Layer | Experience Plane — what customers and employees see and interact with |
+| Middle Layer | Capability Plane — orchestration, business logic, AI/ML, workflow |
+| Back Layer | Integration Plane + Systems of Record — connectivity, data, core systems |
+| STP | Straight-Through Processing — end-to-end automation without manual intervention |
+| RAG | Red-Amber-Green heatmap indicator |
+| HELIX | Backbase Customer Brain — unified frontline control plane |
+| Grand Central | Backbase Integration Platform (iPaaS) |
+| Flow Foundation | Backbase low-code journey orchestration engine |
 
 ---
 
 **Document Control:**
 - Version: [X.X]
 - Last Updated: [Date]
-- Next Review: [Date]
 - Classification: [Confidential / Internal]
+- Assessment Mode: [Workshop / Transcript Inference]
 
 ---
 
-*This assessment is based on information available as of [date]. Organizational capabilities are dynamic; reassessment is recommended [timeframe].*
+*This assessment is based on information available as of [date]. Scores reflect observed maturity, not planned improvements. Reassessment is recommended after major implementation milestones.*

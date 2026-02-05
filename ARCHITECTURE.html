@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>claudevc Architecture — Value Consulting AgenticOS</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --primary: #1A56FF;
+    --primary-light: #E8F0FF;
+    --primary-dark: #0D3DBF;
+    --dark: #1A1F36;
+    --dark-2: #2D3250;
+    --dark-3: #3D4470;
+    --text: #333344;
+    --text-light: #666680;
+    --bg: #F8F9FC;
+    --white: #FFFFFF;
+    --green: #00B386;
+    --green-light: #E6F9F3;
+    --red: #FF4444;
+    --red-light: #FFF0F0;
+    --yellow: #F5A623;
+    --yellow-light: #FFF8EC;
+    --purple: #7B2FBE;
+    --purple-light: #F3EAFF;
+    --cyan: #00B4D8;
+    --cyan-light: #E0F7FA;
+    --orange: #FF6B35;
+    --orange-light: #FFF0EB;
+    --pink: #E91E8C;
+    --pink-light: #FDE8F5;
+    --border: #E2E4EC;
+    --code-bg: #F1F3F8;
+    --shadow: 0 2px 12px rgba(26, 31, 54, 0.08);
+    --shadow-lg: 0 8px 32px rgba(26, 31, 54, 0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 260px;
+    height: 100vh;
+    background: var(--dark);
+    color: #fff;
+    overflow-y: auto;
+    z-index: 100;
+    padding: 20px 0;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-header {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 12px;
+  }
+
+  .sidebar-header h2 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .sidebar-header p { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  .sidebar nav a {
+    display: block;
+    padding: 8px 20px;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .sidebar nav a:hover, .sidebar nav a.active {
+    color: #fff;
+    background: rgba(255,255,255,0.05);
+    border-left-color: var(--primary);
+  }
+
+  .sidebar nav .nav-group {
+    padding: 12px 20px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.25);
+  }
+
+  .menu-toggle {
+    display: none;
+    position: fixed;
+    top: 12px; left: 12px;
+    z-index: 200;
+    background: var(--dark);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* ─── MAIN ─── */
+  .main {
+    margin-left: 260px;
+    padding: 40px 48px 80px;
+    max-width: 1060px;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    background: linear-gradient(135deg, var(--dark) 0%, #1a2a5e 50%, var(--dark-2) 100%);
+    color: #fff;
+    border-radius: 20px;
+    padding: 52px;
+    margin-bottom: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(26,86,255,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 30%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(0,179,134,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .hero .badge {
+    display: inline-block;
+    background: rgba(26,86,255,0.2);
+    color: #6B9FFF;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-size: 38px;
+    font-weight: 900;
+    margin-bottom: 8px;
+    line-height: 1.15;
+    position: relative; z-index: 1;
+  }
+
+  .hero .subtitle {
+    font-size: 16px;
+    color: rgba(255,255,255,0.6);
+    max-width: 600px;
+    position: relative; z-index: 1;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 32px;
+    margin-top: 28px;
+    position: relative; z-index: 1;
+  }
+
+  .hero-stat {
+    text-align: center;
+  }
+
+  .hero-stat .num {
+    font-size: 32px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .hero-stat .label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  /* ─── SECTIONS ─── */
+  .section {
+    margin-bottom: 52px;
+    scroll-margin-top: 20px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .section-icon {
+    width: 38px; height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .section-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--dark);
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark);
+    margin: 28px 0 12px;
+  }
+
+  p { margin-bottom: 12px; }
+
+  /* ─── AGENT CARDS ─── */
+  .agent-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .agent-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .agent-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .agent-card .agent-stripe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+  }
+
+  .agent-card .agent-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .agent-card .agent-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .agent-card .agent-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dark);
+  }
+
+  .agent-card .agent-model {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-light);
+    background: var(--code-bg);
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: auto;
+  }
+
+  .agent-card .agent-role {
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .agent-card .agent-io {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+  }
+
+  .agent-card .agent-io > div {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #FAFBFD;
+  }
+
+  .agent-card .agent-io .io-label {
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-size: 9px;
+    margin-bottom: 4px;
+  }
+
+  .agent-card .agent-io .io-items {
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* ─── ORCHESTRATOR CARD ─── */
+  .orchestrator-card {
+    background: linear-gradient(135deg, var(--dark) 0%, var(--dark-2) 100%);
+    color: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    margin: 16px 0 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .orchestrator-card::after {
+    content: '';
+    position: absolute;
+    top: -40px; right: -20px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(26,86,255,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .orchestrator-card h3 {
+    color: #fff;
+    font-size: 20px;
+    margin: 0 0 8px;
+  }
+
+  .orchestrator-card .orch-subtitle {
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .orch-routes {
+    display: flex;
+    gap: 12px;
+    position: relative; z-index: 1;
+  }
+
+  .orch-route {
+    flex: 1;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .orch-route h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 8px;
+  }
+
+  .orch-route p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .orch-route .route-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .orch-route .route-tag.va { background: rgba(26,86,255,0.3); color: #6B9FFF; }
+  .orch-route .route-tag.ii { background: rgba(0,179,134,0.3); color: #5EDDB8; }
+  .orch-route .route-tag.hy { background: rgba(245,166,35,0.3); color: #FFCA6B; }
+
+  /* ─── PIPELINE ─── */
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+
+  .pipeline-step {
+    flex: 1;
+    min-width: 120px;
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 12px;
+    text-align: center;
+    position: relative;
+    box-shadow: var(--shadow);
+  }
+
+  .pipeline-step .step-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+
+  .pipeline-step h4 {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0 0 4px;
+  }
+
+  .pipeline-step p {
+    font-size: 10px;
+    color: var(--text-light);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .pipeline-arrow {
+    display: flex;
+    align-items: center;
+    color: var(--primary);
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .pipeline-step.blue { border-color: var(--primary); background: var(--primary-light); }
+  .pipeline-step.green { border-color: var(--green); background: var(--green-light); }
+  .pipeline-step.yellow { border-color: var(--yellow); background: var(--yellow-light); }
+  .pipeline-step.purple { border-color: var(--purple); background: var(--purple-light); }
+  .pipeline-step.orange { border-color: var(--orange); background: var(--orange-light); }
+  .pipeline-step.pink { border-color: var(--pink); background: var(--pink-light); }
+
+  /* ─── KNOWLEDGE TREE ─── */
+  .tree {
+    background: var(--dark);
+    color: #CBD5E8;
+    border-radius: 14px;
+    padding: 24px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.85;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+
+  .tree .f { color: #64B5F6; }
+  .tree .h { color: #FFD54F; font-weight: 600; }
+  .tree .c { color: #81C784; font-style: italic; }
+
+  /* ─── TABLES ─── */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 12px 0 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+  th {
+    background: var(--dark);
+    color: #fff;
+    font-weight: 600;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #FAFBFD; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--primary-dark);
+  }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .card h4 { margin: 0 0 8px; font-size: 14px; }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 14px 0;
+  }
+
+  .mini-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+
+  .mini-card .mc-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .mini-card h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0 0 4px;
+  }
+
+  .mini-card p {
+    font-size: 11px;
+    color: var(--text-light);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  /* ─── PROTOCOL BOX ─── */
+  .protocol-box {
+    background: linear-gradient(135deg, #0D3DBF 0%, #1A56FF 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin: 16px 0;
+  }
+
+  .protocol-box h4 {
+    font-size: 15px;
+    margin: 0 0 12px;
+    color: #fff;
+  }
+
+  .protocol-box .proto-steps {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .protocol-box .proto-step {
+    flex: 1;
+    min-width: 150px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .protocol-box .proto-step strong {
+    display: block;
+    font-size: 11px;
+    margin-bottom: 4px;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── DOMAIN CHIPS ─── */
+  .domain-bar {
+    display: flex;
+    gap: 10px;
+    margin: 14px 0;
+    flex-wrap: wrap;
+  }
+
+  .domain-chip {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dark);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .domain-chip .chip-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .domain-chip .chip-count {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-light);
+    background: var(--code-bg);
+    padding: 2px 8px;
+    border-radius: 8px;
+  }
+
+  /* ─── QUALITY PILLARS ─── */
+  .pillar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin: 14px 0;
+  }
+
+  .pillar {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--primary);
+    border-radius: 0 0 12px 12px;
+    padding: 18px 14px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+
+  .pillar h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0 0 6px;
+  }
+
+  .pillar p {
+    font-size: 11px;
+    color: var(--text-light);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .pillar:nth-child(2) { border-top-color: var(--green); }
+  .pillar:nth-child(3) { border-top-color: var(--purple); }
+  .pillar:nth-child(4) { border-top-color: var(--orange); }
+
+  /* ─── VERSION BOX ─── */
+  .version-box {
+    background: var(--dark);
+    color: #fff;
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .version-box .ver-num {
+    font-size: 40px;
+    font-weight: 900;
+    color: var(--primary);
+    line-height: 1;
+  }
+
+  .version-box .ver-info { flex: 1; }
+  .version-box .ver-info p { color: rgba(255,255,255,0.5); font-size: 13px; margin: 0; }
+  .version-box .ver-info h4 { color: #fff; font-size: 16px; margin: 0 0 4px; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .menu-toggle { display: block; }
+    .main { margin-left: 0; padding: 70px 20px 60px; }
+    .hero { padding: 32px 24px; }
+    .hero h1 { font-size: 26px; }
+    .hero-stats { flex-wrap: wrap; gap: 16px; }
+    .agent-grid { grid-template-columns: 1fr; }
+    .orch-routes { flex-direction: column; }
+    .pipeline { flex-direction: column; align-items: center; }
+    .pipeline-arrow { transform: rotate(90deg); }
+    .card-grid { grid-template-columns: 1fr; }
+    .pillar-grid { grid-template-columns: 1fr 1fr; }
+    .domain-bar { flex-direction: column; }
+  }
+
+  @media print {
+    .sidebar, .menu-toggle { display: none; }
+    .main { margin-left: 0; padding: 20px; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h2>claudevc Architecture</h2>
+    <p>v1.1.0 &mdash; AgenticOS</p>
+  </div>
+  <nav>
+    <div class="nav-group">Overview</div>
+    <a href="#overview">System at a Glance</a>
+    <a href="#orchestrator">Orchestrator &amp; Workflows</a>
+
+    <div class="nav-group">Agents</div>
+    <a href="#pipeline-va">Value Assessment Pipeline</a>
+    <a href="#pipeline-ii">Ignite Inspire Pipeline</a>
+    <a href="#support-agents">Support Agents</a>
+
+    <div class="nav-group">Infrastructure</div>
+    <a href="#skills">Skills &amp; Commands</a>
+    <a href="#knowledge">Knowledge Base</a>
+    <a href="#templates">Templates</a>
+    <a href="#tools">Tools</a>
+
+    <div class="nav-group">Operations</div>
+    <a href="#context-protocol">Context Protocol</a>
+    <a href="#quality">Quality Standards</a>
+    <a href="#repo">Repo &amp; Versioning</a>
+  </nav>
+</aside>
+
+<div class="main">
+
+  <!-- ═══ HERO ═══ -->
+  <div class="hero">
+    <span class="badge">Architecture v1.1.0</span>
+    <h1>Value Consulting AgenticOS</h1>
+    <p class="subtitle">A multi-agent consulting system that generates executive-ready deliverables from discovery evidence, workshops, and financial data.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num">10</div><div class="label">Agents</div></div>
+      <div class="hero-stat"><div class="num">12</div><div class="label">Skills</div></div>
+      <div class="hero-stat"><div class="num">5</div><div class="label">Domains</div></div>
+      <div class="hero-stat"><div class="num">3</div><div class="label">Workflows</div></div>
+      <div class="hero-stat"><div class="num">7</div><div class="label">Output Templates</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ OVERVIEW ═══ -->
+  <div class="section" id="overview">
+    <div class="section-header">
+      <div class="section-icon" style="background: var(--primary);">&#9670;</div>
+      <h2>System at a Glance</h2>
+    </div>
+
+    <p>The system is organized into four layers:</p>
+
+    <div class="card-grid">
+      <div class="mini-card">
+        <div class="mc-icon" style="color: var(--primary);">&#9632;</div>
+        <h4>Agents</h4>
+        <p>10 specialized agents + 1 orchestrator that route, analyze, model, and assemble consulting deliverables</p>
+      </div>
+      <div class="mini-card">
+        <div class="mc-icon" style="color: var(--green);">&#9733;</div>
+        <h4>Knowledge</h4>
+        <p>5 domain packs, methodologies, benchmarks, competitive intel, and the Backbase Product Directory</p>
+      </div>
+      <div class="mini-card">
+        <div class="mc-icon" style="color: var(--purple);">&#9998;</div>
+        <h4>Templates &amp; Tools</h4>
+        <p>Standardized input/output contracts, Python generators for Excel &amp; HTML, 12 slash commands</p>
+      </div>
+    </div>
+
+    <div class="tree">
+<span class="f">claudevc/</span>
+&#9500;&#9472;&#9472; <span class="f">.claude/</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="f">agents/</span>           <span class="c">&larr; 10 agent definitions</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="f">commands/</span>          <span class="c">&larr; 12 slash commands (/generate-roi-excel, /presentation, etc.)</span>
+&#9474;   &#9492;&#9472;&#9472; <span class="h">settings.local.json</span> <span class="c">&larr; permissions &amp; allowed tools</span>
+&#9500;&#9472;&#9472; <span class="f">knowledge/</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="f">domains/</span>           <span class="c">&larr; retail, sme, commercial, corporate, wealth</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="f">standards/</span>         <span class="c">&larr; context management protocol</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="f">methodologies/</span>     <span class="c">&larr; reference engagement PDFs</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="f">Ignite Inspire/</span>    <span class="c">&larr; 7-agent workshop system</span>
+&#9474;   &#9492;&#9472;&#9472; <span class="h">Product Directory.csv</span> <span class="c">&larr; Backbase feature inventory</span>
+&#9500;&#9472;&#9472; <span class="f">templates/</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="f">inputs/</span>            <span class="c">&larr; discovery contract, financial schema, interpretation guide</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="f">outputs/</span>           <span class="c">&larr; ROI report, assessment, roadmap, exec summary, journal</span>
+&#9474;   &#9492;&#9472;&#9472; <span class="f">presentations/</span>     <span class="c">&larr; Prezi-style HTML templates</span>
+&#9500;&#9472;&#9472; <span class="f">tools/</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="h">roi_excel_generator.py</span>  <span class="c">&larr; Excel ROI model builder (900 lines)</span>
+&#9474;   &#9492;&#9472;&#9472; <span class="h">html_report_generator.py</span>
+&#9500;&#9472;&#9472; <span class="f">examples/test_runs/</span>  <span class="c">&larr; reference engagement with full outputs</span>
+&#9492;&#9472;&#9472; <span class="f">.github/</span>             <span class="c">&larr; CI/CD, PR template, CODEOWNERS</span>
+    </div>
+  </div>
+
+  <!-- ═══ ORCHESTRATOR ═══ -->
+  <div class="section" id="orchestrator">
+    <div class="section-header">
+      <div class="section-icon" style="background: var(--primary);">O</div>
+      <h2>Orchestrator &amp; Engagement Workflows</h2>
+    </div>
+
+    <p>The <strong>Value Consulting Orchestrator</strong> is the central router. It classifies every engagement into one of three types and routes to the appropriate agent pipeline.</p>
+
+    <div class="orchestrator-card">
+      <h3>Value Consulting Orchestrator</h3>
+      <p class="orch-subtitle">Detects engagement type, gathers inputs, routes to agents, enforces context protocol, manages journal</p>
+      <div class="orch-routes">
+        <div class="orch-route">
+          <span class="route-tag va">Value Assessment</span>
+          <h4>Evidence-Based</h4>
+          <p>Post-discovery transcripts and financial data feed a 6-agent pipeline producing ROI models, capability assessments, and roadmaps.</p>
+        </div>
+        <div class="orch-route">
+          <span class="route-tag ii">Ignite Inspire</span>
+          <h4>Workshop-Driven</h4>
+          <p>4 workshop prep modes, synthesis, use case design, prototyping, and presentation &mdash; ending with an Ignite Day package.</p>
+        </div>
+        <div class="orch-route">
+          <span class="route-tag hy">Hybrid</span>
+          <h4>Assessment + Inspire</h4>
+          <p>Combines evidence-based ROI with workshop-driven vision. Cross-references findings for maximum defensibility.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ VALUE ASSESSMENT PIPELINE ═══ -->
+  <div class="section" id="pipeline-va">
+    <div class="section-header">
+      <div class="section-icon" style="background: var(--primary);">VA</div>
+      <h2>Value Assessment Pipeline</h2>
+    </div>
+
+    <p>The core 6-agent pipeline. Each agent reads <strong>only the output of the previous agent</strong> (never raw transcripts), following the disk-based handoff protocol.</p>
+
+    <div class="pipeline">
+      <div class="pipeline-step green">
+        <div class="step-num">1</div>
+        <h4>Discovery</h4>
+        <p>Extract evidence, pain points, metrics from transcripts</p>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step yellow">
+        <div class="step-num">2</div>
+        <h4>Capability</h4>
+        <p>Score maturity, identify gaps, map value drivers</p>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step purple">
+        <div class="step-num">3</div>
+        <h4>ROI</h4>
+        <p>Build financial model with 3 scenarios + sensitivity</p>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step orange">
+        <div class="step-num">4</div>
+        <h4>Roadmap</h4>
+        <p>Sequence initiatives by value, feasibility, dependencies</p>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step pink">
+        <div class="step-num">5</div>
+        <h4>Assembly</h4>
+        <p>Consistency audit + executive-ready deliverables</p>
+      </div>
+    </div>
+
+    <div class="agent-grid">
+      <!-- Discovery -->
+      <div class="agent-card">
+        <div class="agent-stripe" style="background: var(--green);"></div>
+        <div class="agent-header">
+          <div class="agent-dot" style="background: var(--green);"></div>
+          <span class="agent-name">Discovery Transcript Interpreter</span>
+          <span class="agent-model">Sonnet</span>
+        </div>
+        <div class="agent-role">Extracts structured evidence from raw transcripts and interview notes. Processes one file at a time with chunking for large inputs.</div>
+        <div class="agent-io">
+          <div>
+            <div class="io-label">Input</div>
+            <div class="io-items">Raw transcripts, interview notes, unstructured client data</div>
+          </div>
+          <div>
+            <div class="io-label">Output</div>
+            <div class="io-items">Evidence Register (E1..En), Pain Point Register, Metric Register, Constraints, Open Questions</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Capability -->
+      <div class="agent-card">
+        <div class="agent-stripe" style="background: var(--yellow);"></div>
+        <div class="agent-header">
+          <div class="agent-dot" style="background: var(--yellow);"></div>
+          <span class="agent-name">Capability Assessment</span>
+          <span class="agent-model">Sonnet</span>
+        </div>
+        <div class="agent-role">Scores current-state maturity (1-5), identifies gaps, maps improvements to value levers. Journey-based structure: Acquire &rarr; Activate &rarr; Expand &rarr; Retain.</div>
+        <div class="agent-io">
+          <div>
+            <div class="io-label">Input</div>
+            <div class="io-items">Evidence Register, domain context, benchmarks</div>
+          </div>
+          <div>
+            <div class="io-label">Output</div>
+            <div class="io-items">Maturity scores, gap analysis, value driver mapping, servicing task analysis</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROI -->
+      <div class="agent-card">
+        <div class="agent-stripe" style="background: var(--purple);"></div>
+        <div class="agent-header">
+          <div class="agent-dot" style="background: var(--purple);"></div>
+          <span class="agent-name">ROI Business Case Builder</span>
+          <span class="agent-model">Sonnet</span>
+        </div>
+        <div class="agent-role">Builds defensible financial models. Every benefit maps to evidence, every assumption is documented. Three scenarios with sensitivity analysis.</div>
+        <div class="agent-io">
+          <div>
+            <div class="io-label">Input</div>
+            <div class="io-items">Evidence Register, Capability Assessment, financial data, benchmarks</div>
+          </div>
+          <div>
+            <div class="io-label">Output</div>
+            <div class="io-items">Excel ROI model (8 sheets), Executive Summary Report, Assumptions Register</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Roadmap -->
+      <div class="agent-card">
+        <div class="agent-stripe" style="background: var(--orange);"></div>
+        <div class="agent-header">
+          <div class="agent-dot" style="background: var(--orange);"></div>
+          <span class="agent-name">Roadmap Prioritization</span>
+          <span class="agent-model">Sonnet</span>
+        </div>
+        <div class="agent-role">Sequences initiatives by dependency logic, value logic, risk logic, and capacity logic. Creates initiative cards with dependencies, decision gates, and value milestones.</div>
+        <div class="agent-io">
+          <div>
+            <div class="io-label">Input</div>
+            <div class="io-items">Capability gaps, ROI value levers, domain context, constraints</div>
+          </div>
+          <div>
+            <div class="io-label">Output</div>
+            <div class="io-items">Phased roadmap, initiative cards, dependency map, value realization timeline</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Assembly -->
+      <div class="agent-card" style="grid-column: 1 / -1;">
+        <div class="agent-stripe" style="background: var(--pink);"></div>
+        <div class="agent-header">
+          <div class="agent-dot" style="background: var(--pink);"></div>
+          <span class="agent-name">Executive Narrative Assembler</span>
+          <span class="agent-model">Sonnet</span>
+        </div>
+        <div class="agent-role">Final quality gate. Runs a <strong>consistency audit</strong> across all upstream artifacts (Does ROI timeline match Roadmap? Do Capability priorities align? Are Pain Points mapped to Gaps?). Produces the deliverable package with confidence rating (HIGH/MEDIUM/LOW) and marks the engagement COMPLETE in the journal.</div>
+        <div class="agent-io">
+          <div>
+            <div class="io-label">Input</div>
+            <div class="io-items">All upstream outputs: Discovery synthesis, Capability Assessment, ROI Model, Roadmap</div>
+          </div>
+          <div>
+            <div class="io-label">Output</div>
+            <div class="io-items">Executive Summary (1 page max), Assessment Report, consolidated Assumptions Register, ENGAGEMENT_JOURNAL.md marked COMPLETE</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ IGNITE INSPIRE PIPELINE ═══ -->
+  <div class="section" id="pipeline-ii">
+    <div class="section-header">
+      <div class="section-icon" style="background: var(--green);">II</div>
+      <h2>Ignite Inspire Pipeline</h2>
+    </div>
+
+    <p>Workshop-driven engagement flow. Prepares hypothesis-driven facilitation decks, synthesizes workshop findings, designs validated use cases.</p>
+
+    <div class="pipeline">
+      <div class="pipeline-step purple">
+        <div class="step-num">1</div>
+        <h4>Workshop Prep</h4>
+        <p>4 modes: Strategy, Member, Employee, Architecture</p>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step green">
+        <div class="step-num">2</div>
+        <h4>Synthesis</h4>
+        <p>Validate hypotheses, cross-workshop patterns</p>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step orange">
+        <div class="step-num">3</div>
+        <h4>Use Case Design</h4>
+        <p>Product Directory validated, 10-section docs</p>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-step pink">
+        <div class="step-num">4</div>
+        <h4>Assembly</h4>
+        <p>Ignite Day package + presentation</p>
+      </div>
+    </div>
+
+    <div class="agent-grid">
+      <!-- Workshop Prep -->
+      <div class="agent-card">
+        <div class="agent-stripe" style="background: var(--purple);"></div>
+        <div class="agent-header">
+          <div class="agent-dot" style="background: var(--purple);"></div>
+          <span class="agent-name">Workshop Preparation</span>
+          <span class="agent-model">Sonnet</span>
+        </div>
+        <div class="agent-role">Prepares hypothesis-driven facilitation materials. 4 modes: <strong>Strategy</strong> (competitive research), <strong>Member/CX</strong> (persona research via social media &amp; app reviews), <strong>Employee/EX</strong> (systems &amp; productivity), <strong>Architecture</strong> (tech landscape &amp; integration patterns).</div>
+        <div class="agent-io">
+          <div>
+            <div class="io-label">Input</div>
+            <div class="io-items">Client context, strategy docs, annual reports</div>
+          </div>
+          <div>
+            <div class="io-label">Output</div>
+            <div class="io-items">Workshop decks (HTML), personas, hypotheses, competitive analysis, ENGAGEMENT_CONTEXT.md</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Synthesizer -->
+      <div class="agent-card">
+        <div class="agent-stripe" style="background: var(--green);"></div>
+        <div class="agent-header">
+          <div class="agent-dot" style="background: var(--green);"></div>
+          <span class="agent-name">Ignite Workshop Synthesizer</span>
+          <span class="agent-model">Sonnet</span>
+        </div>
+        <div class="agent-role">Consolidates all 4 workshop outputs. Builds hypothesis validation matrix, cross-workshop patterns, and priority-scored use case candidates using: Value Impact (40%) + Strategic Alignment (30%) + Feasibility (30%).</div>
+        <div class="agent-io">
+          <div>
+            <div class="io-label">Input</div>
+            <div class="io-items">All 4 workshop outputs + ENGAGEMENT_CONTEXT.md</div>
+          </div>
+          <div>
+            <div class="io-label">Output</div>
+            <div class="io-items">Synthesis report, Use Case Candidates, ROI Inputs Package, hypothesis validation matrix</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Use Case Designer -->
+      <div class="agent-card" style="grid-column: 1 / -1;">
+        <div class="agent-stripe" style="background: var(--orange);"></div>
+        <div class="agent-header">
+          <div class="agent-dot" style="background: var(--orange);"></div>
+          <span class="agent-name">Use Case Designer</span>
+          <span class="agent-model">Sonnet</span>
+        </div>
+        <div class="agent-role">Designs detailed use cases validated against the <strong>Backbase Product Directory</strong>. Maps every feature to Product IDs (RB.X.X.X), classifies as OOTB / Config / Extension / Custom / Innovation. Links to Value Proposition themes and Customer Lifestages. Validates against the 10-layer Backbase Architecture.</div>
+        <div class="agent-io">
+          <div>
+            <div class="io-label">Input</div>
+            <div class="io-items">Use Case Candidates from Synthesizer, Product Directory CSV, domain personas, value propositions</div>
+          </div>
+          <div>
+            <div class="io-label">Output</div>
+            <div class="io-items">10-section Use Case Documents with Product Directory gap analysis (% OOTB vs Config vs Custom), Architecture alignment, screen flows</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SUPPORT AGENTS ═══ -->
+  <div class="section" id="support-agents">
+    <div class="section-header">
+      <div class="section-icon" style="background: var(--cyan);">+</div>
+      <h2>Support Agent</h2>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-stripe" style="background: var(--cyan);"></div>
+      <div class="agent-header">
+        <div class="agent-dot" style="background: var(--cyan);"></div>
+        <span class="agent-name">Benchmark Librarian</span>
+        <span class="agent-model">Sonnet</span>
+      </div>
+      <div class="agent-role">Curates industry &amp; regional benchmarks from the registry and domain libraries. Every benchmark may end up in board documents &mdash; accuracy is non-negotiable. Enforces confidence levels: <strong>High</strong> (same region + domain, n&gt;50, &lt;2yr), <strong>Medium</strong> (region OR domain proxy, 20% haircut), <strong>Low</strong> (global proxy, &gt;4yr). Called by ROI and Capability agents.</div>
+      <div class="agent-io">
+        <div>
+          <div class="io-label">Input</div>
+          <div class="io-items">Engagement context (domain, region, specific metrics needed)</div>
+        </div>
+        <div>
+          <div class="io-label">Output</div>
+          <div class="io-items">Curated benchmark shortlist with value, source citation, confidence level, match type, caveats, gaps identified</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SKILLS ═══ -->
+  <div class="section" id="skills">
+    <div class="section-header">
+      <div class="section-icon" style="background: var(--green);">/</div>
+      <h2>Skills &amp; Commands</h2>
+    </div>
+
+    <p>12 slash commands available in Claude Code:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Command</th><th>Purpose</th><th>Type</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>/generate-roi-excel</code></td><td>Generate Excel ROI model with scenarios, servicing analysis, assumptions</td><td>Tool (Python)</td></tr>
+          <tr><td><code>/presentation</code></td><td>Transform any content into interactive Prezi-style HTML</td><td>Skill</td></tr>
+          <tr><td><code>/prototype</code></td><td>Generate interactive HTML mockups for Backbase use cases</td><td>Skill</td></tr>
+          <tr><td><code>/usecase-doc</code></td><td>Generate structured 10-section use case documents</td><td>Skill</td></tr>
+          <tr><td><code>/chunk-document</code></td><td>Break large PDFs/CSVs into manageable chunks</td><td>Utility</td></tr>
+          <tr><td><code>/domain-context</code></td><td>Load complete domain knowledge pack</td><td>Knowledge</td></tr>
+          <tr><td><code>/domain-benchmarks</code></td><td>Query domain &amp; regional benchmarks</td><td>Knowledge</td></tr>
+          <tr><td><code>/domain-pain-points</code></td><td>Retrieve domain-specific pain points</td><td>Knowledge</td></tr>
+          <tr><td><code>/domain-journeys</code></td><td>Get customer &amp; operational journey maps</td><td>Knowledge</td></tr>
+          <tr><td><code>/domain-usecases</code></td><td>Retrieve Backbase use cases for domain</td><td>Knowledge</td></tr>
+          <tr><td><code>/domain-value-props</code></td><td>Get value propositions by theme</td><td>Knowledge</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ KNOWLEDGE ═══ -->
+  <div class="section" id="knowledge">
+    <div class="section-header">
+      <div class="section-icon" style="background: var(--purple);">K</div>
+      <h2>Knowledge Base</h2>
+    </div>
+
+    <h3>5 Domain Vertical Packs</h3>
+    <p>Each domain contains: personas, journey maps, pain points, benchmarks, use cases, value propositions, and an index.</p>
+
+    <div class="domain-bar">
+      <div class="domain-chip"><div class="chip-dot" style="background: var(--primary);"></div> Retail Banking <span class="chip-count">10 files</span></div>
+      <div class="domain-chip"><div class="chip-dot" style="background: var(--green);"></div> SME Banking <span class="chip-count">10 files</span></div>
+      <div class="domain-chip"><div class="chip-dot" style="background: var(--orange);"></div> Commercial <span class="chip-count">10 files</span></div>
+      <div class="domain-chip"><div class="chip-dot" style="background: var(--purple);"></div> Corporate <span class="chip-count">10 files</span></div>
+      <div class="domain-chip"><div class="chip-dot" style="background: var(--pink);"></div> Wealth Mgmt <span class="chip-count">11 files</span></div>
+    </div>
+
+    <h3>Additional Knowledge Assets</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Contents</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Product Directory</strong></td><td>Complete Backbase feature inventory with IDs (RB.X.X.X) for use case validation</td></tr>
+          <tr><td><strong>ROI Examples</strong></td><td>Seabank (Retail, 66% ROI), HNB (Wealth, 167% ROI), Goodbody (Wealth, journey optimization)</td></tr>
+          <tr><td><strong>Competitive Intel</strong></td><td>Battlecards: FIS D1, Q2, Temenos — positioning &amp; differentiation</td></tr>
+          <tr><td><strong>Reference Business Cases</strong></td><td>Weatherbys, Schroders, ISP Wealth Management — real CFO-level packages</td></tr>
+          <tr><td><strong>Ignite Inspire System</strong></td><td>7-agent workshop methodology including ROI questionnaire (2-phase)</td></tr>
+          <tr><td><strong>Context Management Protocol</strong></td><td>Rules for chunking, disk-based handoffs, journal management</td></tr>
+          <tr><td><strong>Platform Lexicon</strong></td><td>Backbase terminology, 10-layer architecture reference</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ TEMPLATES ═══ -->
+  <div class="section" id="templates">
+    <div class="section-header">
+      <div class="section-icon" style="background: var(--yellow);">T</div>
+      <h2>Templates</h2>
+    </div>
+
+    <div class="agent-grid">
+      <div class="card">
+        <h4>Input Contracts</h4>
+        <ul style="font-size:13px; margin-left:16px;">
+          <li><strong>discovery_input_contract.md</strong> &mdash; Transcript format, quality standards, metadata</li>
+          <li><strong>financial_data_schema.md</strong> &mdash; Costs, volumes, revenue, rates, budgets</li>
+          <li><strong>transcript_interpretation_guide.md</strong> &mdash; How to extract insight from interviews</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Output Templates</h4>
+        <ul style="font-size:13px; margin-left:16px;">
+          <li><strong>executive_summary.md</strong> &mdash; 1-page, decision-focused</li>
+          <li><strong>assessment_report.md</strong> &mdash; Full findings &amp; analysis</li>
+          <li><strong>capability_assessment.md</strong> &mdash; Maturity scores &amp; gaps</li>
+          <li><strong>roi_report.md</strong> &mdash; Financial model &amp; scenarios</li>
+          <li><strong>roadmap.md</strong> &mdash; Phased initiatives</li>
+          <li><strong>engagement_journal.md</strong> &mdash; Persistent memory</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TOOLS ═══ -->
+  <div class="section" id="tools">
+    <div class="section-header">
+      <div class="section-icon" style="background: var(--orange);">&#9881;</div>
+      <h2>Tools</h2>
+    </div>
+
+    <div class="agent-grid">
+      <div class="card">
+        <h4>roi_excel_generator.py</h4>
+        <p style="font-size:13px; color: var(--text-light);">900-line Python script that generates comprehensive Excel ROI models. 8 sheets: Cover, Instructions, Results Dashboard, Journey Inputs, Servicing Analysis, Cashflows, Scenarios, Assumptions. Supports multiple scenarios with implementation &amp; effectiveness curves.</p>
+      </div>
+      <div class="card">
+        <h4>html_report_generator.py</h4>
+        <p style="font-size:13px; color: var(--text-light);">Generates professional HTML reports from analysis data. Executive styling, charts, export-ready formatting. Used for dashboards, evidence registers, and capability assessments.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTEXT PROTOCOL ═══ -->
+  <div class="section" id="context-protocol">
+    <div class="section-header">
+      <div class="section-icon" style="background: var(--red);">!</div>
+      <h2>Context Management Protocol</h2>
+    </div>
+
+    <p>The critical innovation that makes multi-transcript engagements reliable. Prevents context overflow by enforcing sequential processing and disk-based handoffs.</p>
+
+    <div class="protocol-box">
+      <h4>The Rule: Never load more than one transcript at a time</h4>
+      <div class="proto-steps">
+        <div class="proto-step">
+          <strong>1. Check Size</strong>
+          &lt;500 lines: process whole<br>
+          500-1500: 2-3 chunks<br>
+          &gt;1500: 400-500 line chunks
+        </div>
+        <div class="proto-step">
+          <strong>2. Process &amp; Write</strong>
+          Extract evidence from chunk<br>
+          Write findings to disk<br>
+          Release context
+        </div>
+        <div class="proto-step">
+          <strong>3. Next Chunk</strong>
+          Load next chunk<br>
+          Append to disk file<br>
+          Repeat until complete
+        </div>
+        <div class="proto-step">
+          <strong>4. Downstream Agents</strong>
+          Read consolidated outputs only<br>
+          Never raw transcripts<br>
+          Progressively distilled data
+        </div>
+      </div>
+    </div>
+
+    <h3>Engagement Journal</h3>
+    <p>Persistent engagement memory. Every agent appends an entry when it completes. Enables 3-month resume without reprocessing, audit trail for compliance, and institutional memory.</p>
+
+    <div class="card">
+      <h4>Journal Entry Structure</h4>
+      <p style="font-size:13px; color: var(--text-light); margin-bottom:0;">
+        <strong>Date/Time</strong> &mdash; Agent Name &mdash; Action taken &mdash; Files read &mdash; Files produced &mdash; Key decisions &mdash; Assumptions made &mdash; Status &mdash; Open items
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══ QUALITY ═══ -->
+  <div class="section" id="quality">
+    <div class="section-header">
+      <div class="section-icon" style="background: var(--green);">Q</div>
+      <h2>Quality Standards</h2>
+    </div>
+
+    <div class="pillar-grid">
+      <div class="pillar">
+        <h4>Executive-Ready</h4>
+        <p>C-level audience. Clear, concise, jargon-free. Action-oriented.</p>
+      </div>
+      <div class="pillar">
+        <h4>Evidence-Based</h4>
+        <p>All claims sourced. Methodology visible. Assumptions documented.</p>
+      </div>
+      <div class="pillar">
+        <h4>Decision-Oriented</h4>
+        <p>Clear Go/No-Go. Risk-aware. Next steps defined.</p>
+      </div>
+      <div class="pillar">
+        <h4>Conservative</h4>
+        <p>Underestimate benefits. Overestimate costs. Show downside case.</p>
+      </div>
+    </div>
+
+    <h3>Non-Negotiable Rules</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Rule</th><th>Standard</th></tr></thead>
+        <tbody>
+          <tr><td>Evidence Traceability</td><td>Every claim maps to Evidence ID(s). No orphan claims.</td></tr>
+          <tr><td>Assumption Handling</td><td>Acknowledge gap &rarr; Conservative assumption &rarr; Document &rarr; Flag for validation &rarr; Sensitivity test &plusmn;25-50%</td></tr>
+          <tr><td>Benchmark Confidence</td><td>High (region+domain+recent), Medium (proxy, 20% haircut), Low (global proxy, flagged)</td></tr>
+          <tr><td>Financial Precision</td><td>Millions to nearest $100K. No false precision. Every number has units and currency.</td></tr>
+          <tr><td>Scenario Modeling</td><td>Three scenarios required. Conservative &lt; Moderate &lt; Aggressive. Always.</td></tr>
+          <tr><td>ROI Traceability</td><td>Every initiative maps to at least ONE capability gap AND ONE value lever. If not &rarr; question or remove.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ REPO ═══ -->
+  <div class="section" id="repo">
+    <div class="section-header">
+      <div class="section-icon" style="background: var(--dark-3);">G</div>
+      <h2>Repository &amp; Versioning</h2>
+    </div>
+
+    <div class="version-box">
+      <div class="ver-num">1.1.0</div>
+      <div class="ver-info">
+        <h4>Current Release</h4>
+        <p>Semantic versioning: MAJOR (breaking changes) . MINOR (new agents/domains) . PATCH (fixes)</p>
+      </div>
+    </div>
+
+    <div class="agent-grid">
+      <div class="card">
+        <h4>Root Documentation</h4>
+        <ul style="font-size:13px; margin-left:16px;">
+          <li><strong>README.md</strong> &mdash; Value Consulting philosophy &amp; methodology</li>
+          <li><strong>CLAUDE.md</strong> &mdash; Claude's role as consultant</li>
+          <li><strong>STRUCTURE.md</strong> &mdash; Repository organization</li>
+          <li><strong>QUICKSTART.md</strong> &mdash; Consultant onboarding</li>
+          <li><strong>CONTRIBUTING.md</strong> &mdash; Branching, commits, versioning</li>
+          <li><strong>CHANGELOG.md</strong> &mdash; Release history</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>CI/CD &amp; GitHub</h4>
+        <ul style="font-size:13px; margin-left:16px;">
+          <li><strong>version-release.yml</strong> &mdash; Auto-creates GitHub Release on tag push</li>
+          <li><strong>notify-on-push.yml</strong> &mdash; Team notifications on events</li>
+          <li><strong>CODEOWNERS</strong> &mdash; @mayur294-lgtm, @shobhitonnet</li>
+          <li><strong>PR Template</strong> &mdash; Type, summary, files, checklist</li>
+          <li><strong>Branching</strong> &mdash; feature/, fix/, release/vX.Y.Z</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.sidebar nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => link.classList.remove('active'));
+        const id = entry.target.id;
+        const activeLink = document.querySelector(`.sidebar nav a[href="#${id}"]`);
+        if (activeLink) activeLink.classList.add('active');
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '-10% 0px -70% 0px' });
+
+  sections.forEach(section => observer.observe(section));
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.remove('open');
+    });
+  });
+</script>
+
+</body>
+</html>
