@@ -277,6 +277,67 @@ Before finalizing, verify:
 - Generate executive summary synthesizing key findings
 - Output to specified folder structure
 
+### Step 7: Post-Assembly Cross-Deliverable Review
+
+After the Executive Narrative Assembler completes, perform this final review before declaring the engagement complete. This review is **non-delegable** — the orchestrator performs it directly.
+
+#### 7a. Cross-Deliverable Numerical Consistency
+Verify that numbers match across ALL output documents:
+- [ ] Total investment amount is identical in executive_summary.md, assessment_report.md (Act 7), and roi_report.md
+- [ ] NPV, ROI, and payback period figures are identical across all documents
+- [ ] Phase timeline durations in roadmap.md match references in assessment_report.md (Act 6)
+- [ ] Capability maturity scores in capability_assessment.md match those cited in assessment_report.md (Act 5)
+- [ ] Value leakage figures in Act 4 funnels align with addressable value in Act 7
+- [ ] Bird's-eye benefit figures in Act 3 match the detailed calculation in Act 7
+- [ ] Scenario ranges (conservative/base/aspirational) are consistent wherever referenced
+- [ ] Currency, rounding precision, and units are consistent across all documents
+
+#### 7b. Evidence Traceability Audit
+Verify the evidence chain is unbroken from discovery to recommendation:
+- [ ] Every recommendation traces to at least one capability gap
+- [ ] Every capability gap traces to at least one evidence item (E-ID) from discovery
+- [ ] Every ROI lever traces to at least one pain point from discovery
+- [ ] Every roadmap initiative traces to both a capability gap and a value lever
+- [ ] Unconsidered needs from Capability Agent appear in the final narrative
+- [ ] No "orphan recommendations" exist (recommendations without evidence backing)
+
+#### 7c. Assumption Completeness Check
+Verify all assumptions are documented and consistent:
+- [ ] Consolidated assumptions register contains ALL assumptions from ALL upstream agents
+- [ ] No assumption from the ROI model is missing from the consolidated register
+- [ ] No assumption from the capability assessment is missing
+- [ ] Every assumption has a validation owner assigned
+- [ ] Confidence levels are consistent across documents (no contradictory ratings)
+- [ ] Sensitivity analysis covers the top 5 assumptions by impact
+
+#### 7d. Narrative Coherence Validation
+Verify the story holds together across the deliverable suite:
+- [ ] Transformation narrative arc ("From X to Y") is consistent from Act 1 through Executive Summary
+- [ ] Tone is consistent (not optimistic in summary and cautious in details)
+- [ ] Terminology is consistent (same initiative not called different names)
+- [ ] Priority rankings align (P1 capabilities appear in Phase 1 of the roadmap)
+- [ ] Executive summary accurately reflects the full report
+- [ ] Narrative bridges between acts are present and logically connected
+
+#### 7e. Gap and Risk Disclosure Verification
+Verify all limitations are transparently disclosed:
+- [ ] Data gaps from discovery are acknowledged in the final report
+- [ ] Low-confidence benchmarks are labeled as such in the benefits case
+- [ ] Regional proxy benchmarks are disclosed (not presented as region-matched)
+- [ ] "What Would Change the Decision" section is complete and honest
+- [ ] Conditions under which the recommendation would change are stated
+- [ ] Overall confidence level (HIGH/MEDIUM/LOW) is assigned with clear rationale
+
+#### 7f. Resolution Protocol
+When this review identifies inconsistencies:
+1. **Numerical mismatches**: The authoritative source owns the number (ROI model owns financial figures, Capability Agent owns maturity scores, Roadmap Agent owns timelines). Correct derivative documents to match the authority.
+2. **Traceability breaks**: Add the missing evidence reference, or remove the unsupported claim.
+3. **Assumption gaps**: Add the missing assumption to the consolidated register with confidence and owner.
+4. **Narrative inconsistencies**: Align to the transformation narrative arc from Assembly Step 2b.
+5. **Critical issues**: If an inconsistency cannot be resolved without re-running an upstream agent, STOP and escalate to the consultant with a specific description and proposed resolution.
+
+Do NOT declare the engagement complete until all items in 7a–7e pass. Document any issues found and resolutions applied in the engagement journal.
+
 ## Benchmark Confidence Protocol
 
 **High Confidence Mode:**

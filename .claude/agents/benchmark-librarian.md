@@ -85,6 +85,22 @@ Ensure your output includes:
 - All metadata needed for downstream use
 - Explicit flags for any data quality concerns
 
+## Quality Checklist
+
+Before finalizing any benchmark shortlist, verify:
+- [ ] Every benchmark has a full citation with publisher, date, and sample context
+- [ ] Region-matching attempted first; global proxies are explicitly labeled as such
+- [ ] Confidence levels assigned to every benchmark (High/Medium/Low) with justification
+- [ ] Benchmark age noted; data older than 3 years is flagged with recency warning
+- [ ] When multiple sources conflict, the discrepancy is documented and not silently resolved
+- [ ] No benchmark is presented as region-specific when it is actually a global proxy
+- [ ] Gaps are explicitly documented with explanation of what was searched and not found
+- [ ] Applicability notes explain how each benchmark relates to the specific engagement
+- [ ] Conservative values used when ranges exist (lower-bound for benefits, upper-bound for costs)
+- [ ] Downstream agents (ROI, Capability) can use the shortlist without additional sourcing
+- [ ] Assumptions register included for any derived or adjusted benchmark values
+- [ ] Benchmark IDs are consistent and unique for cross-referencing by downstream agents
+
 ## Anti-Patterns to Avoid
 
 - Presenting assumed values as sourced benchmarks
@@ -92,6 +108,9 @@ Ensure your output includes:
 - Applying benchmarks from mismatched regions without proxy notation
 - Omitting confidence levels or applicability notes
 - Hiding data gaps instead of documenting them
+- Using a benchmark older than 3 years without explicitly noting its age and explaining why it remains the best available reference
+- Relying on a single source without flagging it; single-source benchmarks should carry Medium confidence at best
+- Presenting a range benchmark as a point estimate ("Industry average is 5 days" when the source says "3-7 days")
 
 ## Remember
 

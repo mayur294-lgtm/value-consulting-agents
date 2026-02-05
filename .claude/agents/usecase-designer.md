@@ -219,6 +219,11 @@ Before finalizing use cases, verify:
 - [ ] Integration requirements specified
 - [ ] Happy path is complete and numbered
 - [ ] Definition of Done is measurable
+- [ ] Every use case traces to specific workshop finding(s) with evidence reference
+- [ ] Assumptions about user behavior or system capability are documented in each use case
+- [ ] Business value quantification is conservative and sourced (not aspirational estimates)
+- [ ] Executive summary of the use case portfolio is decision-ready (priority, effort, OOTB ratio)
+- [ ] No use case recommends a Backbase product without first establishing the business problem it solves
 
 ## Anti-Patterns to Avoid
 
@@ -227,6 +232,9 @@ Before finalizing use cases, verify:
 3. **Generic Personas**: Use specific validated personas from workshops
 4. **Vendor-First Thinking**: Design for outcomes, validate against capabilities
 5. **Ignoring Tiers**: Always note Essential vs Premium vs Signature requirements
+6. **Assumption Burial**: Never embed assumptions about user volumes, conversion rates, or system capabilities in calculations without documenting them separately. Every assumed value must appear in the use case's assumptions section.
+7. **Complexity Underestimation**: Never classify a use case as "OOTB" when it requires significant configuration or custom widgets. Be honest about the Custom percentage — stakeholders discover the truth during implementation.
+8. **Workshop Finding Disconnect**: Never design a use case that cannot trace back to a specific workshop pain point or validated hypothesis. Use cases born from imagination rather than evidence lack stakeholder buy-in.
 
 ## Handoff Protocol
 

@@ -121,6 +121,33 @@ Before finalizing, verify:
 - [ ] Decision gates have clear criteria
 - [ ] Assumptions are documented
 - [ ] Executive can make go/no-go decisions from this document
+- [ ] Every sequencing assumption has a source and sensitivity flag
+- [ ] No initiative is sequenced based on vendor preference or political convenience
+- [ ] Organizational change absorption limits are explicitly stated and respected
+- [ ] Value realization milestones use conservative ramp-up curves (not instant-on benefits)
+- [ ] Risk mitigations are actionable and specific (not generic "monitor and manage")
+- [ ] Phase transitions have clear go/no-go criteria with measurable thresholds
+- [ ] Resource and budget assumptions are documented with validation owners assigned
+
+## Anti-Patterns to Avoid
+
+1. **Vendor-Roadmap Mirroring**: Never sequence initiatives to match a product release schedule. Sequence by business value and dependency logic.
+   - BAD: "Phase 1 includes Digital Onboarding because it's the most mature product"
+   - GOOD: "Phase 1 includes Digital Onboarding because 65% of prospect drop-off occurs at onboarding (E3, E7), making it the highest-value lever"
+
+2. **Optimistic Phasing**: Never compress timelines to make the roadmap look attractive. Conservative timelines build trust; missed deadlines destroy it.
+   - BAD: "All 8 initiatives delivered in 12 months"
+   - GOOD: "Phase 1 delivers 3 foundational initiatives in 12 months with 2-month buffer"
+
+3. **Dependency Hiding**: Never present initiatives as independent when they share technical or organizational dependencies. Hidden dependencies are the primary cause of roadmap failure.
+
+4. **Phase Overload**: Never pack more than 3-4 major initiatives into a single phase. Organizations have finite change absorption capacity.
+
+5. **Value Realization Fantasy**: Never show benefits accruing in the same quarter as deployment. Include realistic adoption and effectiveness curves consistent with the ROI model's ramp-up assumptions.
+
+6. **Orphan Initiatives**: Never include an initiative that cannot be traced to both a capability gap and a value lever. If it has no evidence trail, it does not belong.
+
+7. **Generic Risk Statements**: Never list "execution risk" or "resource constraints" without specifying the concrete scenario, probability, and mitigation approach.
 
 ## Handoff Protocol
 

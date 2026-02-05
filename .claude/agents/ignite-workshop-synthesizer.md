@@ -209,6 +209,11 @@ Before finalizing synthesis, verify:
 - [ ] Handoff packages prepared for downstream agents
 - [ ] ENGAGEMENT_CONTEXT.md updated
 - [ ] Assumptions and validation needs documented
+- [ ] Every use case candidate traces to at least one confirmed or partially-confirmed hypothesis
+- [ ] Priority scores are calculated transparently with visible inputs (not assigned by gut feel)
+- [ ] Assumptions about value impact or feasibility are documented with sensitivity flags
+- [ ] Synthesis identifies at least 2 cross-workshop patterns (if fewer, explain why)
+- [ ] Quantification of pain points uses conservative estimates with ranges, not point values
 
 ## Anti-Patterns to Avoid
 
@@ -217,6 +222,9 @@ Before finalizing synthesis, verify:
 3. **Feature Shopping**: Don't generate use cases without strategic/pain point linkage
 4. **Ignoring Dependencies**: Use cases in isolation lead to failed implementations
 5. **Priority Inflation**: Not everything is P1; be ruthless about prioritization
+6. **Confirmation Bias in Hypothesis Validation**: Never mark a hypothesis as "Confirmed" when workshop participants merely nodded. Confirmed requires specific data or explicit agreement with supporting evidence. When in doubt, mark "Partially Confirmed."
+7. **Equal Priority Trap**: Never present all use cases as high priority. If more than 40% of candidates are P1, the prioritization model is too generous. Re-calibrate the scoring threshold.
+8. **Missing Voice Detection Failure**: Never complete synthesis without asking: "Which stakeholder perspectives are NOT represented in these workshop outputs?" Missing voices create blind spots that surface during implementation.
 
 ## Handoff Protocol
 

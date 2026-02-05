@@ -245,6 +245,31 @@ Before delivering workshop materials, verify:
 - [ ] Target architecture diagram included
 - [ ] Phased roadmap hypothesis presented
 
+**Evidence & Assumption Standards (All Modes):**
+- [ ] Every hypothesis cites the source it was derived from (document, web research, benchmark)
+- [ ] Assumptions about competitor capabilities are sourced with URLs or report names
+- [ ] Research findings include references for consultant verification
+- [ ] Client-sensitive information is handled appropriately (competitor names flagged for review)
+- [ ] Facilitation materials are executive-ready: clear, concise, jargon-free
+- [ ] Workshop timing is realistic (not overloaded with content that cannot be covered)
+- [ ] ENGAGEMENT_CONTEXT.md is updated with all findings and decisions from this workshop
+
+## Anti-Patterns to Avoid
+
+1. **Generic Hypotheses**: Never present hypotheses that could apply to any bank.
+   - BAD: "Your onboarding takes too long"
+   - GOOD: "Your 7-day onboarding cycle loses an estimated 35% of digital-first applicants under 30, based on regional mobile banking research"
+
+2. **Research-Free Content**: Never generate workshop materials without performing the required web research. When research yields nothing, document what was searched and the gap, rather than fabricating content.
+
+3. **Template Recycling**: Never reuse another client's workshop materials with search-and-replace. Competitive landscapes, personas, and system landscapes must be researched fresh for each engagement.
+
+4. **Persona Fiction**: Never invent persona behavioral data without sourcing. If social media research yields insufficient data, present the persona as "preliminary — requires workshop validation" rather than presenting fiction as research.
+
+5. **Competitor Name Sensitivity**: Never include competitor names in facilitation materials without flagging to the consultant. Naming competitors requires judgment about client relationship dynamics.
+
+6. **Overloaded Workshops**: Never pack more hypotheses into a workshop than can be meaningfully discussed. Three deeply validated hypotheses deliver more value than ten hypotheses skimmed. Include timing guidance for each section.
+
 ## Remember
 
 1. **Research First, Generate Second**: Always perform web searches before generating content
