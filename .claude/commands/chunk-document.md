@@ -15,24 +15,48 @@ When the user provides a large document that exceeds context limits, follow this
 
 ### For PDF Files:
 
-1. **Extract text first** using `pdftotext`:
+**IMPORTANT:** Never read PDFs directly with the Read tool — large PDFs will fail with `API Error: 400 Could not process PDF`. Always extract text first.
+
+Follow `knowledge/standards/context_management_protocol.md` Rule 9 for full details. Quick reference:
+
+1. **Create extraction directory:**
    ```bash
-   pdftotext -layout "/path/to/file.pdf" "/tmp/extracted_text.txt"
+   mkdir -p "[engagement_dir]/extracted/"
    ```
 
-2. **Check the file size**:
+2. **Extract text** (try in order until one works):
    ```bash
-   wc -l /tmp/extracted_text.txt
+   # Method A: pdftotext (preferred)
+   pdftotext -layout "/path/to/file.pdf" "[engagement_dir]/extracted/filename.txt"
+
+   # Method B: Python fallback
+   python3 -c "
+   import subprocess; subprocess.run(['pip3', 'install', 'pymupdf'], capture_output=True)
+   import fitz; doc = fitz.open('/path/to/file.pdf')
+   text = '\n--- Page Break ---\n'.join(p.get_text() for p in doc)
+   open('[engagement_dir]/extracted/filename.txt', 'w').write(text)
+   print(f'Extracted {doc.page_count} pages')
+   "
+
+   # Method C: macOS textutil
+   textutil -convert txt -output "[engagement_dir]/extracted/filename.txt" "/path/to/file.pdf"
    ```
 
-3. **Read in chunks** of 500-800 lines at a time:
+3. **Validate extraction:**
+   ```bash
+   wc -l "[engagement_dir]/extracted/filename.txt"
+   head -20 "[engagement_dir]/extracted/filename.txt"
    ```
-   Read /tmp/extracted_text.txt with offset=0, limit=500
-   Read /tmp/extracted_text.txt with offset=500, limit=500
+   If empty or garbled → try next method. If all fail → ask consultant for text version.
+
+4. **Read in chunks** of 500-800 lines at a time:
+   ```
+   Read extracted file with offset=0, limit=500
+   Read extracted file with offset=500, limit=500
    ... continue until complete
    ```
 
-4. **Summarize each chunk** and build a cumulative understanding.
+5. **Summarize each chunk** and build a cumulative understanding.
 
 ### For CSV Files:
 

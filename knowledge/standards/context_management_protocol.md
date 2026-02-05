@@ -45,12 +45,7 @@ When a file exceeds 500 lines:
 
 3. **After all chunks:** read only the extracted findings file to consolidate.
 
-**For PDFs specifically:**
-```bash
-pdftotext -layout "/path/to/file.pdf" "/tmp/extracted_text.txt"
-wc -l /tmp/extracted_text.txt
-```
-Then apply the same chunking thresholds.
+**For PDFs:** See Rule 9 below — NEVER read PDFs directly with the Read tool. Always extract text first.
 
 ## Rule 3: One Transcript at a Time
 
@@ -159,6 +154,82 @@ Be aware of how much context you're using. Warning signs:
 - You're about to read a new file but haven't released the previous one
 
 **When in doubt, write to disk and start fresh.** It's always safer to write interim results and re-read the summary than to risk hitting the limit.
+
+## Rule 9: PDF and Binary File Handling
+
+PDFs are common inputs (annual reports, strategy docs, prior assessments). The Claude Read tool has a size limit for PDFs — large files will fail with `API Error: 400 Could not process PDF`. To prevent this, **NEVER attempt to read a PDF directly with the Read tool.** Always extract text first.
+
+### Step 1: Extract Text from PDF
+
+Try these methods in order. Use the first one that succeeds:
+
+**Method A — pdftotext (preferred):**
+```bash
+pdftotext -layout "/path/to/file.pdf" "[engagement_dir]/extracted/[filename].txt"
+```
+
+**Method B — Python fallback (if pdftotext not installed):**
+```bash
+python3 -c "
+import subprocess
+subprocess.run(['pip3', 'install', 'pymupdf'], capture_output=True)
+import fitz
+doc = fitz.open('/path/to/file.pdf')
+text = ''
+for page in doc:
+    text += page.get_text() + '\n--- Page Break ---\n'
+with open('[engagement_dir]/extracted/[filename].txt', 'w') as f:
+    f.write(text)
+print(f'Extracted {doc.page_count} pages')
+"
+```
+
+**Method C — macOS textutil fallback:**
+```bash
+textutil -convert txt -output "[engagement_dir]/extracted/[filename].txt" "/path/to/file.pdf"
+```
+
+**If all methods fail:** Inform the consultant that the PDF cannot be extracted automatically. Ask them to provide a text or markdown version, or to copy-paste the relevant sections.
+
+### Step 2: Validate Extraction
+
+After extraction, verify the output is usable:
+
+```bash
+wc -l "[engagement_dir]/extracted/[filename].txt"
+head -20 "[engagement_dir]/extracted/[filename].txt"
+```
+
+Check for:
+- **Empty file** → extraction failed silently; try next method
+- **Garbled text** → PDF may be scanned/image-based; inform consultant
+- **Very short output from a long PDF** → likely image-heavy; inform consultant
+
+### Step 3: Apply Standard Chunking
+
+Once text is extracted, apply Rule 1 and Rule 2 thresholds:
+- Under 500 lines → read whole file
+- 500–1500 lines → chunk in 2-3 reads
+- Over 1500 lines → full chunking protocol
+
+### Step 4: Log in Engagement Journal
+
+Record the extraction in the engagement journal:
+```markdown
+**PDF Processed:** [filename.pdf]
+**Extraction Method:** [pdftotext / pymupdf / textutil]
+**Pages:** [N] | **Extracted Lines:** [N]
+**Quality:** [Good / Partial — describe issues]
+**Output:** [engagement_dir]/extracted/[filename].txt
+```
+
+### Important Rules
+
+- **NEVER use `/tmp/` for extracted files.** Always write to `[engagement_dir]/extracted/` so files persist across sessions and are auditable.
+- **Create the `extracted/` subdirectory** if it doesn't exist: `mkdir -p "[engagement_dir]/extracted/"`
+- **Preserve the original PDF.** The extracted text is a working copy — never delete the source.
+- **For scanned PDFs** (image-based with no selectable text): inform the consultant immediately. OCR is out of scope for this system. The consultant must provide a text alternative.
+- **For password-protected PDFs**: inform the consultant. Do not attempt to bypass encryption.
 
 ## Applying This Protocol
 
