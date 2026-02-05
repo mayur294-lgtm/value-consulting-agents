@@ -9,6 +9,20 @@
 
 ---
 
+> **TEMPLATE COMPLIANCE NOTICE — READ BEFORE GENERATING**
+>
+> This template defines the MANDATORY structure of the Ignite Assess deliverable. ALL 7 sections must be present in the final report. No section may be omitted, summarized to a paragraph, or replaced with a placeholder.
+>
+> **Section 05 (Capability Assessment)** must contain the FULL capability assessment — the complete F/M/B heatmap, problem map, capability drill-downs, traceability matrix, path to target, and Data & AI readiness. This is NOT a summary referencing a separate document. It IS the document. Expect 200+ lines.
+>
+> **Section 04 (Deep-Dive Assessment)** must contain value leakage funnels for each lifecycle stage, journey maps with swim-lane process flows, named persona profiles, and solution component mapping with specific Backbase product names. Expect 150+ lines.
+>
+> **Section 01 (Strategic Alignment)** is the longest section — 30-40% of the total report. It builds the emotional and data-backed case for change. If this section is thin or generic, the report fails.
+>
+> A report that omits acts, produces high-level summaries instead of detailed analysis, or skips the capability assessment is NOT DELIVERABLE. Go back and complete it.
+
+---
+
 ## Table of Contents
 
 | # | Section | Purpose |

@@ -210,13 +210,14 @@ Route work to specialized agents based on engagement type:
 - Output: Evidence register, pain points, stakeholder map, business context
 - **Context rule:** Process one transcript per invocation, write interim output to disk
 
-**Market Context Researcher (OPTIONAL — runs after Discovery):**
+**Market Context Researcher (DEFAULT — runs after Discovery):**
 - Input: Engagement context (country, domain, bank name, size tier) + discovery outputs (pain points, metrics, objectives)
 - Output: Validated market context brief with financial metric correlations, outside-in CX research (if available for domain), competitor capabilities (if available), and consultant-validated positioning angles
 - **Key behavior:** Presents findings to consultant for validation before passing to Assembly. Consultant can accept, modify, request more research, or skip entirely.
 - **Domain awareness:** Adapts research depth to domain reality (rich data for retail, limited for wealth/commercial). Returns `NO_RELEVANT_DATA` gracefully when outside-in data isn't available rather than forcing irrelevant data.
 - **Pipeline position:** Runs after Discovery completes. Can run in PARALLEL with Capability, ROI, and Roadmap agents since they are independent workstreams.
 - **Consultant interaction:** ALWAYS requires consultant review before output flows to Assembly. This is creative positioning work that needs human judgment.
+- **Skip protocol:** This agent runs by DEFAULT on every Value Assessment engagement. The consultant may explicitly skip it by saying "skip market context" — in which case, log the skip reason in the engagement journal. Do NOT skip silently.
 
 **Capability Assessment Agent:**
 - Input: Evidence from discovery, domain context
