@@ -75,6 +75,66 @@ Additional inputs:
 - Historical project data
 - Market research
 
+## Knowledge Discovery Paths
+
+**CRITICAL:** Always check these knowledge sources before building ROI models.
+
+### Domain Benchmarks (by vertical)
+```
+knowledge/domains/[domain]/benchmarks.md
+```
+- Operational metrics, digital adoption rates, transaction costs
+- Use for baseline establishment and benefit calculations
+
+### ROI Pattern Library
+```
+knowledge/learnings/roi_models/
+```
+- `wealth_entitlements_roi.md` - RM productivity, platform consolidation
+- `latam_transaction_migration_roi.md` - Channel cost migration patterns
+- `digital_lending_origination_roi.md` - Lending origination uplift models
+- `tech_rationalization_decommission.md` - **Platform replacement and vendor consolidation**
+
+### Extraction Registry
+```
+knowledge/learnings/EXTRACTION_REGISTRY.md
+```
+- Index of all extracted knowledge with source engagements
+
+## Stakeholder-Specific Value Framing
+
+Different stakeholders care about different ROI angles. Tailor the model focus:
+
+### Business Leaders (CDO, CMO, Head of Digital, COO)
+**Primary focus:** Revenue growth, customer experience, operational efficiency
+- Digital adoption and engagement uplift
+- Customer acquisition/retention improvements
+- Channel migration and self-service gains
+- Employee productivity (non-IT)
+
+### CIO / CTO
+**Primary focus:** Technology rationalization, platform consolidation, technical debt
+- **Tech decommissioning savings** (see `tech_rationalization_decommission.md`)
+- Vendor contract consolidation
+- Integration simplification (middleware cost reduction)
+- Per-user licensing optimization
+- IT support staff reduction
+
+### CFO
+**Primary focus:** Total cost of ownership, cost avoidance, financial risk
+- **Platform replacement NPV** (see `tech_rationalization_decommission.md`)
+- Growth cost avoidance (legacy per-user escalation)
+- Maintenance and support cost reduction
+- Capital vs. operational expenditure shifts
+
+### When to Use Tech Rationalization Model
+Use `tech_rationalization_decommission.md` patterns when:
+1. Client is replacing an existing digital banking platform
+2. CIO/CFO are primary stakeholders
+3. RFP mentions "consolidation," "decommissioning," or "total cost of ownership"
+4. Client has multiple point solutions (bill pay, P2P, PFM, etc.)
+5. Legacy vendor costs are increasing annually
+
 ## Outputs
 
 Structured ROI report containing:
@@ -308,6 +368,17 @@ ROI output enables:
 - Model escalating pain if no action
 - Show opportunity cost of delayed decision
 - Compare to alternative approaches
+
+**Tech Rationalization / Decommissioning Projects:**
+Reference: `knowledge/learnings/roi_models/tech_rationalization_decommission.md`
+- Document full legacy platform cost stack (see OneAZ pattern)
+- Include marketplace partner per-transaction costs
+- Model parallel-run period costs (3-6 months overlap)
+- Account for contract termination penalties
+- Show growth cost avoidance (legacy per-user escalation)
+- Present 5-year NPV comparison (legacy vs Backbase)
+- Include integration/middleware savings
+- **Primary audience: CIO + CFO** (not business leaders)
 
 ## Success Metrics
 

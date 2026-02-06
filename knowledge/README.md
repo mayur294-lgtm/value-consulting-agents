@@ -32,6 +32,38 @@ Quality criteria and benchmarks for consulting outputs.
 - Assumption documentation requirements
 - Executive summary best practices
 
+### `/domains/`
+Banking domain-specific knowledge organized by vertical.
+
+**Verticals:** retail, commercial, sme, wealth, corporate
+
+**Contents per domain:**
+- benchmarks.md - KPIs and operational metrics
+- journey_maps.md - Customer/client journeys
+- pain_points.md - Common challenges
+- use_cases.md - Backbase capabilities
+- value_propositions.md - Solutions
+
+### `/learnings/`
+Extracted knowledge from past engagements (anonymized).
+
+**Structure:**
+- `roi_models/` - ROI calculation patterns and value levers
+- `EXTRACTION_REGISTRY.md` - Index of all extracted knowledge
+
+**Key ROI Pattern Files:**
+| File | Use Case | Stakeholder Focus |
+|------|----------|-------------------|
+| `wealth_entitlements_roi.md` | RM productivity, platform consolidation | Business + CIO |
+| `latam_transaction_migration_roi.md` | Channel cost migration | Business + CFO |
+| `digital_lending_origination_roi.md` | Lending volume uplift | Business |
+| `tech_rationalization_decommission.md` | Platform replacement, vendor consolidation | **CIO + CFO** |
+
+**Stakeholder-Specific Guidance:**
+- **Business Leaders (CDO, CMO, COO):** Focus on revenue, customer experience, operational efficiency
+- **CIO/CTO:** Focus on tech rationalization, platform consolidation, integration simplification
+- **CFO:** Focus on cost avoidance, decommissioning savings, total cost of ownership
+
 ## Purpose
 
 This knowledge base serves as:

@@ -146,6 +146,44 @@ A strategic engagement package covering:
 - Decision criteria
 - Political dynamics
 - Constraints and limitations
+- **Primary stakeholder types** (from Discovery: `business`, `technology`, `finance`)
+
+---
+
+## Stakeholder-Specific Output Considerations
+
+**CRITICAL:** Adapt output content and emphasis based on primary stakeholder types from Discovery.
+
+### When Technology (CIO/CTO) is Primary Stakeholder
+Include in outputs:
+- **Tech Rationalization Section:** Legacy platform cost analysis, vendor consolidation savings
+- **Decommissioning Roadmap:** Timeline for platform sunset, parallel run periods
+- **Integration Simplification:** Middleware cost reduction, API consolidation benefits
+- **TCO Comparison Table:** Current stack vs. Backbase 5-year total cost
+- Reference: `knowledge/learnings/roi_models/tech_rationalization_decommission.md`
+
+### When Finance (CFO) is Primary Stakeholder
+Include in outputs:
+- **NPV and Cash Flow Analysis:** Detailed year-over-year breakdown
+- **Growth Cost Avoidance:** Legacy per-user escalation modeled
+- **CapEx vs OpEx Impact:** Transition effects on financial statements
+- **Contract Economics:** Termination penalties, license optimization
+- **Sensitivity Analysis:** Prominent placement with clear assumptions
+
+### When Business (CDO/COO) is Primary Stakeholder
+Include in outputs:
+- **Customer Experience Improvements:** Journey-centric metrics
+- **Revenue Uplift:** Acquisition, activation, cross-sell
+- **Operational Efficiency:** Time savings, automation gains
+- **Competitive Positioning:** Market context, peer comparisons
+
+### Combining Multiple Stakeholder Perspectives
+When multiple stakeholder types are primary, structure deliverables to serve each audience:
+- **Executive Summary:** Business impact + Financial summary + Tech rationale
+- **ROI Model Tabs:** Business value levers + Tech decommission savings + Financial summary
+- **Appendices by Audience:** Technical details for CIO, Financial models for CFO, Journey maps for CDO
+
+---
 
 ## Outputs
 

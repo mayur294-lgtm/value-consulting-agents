@@ -1,0 +1,2156 @@
+Unknown 0:00
+Let's go ahead
+
+Speaker 1 0:11
+and All right, thank you. Hand it back over to Matt base, and we will
+get
+
+Unknown 0:19
+started. We have everybody in the room.
+
+Unknown 0:25
+Let's see. We've got Michelle
+
+Unknown 0:35
+on the call
+
+Unknown 0:38
+here. Thanks everyone. Welcome back.
+
+Speaker 2 0:41
+What you'll see with this session will mostly, I mean, I will let
+Shoba take over, but just when I set the context, we will be double
+clicking on so many things that we touched upon in the morning,
+especially all the challenges, all the current state system processes
+you have for your treasury services and operations, or your experience
+banks, experience with the customers, customer experience with the
+bank. So we'll be double clicking into all of that. Clicking into all
+of that and then understand more about the applications
+
+Speaker 3 1:07
+that are in use today. Perfect. So the way we want to run this session
+again. Now, this is about the services, and we are talking about
+different products which you service for. So the way we want to run
+this session if you can go to the next slide.
+
+Unknown 1:24
+Yeah. So
+
+Speaker 4 1:28
+when we talk, this meeting is being recorded. This meeting is being
+transcribed.
+
+Speaker 3 1:34
+So we want to do it at two levels. One, we want to do a, let's say,
+maturity assessment of digital Foundation, some part of it we have
+already covered when we did the strategy alignment. So you know, what
+are those attributes of a digital architecture, which are, which is
+basically, which are very critical. So something like UI security, we
+talked about entitlement. So some of it we have already covered. Maybe
+we will accelerate over there using the input from the strategy
+alignment. Then we want to deep dive into current customer journeys on
+your product side. So about your, let's say the payment solution,
+receivable solutions, and other products. So what we have done is we
+have created a template, and we want to populate this template sitting
+with you, and we are talking about 22 different line items when it
+comes to product and services. So we will move little bit faster than
+maturity assessment of digital Foundation, some part of it we have
+already covered when we did the strategy alignment. So you know, what
+are those attributes of a digital architecture, which are, which is
+basically, which are very critical. So something like UI security, we
+talked about entitlement. So some of it we have already covered. Maybe
+we will accelerate over there using the input from the strategy
+alignment. Then we want to deep dive into current customer journeys on
+your product side. So about your, let's say the payment solution,
+receivable solutions, and other products. So what we have done is we
+have created a template, and we want to populate this template sitting
+with you, and we are talking about 22 different line items when it
+comes to product and services. So we will move little bit faster than
+the morning, and I will explain you the template. But before going
+into those products and services, I want to just quickly go through
+these, if you can go to the next slide, these fundamental, what we
+call as foundations, and as you see, lot of it we have already
+discussed in the morning. So what we want to do is, just from the
+maturity standpoint, quickly populate high, medium, low. And I already
+know like lot of it we have discussed in the morning. So we just want
+to double click on this. So these are the attributes which basically
+cut across the whole architecture and platform. Let me start with the
+overall customer experience right now. Customer experience, as I
+understand now, it is very SSO dependent, sort of siloed and
+fragmented also, and basically at the end of the day for us, it
+impacts the digital adoption. So would it be okay to mark the whole
+customer experience part? Like, where would you rate the customer
+experience, the current experience of customer
+
+Speaker 5 3:34
+on exchange? So where are we maturity wise?
+
+Speaker 3 3:37
+We're maturity wise. Do you think? Like, is it good badly. Is this
+
+Unknown 3:43
+holistically, or are we speaking for Treasury payments?
+
+Speaker 3 3:48
+We can do it holistically, like this is also applicable to wealth. I
+suppose it is.
+
+Unknown 3:53
+It's just it's likely a different
+
+Unknown 3:56
+sentiment based on whether you're a treasury
+
+Unknown 3:59
+client. Let's do it for both. Then,
+
+Unknown 4:03
+first, let's go with tragedy and then go with Well,
+
+Unknown 4:14
+I think it's good.
+Unknown 4:18
+It has the opportunity to be better. Yeah, I community better?
+
+Speaker 6 4:23
+Yeah, I think where we have struggle is even since our MVP, we've lost
+some capability
+
+Unknown 4:30
+since we've deployed it.
+
+Speaker 6 4:36
+You know, it's just a maturity I think where we are from a maturity
+perspective on the platform. Like we have our primary cash management
+services on the platform, we have a business bill pay service on the
+platform. We have a trade platform in the application, and we have an
+ACH positive pay system in the platform.
+
+Unknown 5:02
+We still have another 567,
+
+Speaker 6 5:05
+apps that we would like to see in the application.
+
+Unknown 5:10
+And so, you know, I think
+
+Speaker 6 5:13
+until we can get processes that allow us to more easily get apps
+integrated into the system, into the application, folks are kind of,
+of the opinion that we haven't met kind of our our initial goal of the
+portal to integrate our digital assets. We're now three, four years of
+running the pool, and we really haven't added materially additional
+apps to it, and it feels like we have several years before we're going
+to get all those
+
+Unknown 5:48
+apps. So I think from that perspective,
+
+Unknown 5:52
+I think folks are a
+
+Speaker 6 5:54
+little frustrated that it's taking us as long as it is.
+
+Speaker 1 6:00
+So would you consider that a medium maturity is
+
+Speaker 7 6:07
+that around our ability to deliver net new experiences, or so versus
+current customer experience?
+Speaker 3 6:15
+Customer experiences are very, very broad, right? What is the
+sentiment among your customers like, specifically to make it like more
+relative as compared to your competitors. Maybe, where do you think
+you you stand? Where does the sentiment of your customer stand? So it
+also includes the time to market, speed to market, launching new
+capabilities, but at the same time, whatever you have today, in terms
+of, you know, the capabilities, the presentation of those capabilities
+in the synergy across the architecture, how seamlessly customer can
+access. So it's very thematic. Like, we are not looking for the proof
+point over here. But what do you think? Like, what does customer think
+about the overall experience?
+
+Unknown 6:59
+I can speak to that a little bit
+
+Unknown 7:04
+Sure, Brad, go ahead.
+
+Unknown 7:06
+Yeah, I think, I think
+
+Speaker 8 7:10
+the sentiment that we get, and again, this is a lot of this is
+anecdotal, but our clients, the feedback that we do get are that they
+find the platform unpredictable, maybe it's the best word, where
+things things work one day, but they don't work the next day, or they
+get an error message, or they have these very kind of transient
+moments of instability, where something doesn't work and they have to
+log out and they have to log back in. So they, they, they find it very
+unpredictable in that manner and that, and that's that's just on the
+day to day experience, and it's, it's difficult to reconcile that with
+the client, based on the kind of monitoring that we have available and
+things like that, which is, I think, another topic. But the other
+thing that we get pretty regular feedback is around our our platform
+doesn't do some really basic things, and I know that that Kira and
+Kelsey and Barrett are well aware of this, but you know, a perfect
+example is something that we've been working on and trying to fix is
+is just sorting like our clients have a lot of data that they're
+looking at online, where there's multiple pages, whether that be pages
+of transactions or accounts or users, and our inability to really
+present that and be able to sort that and do what they consider To be
+absolute, hands down, the most basic internet capabilities, really
+frustrates them, and they give us that feedback, even though we might
+have all the right products and features that that level of usability
+frustration really starts to soak through after they've been on the
+platform For, you know, several months or years, or whatever, any
+
+Speaker 3 9:22
+a very, very good feedback. And do you think this is because, you
+know, the lot of fragmented systems are lying under, under the
+exchange, so when it comes to the unpredictability, right? So we are
+talking about architecture which is integrated, crisscross, and that
+might be leading to the impact on different services that we have
+offered to the customer. So if something goes down because exchange is
+dependent on the other applications,
+
+Speaker 8 9:53
+I have no doubt that that plays into it right, or that we're pulling
+data and we're getting information and we're relying on a lot of
+downstream applications to to present things. I have no doubt that
+that that would be a function of it.
+
+Speaker 3 10:10
+Thank you. So like, Would it be fair to say, let's say the you know,
+considering the architecture you have, it's like medium to low kind of
+maturity on the customer experience plan.
+
+Unknown 10:25
+And do you just have the
+
+Speaker 3 10:27
+web or the Yeah, so do you have just the web experience or also the
+mobile experience from for for the customer?
+
+Unknown 10:35
+So we have both in the mobile
+
+Speaker 6 10:39
+experience is primarily natively built, with the exception of a
+service or two where we've exposed a particular service from bottom
+line, directly into our mobile as a Responsive
+
+Unknown 10:55
+Design Workspace, but The majority of
+
+Unknown 10:59
+the mobile app is native. I
+
+Speaker 3 11:02
+think, okay, so the mobile is not then it is not exchange.
+
+Speaker 6 11:08
+So, so it is, I mean, we still leverage what Collins teams built from
+a native mobile experience perspective with calls that still leverage
+the same information from dviq bottom lines application, but they've
+they've natively built kind of the UI UX experience, with the
+exception of maybe one or Two services within the mobile app. So I
+mean, on the
+Speaker 9 11:43
+mobile app, it is a combination. There's two natively developed apps
+by OS and Android. It is a combination of native UX and responsibly
+designed dedicated web screens that drive the functionality, both ones
+that we've developed and ones that we're just importing from,
+
+Unknown 12:03
+right? So it's and
+
+Speaker 3 12:06
+there is a parity between the experience on web and mobile.
+
+Speaker 9 12:09
+And I don't think we really have a desire for full, complete parity,
+because there are some things that are just very cumbersome to do. You
+know, approvals are like, one of the most common use cases for mobile,
+so we have all of those. Mobile so we have all of those, but there is
+definitely limitations in the more complex activities, like user
+administration, for instance, like
+
+Speaker 8 12:36
+we don't have a lot of that fully baked out. And to be to be fair, I
+don't, I don't think that that we are clients, or that we would would
+want that right to your point calling that there are certain things
+within on the commercial Treasury side, I don't want to speak for
+wealth, because I know that they might want to get there eventually
+too. But there are things on the on the commercial side that just
+aren't suitable for a mobile app. And I think understanding the items
+that our users perform with great regularity on the web application
+are the things that they want and have asked for on the mobile
+application, approvals, quick reviews, overviews, things like that. To
+your point, Colin trying to put user administration with the account
+of with the type of entitlements that we have would what does that
+make sense? I have a
+
+Unknown 13:42
+point. Question around mobiweb specifically,
+
+Speaker 1 13:44
+and maybe spend a lot of time on it, but I was interested to know what
+other clients do from a movie web perspective, historically, we have
+seen smaller usage of it, so we
+
+Unknown 13:59
+have prioritized a lot of
+
+Unknown 14:01
+things around that.
+Unknown 14:04
+View the movie web is your mobile application
+
+Unknown 14:07
+using the regular website. So
+
+Speaker 7 14:19
+for customer experience on the wealth side, I would say we're
+
+Speaker 3 14:22
+a low can be the reason for that? And one, there's multiple systems
+that we're having to
+
+Speaker 7 14:27
+do a lot of different things. It's taking a long time. There's a lot
+of different groups involved in the setup, which I feel like
+consolidated and make sure it's done efficiently and correctly.
+There's also the front line is involved in a lot of the initial input,
+where I wish we could take it directly from the DocuSign, or do
+something that's more automated, because we didn't have human error.
+And right now, we're seeing that workarounds that are documented that
+call downstream, know what a client did because
+
+Unknown 15:07
+can't see it, or we don't have access
+
+Unknown 15:10
+to recession. So
+
+Speaker 7 15:11
+there's many different avenues, but there's a lot of one option in
+like our own business, and we are known for customizing and so a lot
+of different scenarios that pop up and but with that, I wish we had
+like a source of truth to go to, and right now, like we provided
+examples of that, but I think it could be done better.
+
+Speaker 2 15:37
+And which system are you talking about when you say that this
+experience, though, that the source of truth was there for, is this
+for exchange through unity.
+
+Speaker 7 15:47
+So the source of truth, I would say, is like, we have examples of what
+they're supposed to do. We've done trainings on what they're supposed
+to do. We've provided like videos on how to do that. That would be the
+source of the truth I'm talking about, but the process in general, I
+would say, is what we've shown and documented, and that starts in war
+and goes to unity, and then it goes to exchange, so it touches
+everything, yeah, yeah. And that's what I'm saying. I think it would
+be more efficient and, like, more automated, because all of it is
+manual right now, every piece. And they another problem that they have
+that we are actively engaged in and trying to work on, is, see, I
+actually thought it was quite humorous. Yesterday, we had a call with
+Treasury around their latency. And I mean,
+to do. We've provided like videos on how to do that. That would be the
+source of the truth I'm talking about, but the process in general, I
+would say, is what we've shown and documented, and that starts in war
+and goes to unity, and then it goes to exchange, so it touches
+everything, yeah, yeah. And that's what I'm saying. I think it would
+be more efficient and, like, more automated, because all of it is
+manual right now, every piece. And they another problem that they have
+that we are actively engaged in and trying to work on, is, see, I
+actually thought it was quite humorous. Yesterday, we had a call with
+Treasury around their latency. And I mean,
+
+Unknown 16:37
+they have clients where it takes them 45
+
+Speaker 1 16:39
+minutes to load all of their accounts
+
+Unknown 16:43
+because they have over 3500
+
+Unknown 16:46
+and the vacuum processing is so
+
+Unknown 16:50
+slow. So we're really working on that too. I
+
+Unknown 16:51
+mean, that's been a huge, huge, awful.
+
+Unknown 16:55
+It's terrible. It's just a terrible
+
+Speaker 2 17:00
+experience. Is that for applicable for Treasury as well, or
+
+Speaker 7 17:03
+so they have some latency, but nothing compared to what do you all
+have
+
+Unknown 17:08
+1000s of accounts
+
+Unknown 17:11
+like that? I mean, 15
+
+Unknown 17:17
+seconds was like the worst.
+
+Speaker 7 17:21
+Yeah, so when we told him you wanted it down to 35 he was like, that's
+way
+
+Unknown 17:27
+too long. I agree. But I was like,
+
+Unknown 17:34
+right, yeah.
+
+Speaker 2 17:36
+And was this a one off incident, or other accounts you've observed
+this. It happens a lot
+
+Unknown 17:41
+of different clients.
+
+Speaker 7 17:45
+I'll say clients are like companies, so our company levels, so I would
+say there's multiple company levels, and it happens at the user
+experience. And so it's not only the back end user that is effective,
+but it's also the actual client, or the client user that's
+
+Speaker 3 18:05
+locked in each time. Let's move on to the employee experience now from
+the maturity standpoint, because I believe, like with other banks, all
+of these options are very RL dependent, right? So what kind of
+experience you're providing to your RMS or back office ops? Is that
+experience integrated front to back? Does that experience have parity
+with what your customer is seeing? Customer is doing? We a
+
+Unknown 18:34
+lot of times do work arounds for our back office users,
+
+Unknown 18:38
+because they're not the client.
+
+Unknown 18:42
+And so I know, just for
+
+Unknown 18:44
+capturing value statements for certain items, there's
+
+Unknown 18:47
+a lot of stuff
+
+Unknown 18:48
+that we can time save on, but
+
+Speaker 5 18:51
+they're having to do lots of work arounds just to keep their process
+
+Speaker 2 18:55
+going. Can you give an example of one of these workarounds? Anything?
+Yes, I mean,
+
+Speaker 7 19:06
+like, I know, for Wells we have, like, we get these security
+Unknown 19:13
+I mean, we work tickets sometimes
+
+Speaker 5 19:16
+for an hour and a day to just clear up
+
+Unknown 19:19
+something from someone for our security.
+
+Unknown 19:23
+Someone we have to go into off the clear
+
+Unknown 19:26
+stuff, just little workarounds that add
+
+Unknown 19:29
+up that.
+
+Speaker 7 19:30
+Oh, here's a good one. So work right now. So like our workflow that
+starts so the process to submit paperwork that goes from work to
+exchange has a like in between place called WsL, the wealth service
+layer. So right now, like anything that's initiated by the client, by
+the BDA or the bank, find admin, so client goes in and adds a user or
+edits a user's capability. Right now, it's not going all the way
+through to exchange to actually make the change. Right now, it's
+getting stuck in a pending status where we can't make any adjustments.
+So any Back Office user is
+
+Unknown 20:12
+involved in this process
+
+Speaker 7 20:14
+isn't able to take any action, and so we're having to go to the team
+to ask them, Hey, can you go ahead and unlock these or get them out of
+that pending status so we can look at the form, see what was
+requested, and update this form for it. And so it's a long process,
+and so there's anywhere from 30 to 90 different changes that we're
+updating,
+
+Unknown 20:39
+like every four days,
+
+Speaker 2 20:41
+and what team gets involved to help solve this and just these
+barriers, yeah, I
+
+Unknown 20:46
+mean, it's, we're
+Speaker 4 20:49
+exchange Tier support. Brief, okay, so we're supposed to be the last
+tier.
+
+Unknown 20:57
+I have questions
+
+Unknown 20:58
+around how we fix those
+
+Speaker 4 21:00
+and what potential downstream impacts that causes, too, because we do
+have a way to fix them, what we
+
+Unknown 21:05
+think, but I don't know that
+
+Speaker 2 21:10
+it really fixes. It's just a work. Yeah, yeah. That's why I was
+wanting to know more about workarounds, because they will only last
+you so long, because until they stop working
+
+Speaker 3 21:21
+from the interface perspective, let's talk about front to back. RM has
+one application, or RM works on these different applications. For
+example, either they directly interact with bottom bottom line, and
+maybe for wealth, wealth, RM interacts with two or three different
+applications. Or do you have some sort of a consolidated layer for RL,
+
+Unknown 21:46
+so Adam would be the actual client, so
+
+Speaker 7 21:50
+client submits documentation, and then that documentation goes to the
+admin or the frontline, whoever their relationship representative is,
+and then from there, they have the choice to either submit the work
+form or send it to my team, which is, well, the change support, and
+they'll actually go in and the work form for them or on their behalf.
+But that's how the process gets started. Is we're collecting actual
+paperwork and then just initiating accurate data entry.
+
+Unknown 22:20
+Is that all collected in Salesforce? Or do you have another
+
+Speaker 7 22:24
+so they're collecting it mainly through DocuSign, and then once it
+goes to DocuSign, like they're just uploading it, we use Microsoft
+forms. They upload it there, and that's how we're
+Speaker 3 22:36
+tracking it, but simple servicing operations and well, like you know,
+if client want to understand the portfolio, or have some question
+around his their portfolio, then where would RM fetch all those
+details?
+
+Speaker 7 22:50
+They would go to their relationship manager, so that frontline
+support,
+
+Speaker 3 22:55
+or my question is now relationship manager, look into those details,
+like which application?
+
+Speaker 7 23:02
+Oh, they would go to UNC to see any details about their accounts, any
+details, and they can access it themselves, right using exchange. We
+also have well exchange support there as Client Servicing, so they can
+call into an 833, number, or they can email us. So we do have those
+services available where they can call in, but if it's detailed, like
+specific to their account, why was it set up this way? They have to go
+to the relationship manager. But if it's just, where's this
+transaction, or how do I navigate the system, we're able to help
+
+Speaker 2 23:36
+them. So there's an interface for an RM from pokf side for them to see
+what the customer is doing on unity, or to help them any issue that
+they see on
+
+Speaker 7 23:48
+Unity, we cannot emulate them in unity, okay? So we usually use teams
+and have to share their screens. Okay, that's been the best way we can
+emulate an exchange. So for the most part, we can get where we need to
+like, it's as far as like. Maybe it's user error with putting the
+wrong filter in for statements, something like that, we can resolve
+through emulation. But if it's actually in Unity or about the details,
+we will have to have them share their screen.
+
+Speaker 3 24:18
+And how do we do that in Treasury, similar kind of situation?
+
+Speaker 6 24:24
+No, I mean the exchange and DB IQ underlying services have pretty deep
+emulation capability, like you have. You only type reporting for
+service other groups. Now, as you go into certain apps, like if you go
+into a bill pay SSO, or something like that, you can't emulate that
+particular app, and there's screens within that app, so you may have
+to, you may have to use a WebEx type scenario to view something unique
+in one of the underlying SSO gaps for Exchange and the primary online
+banking services delivered by bottom line, those are all
+Unknown 25:14
+you can emulate virtually all the screens or you have view
+
+Speaker 6 25:18
+only availability to internal groups that need you only access to
+certain things.
+
+Unknown 25:26
+Okay, yeah, so I know from from back office, yeah,
+
+Unknown 25:30
+we have,
+
+Speaker 7 25:32
+and they've gotten a lot better. But it used to be you would have, you
+wouldn't save the accounts. You'd have to click over here and then
+come back and re add it and save it, but the one that that they've got
+going on right now that they just sent me was with FX wires.
+
+Unknown 25:48
+They have to actually go into dviq to update it, because it won't save
+
+Speaker 3 25:56
+it in exchange. So it's like the back office has to access multiple
+systems. Okay? That's a
+
+Unknown 26:02
+challenge. I
+
+Speaker 7 26:04
+know it has gotten better. Initially, there was a ton and it
+
+Unknown 26:08
+was okay, hard to
+
+Speaker 3 26:10
+keep up with it, but still, there is no front to back integrated
+platform like so, from RM to the back office like these, little
+juggling between multiple applications to do certain operations,
+right?
+
+Speaker 2 26:25
+So overall maturity, how would you rate it for employee experience,
+for Treasury and for wealth?
+
+Unknown 26:32
+Just high level. I
+
+Speaker 6 26:33
+mean, I think that's Michelle and Perry's group, because they're the
+heaviest internal users of
+
+Unknown 26:43
+at least from a treasury perspective,
+
+Unknown 26:46
+exchange
+
+Unknown 26:53
+and ddiq services. Michelle,
+
+Speaker 4 26:57
+I didn't hear the question comment or rob commented on repeat that
+please right here, whoever
+
+Speaker 6 27:06
+the one talking they're asking for feedback about the employee
+experience and use
+
+Unknown 27:14
+of the exchange portal and underlying services like vdiq on the
+
+Speaker 6 27:22
+portal, do teams have issues in using, from an internal perspective,
+those applications, using emulation, using view only services within
+The platform?
+
+Speaker 4 27:40
+Yeah, I think overall, I think the utilization and the employee
+experience is a good one. It's just the amount of clicks that we have
+to go to, you know, to get from screen to screen, and then any
+challenges that we may run into with what a customer is seeing versus
+what we can see or able to see. So, I mean, there's always opportunity
+for a better experience from an employee perspective and an efficiency
+perspective, right? We can't go to just one place to see everything,
+you know. We've got to go into the different entitlements by the user,
+the admin, you know, payments, all of the different features and
+functionality within the platform. We've got to go to different areas
+to support the client or even to do research. There's things we have
+access to. There's things we are very dependent on during Alan scene
+for you know, and there's a reason for that from a dual control
+perspective, you know, there's things that I'd like us to self service
+without having to engage Terry's team right to keep it closer to the
+client, but we've got to balance that risk and reward there. So I
+think there's opportunities in general, across the board.
+
+Speaker 2 28:52
+Are there extensive trainings required from items, from employees, to
+be able to figure these problems out across these multiple
+applications is that,
+Are there extensive trainings required from items, from employees, to
+be able to figure these problems out across these multiple
+applications is that,
+
+Speaker 4 29:06
+you know, when we when we have a situation come up, whether it's an
+customer experience or an employee experience, we open up a an
+incident ticket, it will and then from there, it goes to the
+appropriate group, and I will say having Amy and her role, says
+tickets. And Amy care gave me on this she will. She's already helped
+us navigate one specific situation by put providing us with tools and
+learning and training on how we can self service items that we were we
+didn't believe we could, and it was truly a matter of understanding
+and a matter of a lack of training in the tools. So I think, as we
+continue down that path, when we see that there's a problem and we
+follow our normal escalation protocol, you know, with Amy and her
+team, anything that they can identify to help us, I'm all for that.
+You know, give us the training, give us the resources, give us the
+tools, give us the access so that we can self source it without having
+to take that extra step and be very dependent on somebody else to do
+that
+
+Speaker 2 30:10
+for us. Yeah, and just for context, Amy's team would be, she's talking
+about Kelsey, yeah.
+
+Unknown 30:20
+All right, okay, yeah, exchange
+
+Speaker 2 30:23
+tier three. Okay, okay, thank you.
+
+Speaker 3 30:27
+Yeah, I think we have a good context on employee. Now, moving to the
+next one UI we discussed in the morning, right? So that was one of the
+strategic objective, to have the UI consistency. So I would skip that
+one until, unless. If there is any additional thing you want to
+mention
+
+Speaker 7 30:46
+for an employee experience, I would say it's like a medium like, yeah,
+for us on the wealth side, it's great as far as, like, simplicity,
+because there's not a lot right now, I'm just concerned about, once we
+start adding more products, yeah, and it's going to get a little
+cluttered, yeah. And, I mean, that would be with anything, and there's
+always room for improvement. And this, we need to focus on our hybrid
+clients too, though, because I think,
+
+Unknown 31:13
+though, I don't know that we have
+
+Speaker 1 31:16
+enough to how a treasury setup and the wealth set up affect each other
+
+Unknown 31:21
+and all the different use cases that we
+
+Unknown 31:23
+even understand, the population we don't like.
+
+Speaker 1 31:27
+What is truly on, what is truly a hybrid?
+
+Unknown 31:30
+How many customers do we have right
+
+Unknown 31:33
+what makes sense to bring over? What apps do
+
+Unknown 31:35
+they like use? Do we have the count,
+
+Speaker 7 31:39
+not the percentage? I finally pulled a dashboard. And so he does have
+access to that and to where he had it, but you can reach out to Riley
+young and ask him for that. I want to say it's her online access, or
+digital Wealth Access, something like that dashboard, but it gives a
+breakdown. How many are treasury? How many are well on exchange, and
+how many are both? It does that too.
+
+Speaker 1 32:05
+It will also be like some level of compare, not on the one side, but
+on the Treasury side, right or specific. But yeah, it
+
+Unknown 32:13
+would be interesting to know the crossover. I can look forward I might
+
+Speaker 3 32:22
+have might Okay moving on UI. I will skip because we already discussed
+during strategy, alignment, I think administration, complexity, sewage
+chair, that is also we have discussed. So I will skip that. I want to
+discuss the security and fraud.
+
+Unknown 32:40
+So what is the situation of fraud here?
+
+Speaker 2 32:45
+Bigger umbrella, so we can go into specific umbrella,
+
+Speaker 3 32:47
+and I'm not just talking about the identity and the login, but have
+there been fraud incidents?
+Unknown 32:56
+So I think what we've seen the most impactful fraud
+
+Speaker 6 33:01
+more recently, is business email compromise and some spoofing that
+we've seen for where our commercial clients get calls from a
+fraudster, bad actor, where they've spoofed our phone number for Bank
+of Oklahoma. So what appears on our clients caller IDs, or whatever
+appears to be the fact that they're receiving a call from the bank and
+the bad actor attempts to try to convince a client
+
+Unknown 33:39
+credentials online that allow them to
+
+Speaker 6 33:44
+perform some sort of account takeover. And so today, the primary tools
+are Okta for access and authentication and step up. But
+organizationally, our information security. Data Security team also
+takes logging from the Okta application and audit logs from the online
+system to be able to produce indicators where we have a bad actor who
+is either attempting to or has compromised an account, and so those
+are the two probably most impactful types of fraud that we're seeing.
+I would I would say we're probably while while, I think everybody
+feels like we have plenty of that to work from
+
+Unknown 34:43
+a from a competitor perspective?
+
+Speaker 6 34:46
+Yeah, I don't think we're experiencing to the extent level some other
+financial institutions experience account takeover fraud,
+
+Unknown 34:55
+but we still have one for sure. Yeah,
+
+Speaker 3 34:57
+but then do you think that you have all the right mechanisms in place
+to prevent these kind of fraud, like, what is your fraud in general?
+Like Okta, I understand, but so from a who identifies these patterns
+for transactional monitoring on the back end and enterprise level
+
+Speaker 6 35:18
+for payments, most of what we look at that interrogate session level
+type activity is more homegrown that we've developed internal tools to
+be able to kind of look at anomalous section session type activity on
+a platform.
+
+Unknown 35:37
+But there's, I
+Speaker 6 35:39
+don't think there's anything that you would ask, are you doing
+everything you can? Are there not opportunities in this space? Because
+the bad actors are pretty creative in coming up with different ways to
+attempt to gain access to online accounts, whether social
+
+Unknown 35:59
+engineering or it
+
+Speaker 1 36:06
+has to be, and the UV keys have come up several times right as a fish
+resistant, but it's a hard token, right, that has to be
+
+Unknown 36:15
+used. So just staying
+
+Speaker 1 36:18
+secure in a way that customers will also buy into right? So, you know,
+the grumbling about having to go back to some type of discipline
+token, it's
+
+Unknown 36:31
+tough to think through how we would even do that.
+
+Unknown 36:35
+So it's not to say we couldn't do
+
+Speaker 6 36:39
+it like we still, we still support physical tokens for multi factor.
+We have multiple methods of delivering out of band from a multi factor
+perspective, the YubiKey that was mentioned just a minute ago is is
+another solution that could be made available. But I think we kind of
+look at those as, like, we spent a long time supporting physical
+tokens. And, you know, the fulfillment and distribution and reissuance
+of physical tokens is a, you know, it's a
+
+Unknown 37:17
+laborious effort. And so, you
+
+Speaker 6 37:21
+know, we look at those options, you know, and really question whether
+or not we want to go down that road again. And to be fair, some of our
+commercial customers aren't open to it, like you tell a commercial
+customer, you know, you need to plug this into your local device. Some
+of our commercial customers are going to say that's outside of our
+security policy. We need another mechanism for you guys to
+
+Speaker 3 37:47
+provide online security. No, I understand. I mean, that's like going
+five years back, right? So that's not really an option. But speaking
+more from the standpoint of, you know, these fraud engines which are
+able to track down these patterns create, basically the risk scores,
+different risk profile, and then the identity should be able to digest
+those risk profiles. So to give you an example, right if, if the risk
+profile is, let's say, between high to medium, and if your identity
+provide online security. No, I understand. I mean, that's like going
+five years back, right? So that's not really an option. But speaking
+more from the standpoint of, you know, these fraud engines which are
+able to track down these patterns create, basically the risk scores,
+different risk profile, and then the identity should be able to digest
+those risk profiles. So to give you an example, right if, if the risk
+profile is, let's say, between high to medium, and if your identity
+system Okta says that OK, this is high to medium on certain
+parameters, and it completely shuts down the customer. That is also
+not correct, because then you are trading off between the customer
+experience, right? So maybe that might be risky for a certain kind of
+operation. So is so your fraud engines should be in sync with your
+identity solution, and then there should be a proper slicing and
+dicing of those risk scores, and accordingly, your identity should
+restrict certain excesses.
+
+Speaker 6 38:47
+In order to do that, though, on the near real time basis, kind of the
+user activity has to be supplied to that fraud engine, not only from
+your platform, but our online banking service providers platform, or
+any other ancillary SSO application, and that's difficult to do, to
+get all of those sources and to correlate all that information in near
+real time and
+
+Unknown 39:15
+discord, Yeah.
+
+Unknown 39:19
+From that perspective,
+
+Speaker 3 39:21
+yeah, but it's still like, how would you rate if you look at your
+current security and fraud situation? Like, of course, you can't claim
+yourself highly secure right at the same time it is the situation with
+all the other banks as well.
+
+Speaker 6 39:36
+I think, I think it's medium to medium to strong. I think there's
+definitely opportunities at a session monitoring level where, where we
+could benefit from more tools than what we have. But I think, you
+know, the security is very layered, and I think we've got a lot of
+good layers session level monitoring, you know, multi factor where we
+require step up and multi factor authentication within workflows where
+we require dual user, you know, approval workflows or payment
+services. And so I guess I
+
+Speaker 3 40:22
+would from somewhere, can we get the data, like, how many incidents do
+you have yearly or monthly fraud domain? What I can then benchmark it
+against our other customers, and can provide you a view that you know,
+where do you stand as against other customers in the
+Speaker 6 40:39
+States? I mean, I mean, I'd asked Brian, and I think he just put
+something in the chat like he's probably more him and Jeremy are both
+more involved in the day to day what they're seeing.
+
+Unknown 40:56
+I by no means think we have a
+
+Speaker 6 40:59
+low security application. And I think even if you think you have a
+high security application, there's always improvements you can make
+from a security perspective. But I'd ask Brian or Jeremy if they have
+
+Speaker 9 41:15
+another people being tricked customers. Although we do post religion,
+there are, I think, higher than normal, attempts to compromise them,
+places where the technology has failed.
+
+Speaker 8 41:42
+Yeah, I agree. I agree, if there was one area for for improvement, I
+would say, and this is probably true everywhere it would be to reduce
+the amount of false positives like that is that's the that's where,
+where you spend a lot of time and energy that doesn't end up paying
+off. So honing in on our monitoring and reducing false positives,
+which is no simple task, is probably where I would argue we would want
+to focus our energy on.
+
+Speaker 2 42:14
+Are there any initiatives underway or planned to solve for some of
+these challenges? I think
+
+Speaker 6 42:22
+I broadly, when you talk about initiatives focused on reducing fraud,
+absolutely, you know, I think there's lots of different areas,
+organizationally, we're looking at where we can reduce fraud that
+isn't explicitly like the online channel. What can we do within the
+online app? What can we do technology wise, from the online app, I
+mean, at an enterprise perspective, we are working and looking at
+deploying a new enterprise fraud service for that would do BSA ML type
+transactional monitoring, as well as like card, commercial card,
+consumer
+
+Unknown 43:06
+debit card,
+
+Unknown 43:09
+and so that is a really large
+
+Unknown 43:12
+focus and initiative within
+
+Speaker 6 43:15
+the bank to deliver a new enterprise solution there. Because today, I
+mean today, we use exceeds, exceeds for
+
+Unknown 43:26
+can be used
+
+Speaker 3 43:29
+in scenes for analytics for years and years. Let's move on. Yeah, from
+wealth perspective, like, Do you have a different take on fraud? We
+haven't really had as much
+
+Speaker 7 43:42
+as impacted. I don't know why by this yet, and we're not doing so.
+We're not making money. We're not our
+
+Speaker 3 43:57
+application yet, okay, I think data and analytics also we have
+discussed in the morning. So I will skip that for now, performance and
+
+Speaker 2 44:05
+data and analytics. I just wanted to confirm overall, from a treasury
+perspective and from a wealth perspective, if we were to
+
+Unknown 44:13
+classify some sort of maturity level there
+
+Speaker 3 44:17
+in the morning, at idle, we talked about the that there needs to be
+the consolidation of data right now because of multiple applications,
+that there are fragmented data sources. There is no single source of
+truth.
+
+Unknown 44:28
+I mean, we're getting ready to
+
+Unknown 44:32
+rewrite our VW will not rewrite it again.
+
+Speaker 7 44:40
+Sorry. No. Our team specifically, where we have to make this treatment
+based on data we have no access to anything I know here is working on
+getting us
+
+Unknown 45:02
+awful, awful. Is awful. Maybe I shouldn't
+
+Unknown 45:05
+have asked that question,
+
+Speaker 7 45:08
+like, What are you talking about when you say an access when I like
+
+Speaker 1 45:13
+to understand which of our which applications are used the most, which
+ones are locked in, the most, which of our companies are utilizing
+exchange more than others. Should we focus on
+
+Unknown 45:31
+them? How are people interacting
+
+Speaker 7 45:35
+with it? Yeah, I guess I thought last box. Oh, that's right.
+
+Unknown 45:42
+So
+
+Speaker 9 45:42
+depends on what
+
+Unknown 45:50
+types of questions direct access to
+
+Unknown 45:59
+use code so organizationally
+
+Speaker 6 46:03
+built quite a bit from the data perspective and data visualization
+tools like Power BI to look at data,
+
+Unknown 46:13
+but I think you'll find
+
+Speaker 6 46:16
+from group to group, and even From have to have varying degrees of
+access to the availability to the data. I think when we look at the
+data that we can access from the online perspective, we have some
+obvious limitations, but we also have access to billing data that tell
+us around products and services that we built, or that clients are
+currently set up for. So we have some but to say that that we're in a
+good position, Data Wise, I would say we're not very
+
+Speaker 3 46:59
+mature. I really with the data show you should be able to create the
+whole customer journey, connecting different apps, different touch
+points. You might have some here and there, but you are not able to
+connect and reconcile all of those.
+Speaker 10 47:12
+Okay, here, I'm sorry. What about Audi?
+
+Unknown 47:15
+I think that's just that's a real point.
+
+Speaker 6 47:24
+I think because we have, we have audit data that comes from our access
+and authentication provider, Okta, and we have audit data that comes
+from back base, then we have audit data that comes from our underlying
+applications like eviQ or some other SSO application. So if you have a
+if you have a fraud event, that you need to be able to kind of look at
+and trace, you know, all of the activity that occurred and who did
+what, when in the application, you're correlating audit data from
+multiple pods that make it extremely difficult
+
+Speaker 10 48:03
+and extremely tough. Many times, there is no connection between
+
+Speaker 1 48:07
+finding a consistent data point to be able to do that
+
+Unknown 48:13
+same issues with migrations, right, finding a way
+
+Unknown 48:19
+to have a one field right?
+
+Speaker 3 48:26
+So move to the next one, that is performance and stability. And we
+briefly talked about the latency, but Manu, I'm not sure if you have
+any questions around performance and stability.
+
+Speaker 6 48:38
+Cut back on the audit. But how do you see banks solving that problem,
+because we can't be the only bank that is a user of a separate access
+authentication provider, a separate plural provider, a separate app or
+SSO that's involved in the like, how are, how are other banks kind of
+solving the audit challenge.
+
+Speaker 10 49:01
+So when it comes to the SSO, there's a different challenge, because
+you're not in many ways, you're not
+
+Unknown 49:09
+you're just handing over from one
+
+Unknown 49:13
+system to the other. So you will need to
+Unknown 49:19
+reestablish you in many ways, this
+
+Unknown 49:24
+goes hand in hand.
+
+Unknown 49:25
+Technically, we covered
+
+Speaker 10 49:26
+one security as well. When you hand over from one system to the other,
+
+Unknown 49:34
+one component to the other,
+
+Speaker 10 49:38
+so it gets accounted for. So whatever the internal token, or whichever
+way the so there's the external token that is used for the customer
+authentication, it's tied to an internal token. So an internal token
+gets passed around from one system to the other, so that internal
+token is then used to establish that connectivity from one system to
+the other.
+
+Speaker 6 50:04
+So is it incumbent upon us to work with each application to figure out
+how they track that token
+
+Unknown 50:14
+within
+
+Speaker 10 50:15
+their own audit? So the we talk about internal token, this is not just
+about
+
+Unknown 50:21
+a piece of information. This also have
+
+Speaker 10 50:25
+information related to whether it's a post grade or fine print,
+anything, so mostly the post grade entitlements, so it gets instead of
+going back and looking into the system affecting the performance. So
+these are all tied around, like when it comes to audit, when it comes
+to security, it comes to performance, kind of performance kind of
+thing. Every time going back to the entitlement center and check, what
+does the entitlement for this particular user to access a particular
+functionality, these internal tokens will have these post,
+independent, intimate so that, like when it gets passed around, it is
+automatically there so it does not so in that way, it increases the
+performance capability as well and the auditability of who did what.
+So you follow the token around from one system to the other, then you
+can establish a timeline on what that particular user has access
+does the entitlement for this particular user to access a particular
+functionality, these internal tokens will have these post,
+independent, intimate so that, like when it gets passed around, it is
+automatically there so it does not so in that way, it increases the
+performance capability as well and the auditability of who did what.
+So you follow the token around from one system to the other, then you
+can establish a timeline on what that particular user has access
+
+Speaker 6 51:25
+to have these banks then natively developed a portal level audit that
+aggregates it From the authentication provider back base to
+
+Speaker 10 51:41
+in many cases, what happens is, like some outside systems, the third
+party systems, they will have their own internal token. So what
+happens is that, like when you hand over from one system to the other,
+there will be a way to establish that connection between whatever that
+they are using to the one that is equal
+
+Unknown 52:00
+is.
+
+Speaker 10 52:03
+So the idea is like, how we can focus on like in establishing that
+connectivity from one system to the other.
+
+Unknown 52:13
+I think we can do it. It's just very manual.
+
+Unknown 52:18
+You will do it on Excel.
+
+Speaker 10 52:22
+But really, but really, a lot of the times when you have the logs and
+you use utilities like Splunk and things like that, you will be able
+to establish that connectivity from one system to the other. There is
+an established open that you can connectivity. Order that you can
+connect to. Well,
+
+Unknown 52:54
+even on it, for us, we've had to build work
+
+Speaker 3 52:58
+around we shall we move on? I have a lot of other topics. We have just
+one hour left, right, and anyways, only you will be discussing it in
+detail tomorrow, right? Okay, so moving on to performance and
+disability. We talked about latency, yeah, but also about like, Are
+there any down times in on Exchange, or any of the service that
+customer is accessing? Or any other performance or load issues,
+
+Speaker 6 53:29
+yeah. So maybe specifically, I know we talked about maintenance
+banners earlier, like that being a primary use case. How often would
+you say that that's something you go in and enable? Feel like we put
+up a maintenance banner related to an upgrade or there's some planned
+outage once, once a product committee, once every two months,
+Unknown 53:47
+depending on the time of year, as a quarter in
+
+Unknown 53:51
+we're also cloud based, with three, three
+
+Speaker 6 53:56
+data centers, so From that standpoint, we're pretty redundant, but
+there are unplanned outages that have occurred once this year that
+we've learned from that last comment, support load under performance
+and stability is also there are we'll have upticks and specific
+issues, like we talked about the security, registration email, so it
+kind of will ebb and flow, kind of what the flavor of it is,
+
+Unknown 54:31
+until we fix it. This is near and dear to
+
+Unknown 54:33
+my heart. Are you using the computer right, like
+
+Speaker 10 54:37
+pods and things like that? So you will be. Do you have the when it
+comes to the marketing? Both those apartments at
+
+Speaker 6 54:45
+70, we have New Relic that will monitor kind of more high level and
+cons in here. Do you mind backing up both we have New Relic for
+monitoring kind of the How are the containers doing? How is their
+outages or uptick and failed calls? And then we'll also have other
+things in place to kind of monitor. We also have ServiceNow tickets,
+so that's usually what I see. So if there's a trend over a couple of
+days, I'll be able to kind of put it together, like, okay, seeing this
+a lot, and I know there's probably some things I'm forgetting, that we
+use modern platform, but does
+
+Speaker 10 55:28
+it automatically scale up so we don't have everything set up for auto
+scaling many
+
+Speaker 9 55:32
+things to the issue that we found is that our failure point isn't
+Usually CPU or memory.
+
+Unknown 55:37
+It's like something, some
+
+Speaker 9 55:42
+kind of it's like something, some kind of transactional constraint,
+the pod will stop responding before that. But in any case where that's
+the case, the pod will currently scale up to basically handle heat
+capacity. I don't think we have a lot of problems with what we should
+consider conventional uptime. Generally speaking, it's that the
+platform is up and running, but a part of it breaks for some reason,
+or downstream of it has stopped working, and then the first symptom of
+it is that something in exchange breaks. But we use synthetic
+kind of it's like something, some kind of transactional constraint,
+the pod will stop responding before that. But in any case where that's
+the case, the pod will currently scale up to basically handle heat
+capacity. I don't think we have a lot of problems with what we should
+consider conventional uptime. Generally speaking, it's that the
+platform is up and running, but a part of it breaks for some reason,
+or downstream of it has stopped working, and then the first symptom of
+it is that something in exchange breaks. But we use synthetic
+monitoring to try to log into the platform every couple of minutes
+from a few different regions of the country, and you have application
+performance
+
+Speaker 10 56:28
+monitoring running all thoughts when you run into those issues. Does
+it automatically bring up a page that say, perfect this particular
+
+Unknown 56:35
+function? Or is it like it doesn't get
+
+Speaker 9 56:37
+sophisticated? I mean, it will alert people on our operation see if
+there's a problem, and they can go start triaging it, but it doesn't
+do anything
+
+Speaker 10 56:47
+from the customer notifications, so that that also affects the
+customer experience.
+
+Speaker 5 56:51
+Yes, because more than nine times out of 10 the clients coming to us
+and saying, I can't do X, Y and Z, and then we're like, oh, we have a
+problem.
+
+Speaker 9 57:03
+The issue is that, because the things people are doing time sensitive,
+that basically, if something breaks and it's like sending a wire,
+like, we'll get the alert, like, when people are calling when at the
+same time. So it's like, if people have to respond to try to get from
+that phone call, it's not really humanly possible, because they happen
+to
+
+Speaker 8 57:28
+all, it's not really accessibility or the feedback may back me up, but
+feedback that we get pretty often is one of the pieces of feedback
+that we get is that something happens very transitory in a client's
+experience they're doing, it breaks, it doesn't work, and it only
+happens for A short period of time, and then it comes back. And that
+feeds that that client experience that I was talking about earlier,
+where clients just sort of view it as unpredictable and kind of janky,
+because it works for a while, but then it doesn't work, and they don't
+even call. To Brooke's point, we have trained our clients not even to
+call when something breaks the first or maybe even the second time,
+because we train them to go back in and try it a third time, and maybe
+it'll work. I'd really love to get to a place where we could
+understand those really short outages where we either pivot and fix
+something or don't and it magically comes back up. But that feeds a
+lot into our client experience. I think.
+happens for A short period of time, and then it comes back. And that
+feeds that that client experience that I was talking about earlier,
+where clients just sort of view it as unpredictable and kind of janky,
+because it works for a while, but then it doesn't work, and they don't
+even call. To Brooke's point, we have trained our clients not even to
+call when something breaks the first or maybe even the second time,
+because we train them to go back in and try it a third time, and maybe
+it'll work. I'd really love to get to a place where we could
+understand those really short outages where we either pivot and fix
+something or don't and it magically comes back up. But that feeds a
+lot into our client experience. I think.
+
+Unknown 58:47
+Thank you for that.
+
+Unknown 58:49
+Client knows
+
+Speaker 5 58:50
+before they call, they better clear their cash and cookies, restart
+their browser, they need to shut everything down, they need to do all
+these things, because if they call us, we're gonna ask them to do all
+of those things.
+
+Unknown 59:02
+Yeah.
+
+Speaker 3 59:05
+That reminds me of my my GP in Netherlands, whenever I call them for
+my fever. Interesting, the same,
+
+Unknown 59:13
+yeah, and
+
+Speaker 8 59:17
+it's a good point, Brooke, and it's painful that they are clients
+doing that just because
+
+Speaker 3 59:27
+let's move to the next one. That is the accessibility to bank. And
+what we mean by that is, if at any point of time, customer has to
+reach out to, let's say, RM, or any specialized team, can they do it
+on the digital platform, or do they always have to pick up the phone?
+They call their email, they call our email, but on the exchange, is
+there any sort of chat? No chat, no live chat, no secure messaging
+within
+
+Unknown 59:56
+is that by design
+
+Speaker 6 59:59
+we've talked about and looked at chat for off and on. For a
+
+Unknown 1:00:07
+while, we used to offer that anywhere.
+Speaker 10 1:00:15
+Okay, so what if they need to share like sensitive information? Kind
+of thing is that email or what other thinking
+
+Speaker 5 1:00:24
+they're going to call their treasury nine times out of 10. They're
+going to call their treasury client service professional, because
+we're their day to day support. They know us. They know that that's
+their path of escalation, and so they're going to call us. And from
+there, I mean, we have a whole triage and system outage situation,
+like, there's a bunch of questions and things we have to ask to
+determine, is this really a system outage? Is this just a product
+disability? Like, kind of, what's going on, and then from there,
+depending on what's going on, we've got chat escalations that we can
+go into, teams, channels and things like that. Like, to Barrett point,
+we'll submit a snow ticket, just kind of, depending what's going on,
+we will screen share with the client. So part of our triage procedures
+is that you get in a teams call with your client, if you get a video
+recording of the problem that your client is having, because it's it's
+not beneficial for me to, like, go do this screen share with this
+client, see all these things, and then try to have a third party
+decipher that, to the product team, to Barrett's team, for them to
+understand, oh, this is exactly where they Oh, that's what they did.
+They didn't click that button right there. Now I see what's happening,
+or this browser is out of whack. They shouldn't even be in that
+browser. They need to go in over here. That's the problem they're
+having. So it'll be a teams recording, and then from there, the tcsp
+will engage product support and or, depending if it's not product
+support, because again, we have different products that go different
+triage ways. We may do a snow ticket to that department, just
+
+Unknown 1:01:55
+production support, just in general. How do our
+
+Unknown 1:02:00
+clients give us data,
+
+Speaker 9 1:02:02
+and I think for that purpose, we use box.com today we're moving to
+OneDrive file sharing, so we have secure means for clients to give us
+files for a variety of
+
+Speaker 5 1:02:18
+purposes. We've just chosen not to enable that point, email
+encryption. We use that as well, and we do have box
+
+Speaker 3 1:02:29
+but last one is visibility and tracking. I think so. From the
+customer's view, they might be doing ACH wires. Are they able to view
+and track the status of their operations. It might be from the
+customer's view, if they have initiated a payment. I'm just giving an
+example, can they view and track the status of the operation that they
+have requested from the bank? Yeah, maybe buyer, and that is through
+the DB IQ, right?
+but last one is visibility and tracking. I think so. From the
+customer's view, they might be doing ACH wires. Are they able to view
+and track the status of their operations. It might be from the
+customer's view, if they have initiated a payment. I'm just giving an
+example, can they view and track the status of the operation that they
+have requested from the bank? Yeah, maybe buyer, and that is through
+the DB IQ, right?
+
+Unknown 1:03:05
+But they can see it on the exchange, yes.
+
+Unknown 1:03:08
+Can they do the same thing with problems?
+
+Unknown 1:03:16
+No. I mean, they
+
+Speaker 10 1:03:19
+have launched a dispute claim, but then the status of the dispute is,
+there
+
+Speaker 5 1:03:24
+are they can't see any of that. Like, if they were to, like, say
+something was fraudulent, we had to dispute that and do it that day.
+That would be us keeping in contact with the client, letting them know
+where we're at in
+
+Unknown 1:03:35
+the process. Okay,
+
+Speaker 3 1:03:38
+also for the existing customer, if they're requesting for a new
+product, nowhere they can see on exchange that what is the status we
+are there in the process. Okay, yeah, I think we are good with this
+one. So we move to the next one, which is very specific to the product
+treasury, product portfolio. And this is basically what we developed
+looking at your website, right? So if you see these are different
+product lines, and you know, some of them might not be really product
+line, but more like services, but I have captured it over here. And
+the reason we have these things, these products and services over
+here, is because I want to move them one by one, and have a good
+feedback on you know, what are the challenges from the customer
+perspective or from the employee perspective, right? So we have
+accounted reporting that is mostly like account, viewing of the
+account, looking at the balances, looking at the transactions. Then we
+have these payment solutions that is that is ACH business payment,
+consolidated pay was wires, cards, then receivables, RDC, lock box,
+cash for liquidity, CPS suite, and then we have fraud and risk, and
+then the administration part, the one that you see highlighted in
+blue, that I have prioritized for our focus, because that is where I
+think today that you know that is a that will have deep involvement of
+exchange. But before going into these one by one, anything you feel
+that is missing on this screen or we should not discuss from the
+exchange perspective,
+cash for liquidity, CPS suite, and then we have fraud and risk, and
+then the administration part, the one that you see highlighted in
+blue, that I have prioritized for our focus, because that is where I
+think today that you know that is a that will have deep involvement of
+exchange. But before going into these one by one, anything you feel
+that is missing on this screen or we should not discuss from the
+exchange perspective,
+
+Unknown 1:05:20
+DB, IQ, I not. I don't. I
+
+Speaker 6 1:05:22
+think that there's probably some things that we would classify as
+products that aren't on this list, so I'd be happy to share those with
+
+Speaker 3 1:05:36
+you separately. So let's go with this, and then maybe, you know, if we
+have more time then we will discuss those products. So the format we
+want to run is if you go to the next slide. So this is a sample. I've
+just repopulated it. All of this is made up. But for example, for
+payments, we have this different kind of payments. So I will go
+through each of these row items we have prefilled based on the
+documentation the applications that we believe are supporting
+following those capabilities. But then you see three columns that is
+customer relationship manager or the front office, and then the middle
+and the back office. So just want to get a quick feedback from the
+customer standpoint, if there are any challenges or like they can do
+the operation smoothly, straight through processing from the RM
+standpoint, or from the middle and back office standpoint. If any of
+these employee operations are not applicable, that is also fine. The
+next one is the revenue, which is we want to understand whether any of
+these services create is a sort of a revenue stream for you, because
+that is an input for our business case, operations cost. You want to
+classify it into medium low, high, like, what is the opportunity to
+optimize the manual processing? And I will discuss the
+standardization. And then, what is your priority to modernize these
+different journeys. So this is the format, and we want to do it live
+like any any question. No, we're good. Then let's start. Let's start
+with the accounts and reporting. So the first one is account view.
+
+Speaker 2 1:07:19
+Just before that, can everyone read it? Do you want me to make it a
+little bigger?
+
+Unknown 1:07:23
+Yes. Sorry. I just saw it on the screen. I realized. So,
+
+Unknown 1:07:35
+what are the three you have customer what's what
+
+Speaker 3 1:07:39
+are we calling that is the customer relationship manager of the front
+office and the middle and the back office. Yep, sorry,
+
+Unknown 1:07:50
+I'll just take one second. Let's get
+Unknown 1:07:54
+it's okay. You delete these you
+
+Unknown 1:07:57
+can take. Let's do
+
+Speaker 3 1:07:59
+the first one is the account view, right? So from the customer
+perspective, how easy and convenient it is for customer to look at
+this accounts, or the portfolio of accounts, and
+
+Speaker 6 1:08:15
+I'd say low to medium, I don't think it has anything necessarily to do
+with the
+
+Unknown 1:08:24
+portal or things that we can
+
+Speaker 6 1:08:27
+improve from a portal perspective, it has more to do with limitations
+that we have in getting data to our dviq application, The vast
+majority of the information reporting account view. Transactional
+reporting is done in dviq services. Some of it is delivered on the
+dashboard, but as you drill into services and accounts, most of that
+is delivered through dpiq. The system has kind of a hybrid approach
+for how
+
+Unknown 1:09:05
+transactions and balances and
+
+Speaker 6 1:09:09
+information reporting is delivered. It gets real time data from our
+core and then it's also supplied data through files that are loaded to
+the online banking services. And so we have kind of disparate views of
+different types of data in different services. And so having more of a
+consolidated view of all the information would be preferred. We have
+an initiative going right now to do that, but because we get some of
+our, you know, our our detail around our payments from downstream
+systems or not, it's not on our core. It's difficult to consolidate
+all that information and show it in a simplified
+
+Speaker 3 1:09:57
+Yeah. So especially like because customer can only access exchange
+they cannot access, there is no DB IQ interface for them, right?
+
+Speaker 6 1:10:07
+Well, the services from DBI Q are incorporated
+
+Speaker 3 1:10:11
+into the portal as into the portal, okay?
+
+Unknown 1:10:15
+So here's the specific edge case.
+
+Unknown 1:10:28
+Experience. Do you use an internal
+
+Unknown 1:10:34
+database in DBQ or database?
+
+Speaker 9 1:10:37
+So dviq has like its own little database so it caches client account
+information. So when we pull from there, it serves a cache and then
+attempts to refresh balances. But there are plenty of cloud space now.
+There are accounts that can come from ddiq, maybe from a different
+data source, and it sounds like it may have some potential latency
+challenges
+
+Unknown 1:11:02
+as well. Ddiq challenges as well dviq.
+
+Speaker 3 1:11:06
+I think the same is the case with the transaction reporting as well,
+because then that is also coming from DB IQ, right? And then probably,
+I'm assuming that that would be the high level details the
+transactions are not properly enriched, yeah.
+
+Speaker 6 1:11:20
+I mean, within the dashboard, you can see basic balance in
+transactional reporting. But if you want to see the enriched data, the
+remittance that goes along with payments, in particular, there are
+different there are different ediq services that you have to go to
+look at and find that enriched data
+
+Unknown 1:11:40
+that come from downstream
+
+Speaker 3 1:11:46
+sources, I think from from the relationship manager perspective, are
+they able to access this information which is not available? I mean,
+
+Speaker 6 1:11:58
+like frontline they can they have a user group in exchange if they
+wanted to go look online. But there are lots of places. I mean, they
+can look in internal bank systems if they want to look at transactions
+or balances or accounts. They don't. They're not necessarily going to
+exchange to do it, but they can have access. They have a user group in
+the platform, view only access. But I would argue a lot of frontline,
+like sales, are in folks. They're
+Speaker 7 1:12:33
+not looking in the application. I know they've started doing it more,
+like more and more trainings I've done with the frontline. They've
+been utilizing exchange more, but at the same time, we have the same
+problem, if they're just not using the resources they have right in
+front of them.
+
+Speaker 10 1:12:48
+Yeah. So are they using Exchange, or is it a different application,
+like the internal like bank employees, like RMS or contact center?
+What application do they use to service
+
+Unknown 1:13:03
+the client? RMS,
+
+Unknown 1:13:06
+our RMS and sales people are not servicing.
+
+Speaker 10 1:13:10
+So, for example, like, if a CFO column DARM and said that, like, I
+want
+
+Unknown 1:13:17
+these reports, what is the they're gonna email, they're going to
+
+Unknown 1:13:19
+service, they are
+
+Unknown 1:13:25
+basically the bridge Between, yeah,
+
+Unknown 1:13:39
+organizationally, we don't want our GMOs
+
+Unknown 1:13:44
+in the systems servicing clients.
+
+Unknown 1:13:52
+They need service.
+
+Speaker 3 1:13:56
+In that case, then client needs to have direct access to your team,
+right? What I understand is they're reaching out to you via RM or RMS.
+
+Unknown 1:14:05
+Do they have direct access to
+
+Speaker 5 1:14:06
+your team? Yeah, they know. As we have two different types teams, we
+have a high profile team that dedicated support. They have direct
+numbers, they know. And then the other one, they call a queue number
+and
+your team? Yeah, they know. As we have two different types teams, we
+have a high profile team that dedicated support. They have direct
+numbers, they know. And then the other one, they call a queue number
+and
+
+Speaker 3 1:14:17
+maybe help find them, give you a part and then use something.
+
+Speaker 10 1:14:22
+And what's the application that you use to service the client? Do you
+use the exchange itself,
+
+Speaker 5 1:14:27
+or is it so it depends. If a client asks me questions about a
+transaction that occurred that they see an exchange, no way am I going
+to exchange them? I'm not doing that. I'm going to go use impacts. I
+like core. So you're talking about me. I'm used core. I'm used to
+impacts. I would say 85% of the rest of the tcsp uses TPSS, which is
+our other core, but it's poor. And so I'm gonna go do my research
+there. Now, if they're asking me a question about why, why is this
+report this way, or how, like, my balance isn't what I want it to be.
+Why is my funds availability showing weird, like, whatever someone
+collected and they can't figure out how to match it back? I'm still
+not going to go use Exchange balance and reporting. I'm going to look
+at that because I want to see what they see. So I want to understand,
+okay, this is what they're talking to me about. Now I'm going to go
+into core, and I'm going to figure out where that discrepancy lies,
+and why is it reporting this way in exchange. And then from there, I
+can tell them, Oh, well, it's showing like this because you made a
+paper
+
+Speaker 3 1:15:35
+deposit, whatever you are reconciling between two to three different
+systems. Say it again. You are reconciling between two to three
+different systems, right?
+
+Speaker 10 1:15:43
+But it's also that, like, it's possible that, like, the data that the
+client sees the customer sees is the data from DBA queue, right?
+Because there's a internet database, whereas you do, you have access
+to the DBA key if you do the research, right?
+
+Speaker 5 1:15:59
+Okay, yeah, but we're still not going to use that. We're going to use
+our internal system, because the reporting in our internal system.
+
+Unknown 1:16:08
+But is that for dviq? Are you seeing it from the core?
+
+Unknown 1:16:11
+You're seeing it from the core, which is the source?
+Unknown 1:16:16
+Yes, which feeds dviq? Yeah.
+
+Speaker 10 1:16:19
+Sometimes like, if the data is not migrated properly, there might be
+an issue. Well,
+
+Speaker 9 1:16:28
+so yeah, in that case, I'm sure she would eventually get to the point
+where people look at the IQ and say, Viq and the host are not
+matching, so it's clearly a problem with Viq. Yeah, that doesn't
+happen all that often.
+
+Unknown 1:16:45
+But yes, that would be a next step in that case.
+
+Speaker 1 1:16:47
+I think it goes to the point, though, that people will take the path
+of least resistance. The systems they know the best are the ones
+they're going to use, and what they can get good information from. So
+back to what was discussed earlier about easy filtering to access
+information and to narrow down what you're looking for. You know, if,
+if, if exchange offers a good filtering method to get us to the
+variance, then that's what we would use. But if, if she's going to
+find her variance in the core much faster to be able to help that
+client more quickly, that's where she's going to go and then look up
+instead of go there and look down, go to the previous Slide.
+
+Speaker 3 1:17:38
+So we talked about integrated searches in the morning. So lot of
+system, lot of capabilities, but I don't think you have an integrated
+search today where customer can use that universal search for anything
+and everything.
+
+Unknown 1:17:54
+I don't know if I quite follow the question,
+
+Speaker 3 1:17:58
+so I think you only brought up that point of integrated search because
+there are a lot of capabilities, lot of downstream systems, so there
+should be one place where customer can search anything. It's like a
+Google of exchange.
+
+Speaker 2 1:18:20
+Maybe elucidated it. They can see all of the data aggregated
+
+Speaker 6 1:18:25
+in exchange, but they may have to go to a couple services to get all
+of the information. And to be fair, you can't get it on our core,
+because our core doesn't have the information is in our pep system, or
+that's in our wire system, and so today, exchange brings in files and
+brings in real time calls to present the information across a couple
+services that give that full picture. But we'd like it to be even more
+incorporated into more singular use, like, I don't need to go to one
+service to look at, you know, transaction activity. But if I want to
+in exchange, but they may have to go to a couple services to get all
+of the information. And to be fair, you can't get it on our core,
+because our core doesn't have the information is in our pep system, or
+that's in our wire system, and so today, exchange brings in files and
+brings in real time calls to present the information across a couple
+services that give that full picture. But we'd like it to be even more
+incorporated into more singular use, like, I don't need to go to one
+service to look at, you know, transaction activity. But if I want to
+see the remittance associated to that wire transaction, I got to go
+over here to this other service to look up that wire transaction. It
+gives me all the expanded remittance that came along.
+
+Speaker 3 1:19:20
+And last one that I want to discuss on this one is, what is your
+priority to modernize this your account views, or the transaction
+reporting like as compared to all other the program services I showed
+you on the last slide.
+
+Speaker 6 1:19:34
+So I mean, we have an active project, from an information reporting
+perspective, to consolidate our transactional activity separate data
+mart, and that will ultimately allow us to kind of simplify the number
+of views that we expose online. Kind of limit the amount of clicks
+that they have to go to different services where they can see more of
+it in a similar view. But I think that will take us a year or more to
+kind of incrementally improve.
+
+Speaker 3 1:20:10
+That is your internal initiative, internal development on on exchange.
+
+Speaker 6 1:20:16
+It's it ultimately will support our account and information reporting
+on exchange, as well as our ability to deliver that same information
+through other channels, whether
+
+Unknown 1:20:30
+it's secure FTP or some other digital
+
+Unknown 1:20:35
+delivery. Let's move to the
+
+Unknown 1:20:38
+next one. Next one is the payment solutions.
+
+Unknown 1:20:43
+First one is Ach,
+
+Unknown 1:20:46
+first, let's validate this. If I understand,
+
+Speaker 3 1:20:51
+we're talking about the applications which are covering. This is the
+exchange approvals, DB, IQ, Ach, I'm not sure about the exchange
+approvals. Is approvals with Exchange or with DB IQ. I think the
+we're talking about the applications which are covering. This is the
+exchange approvals, DB, IQ, Ach, I'm not sure about the exchange
+approvals. Is approvals with Exchange or with DB IQ. I think the
+
+Speaker 6 1:21:05
+approval workflow lives in dB IQ, like you have your submitter, you
+have your approver workflow. Those are all built into the DBI set of
+services and
+
+Speaker 10 1:21:20
+dpiq set of services, does the transaction signing or set up. These
+are all part of dpiq as well.
+
+Speaker 3 1:21:31
+And then also, I think enterprise alerts are also part of this
+service, because when IC is submitted or approved,
+
+Speaker 6 1:21:38
+so enterprise Alerts is a is a native enterprise service where we're
+taking both internally built alerts and alerts that we get throughout
+the ddiq application, and We're delivering them through a singular
+alert engine alert service. And so alerts encompass a lot of
+
+Unknown 1:22:10
+services. They're not specific to
+
+Speaker 3 1:22:11
+ACH any information reporting alerts, but like they're participating
+in the ACH alerts.
+
+Unknown 1:22:18
+Okay. Do you support RTP,
+
+Speaker 6 1:22:23
+no, we are in the process of finishing our effort
+
+Speaker 10 1:22:28
+on our payment hub, and it will be our next
+
+Speaker 6 1:22:33
+same day. Ch, same day. Ach, we support
+
+Unknown 1:22:39
+today. We use the Fed for same
+
+Speaker 10 1:22:40
+day. Ach, yeah, but not the new initiative, right? The Fed now,
+
+Speaker 6 1:22:45
+fed now, instant payments. Yeah, we will support both the clearing
+house and fed now Instant Payment Services.
+Unknown 1:22:49
+When we roll out that rail after we who's,
+
+Speaker 10 1:22:58
+who's your provider for payment? I know it's in 2020.
+
+Unknown 1:23:03
+Is it 2025?
+
+Unknown 1:23:06
+Initiative, payment hub, who's the who's the provider?
+
+Speaker 3 1:23:12
+Looking at ACH from the customer perspective, how would you rate the
+customer experience?
+
+Speaker 1 1:23:21
+Like services? I think I mean medium to high. I think for the most
+part, as far as their ability to initiate and execute their payments,
+it's satisfactory.
+
+Unknown 1:23:37
+Any, any improvement areas that you might see, I
+
+Speaker 1 1:23:39
+think any, I think it just goes back to more reporting,
+
+Speaker 3 1:23:43
+more reporting just but ACH execution is fine. And from, I think rm
+and fo, they don't have a role over here, right, because they are not
+servicing. But the middle office and back office,
+
+Speaker 1 1:23:58
+back office is medium just because of the monitoring that they have to
+do. We do have workarounds in place for them to be able to monitor the
+exchange activity, just to make sure that as they reconcile, to make
+sure everything's in balance daily. We have some workarounds to
+support that. So I would say that's medium.
+
+Unknown 1:24:24
+And from the approval standpoint,
+
+Speaker 3 1:24:27
+the approval workflow is configurable for the ACH, and
+
+Speaker 1 1:24:31
+I think there's probably a little friction at times, because we
+require it, and if they're trying to move faster at the last minute,
+you know, but I think it serves its purpose.
+Unknown 1:24:45
+Okay? And
+
+Speaker 3 1:24:48
+do you make any revenue on ACH transactions?
+
+Unknown 1:24:52
+Yeah, does Treasury have a data and
+
+Unknown 1:24:59
+analytics team Power BI
+
+Speaker 6 1:25:01
+Christie's Few internal treasury,
+
+Unknown 1:25:18
+resources,
+
+Speaker 1 1:25:20
+we have some overlap too. Operations has some too that you know you
+have depending on how you're digging into it, whether it's something
+that's supported more by the Treasury side, or if you're watching at
+an item level, it may actually be more in your operations.
+
+Speaker 7 1:25:37
+That's what we've done with the wealth side. We have a wealth team,
+but we also work with operations. Is why I was asking, because I was
+wondering if that could be what you needed. Like, there was some way
+to get that consolidated.
+
+Speaker 1 1:25:49
+Like, internally, we use it. It's not delivered to the client. We use
+it as a tool. If we have to deliver information to the client, we can
+export it, but it's not something they have visibility.
+
+Speaker 3 1:26:02
+Yeah, but approval, especially from the standpoint of the
+entitlements, right? Because the entitlements is in exchange, and then
+ACH actually takes place on DB IQ, so that entitlement is in the sync.
+
+Unknown 1:26:15
+We it's very synced. It's very sync so
+
+Unknown 1:26:18
+and we have the ability to
+
+Speaker 6 1:26:21
+configure different workflows, different approval requirements,
+different workflows, wherever now
+Speaker 3 1:26:30
+and from like before for middle office and back office before
+reconciliation, there is not much involvement of
+
+Unknown 1:26:38
+middle Office and back office,
+
+Unknown 1:26:40
+right. So as far as setup,
+
+Unknown 1:26:44
+now, after setup, like the execution of ACH
+
+Unknown 1:26:46
+from the clients, yeah,
+
+Speaker 3 1:26:50
+there is no, yes, there's no no,
+
+Speaker 3 1:26:59
+going to online bill payment, so the applications which are supporting
+it is Jack Henry and exchange entitlements. Is that correct? Any
+anything else? No. So what
+
+Unknown 1:27:18
+is, what is the customer experience on this one?
+
+Unknown 1:27:21
+Like, I would say medium or medium
+
+Unknown 1:27:26
+to low. Yes, middle office low.
+
+Speaker 6 1:27:28
+I think middle office struggles with it a fair bit. No, it is a
+business bill pay service that has granular entitlements. It's not,
+it's not like a consumer bill pay service. You can't do payroll in it.
+You can do payments in it. They can go they can submit whether they
+want a paper payment, electronic payment, they want a
+
+Unknown 1:27:58
+payment to be processed as a card payment. And so
+
+Speaker 6 1:28:05
+I do know that we have had a fair bit of client feedback on the app
+itself. And so I think it's, I think it's medium, medium to low from a
+customer perspective. And back to Terry's point. I think, from middle
+office perspective, they really struggle with it, because there's
+limitations around reporting in that application
+Unknown 1:28:30
+that service providers have.
+
+Speaker 6 1:28:40
+From a servicing perspective, like there's no emulation in that
+service. So if they're supporting it, it's a WebEx sharing of it.
+There's a demo of it. So if you want to see how it works, you want to
+walk through the steps of how they'll pay services work. There is a
+there
+
+Speaker 3 1:29:05
+is a demo that's integrated into the exchange. Do you do the templated
+build base, as in, you know, multiple build
+
+Speaker 6 1:29:12
+base through one template? Yeah, it's a, it's a, it's a pretty robust
+service, not anything like a consumer. Yeah? Beyond anything
+
+Speaker 3 1:29:23
+like a consumer and from this, like how often middle office and back
+office have to get involved in this
+
+Unknown 1:29:36
+high it's a
+
+Unknown 1:29:39
+high volume, okay?
+
+Unknown 1:29:45
+Well, yeah, too, right. There's some
+
+Speaker 6 1:29:50
+bill pay is has a kind of a different angle of entitlements, where,
+within it, you have to have, like, a primary contact for Bill Pay per
+customer. And so if you know you can't have I don't know if you can
+have two and if you know if your primary contact were to get let go or
+something were to happen, there's a lot
+
+Transcribed by https://-
+

@@ -308,6 +308,7 @@ All claims must be traceable to evidence.
       "name": "Jane Smith",
       "role": "Head of Digital Banking",
       "department": "Digital Transformation",
+      "stakeholder_type": "business | technology | finance",
       "influence": "high | medium | low",
       "decision_authority": "budget_owner | decision_maker | influencer | end_user",
       "priorities": ["Digital acquisition", "Cost reduction", "Customer NPS"],
@@ -318,8 +319,18 @@ All claims must be traceable to evidence.
       "session_participated": ["strategic_alignment", "customer_experience"],
       "quotes": ["E01", "E05"]
     }
-  ]
+  ],
+  "primary_stakeholder_types": ["business", "technology", "finance"]
 }
+
+**Stakeholder Type Classification (for ROI Model Routing):**
+| Type | Typical Roles | ROI Focus |
+|------|---------------|-----------|
+| `business` | CDO, CMO, COO, Head of Digital, Head of Retail | Revenue, CX, Efficiency |
+| `technology` | CIO, CTO, Head of Architecture, IT Director | Tech rationalization, Platform consolidation |
+| `finance` | CFO, Finance Director, Controller | TCO, Cost avoidance, NPV |
+
+**Critical for ROI Agent:** If `primary_stakeholder_types` includes `technology` or `finance`, the ROI Agent MUST consult `knowledge/learnings/roi_models/tech_rationalization_decommission.md` for platform replacement value levers.
 ```
 
 ---

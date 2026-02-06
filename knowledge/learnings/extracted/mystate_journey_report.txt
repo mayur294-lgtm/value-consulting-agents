@@ -1,0 +1,1218 @@
+Journey Assessment
+Report
+May 2025
+           01. Engagement Overview & Approach
+
+
+
+
+Table of
+           02. Executive Summary
+
+
+           03. Value Drivers
+
+
+Contents   04. Journey Assessment
+
+
+           06. IT Architecture Fitment (Onboarding)
+
+
+
+
+                                                      2
+01   Engagement Overview &
+     Approach
+  Strategic Alignment               Workshops                   Customer Journeys
+Align on MyState’s future       5+ cross-functional            Established baseline for
+ambitions, vision to deﬁne    sessions conducted with         current state of customer
+ the problem statement             MyState so far              & employee experience
+   and key deliverables                                       across 6-8 key journeys
+                                                                                          Feature Highlight
+                                                             (onboarding and servicing)
+                                                                                          A brief snapshot
+                                                                                          Subtitle
+                                                                                          MyState - Backbase
+                                                                                          Engagement
+
+      Data Analysis               Market Research            Capability Assessment
+ Analyzed over 50+ data         Harnessed insights on            Evaluated existing
+          points             customers & banks/mutuals       capabilities across major
+                              in Australia and Globally to    channels and assessed
+                               develop transformational        future digital channel
+                                         goals                         ﬁtment
+
+
+
+                                                                                                               4
+Business Case benchmarking approach
+Impact benchmarks for MyState are a conservative derivation of inputs from comparable
+customers in other developed markets and outside in research
+
+
+                                                          Customer Onboarding                                                                          Customer Servicing
+
+                    70%                                                                                       70%
+
+                    60%                                                                                       60%
+
+                    50%                                                                                       50%
+
+                    40%                                                                                       40%
+
+                    30%                                                                                       30%
+
+                    20%                                                                                       20%
+
+                      10                                                                                        10
+
+                      0%                                                                                       0%
+                                   Backbase impact at       Market Research on   Impact benchmarks used                         Backbase impact at       Market Research on   Impact benchmarks used
+                                   comparable customers     impact of digital    for MyState Business                           comparable customers     impact of digital    for MyState Business
+                                                            transformations      Case                                                                    transformations      Case
+
+          % Impact of digital                                                                             % Impact of digital
+           transformation                                                                                  transformation
+
+
+
+
+Source: Backbase Benchmarking; Market Research
+
+                                                                                                                                                                                                       5
+Backbase Value Consulting Deliverables
+
+
+
+
+Capability Assessment          Future State of                    Business Case
+                               Assessed Journeys
+● Status quo of current        ● Proposed Backbase solution       ● Establish business value of
+  capabilities                 ● Impact of new reﬁned               each customer journey and
+● Establish & benchmark KPIs     customer journey                   capability
+● Identify gaps                ● Approach to scale the solution   ● Quantiﬁcation of beneﬁts via
+● Provide recommendations        and roadmap                        the Backbase solution
+
+
+
+
+                                                                                                   6
+02   Executive Summary
+
+
+     Our Understanding of your Strategic Intent
+     and Current Challenges
+Our Understanding | Strategic Objectives
+
+
+
+
+                   Omni-channel                          Enhanced digital      Enhanced               Future ready
+                   digital acquisition                   user experience       Employee               digital banking
+                   experience                                                  Experience             experience
+
+                   Streamlined                           Optimised digital     Empower                Where relevant,
+                   onboarding                            user experience for   employees with         build out future
+                   experience for both                   daily banking         better tools for a     ready
+                   digital and assisted                  journeys and          3600 view of the       enhancements to
+                   channels (branch &                    additional self       customer as well as    augment process
+                   CC)                                   service journeys      easier collaboration   optimisation (e.g.,
+                                                         e.g., transaction     within teams           Agentic AI)
+                                                         disputes
+
+
+
+
+Source: MyState <> Backbase Value Consulting Workshops
+
+                                                                                                                            8
+Our Understanding | Challenges against the objectives
+
+
+
+
+                 Disjointed                              Sub-optimal Digital      Enhanced             Future ready
+                 Acquisition                             UX                       Employee             digital banking
+                 Experience                                                       Experience           experience
+
+                 Onboarding /                            Limited self service     No 3600 view of      Potential to enter
+                 account opening                         capabilities for daily   customer requiring   operational “cruise
+                 varies between                          banking journeys         swivel chairing      control” i.e., allowing
+                 channels causing                        like transaction         between multiple     innovation
+                 friction in the                         disputes                 systems              plateaued
+                 onboarding /                                                     Lack of robust
+                 acquisition process                                              customer
+                                                                                  engagement tools
+                                                                                  e.g., martech
+
+
+
+
+Source: MyState <> Backbase Value Consulting Workshops
+
+                                                                                                                                 9
+03   Value Drivers
+
+
+     Drivers of Value against your Strategic
+     Objectives
+Backbase is aligned to MyState’s Strategic Pillars
+How Backbase can support you in your digital strategy
+
+
+
+                           Activate         2                           3    Expand
+
+                                         Segment-based           Drive MFI
+                                       activation. Boost app     behaviour
+                                             utilization
+
+
+
+            Acquire    1                           maximize customer                  4      Retain
+                                                     lifetime value
+                                                       maximize
+                        Increase                                             Maintain high
+                      new-to-bank                  customer lifetime          customer
+                      relationships                                          satisfaction
+                                                        value
+
+
+
+                                      Backbase Intelligence Fabric
+
+
+                                                                                                      11
+   Acquire • Challenges & Impact
+    Key challenges for customers and employees
+                                                                            Current Challenges                                  Business Impact
+                                                                                                                                 (Customer Journeys)
+
+                                                                      Inconsistent onboarding experience among
+                                                                      channels for customers & employees i.e., digital,
+                                                                      branch and call centre
+                                                                                                                            Annual
+Acquire                                                                                                                     Branch Costs
+                                                                                                                                                       $150-200K
+
+                                                                      Highly manual processes in branch leading to
+                                                                      inefficiencies - increased applications times and 2
+                                                                      levels of audit due to risk of human error
+            Activate
+                                                                                                                            Annual
+                                                                      Lack of communication or lack of consistent
+                                                                                                                            Call Center Costs           $5-10K
+                                                                      communication with customers due to high rate of
+                                                                      OTP authentication failures
+
+
+                                                                      Lack of real time communication between
+             Expand                                                   systems for assisted journeys i.e., CC reps may
+                                                                      not be able to restart failed applications in other
+                                                                      channels                                              Annual
+                                                                                                                            Back Office Costs           $5-10K
+Retain                                                                Lack of targeted or personalised support post
+                                                                      account creation to minimise drop off at activation
+
+
+
+
+    Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+
+                                                                                                                                                                   12
+   Acquire • Recommendations & Value
+                                                                     Backbase Digital Account Opening                                         Yearly Beneﬁts
+
+                                                                      Streamlined omni-channel onboarding
+                                                                      experience across digital and assisted channels
+                                                                      i.e.., mobile, web, branch & CC
+Acquire
+
+                                                                      Fully digital onboarding process that can reduce                $300 -                        Backbase Impact
+                                                                      or entirely remove manual processes
+
+            Activate                                                                                                                  350K             10-15%
+                                                                                                                          Added
+                                                                      Enhanced customer communication for                Revenue
+                                                                      authentication via OTP and other use cases                     Revenue Uplift
+                                                                                                                                                       Cost Avoidance   Cost Avoided
+
+             Expand
+                                                                      3600 view of the customer to empower frontline        Backbase Impact
+                                                                                                                                              40-50%
+                                                                                                                                                         $80 -
+                                                                      staff
+
+                                                                                                                                                        100K
+Retain                                                                Improved post sales support with potential for
+                                                                      personalised communication to encourage
+                                                                      account activation
+
+
+    Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+
+                                                                                                                                                                                       13
+   Expand • Challenges & Impact
+
+                                                                            Current Challenges                               Business Impact
+                                                                                                                             (Customer Journeys)
+
+                                                                      Commoditised digital banking experience i.e.,
+                                                                      focus on shipping features as opposed to value
+                                                                      addition to customers
+Acquire
+
+                                                                      Limited self service capabilities on critical
+                                                                      customer journeys e.g., transaction dispute
+
+              Activate
+                                                                                                                         Annual
+                                                                      Lack of comprehensive employee support tools
+                                                                                                                         Costs                     $0.75 -
+                                                                      for 3600 of customer and customer engagement
+                                                                      (e.g., martech, case manager)
+                                                                                                                                                     1M
+
+             Expand                                                   Time taken in manual processing limits frontline
+                                                                      staff’s ability to expand customer relationships
+                                                                      during customer interactions
+
+
+
+Retain                                                                Limited product portfolio reduces cross sell and
+                                                                      upsell opportunities
+
+
+
+
+    Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+
+                                                                                                                                                             14
+   Expand • maximise share of wallet
+                                                                              Backbase Solution                                              Yearly Beneﬁts
+
+
+
+
+Acquire
+
+                                                                      Personalization / Add value-adding services
+                                                                                                                                     $450 -                         Backbase Impact
+                                                                                                                                                                 (increased loyalty and
+                                                                      based on customer persona type for higher
+                                                                                                                                                                       retention)
+              Activate
+                                                                      engagement
+                                                                                                                                     500K             5-10%
+                                                                                                                         Added
+                                                                      E2E self-servicing journeys with the biggest      Revenue
+                                                                      impact on customer satisfaction and physical                  Revenue Uplift
+                                                                      servicing overhead reduction potential                                          Cost Avoidance   Cost Avoided
+                                                                                                                                                                       ( manual
+             Expand
+                                                                      3600 view of customer in a single platform to        Backbase Impact
+                                                                                                                                             20-30%
+                                                                                                                                                       $300 -          processing)
+                                                                      reduce “swivel chairing” and enhance ability to
+                                                                      cross and upsell effectively
+                                                                                                                                                       350K
+Retain
+
+
+    Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+
+                                                                                                                                                                                      15
+04   Journey Assessment
+Customer Digital Experience Map
+                                            Onboarding & Account
+                                                                                  Accounts                     User Proﬁle Services       Cards Management             Payments and Transfers
+                                                   Setup
+
+
+                                                                        Transaction                                                                  Card
+                                            CASA                           Limits                                                                Transaction            Domestic
+                                            Onboarding                                                                                              Limits              Transfers
+                                                                                              Account
+                                                    Credentials                               Details
+                                                    Creation / Login                                                                                                                Bill /QR
+                                                                                                             Secure Messaging
+                                                                          Account                                                         Card                                      Payments
+                                                                          Statements                                                      Ordering
+                                                          Full KYC
+                                                                                              Transaction
+              Customer                                                                          Visibility
+             Experience
+                                                                                                                                               Card PIN
+                                                OTP                          Transaction
+                                                                                                                                               Change
+                                      Authentication                          Disputes
+                                                                                                                     User Proﬁle Update
+                                                                                        Dispute                                                           Card Block
+                                                           Bundled                    Management
+                                                           Product
+                                                        Origination                                            Notiﬁcation
+                                                                                                               Preferences
+
+
+
+
+                 Key
+             Touchpoints
+
+
+
+
+Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+
+                                                                                                                                                                                                17
+04   Journey Assessment
+
+
+     4.1. Onboarding
+     4.2. Customer Servicing
+Customer Acquisition journey is the Moment-of-Truth in
+building lasting customer relationships
+                                                                 Customer Acquisition
+                           acquire                            (Onboarding and Origination)
+                                                           Reduce cost to acquire the customer during onboarding
+                                                                    and improve customer conversion
+           onboarding                 digital
+           & origination             banking               Meeting the expectations of your prospects by offering an omnichannel,
+                                                             digital-ﬁrst, seamless onboarding experience at the time of signup
+  expand                                        activate        brings tangible business beneﬁts in the short and long term.
+
+
+
+            activation               human
+           & expansion               assist
+                                                                                      Value Drivers:
+
+
+                           retain                                   Onboarding Cost                   Manual Processing
+
+
+                                                                Conversion of prospects
+                                                                                                    Employee enablement
+                                                                    into customers
+
+
+
+                                                                                                                                    19
+Customer Acquisition | Business Beneﬁts
+Identifying areas of value to the business
+                                                                                                                   ● Optimise manual
+                                                                                                                     processing from front
+                                                                                                                     to back office
+                                                         acquire
+                                                                                                        Optimise   ● Streamline systems to
+                                                                                                                     reduce “swivel chairing”
+                                                                                                                   ● Create omni-channel
+                                onboarding                               digital                                     experience for
+                                & origination                           banking                                      onboarding across
+                                                                                                                     channels
+        expand                                                                     activate
+                                                                                              Beneﬁts
+
+                                  activation                            human
+                                 & expansion                            assist                                     ● Free up front line staff
+                                                                                                                     capacity to improve
+                                                                                                                     cross-sell and upsell
+                                                           retain                                       Increase     opportunities
+                                                                                                        Revenue    ● Improve conversion by
+                                                                                                                     allowing better
+                                                                                                                     onboarding & product
+                                                                                                                     origination digital CX
+Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+
+                                                                                                                                                20
+   NTB Customer Onboarding - initiated online
+                       Initiate Application                                                       Application & Verification (eKYC)                                               Account Activation & Usage
+
+                                                                                                              25% Leakage                                         22% Leakage
+                            23K interests                                   12K app. starts                                                    9K app. submits                                  7K approvals
+
+                                                                                                                                                                                                                  IB
+                   Customers driven to digital                   Customer manually                       Customer enters                        Customer                 ID check passed AND Biocatch             registration
+                   channels by attractive                        enters personal                         TFN and source of                      veriﬁes                  score <800                               done after
+                   pricing strategy                              details incl. ID number                 income details                         details                  Customer receives account details        this point
+                                                                                                                                                                         and can fund / use the account
+Digital                                                                                                                          Non-STP onboarding requiring
+(TJM)                                                                                                                            handover between teams done                     OTP for veriﬁcation fails 20-30% of the time
+                                                                                                                                 through email (Outlook)
+
+                                                      20% Leakage
+                           2K ID check fails                                    1.6K cals to CC                       Customer data available in CC systems
+                                                                                                                      Customer service rep can restart
+                       Customer is required to                          ID check does not pass                        process and complete only ID                                   ID check passed AND Biocatch
+                       call CC during working                           Customer instructed to call                   veriﬁcation                                                    score <800
+                       hours to complete                                CC to complete onboarding                                                                                    Customer receives account details
+                       onboarding process                               over the phone                                                                                               and can fund / use the account
+ CC                                                                                                                   Data NA in CC systems
+                                                                                                                      Customer service rep must initiate
+                                                                                                                      application from the beginning
+
+
+                                                                        Biocatch score                                                     Application is rejected;
+                           2K app. ﬂagged
+                                                                        >1,000                                                             customer does not hear                               460 approvals
+                           for fraud review
+                                                                                                        Risk is ﬂagged by                  back from bank
+                                                                                                        fraud review                                                                Fraud review passed
+                       MO / BO staff are                                                                                                                                            Customer receives account details
+                       required to conduct                              Biocatch score
+                                                                                                        No risk identiﬁed from                                                      and can fund / use the account
+                       manual fraud reviews                             800-1,000
+MO - BO                                                                                                 fraud review
+
+                                                                                                           Total STP Application time - ~5 - 10 mins
+
+    Source: Journey Assessment Workshops; MyState Data; Backbase Analysis                                                                                                                                                        21
+   NTB Customer Onboarding - initiated in Branch
+                      Initiate
+                                                                                                      Application & Verification (eKYC)                                                               Account Activation & Usage
+                    Application
+
+                                                                                                                                                                 Driven by branch staff’s ability to successfully convert a majority of
+                                                                                                                                                                 walk-ins by providing alternatives, relationship building success,
+                                                                                                                                                                 etc. as opposed to the tools available to them
+Digital
+ CC
+(TJM)
+                                                                                                    Total Application time (inlc. audits) - ~30 - 35 mins
+
+
+                                                                                                                                                                                                             5-10% Leakage
+
+
+                                                                        Highly manual process requiring multiple levels of audit to remove human error
+                    6K interests                                                                                                                                                                             5.7K approvals
+
+                                              Branch rep opens                    Completed form is                Branch rep proceeds             Completed form is
+                Customer visits                                                                                                                                                                       Customer receives account
+                                              account for customer in             printed for customer             to product selection            printed for customer
+                branch to open a                                                                                                                                                                      details and can fund / use the
+                                              BaNCS by manually                   veriﬁcation and                  and opens product               veriﬁcation and
+                new account                                                                                                                                                                           account
+                                              ﬁlling customer details             signature                        account                         signature
+Branch
+
+
+                                                                                              Accounts opened at Branch go through 2 levels of audit to                            Optional
+                                                                                              weed out human error                                                             Branch rep can
+                                                                                              Errors on ~20-30% of applications for various reasons                            order debit card
+                                                                                                                                                                              for the customer
+
+
+
+
+MO - BO
+
+
+    Source: Journey Assessment Workshops; MyState Data; Backbase Analysis                                                                                                                                                                 22
+Summary - Current Friction Points
+
+
+
+                                                                         Sub-optimal in branch               Manual interventions                Disjointed experience
+                           Customer experience                                experience
+                                                                                                             1 in 5 customers fail ID checks          Digital onboarding and
+                                                                            Account opening in branch
+                                                                                                            and are required to call the CC to       enrollment are currently
+                                                                         takes 2x longer (20 vs. 10 mins)
+                                                                                                            complete onboarding which can          disjointed requiring separate
+                                                                           and is predicated on manual
+                                                                                                              only be done during working         journeys from the customer’s
+                                                                          process like form veriﬁcation
+                                                                                                                         hours                              perspective
+                                                                                    and signing
+
+
+
+
+                                                                         Manual onboarding in               Manual MO / BO tasks                    “Swivel chairing”
+                           Employee operations                                 branch                                                               between systems
+                                                                                                               Call centre, MO & BO staff
+                                                                           Manual onboarding process                                               Employees are expected to
+                                                                                                                capacity is dedicated to
+                                                                         takes away the opportunity for                                              toggle between multiple
+                                                                                                              non-value adding tasks given
+                                                                          upsells / relationship building                                        systems for a single journey e.g.,
+                                                                                                             their manual nature such as ID
+                                                                         and increases chance of human                                            BaNCS, CMS and Outlook for
+                                                                                                              re-checks and Fraud reviews
+                                                                                        error                                                              onboarding
+
+
+
+
+ Source: Journey Assessment Workshops; MyState Data; Backbase Analysis                                                                                                             23
+Key Recommendations
+
+
+                   Reimagine Journey                                                            End-to-end                                      Fully digital onboarding,
+                     Process Flows                                                             Omnichannel                                          removing manual
+                    Without Friction                                                            Acquisition                                      processing in branch
+
+                           10-15%                                                               10-15%                                                      70-75%
+                           Reduced leakage                                                     Increase in customer                                       Reduction in time spent
+                           during onboarding                                                        acquisition                                              per acquisition
+
+
+
+
+                                                         Enhanced ID veriﬁcation                                       Enhance RM/ teller
+                                                              experience                                                 efficiency with
+                                                                                                                      3600 Customer View
+
+                                                                        20-30%                                             ~30-40%
+                                                                Reduction in cost associated                            Cost reduction associated with
+                                                                  with manual ID checks                               removal of non-value adding tasks
+
+Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+
+                                                                                                                                                                                    24
+Customer Acquisition Journey: Beneﬁts
+Create End-to-end Digital Onboarding Experience. From
+                                                                                                                                                                                     Average Yearly Beneﬁts
+friction & frustration to delight & loyalty.
+
+
+
+
+                     Implement end-to-end (e2e) digital journey
+                     on web & mobile so customers can switch/
+                                                                                                                                                                    $ 300 -                                                                       Backbase
+                                                                                                                                                                                                                                                   Impact
+                     resume between channels
+                                                                                                                                                                     350K                                10-15%
+                                                                                                                              Added
+                     Automate Branch-based onboarding to                                                                     Revenue                             Revenue Uplift
+                     streamline the process, reduce peer and
+                     manager audits, and avoid marginal                                                                                                                                                 Cost Avoidance
+                     acquisition costs                                                                                                                                                                                                         Cost Avoided
+                                                                                                                                                                                      40-50%
+                                                                                                                                                                                                                $80 -
+                                                                                                                                                  Backbase
+                     Reduce MO / BO tasks related to                                                                                                Impact                                                    100K
+                     onboarding e.g., fraud reviews and ID
+                     veriﬁcation to reduce costs
+
+Source: Beneﬁts estimation based on baseline received from MyState and Backbase benchmarks data for impact generated with clients similar to MyState. Calculated assumptions based on Backbase experience where baseline data not available.
+
+
+                                                                                                                                                                                                                                                              25
+05   Future State Solution
+
+
+     Onboarding
+5.1   Target customer journeys
+
+
+      Digital Onboarding
+                                                  Retail                         SME | Commercial           Wealth
+
+
+
+
+Digital Onboarding
+Best-in-class onboarding and account       Onboarding      Daily Banking   Loan Origination   Investing   Customer Service   Campaigns
+
+opening journeys – from account opening
+                                           Delight customers                                       Empower employees
+to multi-product sales and upselling and
+customer support.
+
+
+
+
+                                                                                                                                         28
+          30-40%
+   Improvement in
+ employee efficiency /
+    time spent on
+non-value adding tasks              Retail                         SME | Commercial           Wealth
+
+
+
+
+             10-15%
+  Increased acquisition      Onboarding      Daily Banking   Loan Origination   Investing   Customer Service   Campaigns
+
+   from omni-channel
+                             Delight customers                                       Empower employees
+       experience
+
+
+
+
+               99.4%
+OTP pass through rate
+      on Twilio
+
+ Source: Backbase Analysis
+
+                                                                                                                           29
+                                                                                                                                                                                                                3rd party Integration
+                                                                                                                                                                                                                 - Existing MyState
+                                                                                                                                                                                                                       solution
+
+     Proposed Solution for NTB Retail Onboarding Process                                                                                                                                                       3rd party Integration -
+                                                                                                                                                                                                                    Backbase
+                                                                                                                                                                                                                   Marketplace
+                                                                                              End Onboarding            Existing                 Yes     Notify Customer
+                                                             Login to Digital
+                                                                Banking
+                                                                                               and Complete
+                                                                                              ETB Origination
+                                                                                                                        Customer            X            to Complete ETB                End
+                                                                                                                        Check                            Origination                                          IDVerse
+                                       Yes                                                                                                      No
+
+
+                                                   No
+                                Existing                                                                                                                                  Save &
+                                                           Product Selection                       T&Cs                Personal Details         OTP                                                           ID&V
+                               Customer                                                                                                                                  Resume?
+
+ Prospect
+                                                                                                                          Equifax
+                                                                                                                      Marketing Portal          Twilio
+                                                                                                                                                                          Jump to
+                                                                                                                                                                           step x
+
+                                                                                                   STP - IDV and Biocatch
+                                                                                                   veriﬁcation (<799)
+                                                                                                   success                                        Questionnaire -
+                                                                               Credential                                     Application
+                               Complete                                                                                                          source of income                 Tax Details
+                                                                                Creation                                       Review
+                                                                                                                                                    & purpose
+
+
+
+
+                                                                                                                                                                    Biocatch
+
+
+                                                                                                                ID&V Failed
+                                                                                  Complete
+                                                                                                                                                                     Biocatch                   ID&V result
+                                                                                Onboarding and                                                                                                    check
+                                                                                                                                                                                                                          AML Check
+                                                                                                                                                                    Veriﬁcation
+Back-Office
+                                                                                Notify Applicant
+
+
+
+                                                                                                                                                                                                                            Equifax
+                                                                                                                                                                                                                        Marketing Portal
+       Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+
+                                                                                                                                                                                                                                        30
+    Proposed Solution for Existing Customer Retail Deposit Origination
+    Process
+
+                                                                                                                                   Questionnaire -
+                                      Login to Digital                                                  Personal Details                                        Onboarding
+                                                                             Product Selection   T&Cs                             source of income
+                                         Banking                                                            Review                                               Complete
+                                                                                                                                     & purpose
+
+Customer
+
+
+
+
+                                                                                                                                   Digital Banking
+                                                                                                                                     Application
+                                                                                                                                       Center
+
+
+
+
+                                                                                                             Request additional information & notify customer
+
+
+
+                                                                                                                                                                 Review
+                                                                                                                                                                Application
+
+Back-Office
+
+
+
+
+     Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+
+                                                                                                                                                                              31
+                                                                                                                                                3rd party Integration
+                                                                                                                                                 - Existing MyState
+                                                                                                                                                       solution
+
+   Proposed Solution for In-Branch Retail Onboarding                                                                                            3rd party Integration -
+                                                                                                                                                     Backbase
+                                                                                                                                                    Marketplace
+   Process
+
+                                                              Review &
+                                                                                                                               Credential
+                                                               Submit
+                                                                                                                                Creation
+                                                              eConsent
+
+Prospect
+
+
+
+
+                                                                                                                              Questionnaire -
+                       Product Selection                 Trigger eConsent    Personal Details    ID&V        Tax Details     source of income   Complete
+                                                                                                                                & purpose
+
+Branch-Staff
+                                                                                 Equifax
+                                                                Twilio                          IDVerse     AML Check
+                                                                             Marketing Portal
+
+
+     Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+                                                                                                              Equifax
+                                                                                                                                                                        32
+                                                                                                          Marketing Portal
+Proposed NTB Retail Onboarding Journey UX
+
+
+
+
+     Product      Personal Details   OTP Veriﬁcation   ID&V
+     Selection
+
+
+
+
+                                                              33
+Proposed NTB Retail Onboarding Journey UX
+
+
+
+
+    Source of income   Tax Details   Credential     Application
+       & purpose                      Creation    Review & Submit
+
+
+
+
+                                                                    34
+04   Journey Assessment
+
+
+     4.1. Onboarding
+     4.2. Customer Servicing
+Engagement banking provides you with an opportunity to
+engage your customers in a value-driven exchange
+
+                           acquire                                        Customer Servicing
+                                                                        (Servicing and Loyalty)
+                                                             Reduce your cost to serve and improve customer retention and loyalty
+           onboarding                 digital                By creating uncluttered and intuitive customer experiences on the digital
+           & origination             banking               channels, prioritizing and perfecting the value-adding functionalities. As well as
+                                                                time spent by customer service reps on non-value adding activities
+  expand                                        activate
+
+                                                                           Cost to Serve
+            activation               human                                  Customers
+                                                                                                                Customer Retention
+           & expansion               assist
+
+                                                                             Employee                             Process Efficiency
+                                                                           Empowerment
+                           retain
+
+
+
+                                                                                            Adoption of Digital
+                                                                                                Channels
+
+
+
+                                                                                                                                                36
+Customer Servicing | Business Beneﬁts
+Identifying areas of value to the business
+
+
+                                                         acquire                                                       ● Adoption of digital
+                                                                                                                         channels reduces
+                                                                                                        Reduce Costs
+                                                                                                                         call-center, MO and BO
+                                                                                                                         load & branch traffic
+                                onboarding                               digital
+                                & origination                           banking
+
+        expand                                                                     activate
+                                                                                              Beneﬁts
+
+                                  activation                            human
+                                 & expansion                            assist
+
+
+                                                           retain                                                      ● Retain Customers
+                                                                                                          Increase     ● Free up capacity to sell
+                                                                                                          Revenue        additional products and / or
+                                                                                                                         build relationships
+
+Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+
+                                                                                                                                                    37
+Customer Servicing | Digital Capability Map
+Most common Daily Banking journeys handled by non-digital channels
+
+                                                                        Integrated solutions                 Partial         Not Available                      Did Not Analyze/ Not applicable
+
+
+
+Availability of Journeys by Channel
+                                                                          Internet
+Customer Journeys                                       Mobile App                             Branch / RM     Call-center
+                                                                          Banking
+                                                                                                                                     12% of all CC volumes requiring 2-3 mins to handle for
+Balance Enquiry                                                                                                                      security reasons
+
+                                                                                                                                     Potentially driven by lack of easily accessible self help
+Internet Banking Support                                                                                                             options
+
+
+Transfers & Payments
+
+
+Disputes                                                                                                                             7% of volumes, requiring 5-10 mins to solve and toggling
+                                                                                                                                     between multiple systems by CC staff
+
+
+User Proﬁle Management
+                                                                                                                                     10-15 % of call centre volumes, driven by lack of self
+                                                                                                                                     service journeys and / or unintuitive UX that drives
+Card Management                                                                                                                      customers to CC for help
+
+
+
+Limit Increases / Decreases                                                                                                          Limited in digital channels for security
+Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+
+                                                                                                                                                                                                  38
+Summary - Daily Banking Friction Points
+
+
+
+                                                                           Limited Self service                  Limited Digital                 Dispute Resolution
+                           Customer experience                                 capabilities                       Capabilities
+                                                                          .Unintuitive UX design and user    Members have limited digital      Customer has no ability to raise
+                                                                             education on self service         capabilities i.e. tracking,      transaction dispute through
+                                                                           journeys for simple tasks like    retracting payments, limited      IB/Mobile and they depend on
+                                                                             balance enquire or proﬁle         transaction information         CC to get status for submitted
+                                                                                      updates                                                       complaint/ dispute
+
+
+
+
+                                                                            Multiple Handoffs                     Manual Work                      Multiple Systems
+                           Employee operations                            Multiple handoffs for transfers   Manual data entry of disputes in    CC agent & back office teams
+                                                                            and complaint resolution          branch and in CC. High call          juggle between multiple
+                                                                            process leading to longer         volumes at CC for tracking         systems lacking 360 view of
+                                                                         processing time and operational    transaction status or disputed       customer resulting in limited
+                                                                                      costs                          transactions              view over transaction status and
+                                                                                                                                                    dispute event tracking
+
+
+
+ Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+
+                                                                                                                                                                             39
+Impact | Customer Servicing
+Create End-to-end Digital Experiences. From friction &
+frustration to delight & loyalty.                                                                                                                                                             Average Yearly Beneﬁts
+
+
+                     Enable Status Tracking
+                     Real time status tracking enabling
+                     customers to have full view and accessibility                                                >30%
+                                                                                                                     NPS lift
+                                                                                                                     potential
+                                                                                                                                                                                                    $ 450 -                                       Backbase Impact
+                                                                                                                                                                                                                                               (increased loyalty and
+                                                                                                                                                                                                                                                     retention)
+                     Lean & clean UI                                                                                                                                                                500K                          5-10%
+                     Allow customers to initiate the desired
+                     transaction type in minimum number of                                                                                                                Added
+                                                                                                                                                                         Revenue
+                     clicks/time
+                                                                                                                    50%                                                                            Revenue Uplift
+
+                                                                                                               Reduction in CC                                                                                                   Cost Avoidance     Cost Avoided
+                     Automate Transaction Disputes handling                                                    calls for disputes                                                                                                                   ( manual
+                     Allow customers to raise disputes through digital
+                     channels and enable tracking and messaging
+                                                                                                                                                                                 Backbase Impact
+                                                                                                                                                                                                                   20-30%
+                                                                                                                                                                                                                                   $ 300 -          processing)
+
+                     capability between customer & bank
+                                                                                                                                                                                                                                   350K
+                                                                                                                  >20%
+                     Enable Employee With Employee Portal                                                         Reduced non
+                     Empower employees by providing them with                                                     value efforts
+                     customer insights on detailed proﬁle, past
+                     interactions and transaction details
+Source: Beneﬁts estimation based on baseline received from MyState and Backbase benchmarks data for impact generated with clients similar to MyState. Calculated assumptions based on Backbase experience where baseline data not available.
+
+
+                                                                                                                                                                                                                                                                   40
+05   Value Driven Roadmap
+                                                                                                                                                                                                          PRELIMINARY - TO BE UPDATED POST FINAL
+
+
+Estimated Business Beneﬁts View
+                                                                                                                                                                                                          AGREEMENT OF SCOPE & TIMELINES
+
+
+
+
+Business Beneﬁts Projected over 5 years
+
+                                                                                                                                Year 1               Year 2                 Year 3                    Year 4                    Year 5          Total
+
+
+These ﬁgures are based on the baseline
+                                                                                                                                                                   Revenue Growth
+numbers as received from MyState or
+secondary research, where data was unavailable.
+                                                                              Customer Onboarding Revenue                        $10 - 15K            $65 - 70K              $95 - 100K                $190 - 200K            $350 - 400K       $ 750 - 800K
+                                                                              Generation
+The ﬁrst year we limit the effectiveness of the
+solution based on the implementation timelines                                                                                  $15 - 20K             $75 - 80K               $85 - 90K                $100 - 120K               $150 - 200     $450 - 500K
+                                                                              Customer Loyalty and Retention
+and the expected application adoption rate.
+As the implementation of solutions progresses,                                                                                                               Cost Avoidance / Savings
+the enhanced engagement through the
+applications will further drive adoption and
+                                                                              Customer Onboarding Cost                          $45 - 50K         $150 - 200K              $170 - 190K                 $180 - 200K             $200 - 250K      $750 - 800K
+improve MyState’s digital cross-sell/ upsell
+                                                                              Reduction
+capabilities.
+                                                                                                                             $100 - 120K          $350 - 400K             $400 - 450K                 $450 - 500K             $500 - 550K           $1.5 - 2M
+                                                                              Customer Servicing
+Please note the beneﬁts only cover customer
+journeys that were a part of our deep-dive
+analysis (Onboarding & selected daily banking                                 Total Annual Beneﬁts                          $180 - 200K          $650 - 700K              $750 - 800K              $950 - 1,000K                    $1 - 1.5M      $3.5 - 4M
+journeys)
+
+
+This iteration of the analysis does not consider
+cost of IT and IT savings on Backbase.
+Source: Beneﬁts estimation based on baseline received from MyState and Backbase benchmarks data for impact generated with clients similar to MyState. Calculated assumptions based on Backbase experience where baseline data not available.
+
+
+                                                                                                                                                                                                                                                                42
+06   IT Fitment - Onboarding
+
+
+     Current State and Proposed “to-be”
+     architecture
+MyState Current-State Architecture - Onboarding
+
+
+
+
+Source: MyState team
+
+                                                  44
+MyState To-Be Architecture - Onboarding
+                                          Digital Onboarding Flow
+
+
+                                                                                                                    Google Analytics
+
+    Customer                                                                             Employee
+                                                                                      (Case Manager)
+
+                                                                                                                        Optimzely
+
+
+
+
+                                                                                                             A           IDVerse
+                                                                                                             P
+                                                                                                             I
+                                                                                                             M   Equifax Marketing Portal
+                                API              API               API        API
+
+
+                                      Digital Onboarding Platform
+                                                    Process &                                  BB Identity
+                             Interaction                                   Case                                         Biocatch
+                                                     Decision
+                               engine                                    data store
+                                                      engine
+
+                                                   Pre-built add-ons
+
+                                                                                                                         Bancs
+
+Backbase                                                 Twilio
+ Platform
+
+
+Source: Journey Assessment Workshops; MyState Data; Backbase Analysis                                                                       45
+MyState To-Be Architecture - Onboarding
+                                                                                                              End
+                                                                        Login to Digital                  Onboarding                  Existing                      Notify Customer
+                                                                           Banking                       and Complete                 Customer              X       to Complete                     End
+                                                                                                        ETB Origination               Check                                                                               IDVersse
+                                                     Yes                                                                                                            ETB Origination
+
+
+                                                              No
+                                                Existing                                                                                                                                    Save &
+                                                                    Product Selection                      T&Cs                  Personal Details                 OTP                                                       ID&V
+                                               Customer                                                                                                                                    Resume?
+
+                       Prospect
+
+                                                                                     Account Creation                               Equifax
+                                                                                                                                Marketing Portal                  Twilio
+                                                                                         in Bancs                                                                                           Jump to
+                                                                                                                                                                                             step x
+
+                                                                                                           STP - IDV and Biocatch
+                                                                                                           veriﬁcation (<799)
+                                                                                                           success                                                 Questionnaire -
+                                                                                           Credential                                   Application
+                                               Complete                                                                                                           source of income                   Tax Details
+                                                                                            Creation                                     Review
+                                                                                                                                                                     & purpose
+
+
+
+
+                                                                                                                                                                                      Biocatch
+
+
+                    Case Manager                                                                                          ID&V Failed
+                                                                                        Complete
+                                                                                                                                                                                       Biocatch                    ID&V result
+                                                                                      Onboarding and                                                                                                                 check
+                                                                                                                                                                                                                                      AML Check
+                                                                                                                                                                                      Veriﬁcation
+                                                                                      Notify Applicant
+
+
+
+                                                                                                                                                                                                                                     ComplyAdvant
+                                                                                                                                                                                                                                         age
+
+
+                                                                                                           API                  API                   API              API
+
+
+                                                                                                                            Platform Engines
+
+                                                                                                        Interaction                     Process                   Case
+                                                      Backbase                                            engine                         engine                 data store
+                                                       Platform
+                                                                                                                                Pre-built connectors
+                                                                                                                                                                                                                                                    46
+Source: Journey Assessment Workshops; MyState Data; Backbase Analysis
+Flow Engines | Interaction Engine
+
+       API            API               API        API
+
+
+                    Digital Onboarding
+                            Process &
+      Interaction                               Case
+                             Decision
+        engine                                data store
+                              engine
+
+
+
+
+                                                           Personal    Address      ID&V      Applicants       SSN            T&C
+                                                            details   validation
+
+                                                           Continue    Continue    Continue    Continue      Continue       Continue
+
+      Screen orchestration                                                          Back         Back
+
+
+
+       1. Orchestrates screen ﬂows and ensures
+          the right experiences are rendered on
+          any digital touchpoint (mobile or desktop)
+                                                                                                           Co-applicant   Co-applicant
+                                                                                                            information    information
+      2. Reduces friction by automatically saving                                                            Continue       Continue
+         the user’s progress and enabling them to
+         continue later on any touchpoint
+
+
+
+                                                                                                                                         47
+Flow Engines | Process Engine
+
+       API            API               API        API
+
+
+                    Digital Onboarding
+                            Process &
+      Interaction                               Case
+                             Decision
+        engine                                data store
+                              engine
+
+
+
+
+      Process Orchestration &
+      Decisioning
+       1. Automates business processes and
+          decision making within a journey, based
+          on BPMN 2.0 and DMN standards
+
+      2. Orchestrates complex processes and
+         workload across applicant / bank
+         employee personas
+
+                                                           48
+Flow Engines | Case data store
+
+       API             API               API        API
+
+
+                    Digital Onboarding
+                             Process &
+      Interaction                                Case
+                              Decision
+        engine                                 data store
+                               engine
+
+
+
+
+      Data Storage & Case Manager
+      1.     A single source of truth of the
+             applicant’s data throughout the ﬂow.
+
+      2.     Helps reduce errors and increase
+             consistency by creating a single source
+             of truth for all user data
+
+
+
+
+                                                            49
+Let’s make it happen
+together
+THANK YOU
+

@@ -131,15 +131,152 @@
 - **Team of 50 RMs:** $1-2M annually
 - **ROI Contribution:** Typically 15-25% of total business case
 
+## Entitlements & Operational Efficiency (NAM Wealth)
+
+### RM Administrative Load
+
+| Parameter | Typical Range | Source |
+|-----------|---------------|--------|
+| Admin Hours per RM/Week | 6-10 hours | NAM Wealth Engagements |
+| RM Loaded Cost (NAM) | $180-220K/year | 2025 Benchmark |
+| Admin Time Reduction (Digital) | 40-60% | Backbase Implementations |
+| RM Hourly Cost | $85-105/hour | Derived |
+
+### IT Support Metrics
+
+| Parameter | Typical Range | Source |
+|-----------|---------------|--------|
+| IT Support FTEs (Wealth) | 2-5 per 50-100 RMs | NAM Engagements |
+| IT FTE Loaded Cost | $110-130K/year | 2025 Benchmark |
+| Support Reduction (Digital) | 30-50% | Backbase Implementations |
+
+### Platform Consolidation Opportunities
+
+| System | Typical Cost/Seat | Reduction Potential |
+|--------|-------------------|---------------------|
+| CRM (Salesforce, etc.) | $2,500-4,000/yr | 20-40% seats |
+| Legacy Portal | $500-1,500/yr | 80-100% |
+| Workflow Tools | $300-800/yr | 50-70% |
+
+### Client Retention Value Lever
+
+| Parameter | Conservative | Moderate | Aggressive |
+|-----------|--------------|----------|------------|
+| Retention Improvement | 1% | 2% | 3-4% |
+| Avg Client AUM | $5-15M | $10-25M | $15-50M |
+| Revenue Rate (bps) | 50-75 | 75-100 | 100-150 |
+
+**Formula:**
+```
+Retention Revenue = (# Clients) × (Retention Improvement %) × (Avg AUM) × (Revenue Rate)
+```
+
+### Implementation Ramp (Entitlements)
+
+| Factor | Year 1 | Year 2 | Year 3 | Year 4 | Year 5 |
+|--------|--------|--------|--------|--------|--------|
+| Implementation % | 25% | 75% | 100% | 100% | 100% |
+| Adoption Rate | 25% | 50% | 75% | 85% | 90% |
+
+---
+
 ## Sources
 
 1. **Goodbody Stockbrokers** - Value Consulting Engagement (July 2022)
 2. **HNB Wealth Management** - ROI Model V12 (December 2024)
 3. **Weatherbys Bank** - Value Consulting Final (2022)
-4. **Backbase Consulting Playbook** - Metrics Benchmark Master
-5. **Industry Reports** - GlobalData, Capgemini World Wealth Report
+4. **TriState Capital** - Value Assessment (2025) - NAM Wealth
+5. **Backbase Consulting Playbook** - Metrics Benchmark Master
+6. **Industry Reports** - GlobalData, Capgemini World Wealth Report
 
 ---
 
-*Last Updated: 2025-06-01*
+## Wealth ROI Value Levers (APAC/Emerging Markets)
+
+### HNB Sri Lanka Business Case Reference
+
+**Context:** Mass Affluent to HNW wealth management, 13K WM customers, 2.8M retail base
+
+| Value Lever | 5-Year Value | Key Drivers |
+|-------------|--------------|-------------|
+| Retail-to-Wealth Upgrades | $10-15M | 66K upgrades/year × digital acquisition |
+| RM Capacity Avoided (Digital) | $5-10M | Scale without adding headcount |
+| Servicing Cost Avoidance | $1-2M | Self-service shift, reduced manual processing |
+| Prospecting Effectiveness | $0.2M | +20-30% lead conversion |
+| Onboarding Cost Avoidance | $0.1M | 40% effort reduction |
+| **Total 5-Year Value** | **$20-25M** | Conservative estimate |
+
+### Backbase Impact Benchmarks
+
+| Impact Area | Conservative | Moderate | Aggressive |
+|-------------|--------------|----------|------------|
+| Prospecting Conversion Uplift | 15% | 20-30% | 40% |
+| RM Admin Time Reduction | 30% | 30-40% | 50% |
+| Onboarding Effort Reduction | 30% | 40% | 50% |
+| Servicing Cost Avoidance | 20% | 30-40% | 50% |
+
+**Source:** HNB Assessment and Solutioning Report (December 2025)
+
+### Sri Lanka Market Context
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Emerging Affluent Population | 1.8M households | LKR 150-500K monthly income |
+| Average FS Relationships | 3-4 per customer | High competition for wallet share |
+| Retail Investor Growth | 2x since 2020 | Preference for managed WM solutions |
+| Key Competitors | NDB Wealth, Capital Alliance, JB Advantage | Digitally-enabled alternatives |
+
+---
+
+## Digital Wealth ROI (Canada)
+
+### Tangerine/Scotiabank Reference (2025)
+
+**Context:** Canadian Digital Bank, Mass Affluent wealth management, ~2M clients, $7.3B AUM
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| Total Tangerine Clients | 2,000,000 | Full client base |
+| Mass Affluent % (Canada) | 23% | Market proportion |
+| Estimated Mass Affluent Clients | 460,000 | Calculated |
+| Tangerine Mass Affluent (Active Wealth) | 138,000 | 30% using for wealth |
+| Total AUM | $7.3B CAD | Estimated 2025 |
+| Average AUM per Client | $52,899 CAD | Calculated |
+| Number of Advisors | 200 | Wealth advisors |
+| Clients per Advisor (Current) | 690 | High ratio |
+| Fee Rate | 0.77% | On AUM |
+| Baseline Attrition | 8% | Annual |
+
+#### Digital Impact Assumptions
+
+| Parameter | Value | Source |
+|-----------|-------|--------|
+| Productivity Gain (Digital) | 30% | Backbase Estimate |
+| Attrition Improvement | 3% reduction | Backbase Estimate |
+| AUM Uplift (Engagement) | 15% | Conservative vs McKinsey 1.5-2.5x |
+
+#### Value Levers (Tangerine)
+
+| Value Lever | Mechanism | Annual Value (CAD) |
+|-------------|-----------|-------------------|
+| Advisor Productivity | +207 clients/advisor × AUM growth | $16.9M |
+| Attrition Reduction | 3% improvement × AUM saved | $2.8M |
+| AUM Growth (Engagement) | 15% uplift on existing AUM | $8.4M |
+| **Total Annual Impact** | | **$28.1M** |
+
+#### 5-Year Business Case (Tangerine)
+
+| Year | Annual Value (CAD) | Cumulative (CAD) |
+|------|-------------------|------------------|
+| Year 1 | Ramp | - |
+| Year 2 | $21.1M | $21.1M |
+| Year 3 | $28.1M | $49.2M |
+| Year 4 | $28.7M | $77.9M |
+| Year 5 | $29.2M | $107.1M |
+
+**Source:** Tangerine Digital Wealth Business Case (August 2025)
+
+---
+
+*Last Updated: 2026-02-05*
 *Classification: Internal - Value Consulting Use Only*

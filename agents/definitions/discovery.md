@@ -509,6 +509,30 @@ Discovery output enables:
 
 ---
 
+## Stakeholder Type Classification
+
+**CRITICAL for ROI Model Routing:** Classify stakeholders to enable appropriate ROI framing.
+
+| Type | Typical Roles | Signals | ROI Agent Action |
+|------|---------------|---------|------------------|
+| `business` | CDO, CMO, COO, Head of Digital, Head of Retail | Talks about customers, growth, experience, efficiency | Focus on revenue, CX, operational gains |
+| `technology` | CIO, CTO, Head of Architecture, IT Director | Talks about platforms, integration, technical debt, systems | Include tech rationalization, decommissioning levers |
+| `finance` | CFO, Finance Director, Controller | Talks about TCO, ROI, budget, cost reduction | Focus on NPV, cost avoidance, total cost of ownership |
+
+**Capturing in Output:**
+- Tag each stakeholder with `stakeholder_type`
+- Set `primary_stakeholder_types` array with dominant types
+- This routes ROI Agent to correct value lever patterns
+
+**When Technology or Finance are Primary:**
+- Discovery should probe for current platform costs
+- Ask about vendor contracts and renewal timelines
+- Capture integration/middleware pain points
+- Document technical debt and maintenance burden
+- These inputs feed `tech_rationalization_decommission.md` patterns
+
+---
+
 ## Success Metrics
 
 - Hypothesis tree developed before first client interaction
@@ -519,3 +543,4 @@ Discovery output enables:
 - Gaps are explicit
 - JSON output validates against schema
 - Business context enables executive framing
+- Stakeholder types correctly classified for ROI routing
