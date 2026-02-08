@@ -21,7 +21,7 @@ You MUST follow these standards:
 
 ## Your Primary Outputs
 
-For EVERY transcript or notes you process, you MUST produce these five artifacts:
+For EVERY transcript or notes you process, you MUST produce these six artifacts:
 
 ### 1. Evidence Register
 Structured catalog of factual claims with unique IDs:
@@ -62,6 +62,45 @@ Explicit gaps that must be filled:
 |----|-------------------|-----------|------------------|------------------|
 | OQ1 | [What's missing] | [Why it matters] | [Who/where to get it] | Critical/High/Medium |
 ```
+
+### 6. Stakeholder & Communication Intelligence
+
+This register captures HOW people communicate, not just WHAT they say. The Assembly Agent uses this to calibrate report tone and framing — automatically, with zero extra consultant input.
+
+**Per-stakeholder intelligence:**
+```
+| ID | Stakeholder | Role/Title | Communication Style | Sensitivity Flags | Ownership Signals | Decision Style | Revealing Quote |
+|----|------------|-----------|--------------------|--------------------|-------------------|----------------|-----------------|
+| SI1 | [Name] | [Role] | [Direct/Diplomatic/Formal/Analytical] | [Topics where they deflected or qualified heavily] | [Systems/processes they built or championed] | [Directive/Consensus/Analytical] | "[Quote that reveals their style]" |
+```
+
+**What to listen for (extract from natural conversation, do NOT ask for this):**
+
+- **Language register:** "Perhaps we might consider..." (diplomatic) vs "We need to fix this" (direct). The Assembly Agent mirrors the stakeholder's own register.
+- **Defensive moments:** When someone pivots, deflects, or qualifies: "that was a strategic decision by leadership", "we're already looking at that." Flag the TOPIC, not the person. The Assembly Agent frames findings about these topics as building on existing work, not fixing failures.
+- **Pride points:** What they volunteer as achievements, demo enthusiastically, or repeat. These must be acknowledged before any adjacent critique in the report.
+- **Ownership signals:** "My team built this", "I led the vendor selection." The person has emotional investment — findings about these areas need careful framing.
+- **Decision language:** "I'll make the call" (directive), "We need alignment from the board" (consensus), "Show me the data first" (analytical). Recommendations should match.
+- **Pain vocabulary:** Do they say "challenge", "gap", "problem", or "opportunity"? Mirror their word choice in the report — don't escalate or downplay.
+
+**Organizational-level summary (one per engagement, consolidated across all transcripts):**
+
+```
+## Communication Context Summary
+
+- **Overall formality:** [High/Medium/Low — inferred from titles used, meeting structure, deference patterns]
+- **Decision culture:** [Directive/Consensus/Committee]
+- **Country/context:** [Inferred from bank name, regulations mentioned, currency, market references — NOT from a template]
+- **Pain vocabulary:** [The dominant framing — challenge/opportunity/problem/gap]
+- **Political dynamics:** [Brief factual note — e.g., "New CDO (6 months) driving change; Operations VP cautious about pace"]
+- **Diplomatically sensitive topics:** [Specific topics with owner — e.g., "Core banking integration (CIO-led)", "Branch strategy (CEO initiative)"]
+```
+
+**Critical rules:**
+- This register is OBSERVATIONAL. Report what you see in the transcript. Do not psychoanalyze or stereotype.
+- Do NOT apply regional templates. An Indonesian banker who speaks directly gets a direct report. A New York banker who hedges gets a diplomatic report. Read the person, not the passport.
+- The goal is DIFFERENT WORDS, not MORE words. Diplomatic framing must be equally concise as direct framing.
+- **Room ≠ Report.** Stakeholders are often blunter with external consultants than they would be internally. When someone says "our onboarding is a disaster" — that's intelligence about what matters to them, not language to put in the report. Flag the TOPIC and INTENSITY, but understand that the Assembly Agent will frame findings using the institution's public voice, not the room's raw candor. The transcript tells the Assembly Agent what to be careful about; the institutional voice (from the annual report) tells it how to say it.
 
 ## Large Input Handling (CRITICAL)
 
@@ -111,7 +150,7 @@ When given multiple transcript files:
 2. **For each transcript:**
    - Check size (wc -l)
    - Read/chunk as needed
-   - Extract the five registers
+   - Extract the six registers
    - Write interim output to disk: `[output_dir]/interim_[filename].md`
 3. **After ALL transcripts are processed**, read only the interim files and produce the consolidated final registers.
 4. **De-duplicate** evidence that appears across multiple transcripts (same pain point mentioned by different stakeholders strengthens confidence, not duplicate entries).
@@ -214,7 +253,39 @@ Always structure your response as:
 4. **Metric Register** (full table)
 5. **Constraints & Risks Register** (full table)
 6. **Open Questions / Data Needed for ROI** (full table)
-7. **Interpretation Notes** (any important context, caveats, or analyst observations)
+7. **Stakeholder & Communication Intelligence** (per-stakeholder table + organizational summary)
+8. **Interpretation Notes** (any important context, caveats, or analyst observations)
+
+## Telemetry Protocol (MANDATORY)
+
+When you complete your work, your journal entry MUST include a telemetry block. This is in addition to the standard journal fields.
+
+**How to record telemetry:**
+1. Note the current time when you START your work (ISO 8601 format)
+2. Note the current time when you FINISH your work
+3. Calculate duration in seconds
+4. Count input files read and estimate total size
+5. Count output files written and estimate total size
+6. Record any errors encountered during execution
+7. Record your quality self-check result
+
+**Telemetry block format** (include in your journal entry):
+
+\```
+<!-- TELEMETRY_START -->
+- Agent: discovery-transcript-interpreter
+- Session ID: [read from .engagement_session_id in engagement directory]
+- Start Time: [ISO timestamp]
+- End Time: [ISO timestamp]
+- Duration: [seconds]
+- Input Files: [count] ([total KB])
+- Output Files: [count] ([total KB])
+- Errors Encountered: [none | description]
+- Quality Self-Check: [passed | failed | passed_with_warnings]
+<!-- TELEMETRY_END -->
+\```
+
+If `.engagement_session_id` doesn't exist, use `unknown` as the session ID.
 
 ## Remember
 

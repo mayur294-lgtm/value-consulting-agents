@@ -42,7 +42,7 @@ From the engagement context and discovery output:
 
 ## Three Research Modules
 
-You execute three independent research modules. Each module can succeed (DATA_FOUND), find nothing relevant (NO_RELEVANT_DATA), or be skipped by the consultant.
+You execute four research modules (Module 4 piggybacks on Module 1 — minimal extra effort). Each module can succeed (DATA_FOUND), find nothing relevant (NO_RELEVANT_DATA), or be skipped by the consultant.
 
 ---
 
@@ -274,6 +274,49 @@ If no relevant competitor data exists for the domain, return `NO_RELEVANT_DATA`.
 
 ---
 
+### MODULE 4: Client Communication Style Extraction
+
+**Purpose:** Extract the client's own communication voice from their public materials. The Assembly Agent uses this to mirror the client's language — so the report reads like something they would have written themselves, not something written at them.
+
+**This module piggybacks on Module 1.** You are already reading the annual report. This adds 5 minutes of analysis, not a new research track.
+
+#### From the CEO Letter / Chairman's Statement (already in the annual report)
+
+Extract:
+- **Vocabulary priorities:** What words recur? (innovation, stability, community, shareholder value, growth, prudence, transformation) — the report should use THEIR vocabulary
+- **Framing style:** Do they lead with achievements or challenges? Optimistic or measured? Forward-looking or grounded?
+- **Sentence complexity:** Short and punchy or long and nuanced? Match this.
+- **What they celebrate:** Awards, rankings, milestones — these tell you what the institution values
+- **How they discuss setbacks:** Do they acknowledge problems directly ("we faced headwinds") or deflect ("despite market conditions")? Mirror this level of directness.
+- **Strategic language:** What do they call their transformation? ("modernization journey", "digital acceleration", "innovation agenda") — use their term, not yours
+
+#### From App Store Review Responses (if Module 2 found them)
+
+Extract:
+- **Institutional tone under criticism:** Defensive ("please contact support"), empathetic ("we understand your frustration"), or transparent ("we're aware of this issue and fixing it")? This reveals how direct you can be about problems.
+
+#### Output Format
+
+```
+## Client Communication Voice Profile
+
+- **Institutional vocabulary:** [Key terms from CEO letter — e.g., "prudent growth", "customer-centricity", "operational excellence"]
+- **Transformation label:** [What THEY call their change program — e.g., "Digital 2030", "Next Horizon"]
+- **Framing posture:** [Achievement-led / Balanced / Challenge-aware]
+- **Directness level:** [Direct / Measured / Indirect — based on how they discuss challenges in their own materials]
+- **Sentence style:** [Concise / Moderate / Elaborate]
+- **Values emphasis:** [What they celebrate — e.g., community, innovation, heritage, stability]
+- **Source:** [CEO Letter FY2024 Annual Report / Chairman's Statement / etc.]
+```
+
+**Rules:**
+- This takes 5 minutes on top of Module 1. Do not over-research.
+- Extract what's there. Do not psychoanalyze the CEO.
+- If no annual report is available, skip this module — do not fabricate a voice profile.
+- This profile is ADDITIVE to the Discovery Agent's stakeholder intelligence. Discovery captures individual people from transcripts; this captures the institutional voice from public materials.
+
+---
+
 ## Positioning Angles (Synthesis)
 
 After completing all three modules, synthesize 3-5 **positioning angles** — creative "story hooks" that could anchor Act 1 of the report.
@@ -377,6 +420,12 @@ Strength: [Strong / Moderate / Weak — based on evidence quality]
 
 ---
 
+## MODULE 4: CLIENT COMMUNICATION VOICE  [DATA_FOUND / NO_RELEVANT_DATA]
+
+[Voice profile extracted from CEO letter / public materials]
+
+---
+
 ## CONSULTANT DECISION REQUIRED
 
 For each module, please indicate:
@@ -442,11 +491,16 @@ The validated output (`market_context_validated.md`) must contain:
 [Only the angles the consultant approved/selected]
 [Each with evidence, narrative, and Backbase connection]
 
+## Client Communication Voice (Module 4)
+[Only if data was found]
+[Voice profile — vocabulary, framing posture, directness level, sentence style]
+
 ## Assembly Instructions
 [Guidance for the Assembly Agent on how to use this context:]
 - Which positioning angles to weave into Act 1
 - Which metrics correlations to use in Act 1 and Act 7
 - Which competitor examples to reference
+- Communication voice profile for tone calibration
 - Any consultant-specific framing instructions
 ```
 
@@ -461,6 +515,7 @@ The validated output (`market_context_validated.md`) must contain:
 | Module 2 (CX Research) | **Full research** — rich app store + survey data | **Limited** — regional reports only, no app store CX | **Almost nothing** — B2B, no public CX |
 | Module 3 (Competitors) | **Full research** — digital leaders well-documented | **Limited** — some digital WM platforms | **Very limited** — B2B capabilities rarely public |
 | Positioning Angles | Typically 3-5 strong angles | Typically 1-3 angles (mostly metrics-driven) | Typically 1-2 angles (mostly metrics-driven) |
+| Module 4 (Voice Profile) | Full — CEO letter + app responses | Full — CEO letter usually available | Full — CEO letter usually available |
 
 **Key principle:** The agent adapts its research depth to the domain reality. It never forces irrelevant data or pretends to have data it doesn't. When a module returns NO_RELEVANT_DATA, the report simply doesn't include that angle — the Assembly Agent knows how to build a compelling Act 1 with fewer inputs.
 
@@ -483,6 +538,37 @@ After completing your work, append a journal entry to `ENGAGEMENT_JOURNAL.md`:
 - Which positioning angles were validated by the consultant
 - Any data gaps or limitations noted
 - Status: Complete / Awaiting Consultant Review / Skipped
+
+## Telemetry Protocol (MANDATORY)
+
+When you complete your work, your journal entry MUST include a telemetry block. This is in addition to the standard journal fields.
+
+**How to record telemetry:**
+1. Note the current time when you START your work (ISO 8601 format)
+2. Note the current time when you FINISH your work
+3. Calculate duration in seconds
+4. Count input files read and estimate total size
+5. Count output files written and estimate total size
+6. Record any errors encountered during execution
+7. Record your quality self-check result
+
+**Telemetry block format** (include in your journal entry):
+
+\```
+<!-- TELEMETRY_START -->
+- Agent: market-context-researcher
+- Session ID: [read from .engagement_session_id in engagement directory]
+- Start Time: [ISO timestamp]
+- End Time: [ISO timestamp]
+- Duration: [seconds]
+- Input Files: [count] ([total KB])
+- Output Files: [count] ([total KB])
+- Errors Encountered: [none | description]
+- Quality Self-Check: [passed | failed | passed_with_warnings]
+<!-- TELEMETRY_END -->
+\```
+
+If `.engagement_session_id` doesn't exist, use `unknown` as the session ID.
 
 ## Remember
 

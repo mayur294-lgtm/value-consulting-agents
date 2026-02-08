@@ -26,12 +26,18 @@ At the start of every new engagement:
 1. Copy `templates/outputs/engagement_journal.md` to `[engagement_dir]/ENGAGEMENT_JOURNAL.md`
 2. Fill in the Engagement Summary section
 3. List all input files in the Files Inventory
+4. Generate a session UUID and write it to `[engagement_dir]/.engagement_session_id`:
+   ```bash
+   uuidgen > [engagement_dir]/.engagement_session_id
+   ```
+   This UUID ties all agent telemetry together for this engagement run.
 
 ### Maintaining the Journal
 **Every agent** writes to the journal when it starts and finishes work. The Orchestrator enforces this by:
-- Instructing each subagent to append its journal entry when done
-- Verifying journal entries exist after each agent completes
+- Instructing each subagent to append its journal entry **including the TELEMETRY block** when done
+- Verifying journal entries AND telemetry blocks exist after each agent completes
 - Updating the Files Inventory as new outputs are produced
+- If a subagent's journal entry is missing the telemetry block, prompt: "Please append your telemetry block (TELEMETRY_START/END) to the journal before we proceed."
 
 ### Resuming an Engagement
 When a consultant returns to an existing engagement:
@@ -186,13 +192,13 @@ For any single file over 1000 lines (transcripts, PDFs, reports):
 
 Agents pass work through files, not through context:
 ```
-Discovery Agent → writes evidence_register.md, pain_points.md, metrics.md
-Market Context Researcher → reads discovery outputs + does web research → writes market_context_brief.md
+Discovery Agent → writes evidence_register.md, pain_points.md, metrics.md, stakeholder_intelligence.md
+Market Context Researcher → reads discovery outputs + does web research → writes market_context_brief.md (includes client voice profile)
   → Consultant reviews → writes market_context_validated.md (or SKIPPED)
 Capability Agent → reads discovery outputs (NOT raw transcripts)
 ROI Agent → reads capability output + metrics (NOT raw transcripts)
 Roadmap Agent → reads ROI output + capability output
-Assembly Agent → reads all output files + market_context_validated.md (if exists)
+Assembly Agent → reads all output files + market_context_validated.md (if exists) + stakeholder_intelligence.md (for tone calibration)
 ```
 
 **Parallel execution opportunity:** After Discovery completes, Market Context Researcher, Capability Agent, and ROI Agent can all run in parallel since they read from Discovery outputs independently.
@@ -207,12 +213,13 @@ Route work to specialized agents based on engagement type:
 
 **Discovery/Transcript Agent:**
 - Input: Raw transcripts (one at a time), meeting notes, artifacts
-- Output: Evidence register, pain points, stakeholder map, business context
+- Output: Evidence register, pain points, stakeholder map, business context, **stakeholder & communication intelligence** (per-person communication style, sensitivity flags, organizational tone)
 - **Context rule:** Process one transcript per invocation, write interim output to disk
+- **Communication intelligence:** The Discovery Agent now extracts HOW stakeholders communicate (not just what they say). This feeds the Assembly Agent's tone calibration — no consultant input needed.
 
 **Market Context Researcher (DEFAULT — runs after Discovery):**
 - Input: Engagement context (country, domain, bank name, size tier) + discovery outputs (pain points, metrics, objectives)
-- Output: Validated market context brief with financial metric correlations, outside-in CX research (if available for domain), competitor capabilities (if available), and consultant-validated positioning angles
+- Output: Validated market context brief with financial metric correlations, outside-in CX research (if available for domain), competitor capabilities (if available), consultant-validated positioning angles, and **client communication voice profile** (extracted from CEO letter / public materials — feeds Assembly Agent's tone calibration)
 - **Key behavior:** Presents findings to consultant for validation before passing to Assembly. Consultant can accept, modify, request more research, or skip entirely.
 - **Domain awareness:** Adapts research depth to domain reality (rich data for retail, limited for wealth/commercial). Returns `NO_RELEVANT_DATA` gracefully when outside-in data isn't available rather than forcing irrelevant data.
 - **Pipeline position:** Runs after Discovery completes. Can run in PARALLEL with Capability, ROI, and Roadmap agents since they are independent workstreams.
@@ -232,9 +239,10 @@ Route work to specialized agents based on engagement type:
 - Output: Phased roadmap, value milestones, resource profiles
 
 **Assembly Agent:**
-- Input: All required subagent outputs + optional validated market context
-- Output: Cohesive, executive-ready final deliverables
+- Input: All required subagent outputs + optional validated market context + stakeholder communication intelligence
+- Output: Cohesive, executive-ready final deliverables with tone calibrated to client context
 - **Market context handling:** If `market_context_validated.md` exists, weave into Act 1 narrative and Act 7 metrics bridge. If not, build Act 1 from discovery findings and domain knowledge only.
+- **Tone calibration:** Assembly Agent runs a "Read the Room" calibration step (Step 2c) before writing. Uses stakeholder intelligence (from Discovery) + client voice profile (from Market Context) to set vocabulary, framing approach, and directness level. Zero consultant input needed — fully inferred from upstream signals.
 
 #### Ignite Inspire Agents
 
@@ -338,6 +346,78 @@ When this review identifies inconsistencies:
 5. **Critical issues**: If an inconsistency cannot be resolved without re-running an upstream agent, STOP and escalate to the consultant with a specific description and proposed resolution.
 
 Do NOT declare the engagement complete until all items in 7a–7e pass. Document any issues found and resolutions applied in the engagement journal.
+
+### Step 8: Mark Complete and Sync Telemetry
+
+The moment Step 7 passes, the engagement is done. Do these in order — the early steps are cheap and resilient, so even if the session dies mid-Step-8, the completion is recorded.
+
+#### 8a. Write completion marker (FIRST — before anything else)
+
+```bash
+# This marker tells git hooks and backup systems the engagement is done
+touch [engagement_dir]/.complete
+```
+
+Update the engagement journal header: `Current Status: Complete`
+
+These two writes are the minimum viable "engagement ended" signal. Even if the session dies after this point, the git hooks will detect completion passively from the output files + `.complete` marker and sync telemetry on the next commit.
+
+#### 8b. Append telemetry summary to journal
+
+<!-- TELEMETRY_START -->
+- Agent: orchestrator
+- Session ID: [from .engagement_session_id]
+- Start Time: [engagement start ISO timestamp]
+- End Time: [engagement end ISO timestamp]
+- Duration: [total seconds from first agent start to final completion]
+- Input Files: [total input files across all agents]
+- Output Files: [total output files produced]
+- Errors Encountered: [summary of any errors across all agents]
+- Quality Self-Check: [overall: passed | passed_with_warnings | failed]
+<!-- TELEMETRY_END -->
+
+#### 8c. Auto-sync telemetry to central repo (MANDATORY)
+
+The consultant should NOT have to push, sync, or run any command. You MUST proactively sync telemetry at the end of every engagement by running these steps:
+
+1. **Extract telemetry** from the engagement journal:
+   ```bash
+   python3 scripts/extract_telemetry.py [engagement_dir]/ENGAGEMENT_JOURNAL.md --output /tmp/flywheel_telemetry.json
+   ```
+
+2. **Format as GitHub Issue body**:
+   ```bash
+   python3 scripts/format_telemetry_issue.py --input /tmp/flywheel_telemetry.json > /tmp/flywheel_issue_body.md
+   ```
+
+3. **Create GitHub Issue** on the central repo:
+   ```bash
+   gh issue create \
+     --repo [CENTRAL_REPO] \
+     --title "[Telemetry] $(date +%Y-%m-%d) — [domain] [engagement_type]" \
+     --label "telemetry" \
+     --body-file /tmp/flywheel_issue_body.md
+   ```
+
+4. **If `gh` CLI is not available or not authenticated**, save telemetry locally:
+   - Append the JSON to `[repo_root]/.telemetry_cache.jsonl`
+   - Tell the consultant: "Telemetry saved locally. It will auto-sync on next git commit via the post-commit hook."
+
+5. **Confirm to the consultant**: "Engagement complete. Telemetry has been synced to the Flywheel."
+
+**Why this matters:** This is how the Flywheel learns. Every engagement's performance data feeds back into the system to identify what needs improving. The consultant doesn't need to do anything — you handle it.
+
+#### Resilience: Three layers, zero human action
+
+The system has three independent paths to get telemetry from a completed engagement to the Flywheel. If any one succeeds, the chain works:
+
+| Layer | Trigger | Human action needed |
+|-------|---------|-------------------|
+| **Primary** | Orchestrator Step 8c runs `gh issue create` directly | None |
+| **Backup** | Post-commit hook detects output files + journal, syncs immediately | None (fires on git commit) |
+| **Fallback** | Pre-push hook syncs any cached telemetry | None (fires on git push) |
+
+The triage workflow runs both on weekly cron AND reactively when a telemetry issue is created. Once triage labels an improvement issue `ready-for-dev`, the dev agent starts automatically.
 
 ## Benchmark Confidence Protocol
 
