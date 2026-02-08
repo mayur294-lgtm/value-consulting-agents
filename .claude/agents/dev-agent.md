@@ -86,6 +86,64 @@ Create a clear description of what you changed and why:
 - [How to verify this improvement works]
 ```
 
+## Benchmark Evolution Rules (CRITICAL)
+
+When an improvement issue involves benchmark corrections (consultants repeatedly adjusting a benchmark value):
+
+### Never Override — Always Accumulate
+
+Benchmarks are a historical record. Treat them like an append-only ledger:
+
+1. **Keep the original benchmark intact** — published source, date, value, and confidence level stay as-is
+2. **Add a "Field Observations" section** below the benchmark with the correction pattern:
+   ```markdown
+   ### Field Observations
+   | Date | Region | Correction | Source | Issue |
+   |------|--------|-----------|--------|-------|
+   | 2026-02 | EMEA | $450 → $380 | Consultant had client data | #12 |
+   | 2026-03 | EMEA | $450 → $410 | Client benchmark report | #18 |
+   | 2026-03 | APAC | $450 → $520 | Higher CAC in APAC market | #21 |
+   ```
+3. **After 3+ consistent corrections in the same direction**, widen the benchmark range:
+   - Original: `$450`
+   - Updated: `$350–$500 (median $410 from 3 field observations)`
+   - Keep the original value visible: `Published: $450 (McKinsey 2024)`
+4. **Never adopt a single client's number** as the new benchmark — one data point is an observation, not a benchmark
+5. **Regional splits emerge from patterns** — if EMEA corrections are consistently downward and APAC upward, create region-specific entries rather than changing the global value
+
+### What This Looks Like in Practice
+
+**Before (original benchmark file):**
+```markdown
+## Customer Acquisition Cost — Retail Banking
+- **Value:** $450
+- **Source:** McKinsey Digital Banking Report 2024
+- **Confidence:** Medium
+- **Match Type:** Global
+```
+
+**After Dev Agent processes 3 correction telemetry entries:**
+```markdown
+## Customer Acquisition Cost — Retail Banking
+- **Value:** $350–$500 (published point estimate: $450)
+- **Source:** McKinsey Digital Banking Report 2024
+- **Confidence:** Medium
+- **Match Type:** Global (regional splits emerging — see Field Observations)
+
+### Field Observations
+_Accumulated from consultant engagement telemetry. These do NOT replace the published benchmark — they refine it._
+
+| Date | Region | Original → Corrected | Reason | Telemetry |
+|------|--------|---------------------|--------|-----------|
+| 2026-02 | EMEA | $450 → $380 | Client data | #12 |
+| 2026-03 | EMEA | $450 → $410 | Client benchmark | #18 |
+| 2026-04 | EMEA | $450 → $395 | Regional norm | #25 |
+
+**Pattern detected:** EMEA retail CAC is consistently 11-16% below global median.
+**Recommended regional adjustment:** EMEA $350–$420 | Global $400–$500
+**Adjustment applied:** 2026-04-15 (3+ observations threshold met)
+```
+
 ## Hard Rules
 
 1. **One fix per PR** — never bundle multiple unrelated changes
@@ -95,6 +153,7 @@ Create a clear description of what you changed and why:
 5. **Max 1 PR per run** — focus on the highest-priority item only
 6. **Preserve patterns** — follow the existing code style and conventions in the repo
 7. **No scope creep** — fix exactly what the issue describes, nothing more
+8. **Benchmarks are append-only** — never delete or overwrite a published benchmark value; add field observations and widen ranges
 
 ## What You Can Change
 
