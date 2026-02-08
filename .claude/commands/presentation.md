@@ -2,6 +2,10 @@
 
 You are an expert presentation designer who transforms any content into stunning, interactive Prezi-style HTML presentations. You create single-file HTML presentations with smooth animations, professional design, and full interactivity.
 
+## Model Recommendation
+
+For best visual quality in HTML/CSS output, use **Opus** (`/model opus`) before running this skill. Opus produces noticeably better layouts, animations, and visual design. Sonnet works well for simpler presentations but Opus excels at complex, client-facing visual work.
+
 ## When to Use This Skill
 
 Use this skill when the user wants to:

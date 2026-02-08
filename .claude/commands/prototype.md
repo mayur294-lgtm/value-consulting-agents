@@ -4,6 +4,10 @@ description: Generate interactive HTML prototypes for Backbase use cases
 
 You are a prototype designer creating interactive HTML mockups for Backbase Ignite engagements.
 
+## Model Recommendation
+
+For best visual quality in HTML prototypes, use **Opus** (`/model opus`) before running this skill. Opus produces noticeably better UI layouts and interaction design.
+
 ## What You Create
 
 Single-file HTML prototypes that:

@@ -119,6 +119,18 @@ _No proposal patterns extracted yet._
 
 ---
 
+## Auto-Harvest Log
+
+> Entries below are written automatically by the Orchestrator's Step 9 at the end of every engagement. No human action required.
+
+| Engagement ID | Domain | Region | Harvest Date | Entries Written (A:B:C:D) | Method |
+|---------------|--------|--------|--------------|---------------------------|--------|
+| *(auto-populated)* | | | | | auto |
+
+**Legend:** A = Benchmarks, B = Pain Points, C = Capability Maturity, D = ROI Patterns
+
+---
+
 ## Pending Extractions
 
 | Engagement | Pending Files | Reason | Action Required |

@@ -419,6 +419,115 @@ The system has three independent paths to get telemetry from a completed engagem
 
 The triage workflow runs both on weekly cron AND reactively when a telemetry issue is created. Once triage labels an improvement issue `ready-for-dev`, the dev agent starts automatically.
 
+### Step 9: Automatic Knowledge Harvest (Zero Consultant Action)
+
+After telemetry sync, the system automatically harvests reusable knowledge from the engagement. This step is what makes every engagement make the next one smarter.
+
+**Pre-conditions:**
+- Engagement status is "Complete" (Step 8a marker exists)
+- All output files exist (evidence_register.md, capability_assessment.md, roi_report.md)
+- Post-assembly review (Step 7) has passed
+
+**Idempotency guard:** Check `knowledge/learnings/EXTRACTION_REGISTRY.md` for this engagement's session ID. If already listed, skip harvest entirely.
+
+#### 9a. Read processed outputs
+
+Read ONLY the processed outputs — never raw transcripts (they contain client-identifiable data):
+- `[engagement_dir]/outputs/evidence_register.md` (or `[engagement_dir]/evidence_register.md`)
+- `[engagement_dir]/outputs/capability_assessment.md`
+- `[engagement_dir]/outputs/roi_report.md`
+- `[engagement_dir]/ENGAGEMENT_JOURNAL.md` (for domain, region, engagement metadata)
+
+Extract the engagement metadata from the journal:
+- Domain (retail, sme, commercial, wealth, corporate)
+- Region (EMEA, SEA, NAM, APAC, LATAM, Africa, etc.)
+- Size tier (infer from context: Tier 1 >$10B, Tier 2 $1-10B, Tier 3 <$1B)
+- Engagement session ID (from `.engagement_session_id`)
+
+#### 9b. Extract and anonymize
+
+Apply these anonymization rules to ALL harvested data:
+- Replace client name with `[Client-{domain}-{region}-{YYYY}]`
+- Strip stakeholder names, internal project names, org chart details
+- Keep: domain, region, size tier, metrics, patterns, evidence IDs
+
+Extract into 4 categories:
+
+**Category A — Benchmarks** (from `roi_report.md`):
+- Actual metric values used in the ROI model (CAC, cost-per-transaction, churn rate, etc.)
+- Field-adjusted values where consultant corrected default benchmarks
+- Only metrics with evidence references (E-IDs)
+- Skip metrics built on "Low" confidence assumptions
+- Append to: `knowledge/learnings/benchmarks/{domain}_{region}_{YYYY}.md` using HARVEST_TEMPLATE
+
+**Category B — Pain Points** (from `evidence_register.md`):
+- Pain→impact patterns with severity and evidence
+- Check existing entries in `knowledge/learnings/pain_points/` — if same theme+domain exists, increment frequency instead of creating new
+- Append to: `knowledge/learnings/pain_points/{domain}_patterns.md` using HARVEST_TEMPLATE
+
+**Category C — Capability Maturity** (from `capability_assessment.md`):
+- Maturity scores per capability with evidence basis
+- Key gaps identified per capability
+- Append to: `knowledge/learnings/capability_frameworks/{domain}_maturity.md` using HARVEST_TEMPLATE
+
+**Category D — ROI Patterns** (from `roi_report.md`):
+- Value lever types, benefit ranges, payback periods
+- Only levers that passed sensitivity analysis
+- Capture all three scenarios (conservative/base/aspirational)
+- Append to: `knowledge/learnings/roi_models/{domain}_{lever_type}.md` using HARVEST_TEMPLATE
+
+#### 9c. Quality gates
+
+Before writing any harvested data:
+- [ ] Every metric has an evidence reference (E-ID)
+- [ ] No client names remain in harvested text
+- [ ] No stakeholder names remain
+- [ ] Engagement session ID is recorded for deduplication
+- [ ] All values are normalized (annual figures, consistent currency notation)
+
+#### 9d. Write to knowledge base
+
+For each category, append entries to the target files using the HARVEST_TEMPLATE format in each directory. If the target file doesn't exist yet, create it with the template header.
+
+#### 9e. Update extraction registry
+
+Append a row to `knowledge/learnings/EXTRACTION_REGISTRY.md` in the Auto-Harvest Log:
+
+```markdown
+| [engagement_id] | [domain] | [region] | [YYYY-MM-DD] | [A:count, B:count, C:count, D:count] | auto |
+```
+
+#### 9f. Log to engagement journal
+
+Append to the engagement journal:
+
+```markdown
+### [YYYY-MM-DD HH:MM] — Knowledge Harvest (Automatic)
+
+**Action:** Auto-harvested engagement knowledge to system knowledge base
+
+**Entries Written:**
+- Benchmarks: [count] entries → `knowledge/learnings/benchmarks/...`
+- Pain Points: [count] entries (new: X, frequency-updated: Y) → `knowledge/learnings/pain_points/...`
+- Capability Maturity: [count] entries → `knowledge/learnings/capability_frameworks/...`
+- ROI Patterns: [count] entries → `knowledge/learnings/roi_models/...`
+
+**Skipped:** [count] metrics skipped (low confidence / missing evidence)
+
+**Status After This Step:**
+- **Completed:** Knowledge harvest — engagement fully processed
+- **Next:** None — engagement lifecycle complete
+```
+
+#### 9g. Confirm to consultant
+
+After harvest completes, briefly confirm:
+> "Knowledge harvested: [X] benchmarks, [Y] pain points, [Z] maturity scores, [W] ROI patterns written to the knowledge base. This engagement will make the next one smarter."
+
+Do NOT require consultant approval for the harvest. It runs automatically, silently, at the end of every engagement.
+
+---
+
 ## Benchmark Confidence Protocol
 
 **High Confidence Mode:**
@@ -469,6 +578,25 @@ The triage workflow runs both on weekly cron AND reactively when a telemetry iss
    - Default to conservative estimates
    - Always show downside scenarios
    - Never optimize for "best case"
+
+## Model Routing Strategy
+
+Each agent uses the most cost-effective model for its task complexity. Do NOT downgrade models where output quality matters — the cost difference is cents per engagement, not dollars.
+
+| Tier | Model | Agents | Rationale |
+|------|-------|--------|-----------|
+| **Reasoning** | Opus | dev-agent, review-agent | Code generation and code review require deep architectural reasoning |
+| **Consulting** | Sonnet | All 10 consulting agents | Best quality-to-cost ratio for analysis, writing, and synthesis |
+| **Mechanical** | Haiku | release-agent | Tag, changelog, email — no judgment needed |
+| **Visual Design** | Opus (recommended) | /presentation, /presentation-v2, /prototype skills | HTML/CSS visual output is noticeably better with Opus |
+
+**Cost per engagement: ~$3-5 total** (at Sonnet rates: $3/M input, $15/M output).
+
+**Rules:**
+1. Never downgrade a consulting agent to Haiku — the $0.15 savings isn't worth the quality risk
+2. Visual/HTML design skills should recommend Opus in their docs — consultant can toggle with `/model opus`
+3. If prompt caching becomes available, enable it on Discovery and Assembly agents first (they have the largest context)
+4. If batch processing becomes available, the Knowledge Harvest (Step 9) is a good candidate for async processing (non-time-sensitive)
 
 ## Communication Style
 

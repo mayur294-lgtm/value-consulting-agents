@@ -108,6 +108,21 @@
 |----|----------|-----------|----------|--------|
 | Q1 | [Question] | [Agent] | Critical/High/Medium | Open / Resolved |
 
+## Knowledge Harvest Log
+
+> Auto-populated by Orchestrator Step 9. Do not edit manually.
+
+| Category | Entries Written | Target File | Harvest Date |
+|----------|----------------|-------------|--------------|
+| Benchmarks | — | — | — |
+| Pain Points | — | — | — |
+| Capability Maturity | — | — | — |
+| ROI Patterns | — | — | — |
+
+**Harvest Status:** Pending (runs automatically at engagement completion)
+
+---
+
 ## How to Resume This Engagement
 
 1. Read this journal file — it contains the complete history
