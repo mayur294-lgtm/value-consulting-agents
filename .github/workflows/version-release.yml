@@ -46,3 +46,34 @@ jobs:
               draft: false,
               prerelease: false
             });
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install jinja2
+
+      - name: Generate release notes email
+        run: |
+          python scripts/parse_changelog.py \
+            "${{ steps.version.outputs.VERSION }}" \
+            --output release_data.json
+
+          python scripts/render_email.py \
+            --template templates/emails/release_notes.html \
+            --data release_data.json \
+            --output release_email.html
+
+      - name: Send release notes to team
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "VC AgenticOS ${{ steps.version.outputs.VERSION }} — What's New"
+          to: vc@backbase.com
+          from: "VC AgenticOS <releases@backbase.com>"
+          html_body: file://release_email.html

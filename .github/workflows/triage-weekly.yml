@@ -1,0 +1,59 @@
+name: "Flywheel: Triage Agent"
+
+# Runs on TWO triggers:
+# 1. Weekly cron (Monday 8 AM UTC) — catches anything that slipped through
+# 2. When a telemetry issue is created — reactive, no waiting
+# No LLM cost — pure Python.
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'  # Every Monday at 8 AM UTC
+  issues:
+    types: [opened, labeled]
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    # Run on: cron, manual dispatch, OR telemetry-labeled issues only
+    if: >
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'telemetry'))
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Triage Agent
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO="${{ github.repository }}"
+
+          echo "=== Flywheel Triage Agent ==="
+          echo "Repository: $REPO"
+          echo "Date: $(date -u)"
+          echo ""
+
+          # Run aggregation (creates improvement issues, labels top one as ready-for-dev)
+          python scripts/aggregate_issues.py \
+            --repo "$REPO" \
+            --output triage_output.json \
+            --max-issues 3
+
+      - name: Upload triage results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: triage-results-${{ github.run_number }}
+          path: triage_output.json
+          retention-days: 30

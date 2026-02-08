@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flywheel: PR Approval Request</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1A1F36;line-height:1.6;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 20px;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+
+<!-- Header -->
+<tr>
+<td style="background:linear-gradient(135deg,#1A56FF 0%,#0044CC 100%);padding:32px 40px;text-align:left;">
+  <div style="font-size:14px;color:rgba(255,255,255,0.8);font-weight:500;letter-spacing:1px;text-transform:uppercase;">FLYWHEEL DEV AGENT</div>
+  <div style="font-size:24px;color:#ffffff;font-weight:700;margin-top:8px;">New Improvement Requires Approval</div>
+</td>
+</tr>
+
+<!-- Problem Section -->
+<tr>
+<td style="padding:32px 40px 0;">
+  <div style="font-size:11px;color:#1A56FF;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">PROBLEM IDENTIFIED</div>
+  <div style="font-size:18px;font-weight:600;color:#1A1F36;margin-bottom:12px;">{{ issue_title }}</div>
+  <div style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;
+    {% if severity == 'critical' %}background:#FFE5E5;color:#D32F2F;
+    {% elif severity == 'high' %}background:#FFF0E5;color:#E65100;
+    {% elif severity == 'moderate' %}background:#FFF8E1;color:#F57F17;
+    {% else %}background:#E8F5E9;color:#2E7D32;{% endif %}">
+    {{ severity | upper }}
+  </div>
+</td>
+</tr>
+
+<!-- Stats Row -->
+<tr>
+<td style="padding:24px 40px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eef0f3;border-bottom:1px solid #eef0f3;padding:20px 0;">
+  <tr>
+    <td width="33%" align="center" style="padding:16px 0;">
+      <div style="font-size:36px;font-weight:700;color:#1A56FF;">{{ occurrence_count }}</div>
+      <div style="font-size:13px;color:#6B7280;margin-top:4px;">Occurrences</div>
+    </td>
+    <td width="33%" align="center" style="padding:16px 0;">
+      <div style="font-size:36px;font-weight:700;color:#1A56FF;">{{ affected_consultants }}</div>
+      <div style="font-size:13px;color:#6B7280;margin-top:4px;">Consultants</div>
+    </td>
+    <td width="33%" align="center" style="padding:16px 0;">
+      <div style="font-size:36px;font-weight:700;color:#1A56FF;">{{ time_wasted }}</div>
+      <div style="font-size:13px;color:#6B7280;margin-top:4px;">Min Wasted</div>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+
+<!-- Root Cause -->
+<tr>
+<td style="padding:0 40px 24px;">
+  <div style="font-size:11px;color:#1A56FF;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">ROOT CAUSE</div>
+  <div style="font-size:15px;color:#374151;">{{ root_cause }}</div>
+</td>
+</tr>
+
+<!-- Solution -->
+<tr>
+<td style="padding:0 40px 24px;">
+  <div style="font-size:11px;color:#1A56FF;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">PROPOSED SOLUTION</div>
+  <div style="font-size:15px;color:#374151;">{{ solution_summary }}</div>
+</td>
+</tr>
+
+<!-- Changes -->
+<tr>
+<td style="padding:0 40px 24px;">
+  <div style="font-size:11px;color:#1A56FF;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">FILES CHANGED</div>
+  <div style="background:#f8f9fb;border-radius:8px;padding:16px;font-family:'SF Mono',Consolas,monospace;font-size:13px;color:#374151;">
+    {{ changes_summary }}
+  </div>
+</td>
+</tr>
+
+<!-- Risk -->
+<tr>
+<td style="padding:0 40px 24px;">
+  <div style="font-size:11px;color:#1A56FF;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">RISK ASSESSMENT</div>
+  <div style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;
+    {% if risk_level == 'HIGH' %}background:#FFE5E5;color:#D32F2F;
+    {% elif risk_level == 'MEDIUM' %}background:#FFF8E1;color:#F57F17;
+    {% else %}background:#E8F5E9;color:#2E7D32;{% endif %}">
+    {{ risk_level }}
+  </div>
+  <span style="font-size:14px;color:#6B7280;margin-left:8px;">{{ risk_description }}</span>
+</td>
+</tr>
+
+<!-- Quality Gates -->
+<tr>
+<td style="padding:0 40px 24px;">
+  <div style="font-size:11px;color:#1A56FF;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">QUALITY GATES</div>
+  <table width="100%" cellpadding="8" cellspacing="0">
+    <tr>
+      <td style="font-size:14px;">Test Agent</td>
+      <td align="right" style="font-size:14px;color:#2E7D32;font-weight:600;">Passed</td>
+    </tr>
+    <tr style="border-top:1px solid #eef0f3;">
+      <td style="font-size:14px;">Review Agent</td>
+      <td align="right" style="font-size:14px;color:#2E7D32;font-weight:600;">Approved</td>
+    </tr>
+  </table>
+</td>
+</tr>
+
+<!-- CTA Button -->
+<tr>
+<td align="center" style="padding:8px 40px 32px;">
+  <a href="{{ pr_url }}" style="display:inline-block;padding:14px 32px;background:#1A56FF;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;font-size:16px;">
+    Review Pull Request &rarr;
+  </a>
+</td>
+</tr>
+
+<!-- Footer -->
+<tr>
+<td style="padding:24px 40px;background:#f8f9fb;border-top:1px solid #eef0f3;">
+  <div style="font-size:12px;color:#9CA3AF;text-align:center;">
+    Auto-generated by the Flywheel Dev Agent<br>
+    Issue #{{ issue_number }} &bull; {{ date }}
+  </div>
+</td>
+</tr>
+
+</table>
+</td></tr>
+</table>
+
+</body>
+</html>

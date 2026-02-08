@@ -1,0 +1,168 @@
+# Flywheel Quality Metrics
+# Used by the Test Agent to validate agent outputs and changes.
+# Each agent has structural checks (no LLM needed) and content checks.
+
+agents:
+  capability-assessment:
+    structural:
+      - name: "Has Executive Summary section"
+        pattern: "## .*Executive Summary"
+        min_matches: 1
+
+      - name: "Has Problem Map section"
+        pattern: "## .*Problem Map"
+        min_matches: 1
+
+      - name: "Has Capability Heatmap section"
+        pattern: "## .*Heatmap|## .*Heat Map"
+        min_matches: 1
+
+      - name: "Has Assumptions Register"
+        pattern: "## .*Assumptions"
+        min_matches: 1
+
+      - name: "Uses 0-4 maturity scale"
+        pattern: "\\| [0-4] \\|"
+        min_matches: 3
+
+      - name: "Has Evidence ID references"
+        pattern: "E\\d+"
+        min_matches: 5
+
+      - name: "Has Front/Middle/Back layer scoring"
+        pattern: "Front|Middle|Back"
+        min_matches: 3
+
+      - name: "Has Unconsidered Needs"
+        pattern: "Unconsidered"
+        min_matches: 1
+
+      - name: "Has Data & Intelligence section"
+        pattern: "Data.*Intelligence|AI.*Agentic"
+        min_matches: 1
+
+  roi-business-case-builder:
+    structural:
+      - name: "Has NPV or Net Present Value"
+        pattern: "NPV|Net Present Value"
+        min_matches: 1
+
+      - name: "Has scenario analysis"
+        pattern: "[Cc]onservative|[Bb]ase|[Aa]spirational"
+        min_matches: 2
+
+      - name: "Has Assumptions Register"
+        pattern: "## .*Assumptions"
+        min_matches: 1
+
+      - name: "Has sensitivity analysis"
+        pattern: "[Ss]ensitivity"
+        min_matches: 1
+
+      - name: "Has Evidence references"
+        pattern: "E\\d+"
+        min_matches: 3
+
+      - name: "Has cost model"
+        pattern: "[Ii]mplementation.*[Cc]ost|[Tt]otal.*[Ii]nvestment"
+        min_matches: 1
+
+  discovery-transcript-interpreter:
+    structural:
+      - name: "Has Evidence Register"
+        pattern: "Evidence.*Register|## Evidence"
+        min_matches: 1
+
+      - name: "Has Evidence IDs"
+        pattern: "E\\d+:"
+        min_matches: 5
+
+      - name: "Has Pain Points section"
+        pattern: "Pain.*Point|## Pain"
+        min_matches: 1
+
+      - name: "Has Metrics section"
+        pattern: "## .*Metric"
+        min_matches: 1
+
+      - name: "Has stakeholder attribution"
+        pattern: "\\[.*\\]|—.*[A-Z]"
+        min_matches: 3
+
+  executive-narrative-assembler:
+    structural:
+      - name: "Has 7 acts"
+        pattern: "Act [1-7]|## Act"
+        min_matches: 5
+
+      - name: "Has Executive Summary"
+        pattern: "Executive Summary"
+        min_matches: 1
+
+      - name: "Has transformation narrative"
+        pattern: "[Tt]ransformation|[Ff]rom.*[Tt]o"
+        min_matches: 2
+
+      - name: "Has evidence references"
+        pattern: "E\\d+"
+        min_matches: 5
+
+  roadmap-prioritization:
+    structural:
+      - name: "Has phased roadmap"
+        pattern: "Phase [1-3]|Now.*Next.*Later"
+        min_matches: 1
+
+      - name: "Has dependencies"
+        pattern: "[Dd]ependenc"
+        min_matches: 1
+
+      - name: "Has value milestones"
+        pattern: "[Mm]ilestone|[Vv]alue.*[Rr]ealization"
+        min_matches: 1
+
+  benchmark-librarian:
+    structural:
+      - name: "Has confidence levels"
+        pattern: "[Hh]igh.*[Cc]onfidence|[Mm]edium.*[Cc]onfidence|[Ll]ow.*[Cc]onfidence"
+        min_matches: 1
+
+      - name: "Has source attribution"
+        pattern: "[Ss]ource:|[Cc]itation:"
+        min_matches: 1
+
+# Agent definition file checks (for validating changes to .claude/agents/*.md)
+agent_definitions:
+  structural:
+    - name: "Has frontmatter"
+      pattern: "^---"
+      min_matches: 1
+
+    - name: "Has name field in frontmatter"
+      pattern: "name:"
+      min_matches: 1
+
+    - name: "Has Journal Entry section"
+      pattern: "Journal Entry"
+      min_matches: 1
+
+    - name: "Has Telemetry Protocol section"
+      pattern: "Telemetry Protocol"
+      min_matches: 1
+
+    - name: "Has TELEMETRY_START marker"
+      pattern: "TELEMETRY_START"
+      min_matches: 1
+
+# Knowledge file checks
+knowledge_files:
+  structural:
+    - name: "No client names (anonymization check)"
+      pattern: "\\b(Bank of|First National|Wells|Chase|HSBC|Barclays)\\b"
+      max_matches: 0
+      description: "Knowledge files should use anonymized references"
+
+    - name: "Has confidence levels for benchmarks"
+      pattern: "[Hh]igh|[Mm]edium|[Ll]ow"
+      min_matches: 1
+      applies_to: "**/benchmarks.md"

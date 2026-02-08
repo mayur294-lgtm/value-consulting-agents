@@ -1,0 +1,81 @@
+#!/bin/bash
+# Flywheel Telemetry: Sync cached telemetry to GitHub Issues on push
+#
+# This hook runs before every push and checks for cached telemetry data.
+# If found, it creates a GitHub Issue with the telemetry and clears the cache.
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+CACHE_FILE="$REPO_ROOT/.telemetry_cache.jsonl"
+FORMAT_SCRIPT="$REPO_ROOT/scripts/format_telemetry_issue.py"
+
+# Check if cache exists and has content
+if [ ! -f "$CACHE_FILE" ] || [ ! -s "$CACHE_FILE" ]; then
+    exit 0
+fi
+
+# Check if gh CLI is available and authenticated
+if ! command -v gh &> /dev/null; then
+    echo "[Flywheel] gh CLI not found. Telemetry cached locally. Run 'gh auth login' to enable auto-sync."
+    exit 0
+fi
+
+if ! gh auth status &> /dev/null 2>&1; then
+    echo "[Flywheel] gh CLI not authenticated. Telemetry cached locally. Run 'gh auth login' to enable auto-sync."
+    exit 0
+fi
+
+# Check if Python 3 is available
+if ! command -v python3 &> /dev/null; then
+    echo "[Flywheel] Python 3 not found. Telemetry cached locally."
+    exit 0
+fi
+
+# Determine the upstream repo (central, not fork)
+REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner' 2>/dev/null)
+if [ -z "$REPO" ]; then
+    echo "[Flywheel] Could not determine repo. Telemetry cached locally."
+    exit 0
+fi
+
+# Count entries
+ENTRY_COUNT=$(wc -l < "$CACHE_FILE" | tr -d ' ')
+TODAY=$(date +%Y-%m-%d)
+
+# Format issue body
+ISSUE_BODY=""
+if [ -f "$FORMAT_SCRIPT" ]; then
+    ISSUE_BODY=$(python3 "$FORMAT_SCRIPT" --input "$CACHE_FILE" 2>/dev/null)
+fi
+
+# Fallback if formatter fails
+if [ -z "$ISSUE_BODY" ]; then
+    ISSUE_BODY="## Telemetry Data
+
+$ENTRY_COUNT telemetry entries from local engagements.
+
+<details>
+<summary>Raw Data</summary>
+
+\`\`\`json
+$(cat "$CACHE_FILE")
+\`\`\`
+</details>"
+fi
+
+# Create the GitHub Issue
+ISSUE_URL=$(gh issue create \
+    --repo "$REPO" \
+    --title "[Telemetry] $TODAY — $ENTRY_COUNT entries" \
+    --label "telemetry" \
+    --body "$ISSUE_BODY" 2>/dev/null)
+
+if [ $? -eq 0 ]; then
+    echo "[Flywheel] Telemetry synced: $ISSUE_URL"
+    # Clear the cache after successful sync
+    > "$CACHE_FILE"
+else
+    echo "[Flywheel] Failed to create issue. Telemetry remains cached locally."
+fi
+
+# Don't block the push regardless of telemetry sync result
+exit 0

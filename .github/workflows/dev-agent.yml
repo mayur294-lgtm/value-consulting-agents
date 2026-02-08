@@ -1,0 +1,233 @@
+name: "Flywheel: Dev Agent (Event-Triggered)"
+
+# Triggers when an issue gets labeled 'ready-for-dev' by the Triage Agent.
+# Runs Dev Agent → Test Agent → Review Agent → Create PR → Email.
+# No schedule — only runs when there's work to do.
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  check-trigger:
+    runs-on: ubuntu-latest
+    if: github.event.label.name == 'ready-for-dev'
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+      issue_number: ${{ steps.check.outputs.issue_number }}
+      issue_title: ${{ steps.check.outputs.issue_title }}
+      issue_body: ${{ steps.check.outputs.issue_body }}
+    steps:
+      - name: Check if should run
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+
+            // Only process improvement issues
+            const labels = issue.labels.map(l => l.name);
+            if (!labels.includes('improvement')) {
+              core.setOutput('should_run', 'false');
+              return;
+            }
+
+            // Check if there's already a dev-agent PR open for this issue
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:flywheel/issue-${issue.number}`
+            });
+
+            if (prs.length > 0) {
+              core.info(`PR already exists for issue #${issue.number}, skipping.`);
+              core.setOutput('should_run', 'false');
+              return;
+            }
+
+            core.setOutput('should_run', 'true');
+            core.setOutput('issue_number', issue.number.toString());
+            core.setOutput('issue_title', issue.title);
+            core.setOutput('issue_body', issue.body);
+
+  dev-agent:
+    needs: check-trigger
+    if: needs.check-trigger.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      branch_name: ${{ steps.implement.outputs.branch_name }}
+      changes_made: ${{ steps.implement.outputs.changes_made }}
+      pr_description: ${{ steps.implement.outputs.pr_description }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic jinja2
+
+      - name: Run Dev Agent
+        id: implement
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ISSUE_NUMBER: ${{ needs.check-trigger.outputs.issue_number }}
+          ISSUE_TITLE: ${{ needs.check-trigger.outputs.issue_title }}
+          ISSUE_BODY: ${{ needs.check-trigger.outputs.issue_body }}
+        run: |
+          python scripts/dev_agent.py \
+            --issue-number "$ISSUE_NUMBER" \
+            --issue-title "$ISSUE_TITLE" \
+            --issue-body "$ISSUE_BODY"
+
+      - name: Upload dev agent output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-agent-output-${{ github.run_number }}
+          path: |
+            dev_agent_output.json
+            dev_plan.md
+
+  test-agent:
+    needs: [check-trigger, dev-agent]
+    if: needs.dev-agent.outputs.changes_made == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      test_passed: ${{ steps.test.outputs.passed }}
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.dev-agent.outputs.branch_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Test Agent
+        id: test
+        run: |
+          python scripts/test_agent.py \
+            --branch "${{ needs.dev-agent.outputs.branch_name }}" \
+            --base-branch "main"
+
+          echo "passed=$?" >> $GITHUB_OUTPUT
+
+  review-agent:
+    needs: [check-trigger, dev-agent, test-agent]
+    if: needs.test-agent.outputs.test_passed == '0'
+    runs-on: ubuntu-latest
+    outputs:
+      decision: ${{ steps.review.outputs.decision }}
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.dev-agent.outputs.branch_name }}
+          fetch-depth: 0  # Need full history for diff
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic
+
+      - name: Run Review Agent
+        id: review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ISSUE_NUMBER: ${{ needs.check-trigger.outputs.issue_number }}
+          ISSUE_BODY: ${{ needs.check-trigger.outputs.issue_body }}
+        run: |
+          # Get the diff
+          git diff main..HEAD > changes.diff
+
+          python scripts/review_agent.py \
+            --diff changes.diff \
+            --issue-body "$ISSUE_BODY" \
+            --dev-plan dev_plan.md
+
+  create-pr:
+    needs: [check-trigger, dev-agent, test-agent, review-agent]
+    if: needs.review-agent.outputs.decision == 'APPROVED'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.dev-agent.outputs.branch_name }}
+
+      - name: Create Pull Request
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_URL=$(gh pr create \
+            --title "[Flywheel] Fix: ${{ needs.check-trigger.outputs.issue_title }}" \
+            --body-file dev_plan.md \
+            --base main \
+            --head "${{ needs.dev-agent.outputs.branch_name }}" \
+            --label "dev-agent,needs-review" \
+            --assignee "mayur-backbase")
+
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+
+      - name: Comment on original issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ needs.check-trigger.outputs.issue_number }} \
+            --body "The Dev Agent has created a PR to address this issue: ${{ steps.pr.outputs.pr_url }}
+
+          **Test Agent:** Passed
+          **Review Agent:** Approved
+
+          Awaiting human review from @mayur-backbase."
+
+      - name: Send approval email
+        if: steps.pr.outputs.pr_url != ''
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "[Flywheel] PR requires your approval — ${{ needs.check-trigger.outputs.issue_title }}"
+          to: mayur@backbase.com
+          from: "VC AgenticOS Flywheel <flywheel@backbase.com>"
+          html_body: file://approval_email.html
+
+  handle-failure:
+    needs: [check-trigger, dev-agent, test-agent, review-agent]
+    if: failure() || needs.review-agent.outputs.decision == 'REQUEST_CHANGES'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label issue as needs-human
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue edit ${{ needs.check-trigger.outputs.issue_number }} \
+            --repo ${{ github.repository }} \
+            --remove-label "ready-for-dev" \
+            --add-label "needs-human-review"
+
+          gh issue comment ${{ needs.check-trigger.outputs.issue_number }} \
+            --repo ${{ github.repository }} \
+            --body "The Flywheel Dev Agent could not resolve this issue automatically. It has been escalated for human review.
+
+          **Reason:** Test or review did not pass after automated attempts."

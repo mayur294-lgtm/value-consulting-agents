@@ -1,0 +1,133 @@
+#!/bin/bash
+# Flywheel Telemetry: Extract and sync telemetry on commit
+#
+# Two detection modes:
+# 1. Journal-based: If an ENGAGEMENT_JOURNAL.md was modified, extract telemetry
+# 2. Passive completion: If committed files include the full output set
+#    (executive_summary.md + assessment_report.md + roi_report.md +
+#     roadmap.md + capability_assessment.md), the engagement is done —
+#    extract telemetry and attempt immediate sync (no waiting for push)
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+CACHE_FILE="$REPO_ROOT/.telemetry_cache.jsonl"
+EXTRACT_SCRIPT="$REPO_ROOT/scripts/extract_telemetry.py"
+FORMAT_SCRIPT="$REPO_ROOT/scripts/format_telemetry_issue.py"
+
+# Get all files changed in this commit
+CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null)
+
+if [ -z "$CHANGED_FILES" ]; then
+    exit 0
+fi
+
+# Check prerequisites
+if ! command -v python3 &> /dev/null; then
+    exit 0
+fi
+
+if [ ! -f "$EXTRACT_SCRIPT" ]; then
+    exit 0
+fi
+
+# --- Mode 1: Journal-based extraction (existing behavior) ---
+
+JOURNALS=$(echo "$CHANGED_FILES" | grep 'ENGAGEMENT_JOURNAL.md')
+
+for journal in $JOURNALS; do
+    full_path="$REPO_ROOT/$journal"
+    if [ -f "$full_path" ]; then
+        telemetry=$(python3 "$EXTRACT_SCRIPT" "$full_path" 2>/dev/null)
+        if [ $? -eq 0 ] && [ -n "$telemetry" ]; then
+            echo "$telemetry" | python3 -c "import sys,json; print(json.dumps(json.load(sys.stdin)))" >> "$CACHE_FILE" 2>/dev/null
+        fi
+    fi
+done
+
+# --- Mode 2: Passive completion detection ---
+# If the commit includes final deliverables, the engagement is done.
+# Find engagement directories that now have a complete output set.
+
+COMPLETION_MARKERS="executive_summary.md assessment_report.md roi_report.md roadmap.md capability_assessment.md"
+
+# Get unique engagement directories from committed output files
+ENGAGEMENT_DIRS=$(echo "$CHANGED_FILES" | grep -E '(executive_summary|assessment_report|roi_report|roadmap|capability_assessment)\.md' | xargs -I{} dirname "$REPO_ROOT/{}" | sort -u)
+
+for eng_dir in $ENGAGEMENT_DIRS; do
+    if [ ! -d "$eng_dir" ]; then
+        continue
+    fi
+
+    # Check if ALL completion markers exist in this directory
+    complete=true
+    for marker in $COMPLETION_MARKERS; do
+        # Check in the directory itself and in an outputs/ subdirectory
+        if [ ! -f "$eng_dir/$marker" ] && [ ! -f "$eng_dir/outputs/$marker" ]; then
+            complete=false
+            break
+        fi
+    done
+
+    if [ "$complete" = false ]; then
+        continue
+    fi
+
+    # Check if we already synced this engagement (marker file prevents double-sync)
+    SYNC_MARKER="$eng_dir/.telemetry_synced"
+    if [ -f "$SYNC_MARKER" ]; then
+        continue
+    fi
+
+    # Find the journal for this engagement
+    JOURNAL="$eng_dir/ENGAGEMENT_JOURNAL.md"
+    if [ ! -f "$JOURNAL" ]; then
+        continue
+    fi
+
+    # Extract telemetry if not already cached
+    telemetry=$(python3 "$EXTRACT_SCRIPT" "$JOURNAL" 2>/dev/null)
+    if [ $? -eq 0 ] && [ -n "$telemetry" ]; then
+        echo "$telemetry" | python3 -c "import sys,json; print(json.dumps(json.load(sys.stdin)))" >> "$CACHE_FILE" 2>/dev/null
+    fi
+
+    # Attempt immediate sync (don't wait for push)
+    if command -v gh &> /dev/null && gh auth status &> /dev/null 2>&1; then
+        REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner' 2>/dev/null)
+        if [ -n "$REPO" ] && [ -s "$CACHE_FILE" ]; then
+            ENTRY_COUNT=$(wc -l < "$CACHE_FILE" | tr -d ' ')
+            TODAY=$(date +%Y-%m-%d)
+
+            ISSUE_BODY=""
+            if [ -f "$FORMAT_SCRIPT" ]; then
+                ISSUE_BODY=$(python3 "$FORMAT_SCRIPT" --input "$CACHE_FILE" 2>/dev/null)
+            fi
+
+            if [ -z "$ISSUE_BODY" ]; then
+                ISSUE_BODY="## Telemetry Data
+
+$ENTRY_COUNT telemetry entries from completed engagement.
+
+<details>
+<summary>Raw Data</summary>
+
+\`\`\`json
+$(cat "$CACHE_FILE")
+\`\`\`
+</details>"
+            fi
+
+            ISSUE_URL=$(gh issue create \
+                --repo "$REPO" \
+                --title "[Telemetry] $TODAY — engagement complete ($ENTRY_COUNT entries)" \
+                --label "telemetry" \
+                --body "$ISSUE_BODY" 2>/dev/null)
+
+            if [ $? -eq 0 ]; then
+                echo "[Flywheel] Engagement complete. Telemetry synced: $ISSUE_URL"
+                > "$CACHE_FILE"
+                touch "$SYNC_MARKER"
+            fi
+        fi
+    fi
+done
+
+exit 0

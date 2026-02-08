@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VC AgenticOS Release</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1A1F36;line-height:1.6;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 20px;">
+<tr><td align="center">
+<table width="640" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+
+<!-- Header -->
+<tr>
+<td style="background:linear-gradient(135deg,#1A56FF 0%,#0044CC 100%);padding:48px 40px;text-align:center;">
+  <div style="font-size:14px;color:rgba(255,255,255,0.8);font-weight:500;letter-spacing:2px;text-transform:uppercase;">VALUE CONSULTING AGENTICOOS</div>
+  <div style="font-size:56px;font-weight:800;color:#ffffff;margin:8px 0;">v{{ version }}</div>
+  <div style="font-size:16px;color:rgba(255,255,255,0.7);">Released {{ release_date }}</div>
+</td>
+</tr>
+
+<!-- Intro -->
+<tr>
+<td style="padding:32px 40px 16px;">
+  <div style="font-size:16px;color:#374151;">
+    Hey team! Here's what's new in the latest update. Just <code style="background:#f0f2f5;padding:2px 6px;border-radius:4px;font-size:14px;">git pull</code> to get these improvements.
+  </div>
+</td>
+</tr>
+
+{% if new_features %}
+<!-- New Features -->
+<tr>
+<td style="padding:16px 40px;">
+  <div style="font-size:11px;color:#1A56FF;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;">NEW FEATURES</div>
+  {% for feature in new_features %}
+  <div style="background:#f0f4ff;border-left:4px solid #1A56FF;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:12px;">
+    <div style="font-size:16px;font-weight:600;color:#1A1F36;margin-bottom:4px;">{{ feature.title }}</div>
+    <div style="font-size:14px;color:#6B7280;">{{ feature.description }}</div>
+  </div>
+  {% endfor %}
+</td>
+</tr>
+{% endif %}
+
+{% if improvements %}
+<!-- Improvements -->
+<tr>
+<td style="padding:16px 40px;">
+  <div style="font-size:11px;color:#2E7D32;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;">IMPROVEMENTS</div>
+  {% for item in improvements %}
+  <div style="background:#f0faf4;border-left:4px solid #2E7D32;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:12px;">
+    <div style="font-size:16px;font-weight:600;color:#1A1F36;margin-bottom:4px;">{{ item.title }}</div>
+    <div style="font-size:14px;color:#6B7280;">{{ item.description }}</div>
+  </div>
+  {% endfor %}
+</td>
+</tr>
+{% endif %}
+
+{% if bug_fixes %}
+<!-- Bug Fixes -->
+<tr>
+<td style="padding:16px 40px;">
+  <div style="font-size:11px;color:#E65100;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;">BUG FIXES</div>
+  {% for fix in bug_fixes %}
+  <div style="background:#fff8f0;border-left:4px solid #E65100;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:12px;">
+    <div style="font-size:16px;font-weight:600;color:#1A1F36;margin-bottom:4px;">{{ fix.title }}</div>
+    <div style="font-size:14px;color:#6B7280;">{{ fix.description }}</div>
+  </div>
+  {% endfor %}
+</td>
+</tr>
+{% endif %}
+
+<!-- How to Update -->
+<tr>
+<td style="padding:24px 40px;">
+  <div style="background:#f8f9fb;border-radius:8px;padding:24px;">
+    <div style="font-size:15px;font-weight:600;color:#1A1F36;margin-bottom:8px;">How to Update</div>
+    <ol style="margin:0;padding-left:20px;color:#374151;font-size:14px;">
+      <li>Open your terminal in the Value Consulting AgenticOS directory</li>
+      <li>Run: <code style="background:#e8eaed;padding:2px 6px;border-radius:4px;">git pull origin main</code></li>
+      <li>That's it! New improvements are ready to use.</li>
+    </ol>
+  </div>
+</td>
+</tr>
+
+<!-- Flywheel Attribution -->
+<tr>
+<td style="padding:16px 40px 24px;">
+  <div style="background:#faf5ff;border-radius:8px;padding:16px 20px;text-align:center;">
+    <div style="font-size:13px;color:#7C3AED;">
+      These improvements were identified from consultant telemetry,<br>
+      built by the Flywheel Dev Agent, and reviewed before release.
+    </div>
+  </div>
+</td>
+</tr>
+
+<!-- Footer -->
+<tr>
+<td style="padding:24px 40px;background:#f8f9fb;border-top:1px solid #eef0f3;text-align:center;">
+  <div style="font-size:13px;color:#9CA3AF;">
+    <a href="{{ changelog_url }}" style="color:#1A56FF;text-decoration:none;">Full Changelog</a>
+    &bull;
+    <a href="mailto:mayur@backbase.com" style="color:#1A56FF;text-decoration:none;">Questions?</a>
+  </div>
+  <div style="font-size:11px;color:#D1D5DB;margin-top:8px;">
+    Value Consulting AgenticOS &bull; Backbase
+  </div>
+</td>
+</tr>
+
+</table>
+</td></tr>
+</table>
+
+</body>
+</html>

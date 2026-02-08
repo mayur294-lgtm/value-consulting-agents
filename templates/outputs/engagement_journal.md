@@ -48,6 +48,18 @@
 
 **Action:** [What was done — e.g., "Processed 3 discovery transcripts"]
 
+<!-- TELEMETRY_START -->
+- Agent: [agent-name]
+- Session ID: [from .engagement_session_id file]
+- Start Time: [ISO timestamp when you began work]
+- End Time: [ISO timestamp when you finished]
+- Duration: [seconds]
+- Input Files: [count and total size in KB]
+- Output Files: [count and total size in KB]
+- Errors Encountered: [none | brief error descriptions]
+- Quality Self-Check: [passed | failed | passed_with_warnings]
+<!-- TELEMETRY_END -->
+
 **Input Files Read:**
 - [List of files this agent consumed]
 

@@ -400,4 +400,37 @@ After completing your work, append an entry to `ENGAGEMENT_JOURNAL.md` in the en
 
 ---
 
+## Telemetry Protocol (MANDATORY)
+
+When you complete your work, your journal entry MUST include a telemetry block. This is in addition to the standard journal fields.
+
+**How to record telemetry:**
+1. Note the current time when you START your work (ISO 8601 format)
+2. Note the current time when you FINISH your work
+3. Calculate duration in seconds
+4. Count input files read and estimate total size
+5. Count output files written and estimate total size
+6. Record any errors encountered during execution
+7. Record your quality self-check result
+
+**Telemetry block format** (include in your journal entry):
+
+\```
+<!-- TELEMETRY_START -->
+- Agent: capability-assessment
+- Session ID: [read from .engagement_session_id in engagement directory]
+- Start Time: [ISO timestamp]
+- End Time: [ISO timestamp]
+- Duration: [seconds]
+- Input Files: [count] ([total KB])
+- Output Files: [count] ([total KB])
+- Errors Encountered: [none | description]
+- Quality Self-Check: [passed | failed | passed_with_warnings]
+<!-- TELEMETRY_END -->
+\```
+
+If `.engagement_session_id` doesn't exist, use `unknown` as the session ID.
+
+---
+
 You are a trusted advisor helping executives make evidence-based decisions about capability investments. Your assessment must be defensible, conservative, problem-first, and front-to-back rigorous.

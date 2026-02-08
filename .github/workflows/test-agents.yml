@@ -1,0 +1,118 @@
+name: "Flywheel: Test Agent (PR Guard)"
+
+# Runs on PRs that modify agent definitions, knowledge, or templates.
+# Validates structural quality — no LLM cost.
+
+on:
+  pull_request:
+    paths:
+      - '.claude/agents/**'
+      - 'knowledge/**'
+      - 'templates/outputs/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Get changed files
+        id: changed
+        run: |
+          FILES=$(git diff --name-only origin/main...HEAD | tr '\n' ' ')
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+
+      - name: Run quality checks
+        id: test
+        run: |
+          python scripts/test_agent.py \
+            --files ${{ steps.changed.outputs.files }} \
+            --output test_results.json
+
+      - name: Comment on PR with results
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let results;
+
+            try {
+              results = JSON.parse(fs.readFileSync('test_results.json', 'utf8'));
+            } catch (e) {
+              results = { total_passed: 0, total_failed: 0, files_checked: 0, results: {} };
+            }
+
+            const total = results.total_passed + results.total_failed;
+            const passed = results.total_failed === 0;
+            const icon = passed ? ':white_check_mark:' : ':x:';
+
+            let body = `## ${icon} Flywheel Quality Check\n\n`;
+            body += `**${results.total_passed}/${total}** checks passed across **${results.files_checked}** files.\n\n`;
+
+            // Show failed checks
+            for (const [file, checks] of Object.entries(results.results)) {
+              const failures = checks.filter(c => !c.passed);
+              if (failures.length > 0) {
+                body += `### ${file}\n`;
+                for (const f of failures) {
+                  body += `- :x: ${f.name}: ${f.reason}\n`;
+                }
+                body += '\n';
+              }
+            }
+
+            if (passed) {
+              body += '\nAll quality checks passed. Safe to merge.';
+            } else {
+              body += '\nPlease fix the failing checks before merging.';
+            }
+
+            // Find existing comment from bot
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.body.includes('Flywheel Quality Check')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+            }
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_number }}
+          path: test_results.json

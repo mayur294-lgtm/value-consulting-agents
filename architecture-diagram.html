@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude VC Agent Architecture | Backbase Value Consulting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bb-primary: #1A56FF;
+            --bb-primary-light: #4D7AFF;
+            --bb-primary-dark: #0D3DB8;
+            --bb-dark: #1A1F36;
+            --bb-dark-light: #2D3454;
+            --bb-dark-lighter: #3D4566;
+            --bb-accent: #00D4AA;
+            --bb-accent-secondary: #FF6B35;
+            --bb-warning: #FFB800;
+            --bb-text: #FFFFFF;
+            --bb-text-muted: #A0A8C0;
+            --bb-surface: #252B45;
+            --bb-gradient: linear-gradient(135deg, var(--bb-primary) 0%, #6366F1 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bb-dark);
+            color: var(--bb-text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(180deg, rgba(26, 31, 54, 0.98) 0%, rgba(26, 31, 54, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            padding: 20px 40px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--bb-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 22px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            color: var(--bb-primary);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--bb-text-muted);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab:hover {
+            background: rgba(26, 86, 255, 0.1);
+            border-color: var(--bb-primary);
+            color: var(--bb-text);
+        }
+
+        .nav-tab.active {
+            background: var(--bb-primary);
+            border-color: var(--bb-primary);
+            color: white;
+        }
+
+        /* Main Content */
+        .main {
+            padding-top: 100px;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 80px 40px 60px;
+            background: radial-gradient(ellipse at top, rgba(26, 86, 255, 0.15) 0%, transparent 60%);
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #a0a8c0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--bb-text-muted);
+            max-width: 700px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--bb-primary);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--bb-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        /* Section */
+        .section {
+            padding: 60px 40px;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        /* Architecture Overview */
+        .arch-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .arch-diagram {
+            position: relative;
+            background: var(--bb-surface);
+            border-radius: 24px;
+            padding: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .arch-layers {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .arch-layer {
+            position: relative;
+        }
+
+        .layer-label {
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--bb-text-muted);
+            white-space: nowrap;
+        }
+
+        /* Orchestrator */
+        .orchestrator {
+            background: linear-gradient(135deg, var(--bb-primary) 0%, #6366F1 100%);
+            border-radius: 16px;
+            padding: 30px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .orchestrator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+
+        .orchestrator h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .orchestrator p {
+            font-size: 14px;
+            opacity: 0.9;
+            position: relative;
+        }
+
+        .orchestrator-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 28px;
+            position: relative;
+        }
+
+        /* Agent Grid */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .agent-card {
+            background: var(--bb-dark-light);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--bb-primary);
+            box-shadow: 0 20px 40px rgba(26, 86, 255, 0.2);
+        }
+
+        .agent-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--bb-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .agent-card:hover::before {
+            opacity: 1;
+        }
+
+        .agent-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .agent-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .agent-card p {
+            font-size: 13px;
+            color: var(--bb-text-muted);
+            line-height: 1.5;
+        }
+
+        .agent-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(26, 86, 255, 0.2);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--bb-primary-light);
+            margin-top: 12px;
+        }
+
+        /* Color coding for agents */
+        .agent-discovery .agent-icon { background: rgba(0, 212, 170, 0.2); color: var(--bb-accent); }
+        .agent-persona .agent-icon { background: rgba(255, 107, 53, 0.2); color: var(--bb-accent-secondary); }
+        .agent-capability .agent-icon { background: rgba(255, 184, 0, 0.2); color: var(--bb-warning); }
+        .agent-roi .agent-icon { background: rgba(0, 212, 170, 0.2); color: var(--bb-accent); }
+        .agent-roadmap .agent-icon { background: rgba(99, 102, 241, 0.2); color: #818CF8; }
+        .agent-assembly .agent-icon { background: rgba(26, 86, 255, 0.2); color: var(--bb-primary-light); }
+
+        /* Knowledge & Templates */
+        .support-layer {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .support-card {
+            background: var(--bb-dark);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .support-card h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--bb-text-muted);
+        }
+
+        .support-card ul {
+            list-style: none;
+            font-size: 12px;
+            color: var(--bb-text-muted);
+        }
+
+        .support-card li {
+            padding: 4px 0;
+        }
+
+        /* Flow Arrows */
+        .flow-connector {
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .arrow-down {
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(180deg, var(--bb-primary) 0%, transparent 100%);
+            position: relative;
+        }
+
+        .arrow-down::after {
+            content: '▼';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--bb-primary);
+            font-size: 12px;
+        }
+
+        /* Workflow Section */
+        .workflow-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .workflow-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .workflow-tab {
+            padding: 16px 32px;
+            background: var(--bb-surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .workflow-tab:hover, .workflow-tab.active {
+            background: var(--bb-primary);
+            border-color: var(--bb-primary);
+        }
+
+        .workflow-tab h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .workflow-tab p {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .workflow-content {
+            display: none;
+        }
+
+        .workflow-content.active {
+            display: block;
+        }
+
+        .workflow-timeline {
+            position: relative;
+            padding-left: 60px;
+        }
+
+        .workflow-timeline::before {
+            content: '';
+            position: absolute;
+            left: 24px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--bb-primary) 0%, var(--bb-accent) 50%, var(--bb-accent-secondary) 100%);
+        }
+
+        .workflow-step {
+            position: relative;
+            padding: 24px;
+            background: var(--bb-surface);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .workflow-step::before {
+            content: '';
+            position: absolute;
+            left: -48px;
+            top: 32px;
+            width: 16px;
+            height: 16px;
+            background: var(--bb-primary);
+            border-radius: 50%;
+            border: 3px solid var(--bb-dark);
+        }
+
+        .step-number {
+            position: absolute;
+            left: -60px;
+            top: 28px;
+            width: 24px;
+            height: 24px;
+            background: var(--bb-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .workflow-step h4 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .workflow-step h4 span {
+            font-size: 20px;
+        }
+
+        .workflow-step p {
+            font-size: 14px;
+            color: var(--bb-text-muted);
+            line-height: 1.6;
+        }
+
+        .step-outputs {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .step-outputs h5 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--bb-text-muted);
+            margin-bottom: 8px;
+        }
+
+        .output-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .output-tag {
+            padding: 4px 12px;
+            background: rgba(0, 212, 170, 0.15);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--bb-accent);
+        }
+
+        /* Data Flow Section */
+        .dataflow-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .dataflow-diagram {
+            background: var(--bb-surface);
+            border-radius: 24px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dataflow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .dataflow-node {
+            background: var(--bb-dark-light);
+            border-radius: 12px;
+            padding: 16px 24px;
+            text-align: center;
+            min-width: 140px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .dataflow-node:hover {
+            border-color: var(--bb-primary);
+            transform: scale(1.05);
+        }
+
+        .dataflow-node.primary {
+            background: var(--bb-gradient);
+            border: none;
+        }
+
+        .dataflow-node h4 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .dataflow-node p {
+            font-size: 11px;
+            color: var(--bb-text-muted);
+            margin-top: 4px;
+        }
+
+        .dataflow-arrow {
+            color: var(--bb-primary);
+            font-size: 24px;
+        }
+
+        .dataflow-arrow.down {
+            transform: rotate(90deg);
+        }
+
+        .parallel-group {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(26, 86, 255, 0.1);
+            border-radius: 16px;
+            border: 1px dashed var(--bb-primary);
+        }
+
+        .parallel-label {
+            font-size: 11px;
+            color: var(--bb-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        /* Principles Section */
+        .principles-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .principle-card {
+            background: var(--bb-surface);
+            border-radius: 16px;
+            padding: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .principle-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--bb-gradient);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 20px;
+        }
+
+        .principle-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .principle-card p {
+            font-size: 14px;
+            color: var(--bb-text-muted);
+            line-height: 1.6;
+        }
+
+        /* Agent Detail Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 40px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bb-surface);
+            border-radius: 24px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            padding: 32px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            background: var(--bb-surface);
+            z-index: 10;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 40px;
+            height: 40px;
+            background: var(--bb-dark);
+            border: none;
+            border-radius: 50%;
+            color: var(--bb-text);
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            padding: 32px;
+        }
+
+        .modal-section {
+            margin-bottom: 24px;
+        }
+
+        .modal-section h4 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--bb-text-muted);
+            margin-bottom: 12px;
+        }
+
+        .modal-section ul {
+            list-style: none;
+        }
+
+        .modal-section li {
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            font-size: 14px;
+            color: var(--bb-text);
+        }
+
+        .modal-section li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--bb-primary);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 60px;
+        }
+
+        .footer p {
+            color: var(--bb-text-muted);
+            font-size: 14px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .delay-3 { animation-delay: 0.3s; opacity: 0; }
+        .delay-4 { animation-delay: 0.4s; opacity: 0; }
+        .delay-5 { animation-delay: 0.5s; opacity: 0; }
+        .delay-6 { animation-delay: 0.6s; opacity: 0; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">VC</div>
+            <div class="logo-text">Claude <span>Value Consulting</span></div>
+        </div>
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-section="overview">Overview</button>
+            <button class="nav-tab" data-section="workflow">Workflows</button>
+            <button class="nav-tab" data-section="dataflow">Data Flow</button>
+            <button class="nav-tab" data-section="principles">Principles</button>
+        </nav>
+    </header>
+
+    <main class="main">
+        <!-- Hero -->
+        <section class="hero">
+            <h1 class="fade-in">Multi-Agent Consulting System</h1>
+            <p class="fade-in delay-1">An AI-powered orchestration platform that generates executive-ready consulting deliverables through specialized agents following Value Consulting methodology.</p>
+            <div class="hero-stats fade-in delay-2">
+                <div class="stat">
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Specialized Agents</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Engagement Types</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">Executive Outputs</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Overview Section -->
+        <section id="overview" class="section active">
+            <h2 class="section-title">System Architecture</h2>
+            <div class="arch-container">
+                <div class="arch-diagram">
+                    <div class="arch-layers">
+                        <!-- Orchestrator Layer -->
+                        <div class="arch-layer">
+                            <div class="orchestrator fade-in delay-1">
+                                <div class="orchestrator-icon">🎯</div>
+                                <h2>Orchestrator Agent</h2>
+                                <p>Central coordinator that routes requests, manages dependencies, and assembles final deliverables</p>
+                            </div>
+                        </div>
+
+                        <div class="flow-connector">
+                            <div class="arrow-down"></div>
+                        </div>
+
+                        <!-- Agent Layer -->
+                        <div class="arch-layer">
+                            <div class="agent-grid">
+                                <div class="agent-card agent-discovery fade-in delay-2" data-agent="discovery">
+                                    <div class="agent-icon">🔍</div>
+                                    <h3>Discovery Agent</h3>
+                                    <p>Extracts business context, validates hypotheses, manages evidence from interviews and documents</p>
+                                    <span class="agent-tag">Foundation</span>
+                                </div>
+                                <div class="agent-card agent-persona fade-in delay-3" data-agent="persona">
+                                    <div class="agent-icon">👥</div>
+                                    <h3>Persona & Use Case</h3>
+                                    <p>Develops detailed personas and comprehensive use case libraries (current/future/agentic)</p>
+                                    <span class="agent-tag">Segmentation</span>
+                                </div>
+                                <div class="agent-card agent-capability fade-in delay-4" data-agent="capability">
+                                    <div class="agent-icon">📊</div>
+                                    <h3>Capability Assessment</h3>
+                                    <p>Assesses maturity across Front/Middle/Back layers using 0-4 scale</p>
+                                    <span class="agent-tag">Maturity</span>
+                                </div>
+                                <div class="agent-card agent-roi fade-in delay-5" data-agent="roi">
+                                    <div class="agent-icon">💰</div>
+                                    <h3>ROI & Financial</h3>
+                                    <p>Builds defensible financial models with conservative bias and sensitivity analysis</p>
+                                    <span class="agent-tag">Business Case</span>
+                                </div>
+                                <div class="agent-card agent-roadmap fade-in delay-5" data-agent="roadmap">
+                                    <div class="agent-icon">🗺️</div>
+                                    <h3>Roadmap & Prioritization</h3>
+                                    <p>Sequences initiatives using 3D framework: Value, Feasibility, CX Impact</p>
+                                    <span class="agent-tag">Planning</span>
+                                </div>
+                                <div class="agent-card agent-assembly fade-in delay-6" data-agent="assembly">
+                                    <div class="agent-icon">📋</div>
+                                    <h3>Assembly Agent</h3>
+                                    <p>Synthesizes all outputs into cohesive, executive-ready deliverables</p>
+                                    <span class="agent-tag">Output</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Support Layer -->
+                        <div class="support-layer fade-in delay-6">
+                            <div class="support-card">
+                                <h4>📚 Knowledge Base</h4>
+                                <ul>
+                                    <li>Consulting Principles</li>
+                                    <li>Domain Knowledge (Retail, Wealth, SME)</li>
+                                    <li>ROI Model Patterns</li>
+                                    <li>Industry Benchmarks</li>
+                                </ul>
+                            </div>
+                            <div class="support-card">
+                                <h4>📝 Templates</h4>
+                                <ul>
+                                    <li>Input Contracts</li>
+                                    <li>Output Templates</li>
+                                    <li>Assessment Frameworks</li>
+                                    <li>Report Structures</li>
+                                </ul>
+                            </div>
+                            <div class="support-card">
+                                <h4>🎯 Engagement Types</h4>
+                                <ul>
+                                    <li>Ignite Light (Workshop)</li>
+                                    <li>Detailed Assessment</li>
+                                    <li>Custom Engagements</li>
+                                    <li>Hybrid Approaches</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow Section -->
+        <section id="workflow" class="section">
+            <h2 class="section-title">Engagement Workflows</h2>
+            <div class="workflow-container">
+                <div class="workflow-tabs">
+                    <div class="workflow-tab active" data-workflow="ignite">
+                        <h3>Ignite Light</h3>
+                        <p>4-6 hour workshop + 1.5 day Innovation Day</p>
+                    </div>
+                    <div class="workflow-tab" data-workflow="detailed">
+                        <h3>Detailed Assessment</h3>
+                        <p>3+ days full analysis + executive report</p>
+                    </div>
+                </div>
+
+                <!-- Ignite Light Workflow -->
+                <div id="ignite" class="workflow-content active">
+                    <div class="workflow-timeline">
+                        <div class="workflow-step">
+                            <span class="step-number">1</span>
+                            <h4><span>🔍</span> Discovery (Workshop Mode)</h4>
+                            <p>Pre-Ignite virtual sessions covering Strategy, CX, Operations, IT Architecture. Real-time hypothesis validation with stakeholders.</p>
+                            <div class="step-outputs">
+                                <h5>Outputs</h5>
+                                <div class="output-tags">
+                                    <span class="output-tag">Pain Points</span>
+                                    <span class="output-tag">Hypothesis Tree</span>
+                                    <span class="output-tag">Strategic Context</span>
+                                    <span class="output-tag">Use Cases</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="workflow-step">
+                            <span class="step-number">2</span>
+                            <h4><span>👥</span> Persona & Use Case Refinement</h4>
+                            <p>Validate personas from workshop input, prioritize use cases for demo, map to strategic themes.</p>
+                            <div class="step-outputs">
+                                <h5>Outputs</h5>
+                                <div class="output-tags">
+                                    <span class="output-tag">Persona Summaries</span>
+                                    <span class="output-tag">Prioritized Use Cases</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="workflow-step">
+                            <span class="step-number">3</span>
+                            <h4><span>📊</span> Quick Capability Snapshot</h4>
+                            <p>High-level capability assessment focusing on key gaps relevant to identified use cases.</p>
+                            <div class="step-outputs">
+                                <h5>Outputs</h5>
+                                <div class="output-tags">
+                                    <span class="output-tag">Capability Snapshot</span>
+                                    <span class="output-tag">Key Gaps</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="workflow-step">
+                            <span class="step-number">4</span>
+                            <h4><span>🗺️</span> Co-Create Roadmap</h4>
+                            <p>Now/Next/Later framework with stakeholder input, prioritized by value and feasibility.</p>
+                            <div class="step-outputs">
+                                <h5>Outputs</h5>
+                                <div class="output-tags">
+                                    <span class="output-tag">Phased Roadmap</span>
+                                    <span class="output-tag">Initiative Cards</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="workflow-step">
+                            <span class="step-number">5</span>
+                            <h4><span>📋</span> Innovation Day Package</h4>
+                            <p>10-15 page highly visual deliverable ready for 1.5-day onsite presentation.</p>
+                            <div class="step-outputs">
+                                <h5>Outputs</h5>
+                                <div class="output-tags">
+                                    <span class="output-tag">Executive Summary</span>
+                                    <span class="output-tag">Persona Cards</span>
+                                    <span class="output-tag">Use Case Showcase</span>
+                                    <span class="output-tag">Visual Roadmap</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Assessment Workflow -->
+                <div id="detailed" class="workflow-content">
+                    <div class="workflow-timeline">
+                        <div class="workflow-step">
+                            <span class="step-number">1</span>
+                            <h4><span>🔍</span> Comprehensive Discovery</h4>
+                            <p>V-shaped approach with 8-10 hours client investment. Strategic alignment, capability deep-dives, journey mapping, technology assessment.</p>
+                            <div class="step-outputs">
+                                <h5>Outputs</h5>
+                                <div class="output-tags">
+                                    <span class="output-tag">Evidence Register</span>
+                                    <span class="output-tag">Pain Point Quantification</span>
+                                    <span class="output-tag">Root Cause Analysis</span>
+                                    <span class="output-tag">Metric Baselines</span>
+                                    <span class="output-tag">Stakeholder Map</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="workflow-step">
+                            <span class="step-number">2</span>
+                            <h4><span>👥</span> Full Persona & Use Case Development</h4>
+                            <p>Research-backed personas with regional/psychographic context. Complete use case library spanning current, future, and agentic states.</p>
+                            <div class="step-outputs">
+                                <h5>Outputs</h5>
+                                <div class="output-tags">
+                                    <span class="output-tag">4-8 Detailed Personas</span>
+                                    <span class="output-tag">10-15 Current Use Cases</span>
+                                    <span class="output-tag">8-12 Future Use Cases</span>
+                                    <span class="output-tag">5-8 Agentic Use Cases</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="workflow-step">
+                            <span class="step-number">3</span>
+                            <h4><span>📊</span> Complete Capability Assessment</h4>
+                            <p>Full maturity assessment across Front/Middle/Back layers. RAG scoring, gap analysis with business impact, prioritized improvements.</p>
+                            <div class="step-outputs">
+                                <h5>Outputs</h5>
+                                <div class="output-tags">
+                                    <span class="output-tag">Maturity Scorecard</span>
+                                    <span class="output-tag">Gap Analysis</span>
+                                    <span class="output-tag">Improvement Roadmap</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="workflow-step">
+                            <span class="step-number">4</span>
+                            <h4><span>💰</span> ROI & Financial Modeling</h4>
+                            <p>Baseline establishment, benefit modeling (revenue/cost/risk), implementation costs, NPV/IRR analysis with conservative assumptions.</p>
+                            <div class="step-outputs">
+                                <h5>Outputs</h5>
+                                <div class="output-tags">
+                                    <span class="output-tag">5-Year Financial Model</span>
+                                    <span class="output-tag">Assumptions Register</span>
+                                    <span class="output-tag">Sensitivity Analysis</span>
+                                    <span class="output-tag">Go/No-Go Recommendation</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="workflow-step">
+                            <span class="step-number">5</span>
+                            <h4><span>🗺️</span> Strategic Roadmap</h4>
+                            <p>3D prioritization framework (Value 40%, Feasibility 35%, CX 25%). Dependency mapping, resource planning, decision gates.</p>
+                            <div class="step-outputs">
+                                <h5>Outputs</h5>
+                                <div class="output-tags">
+                                    <span class="output-tag">Now/Next/Later Roadmap</span>
+                                    <span class="output-tag">Initiative Cards</span>
+                                    <span class="output-tag">Dependency Map</span>
+                                    <span class="output-tag">Resource Profile</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="workflow-step">
+                            <span class="step-number">6</span>
+                            <h4><span>📋</span> Assessment & Solutioning Report</h4>
+                            <p>30-50 page comprehensive report with executive summary, stakeholder-specific sections, and clear recommendations.</p>
+                            <div class="step-outputs">
+                                <h5>Outputs</h5>
+                                <div class="output-tags">
+                                    <span class="output-tag">Executive Version (10-15 pages)</span>
+                                    <span class="output-tag">Detailed Version (30-50 pages)</span>
+                                    <span class="output-tag">Presentation Deck</span>
+                                    <span class="output-tag">Appendices</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Flow Section -->
+        <section id="dataflow" class="section">
+            <h2 class="section-title">Agent Data Flow</h2>
+            <div class="dataflow-container">
+                <div class="dataflow-diagram">
+                    <!-- Row 1: Inputs -->
+                    <div class="dataflow-row">
+                        <div class="dataflow-node">
+                            <h4>📄 Transcripts</h4>
+                            <p>Interview notes</p>
+                        </div>
+                        <div class="dataflow-node">
+                            <h4>📊 Financial Data</h4>
+                            <p>Metrics, reports</p>
+                        </div>
+                        <div class="dataflow-node">
+                            <h4>📑 Documents</h4>
+                            <p>Strategy, systems</p>
+                        </div>
+                    </div>
+
+                    <div class="dataflow-row">
+                        <span class="dataflow-arrow down">→</span>
+                    </div>
+
+                    <!-- Row 2: Orchestrator -->
+                    <div class="dataflow-row">
+                        <div class="dataflow-node primary">
+                            <h4>🎯 Orchestrator</h4>
+                            <p>Routes & coordinates</p>
+                        </div>
+                    </div>
+
+                    <div class="dataflow-row">
+                        <span class="dataflow-arrow down">→</span>
+                    </div>
+
+                    <!-- Row 3: Discovery -->
+                    <div class="dataflow-row">
+                        <div class="dataflow-node">
+                            <h4>🔍 Discovery</h4>
+                            <p>Evidence extraction</p>
+                        </div>
+                    </div>
+
+                    <div class="dataflow-row">
+                        <span class="dataflow-arrow down">→</span>
+                    </div>
+
+                    <!-- Row 4: Parallel Agents -->
+                    <div class="dataflow-row">
+                        <div class="parallel-group">
+                            <div>
+                                <div class="parallel-label">Parallel Execution</div>
+                                <div style="display: flex; gap: 20px;">
+                                    <div class="dataflow-node">
+                                        <h4>👥 Persona</h4>
+                                        <p>Use cases</p>
+                                    </div>
+                                    <div class="dataflow-node">
+                                        <h4>📊 Capability</h4>
+                                        <p>Maturity gaps</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dataflow-row">
+                        <span class="dataflow-arrow down">→</span>
+                    </div>
+
+                    <!-- Row 5: ROI -->
+                    <div class="dataflow-row">
+                        <div class="dataflow-node">
+                            <h4>💰 ROI Model</h4>
+                            <p>Financial case</p>
+                        </div>
+                    </div>
+
+                    <div class="dataflow-row">
+                        <span class="dataflow-arrow down">→</span>
+                    </div>
+
+                    <!-- Row 6: Roadmap -->
+                    <div class="dataflow-row">
+                        <div class="dataflow-node">
+                            <h4>🗺️ Roadmap</h4>
+                            <p>Initiative sequencing</p>
+                        </div>
+                    </div>
+
+                    <div class="dataflow-row">
+                        <span class="dataflow-arrow down">→</span>
+                    </div>
+
+                    <!-- Row 7: Assembly -->
+                    <div class="dataflow-row">
+                        <div class="dataflow-node primary">
+                            <h4>📋 Assembly</h4>
+                            <p>Final synthesis</p>
+                        </div>
+                    </div>
+
+                    <div class="dataflow-row">
+                        <span class="dataflow-arrow down">→</span>
+                    </div>
+
+                    <!-- Row 8: Outputs -->
+                    <div class="dataflow-row">
+                        <div class="dataflow-node" style="background: rgba(0, 212, 170, 0.2); border-color: var(--bb-accent);">
+                            <h4>📄 Executive Report</h4>
+                            <p>Decision-ready</p>
+                        </div>
+                        <div class="dataflow-node" style="background: rgba(0, 212, 170, 0.2); border-color: var(--bb-accent);">
+                            <h4>📊 ROI Analysis</h4>
+                            <p>Financial model</p>
+                        </div>
+                        <div class="dataflow-node" style="background: rgba(0, 212, 170, 0.2); border-color: var(--bb-accent);">
+                            <h4>🗺️ Roadmap</h4>
+                            <p>Implementation plan</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Principles Section -->
+        <section id="principles" class="section">
+            <h2 class="section-title">Design Principles</h2>
+            <div class="principles-grid">
+                <div class="principle-card">
+                    <div class="principle-icon">🎯</div>
+                    <h3>Outcome-Led</h3>
+                    <p>Start with business problems, not technology solutions. Every recommendation ties to measurable business outcomes.</p>
+                </div>
+                <div class="principle-card">
+                    <div class="principle-icon">📋</div>
+                    <h3>Evidence-Based</h3>
+                    <p>Every claim requires supporting evidence. Assumptions are explicit, conservative, and documented.</p>
+                </div>
+                <div class="principle-card">
+                    <div class="principle-icon">👔</div>
+                    <h3>Executive-Ready</h3>
+                    <p>Outputs are decision-ready for C-level audience. Clear, concise, jargon-free, action-oriented.</p>
+                </div>
+                <div class="principle-card">
+                    <div class="principle-icon">🔒</div>
+                    <h3>Conservative Bias</h3>
+                    <p>Lower benefit estimates, higher cost estimates, extended timelines, increased contingency buffers.</p>
+                </div>
+                <div class="principle-card">
+                    <div class="principle-icon">👁️</div>
+                    <h3>Transparent</h3>
+                    <p>All methodology visible, all standards documented, all reasoning traceable.</p>
+                </div>
+                <div class="principle-card">
+                    <div class="principle-icon">🔄</div>
+                    <h3>Separation of Concerns</h3>
+                    <p>Knowledge, Agents, and Templates are cleanly separated for maintainability and extensibility.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Claude Value Consulting Agent System • Backbase • 2024</p>
+        </footer>
+    </main>
+
+    <!-- Agent Detail Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <div class="modal-header">
+                <h2 id="modal-title">Agent Details</h2>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Agent details data
+        const agentData = {
+            discovery: {
+                title: '🔍 Discovery Agent',
+                description: 'Extracts business context, validates hypotheses, manages evidence from interviews and documents',
+                modes: ['Workshop Mode (Ignite Light)', 'Transcript Mode (Detailed Assessment)'],
+                responsibilities: [
+                    'Pre-discovery research and hypothesis development',
+                    'Business context extraction using Cascading Choices framework',
+                    'Pain point identification and quantification',
+                    'Evidence management with source attribution',
+                    'Stakeholder type classification (business/technology/finance)'
+                ],
+                outputs: [
+                    'Hypothesis tree (validated/invalidated status)',
+                    'Pain point register (prioritized with impacts)',
+                    'Evidence register (sourced claims)',
+                    'Use cases (prioritized opportunities)',
+                    'Metric register with benchmarks',
+                    'Data gaps register'
+                ]
+            },
+            persona: {
+                title: '👥 Persona & Use Case Agent',
+                description: 'Develops detailed personas and comprehensive use case libraries (current/future/agentic)',
+                modes: ['Research-backed development', 'Workshop validation'],
+                responsibilities: [
+                    'Regional context analysis (digital maturity, cultural factors)',
+                    'Psychographic segmentation (confidence, tech attitude)',
+                    'Behavioral analysis (channel behavior, transaction patterns)',
+                    'Three use case types: Current, Future Non-Agentic, Agentic',
+                    'Prioritization scoring per use case'
+                ],
+                outputs: [
+                    'Persona library (4-8 personas)',
+                    'Current state use cases (10-15)',
+                    'Future non-agentic use cases (8-12)',
+                    'Agentic use cases (5-8)',
+                    'Visual persona cards and heat maps'
+                ]
+            },
+            capability: {
+                title: '📊 Capability Assessment Agent',
+                description: 'Assesses capability maturity, identifies gaps, scores capabilities across Front/Middle/Back layers',
+                modes: ['Full Assessment', 'Quick Snapshot'],
+                responsibilities: [
+                    'Score current state maturity (0-4 scale)',
+                    'Three-layer assessment: Front/Middle/Back',
+                    'Gap analysis with business impact',
+                    'BIAN-aligned capability taxonomy',
+                    'Domain-specific prefixes (CAP-R-*, CAP-W-*, etc.)'
+                ],
+                outputs: [
+                    'Maturity scorecard by capability',
+                    'Gap analysis with business impact',
+                    'Improvement recommendations',
+                    'Prioritized capability investments'
+                ]
+            },
+            roi: {
+                title: '💰 ROI & Financial Modeling Agent',
+                description: 'Builds defensible, transparent financial models with conservative bias',
+                modes: ['Business Leaders framing', 'CIO/CTO framing', 'CFO framing'],
+                responsibilities: [
+                    'Baseline establishment (current state costs)',
+                    'Benefit modeling (revenue, savings, risk mitigation)',
+                    'Cost estimation (implementation + ongoing)',
+                    'Financial analysis (NPV, IRR, payback)',
+                    'Sensitivity analysis (best/worst/likely)'
+                ],
+                outputs: [
+                    'Executive summary with go/no-go recommendation',
+                    'Financial summary table (5-year P&L)',
+                    'Cost and benefit model detail',
+                    'Assumptions register (every assumption sourced)',
+                    'Measurement plan'
+                ]
+            },
+            roadmap: {
+                title: '🗺️ Roadmap & Prioritization Agent',
+                description: 'Sequences initiatives into actionable phased plan balancing value, feasibility, and CX',
+                modes: ['Now/Next/Later phasing', 'Agentic sequencing'],
+                responsibilities: [
+                    '3D Prioritization: Value (40%), Feasibility (35%), CX (25%)',
+                    'Must/Should/Could/Wont classification',
+                    'Dependency mapping and critical path',
+                    'Resource planning (FTE, budget)',
+                    'Decision gates and risk register'
+                ],
+                outputs: [
+                    'Visual roadmap with dependencies',
+                    'Phase definitions (Now/Next/Later)',
+                    'Initiative cards (scope, value, effort)',
+                    'Dependency map',
+                    'Alternative sequences'
+                ]
+            },
+            assembly: {
+                title: '📋 Assembly Agent',
+                description: 'Synthesizes specialized agent outputs into cohesive, executive-ready deliverables',
+                modes: ['Detailed Assessment (30-50 pages)', 'Ignite Light (10-15 pages)'],
+                responsibilities: [
+                    'Synthesize all agent outputs',
+                    'Create consistent executive narrative',
+                    'Storytelling: Situation → Complication → Resolution',
+                    'Stakeholder-specific customization',
+                    'Quality checklist before delivery'
+                ],
+                outputs: [
+                    'Executive version (10-15 pages)',
+                    'Detailed version (30-50 pages)',
+                    'Presentation deck (optional)',
+                    'Supporting appendices'
+                ]
+            }
+        };
+
+        // Navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.section).classList.add('active');
+            });
+        });
+
+        // Workflow tabs
+        document.querySelectorAll('.workflow-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.workflow-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.workflow-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.workflow).classList.add('active');
+            });
+        });
+
+        // Agent cards modal
+        document.querySelectorAll('.agent-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const agent = card.dataset.agent;
+                const data = agentData[agent];
+
+                document.getElementById('modal-title').textContent = data.title;
+                document.getElementById('modal-body').innerHTML = `
+                    <p style="color: var(--bb-text-muted); margin-bottom: 24px;">${data.description}</p>
+
+                    <div class="modal-section">
+                        <h4>Operating Modes</h4>
+                        <ul>
+                            ${data.modes.map(m => `<li>${m}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="modal-section">
+                        <h4>Responsibilities</h4>
+                        <ul>
+                            ${data.responsibilities.map(r => `<li>${r}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="modal-section">
+                        <h4>Outputs</h4>
+                        <ul>
+                            ${data.outputs.map(o => `<li>${o}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+
+                document.getElementById('modal').classList.add('active');
+            });
+        });
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Close modal on overlay click
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
