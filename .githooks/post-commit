@@ -49,18 +49,30 @@ done
 
 COMPLETION_MARKERS="executive_summary.md assessment_report.md roi_report.md roadmap.md capability_assessment.md"
 
-# Get unique engagement directories from committed output files
-ENGAGEMENT_DIRS=$(echo "$CHANGED_FILES" | grep -E '(executive_summary|assessment_report|roi_report|roadmap|capability_assessment)\.md' | xargs -I{} dirname "$REPO_ROOT/{}" | sort -u)
+# Get unique candidate directories from committed output files.
+# dirname gives us the folder containing the file — could be the engagement root
+# or an outputs/ subdirectory. We resolve to the engagement root below.
+RAW_DIRS=$(echo "$CHANGED_FILES" | grep -E '(executive_summary|assessment_report|roi_report|roadmap|capability_assessment)\.md' | xargs -I{} dirname "$REPO_ROOT/{}" | sort -u)
+
+# Resolve to engagement root: if dir ends with /outputs, the root is the parent
+ENGAGEMENT_DIRS=""
+for raw_dir in $RAW_DIRS; do
+    if [ "$(basename "$raw_dir")" = "outputs" ]; then
+        ENGAGEMENT_DIRS="$ENGAGEMENT_DIRS $(dirname "$raw_dir")"
+    else
+        ENGAGEMENT_DIRS="$ENGAGEMENT_DIRS $raw_dir"
+    fi
+done
+ENGAGEMENT_DIRS=$(echo "$ENGAGEMENT_DIRS" | tr ' ' '\n' | sort -u)
 
 for eng_dir in $ENGAGEMENT_DIRS; do
     if [ ! -d "$eng_dir" ]; then
         continue
     fi
 
-    # Check if ALL completion markers exist in this directory
+    # Check if ALL completion markers exist (in root or outputs/ subdirectory)
     complete=true
     for marker in $COMPLETION_MARKERS; do
-        # Check in the directory itself and in an outputs/ subdirectory
         if [ ! -f "$eng_dir/$marker" ] && [ ! -f "$eng_dir/outputs/$marker" ]; then
             complete=false
             break
@@ -77,7 +89,7 @@ for eng_dir in $ENGAGEMENT_DIRS; do
         continue
     fi
 
-    # Find the journal for this engagement
+    # Find the journal in the engagement root
     JOURNAL="$eng_dir/ENGAGEMENT_JOURNAL.md"
     if [ ! -f "$JOURNAL" ]; then
         continue
