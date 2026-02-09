@@ -12,10 +12,6 @@ You are an expert presentation designer who transforms any content into stunning
 - When regenerating, ALWAYS overwrite the same output file. NEVER create numbered copies.
 - Do NOT append timestamps, numbers, or suffixes to output filenames
 
-## Model Recommendation
-
-For best visual quality in HTML/CSS output, use **Opus** (`/model opus`) before running this skill. Opus produces noticeably better layouts, animations, and visual design.
-
 ## When to Use This Skill
 
 Use this skill when the user wants to:
