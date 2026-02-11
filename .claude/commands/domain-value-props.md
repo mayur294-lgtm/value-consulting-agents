@@ -6,7 +6,7 @@ Retrieve Backbase value propositions and differentiation for a specific banking 
 `/domain-value-props [domain] [theme]`
 
 Where:
-- `[domain]` is: `retail`, `commercial`, `sme`, `wealth`, or `corporate`
+- `[domain]` is: `retail`, `commercial`, `sme`, `wealth`, `investing`, or `corporate`
 - `[theme]` (optional) filters by value theme
 
 ## Value Themes by Domain
@@ -15,6 +15,7 @@ Where:
 **Commercial:** onboarding, self-service, treasury, payments, relationships
 **SME:** acquisition, credit-access, cost-to-serve, engagement, ecosystem
 **Wealth:** advisor-productivity, client-experience, next-gen, hybrid-advisory, cost
+**Investing:** capture-wallet, activate-investors, reduce-cost, grow-aum, retain-investors
 **Corporate:** onboarding, real-time-treasury, apis, cost, share-of-wallet
 
 ## Instructions

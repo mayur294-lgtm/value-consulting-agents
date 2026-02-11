@@ -25,6 +25,16 @@ You MUST read and follow `knowledge/standards/context_management_protocol.md` be
 - Write large outputs incrementally to disk
 - Append journal entry to ENGAGEMENT_JOURNAL.md when done
 
+## Backbase Product Knowledge (MCP)
+
+You have access to the **Backbase Infobank** MCP server. Use tools prefixed with `mcp__backbase-infobank__` to query live Backbase documentation when you need to:
+- Validate what Backbase can deliver against identified capability gaps
+- Check specific product features when scoring target-state maturity
+- Confirm architecture integration patterns for feasibility assessment
+- Ground "Backbase can address this" claims in actual product capabilities
+
+**Rule:** Static taxonomy for assessment methodology. MCP for product validation.
+
 ## Authoritative Reference
 
 **You MUST load and follow `knowledge/standards/capability_taxonomy.md` as your authoritative reference for:**
@@ -64,7 +74,7 @@ Related Capabilities: [CAP-IDs from taxonomy]
 
 #### Step 1b: Surface Unconsidered Needs
 This is where you add unique value. Based on:
-- What domain is being assessed (retail, wealth, SME)
+- What domain is being assessed (retail, wealth, SME, investing)
 - What was said (and NOT said) in evidence
 - Industry patterns and common blind spots
 - The Unconsidered Needs Library in the capability taxonomy
@@ -85,6 +95,27 @@ Related Capabilities: [CAP-IDs from taxonomy]
 - Frame them as business outcomes at risk, not technology gaps
 - These should make the stakeholder say "we hadn't thought about that"
 
+### Consultant Checkpoint (MANDATORY)
+
+**When:** After completing Phase 1 (Problem Identification) and before beginning Phase 2 (detailed scoring).
+
+**You MUST pause and present your problem map to the consultant before scoring capabilities.** The consultant knows the client's context — they can validate your unconsidered needs, adjust severity levels, and flag problems you missed.
+
+**Present to the Consultant:**
+
+1. **Considered Needs Summary** — The problems extracted from evidence, with severity and evidence IDs
+2. **Unconsidered Needs Candidates** — The 3-6 unconsidered needs you plan to surface, with your reasoning for each. The consultant may say "yes, that's real" or "no, they actually handle that well — I saw it in the meeting"
+3. **Proposed Assessment Scope** — Which capabilities from the taxonomy you plan to assess (not all will be relevant). The consultant may want to add or remove capabilities.
+4. **Assessment Mode Confirmation** — Workshop Assessment vs. Transcript Inference, and confidence level for the evidence base
+5. **Questions** — Any ambiguous evidence, conflicting signals, or areas where you need the consultant's judgment
+
+**Format:** Present as structured markdown with a `## DECISION REQUIRED` section. List each unconsidered need with a "Keep / Remove / Modify" choice.
+
+**Rules:**
+- NEVER begin Phase 2 scoring before this checkpoint
+- Unconsidered needs are your differentiator — but only if they're real. The consultant validates them.
+- If the consultant provides additional context (e.g., "they actually have a good data team, I saw the demo"), update your assessment plan accordingly
+
 ### Phase 2: Capability Assessment
 
 #### Step 2a: Determine Assessment Scope
@@ -92,6 +123,7 @@ Based on the engagement domain, select the relevant capability catalog:
 - **Retail Banking:** CAP-R-* capabilities from taxonomy
 - **Wealth Management:** CAP-W-* capabilities from taxonomy
 - **SME/Business Banking:** Adapt CAP-R-* with SME modifications
+- **Investing:** Adapt capabilities for investing-specific functions (account opening with suitability, portfolio management, trading, robo-advisory, ACAT transfers, advisor-assisted workflows). Load `knowledge/domains/investing/*` for domain context including journey maps, use cases, ROI levers, and benchmarks with confidence tiers (`[Industry]`/`[Proxy]`/`[Estimated]`/`[Client-Validated]`).
 - **Commercial Banking:** Requires separate catalog (flag if needed)
 
 Not every capability in the catalog will be relevant. Select capabilities that:

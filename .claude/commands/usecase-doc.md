@@ -15,7 +15,7 @@ Generate use case documents following this exact structure:
 | **Name** | [Descriptive name] |
 | **Category** | Tablestakes / Differentiating |
 | **Priority** | P1 / P2 / P3 |
-| **Segment** | Retail / SME / Commercial / Wealth |
+| **Segment** | Retail / SME / Commercial / Wealth / Investing |
 | **Value Theme** | [Link to value proposition] |
 | **Lifestage** | [Member/Customer lifecycle stage] |
 | **Backbase Module** | Digital Banking / Digital Onboarding / Digital Lending / Digital Assist / Digital Engage |

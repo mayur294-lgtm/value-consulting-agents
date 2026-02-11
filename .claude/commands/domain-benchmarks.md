@@ -6,7 +6,7 @@ Query domain-specific benchmarks and KPIs from the Consulting Playbook to suppor
 `/domain-benchmarks [domain] [journey]`
 
 Where:
-- `[domain]` is: `retail`, `commercial`, `sme`, `wealth`, or `corporate`
+- `[domain]` is: `retail`, `commercial`, `sme`, `wealth`, `investing`, or `corporate`
 - `[journey]` (optional) filters by benchmark journey/category
 
 ## Journey Categories (from Consulting Playbook CSV)
@@ -32,6 +32,7 @@ When this skill is invoked:
 
 2. **Filter by domain-relevant journeys**:
    - **Retail/SME:** General, Digital Onboarding, Loan Origination, Cards, Online Registration, Payments, Deposits & Loans, Transaction Dispute, Loan Servicing
+   - **Investing:** Account Opening, Digital Adoption, Revenue & AUM, Operational Efficiency, Customer Experience (benchmarks use confidence tiers: `[Industry]`/`[Proxy]`/`[Estimated]`/`[Client-Validated]`)
    - **Commercial/Corporate:** General, Payments
    - **Wealth:** General (limited coverage - may need supplementing)
 
@@ -103,3 +104,4 @@ Assistant: Loading Retail Banking onboarding benchmarks from Consulting Playbook
 - Regional variations exist (USA, APAC, LATAM, MEA, Europe)
 - Use specific customer examples when relevant to prospect geography
 - Wealth & Corporate have limited coverage - supplement with industry research
+- Investing benchmarks use confidence tiers — check `knowledge/domains/investing/benchmarks.md` for tier definitions and evolution rules

@@ -29,6 +29,15 @@ A comprehensive document covering:
 
 **Total Length:** 30-50 pages (executive version: 10-15 pages)
 
+**Interactive HTML Dashboard (MANDATORY):**
+In addition to the markdown deliverables, every Detailed Assessment MUST produce a premium interactive HTML dashboard using the `/generate-assessment-html` skill. This single self-contained HTML file includes:
+- Dark sidebar navigation with all 7 acts as clickable panels
+- Future UI-inspired hero section with massive editorial typography and headline metrics
+- Bento grids, dark feature sections, phone-frame prototypes, journey visualizations
+- Interactive capability heatmaps, ROI scenario toggles, expandable sections
+- Business line differentiation (color-coded) and cross-act traceability links
+- Responsive design (desktop, tablet, mobile) and print support
+
 ### Output Type 2: Innovation Day Package (Ignite Light)
 
 A strategic engagement package covering:
@@ -55,7 +64,8 @@ A strategic engagement package covering:
 | **Agentic** | Full future vision | Art of the possible |
 | **ROI** | Detailed financial model | Estimated value ranges |
 | **Roadmap** | Phased with dependencies | Co-created Now/Next/Later |
-| **Format** | Document-heavy | Visual/presentation-ready |
+| **Format** | Document-heavy + Interactive HTML Dashboard | Visual/presentation-ready |
+| **HTML Dashboard** | MANDATORY (`/generate-assessment-html` skill) | Not required |
 | **Length** | 30-50 pages | 10-15 pages |
 
 ---

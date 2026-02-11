@@ -109,7 +109,7 @@ For every engagement, you require these minimum inputs:
 
 | Input | Options | Required |
 |-------|---------|----------|
-| Domain | retail \| sme \| commercial \| wealth | Yes |
+| Domain | retail \| sme \| commercial \| wealth \| investing | Yes |
 | Region | EMEA \| SEA \| US \| APAC \| LATAM \| etc. | Yes |
 | Engagement Type | assessment \| ignite \| hybrid \| ROI_only \| deal_strategy | Yes |
 | Primary Journeys | List of customer/business journeys in scope | Yes |
@@ -213,15 +213,16 @@ Route work to specialized agents based on engagement type:
 
 **Discovery/Transcript Agent:**
 - Input: Raw transcripts (one at a time), meeting notes, artifacts
-- Output: Evidence register, pain points, stakeholder map, business context, **stakeholder & communication intelligence** (per-person communication style, sensitivity flags, organizational tone)
+- Output: Evidence register, pain points, stakeholder map, business context, **stakeholder & communication intelligence** (per-person communication style, sensitivity flags, organizational tone), **domain detection** (auto-detected domain from transcript signals)
 - **Context rule:** Process one transcript per invocation, write interim output to disk
 - **Communication intelligence:** The Discovery Agent now extracts HOW stakeholders communicate (not just what they say). This feeds the Assembly Agent's tone calibration — no consultant input needed.
+- **Domain auto-detection:** The Discovery Agent infers the engagement domain from transcript signals (investing vs. wealth vs. retail vs. SME vs. commercial). If the detected domain differs from the intake domain, or if multiple domains are detected, the Orchestrator should load additional domain packs. This is especially useful for bank-led investing models that span retail + investing.
 
 **Market Context Researcher (DEFAULT — runs after Discovery):**
 - Input: Engagement context (country, domain, bank name, size tier) + discovery outputs (pain points, metrics, objectives)
 - Output: Validated market context brief with financial metric correlations, outside-in CX research (if available for domain), competitor capabilities (if available), consultant-validated positioning angles, and **client communication voice profile** (extracted from CEO letter / public materials — feeds Assembly Agent's tone calibration)
 - **Key behavior:** Presents findings to consultant for validation before passing to Assembly. Consultant can accept, modify, request more research, or skip entirely.
-- **Domain awareness:** Adapts research depth to domain reality (rich data for retail, limited for wealth/commercial). Returns `NO_RELEVANT_DATA` gracefully when outside-in data isn't available rather than forcing irrelevant data.
+- **Domain awareness:** Adapts research depth to domain reality (rich data for retail, limited for wealth/commercial/investing). Returns `NO_RELEVANT_DATA` gracefully when outside-in data isn't available rather than forcing irrelevant data.
 - **Pipeline position:** Runs after Discovery completes. Can run in PARALLEL with Capability, ROI, and Roadmap agents since they are independent workstreams.
 - **Consultant interaction:** ALWAYS requires consultant review before output flows to Assembly. This is creative positioning work that needs human judgment.
 - **Skip protocol:** This agent runs by DEFAULT on every Value Assessment engagement. The consultant may explicitly skip it by saying "skip market context" — in which case, log the skip reason in the engagement journal. Do NOT skip silently.
@@ -439,7 +440,7 @@ Read ONLY the processed outputs — never raw transcripts (they contain client-i
 - `[engagement_dir]/ENGAGEMENT_JOURNAL.md` (for domain, region, engagement metadata)
 
 Extract the engagement metadata from the journal:
-- Domain (retail, sme, commercial, wealth, corporate)
+- Domain (retail, sme, commercial, wealth, investing, corporate)
 - Region (EMEA, SEA, NAM, APAC, LATAM, Africa, etc.)
 - Size tier (infer from context: Tier 1 >$10B, Tier 2 $1-10B, Tier 3 <$1B)
 - Engagement session ID (from `.engagement_session_id`)

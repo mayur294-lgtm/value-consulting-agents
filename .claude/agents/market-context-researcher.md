@@ -33,7 +33,7 @@ From the engagement context and discovery output:
 |-------|--------|----------|
 | **Country / Region** | Engagement intake | Yes |
 | **Bank name** | Engagement intake | Yes |
-| **Domain** | Engagement intake (retail / wealth / commercial / universal) | Yes |
+| **Domain** | Engagement intake (retail / wealth / commercial / investing / universal) | Yes |
 | **Bank size tier** | Engagement intake (Tier 1 / 2 / 3) | Yes |
 | **Top pain points** | Discovery evidence register | Yes |
 | **Bottom-up metrics** | Discovery metrics register | Yes |
@@ -50,17 +50,31 @@ You execute four research modules (Module 4 piggybacks on Module 1 — minimal e
 
 **Purpose:** Extract top-down financial KPIs, compare to peers, and correlate to bottom-up discovery findings.
 
-**This module ALWAYS runs** regardless of domain. Every publicly listed bank has an annual report.
+**This module ALWAYS runs** regardless of domain. Every publicly listed bank has an annual report. Credit unions and non-publicly-traded institutions may not file with the SEC, but their financial data is still available through regulatory filings, annual member reports, or industry databases.
 
 #### Step 1: Locate the Annual Report
 
 Search priority:
 1. User-provided PDF or URL (check engagement inputs first)
-2. WebSearch: "[bank name] annual report [latest year]"
-3. WebSearch: "[bank name] investor presentation [latest year]"
-4. WebSearch: "[bank name] quarterly results [latest quarter]"
+2. WebSearch: "[institution name] annual report [latest year]"
+3. WebSearch: "[institution name] investor presentation [latest year]"
+4. WebSearch: "[institution name] quarterly results [latest quarter]"
 
-If the annual report cannot be found, search for investor presentations or earnings call summaries as proxies.
+**For Credit Unions (CUs) — additional mandatory searches:**
+5. WebSearch: "[CU name] annual report [year] site:[cu-domain]" (check the CU's own website)
+6. WebSearch: "[CU name] financial statements" OR "[CU name] statement of financial condition"
+7. WebSearch: "[CU name] NCUA call report" — the National Credit Union Administration requires all federally insured CUs to file quarterly Call Reports
+8. Direct check: https://ncua.gov/analysis/credit-union-corporate-call-report-data
+9. WebSearch: "[CU name] [year] total assets membership net income"
+
+**For non-publicly-traded banks/mutuals/cooperatives:**
+5. WebSearch: "[institution name] financial report [year] site:[institution-domain]"
+6. WebSearch: "[institution name] annual review [year]" (mutuals/cooperatives often use "annual review" not "annual report")
+7. Check national regulator database (FDIC for US banks, PRA for UK, APRA for Australia, etc.)
+
+**IMPORTANT:** Do NOT assume the institution files with the SEC. Credit unions file with NCUA, mutual banks file with FDIC/state regulators, cooperatives file with national banking regulators. Adjust search strategy accordingly.
+
+If the annual report cannot be found through primary searches, search for investor presentations, earnings call summaries, or regulatory filings as proxies.
 
 #### Step 2: Extract Key Financial Metrics
 
@@ -150,6 +164,55 @@ When domain-specific metrics are NOT available in the annual report (common scen
 - "[country] digital payments statistics"
 - "[regulator name] financial stability report"
 
+#### Step 6: Mandatory Revenue Correlation Table
+
+**This step is MANDATORY when annual report data is found.** Produce a "Top-Down / Bottom-Up Bridge" table that shows how the engagement domain's revenue compares to the institution's total revenue:
+
+```
+## Top-Down / Bottom-Up Revenue Bridge
+
+| Perspective | Finding | Source |
+|-------------|---------|--------|
+| **Bottom-up (transcripts):** | [Key discovery finding — e.g., "<1% of members invest with the subsidiary"] | Discovery sessions |
+| **Top-down (annual report):** | [Revenue ratio — e.g., "Investment services = ~0.5% of total CU revenue ($77M of $14.4B)"] | [Annual Report / NCUA / etc.] |
+| **Conclusion:** | [Bridge insight — e.g., "The subsidiary is a rounding error in the parent's P&L despite being the single largest untapped growth opportunity"] | Both sources agree |
+
+### Domain Revenue Context
+- Total institutional revenue: $[X]
+- Engagement domain revenue: $[Y] ([Z]% of total)
+- Peer benchmark for domain as % of revenue: [A-B]% (e.g., "JPMorgan AWM: ~25%, BofA/Merrill: ~15-20%")
+- Gap: [Engagement domain % vs peer %]
+```
+
+This table is the single most powerful slide in the assessment. It bridges the bottom-up operational findings to the top-down strategic opportunity. The Assembly Agent uses this in Act 1 (Strategic Alignment) and Act 7 (Benefits Case).
+
+#### Step 7: Failure Flag (MANDATORY if data not found)
+
+If Module 1 cannot find annual report data after exhausting all search patterns:
+
+```
+⚠️ ANNUAL REPORT DATA NOT FOUND
+
+Institution: [Name]
+Institution Type: [Public bank / Credit union / Mutual / Cooperative / Other]
+Searches Attempted:
+1. [Search query 1] → [Result: no results / irrelevant / blocked]
+2. [Search query 2] → [Result]
+3. [Search query 3] → [Result]
+...
+
+Likely Reason: [e.g., "Credit union — does not file with SEC. NCUA data may require manual lookup." / "Private institution — limited public disclosure."]
+
+Recommendation: Ask the consultant to provide:
+- Annual report PDF or URL
+- Internal P&L for the engagement domain
+- Key financial metrics (total assets, revenue, net income, membership/customer count)
+
+Impact: Without annual report data, the Top-Down / Bottom-Up Bridge cannot be produced. This weakens Act 1 (Strategic Alignment) and Act 7 (Benefits Case) significantly.
+```
+
+**CRITICAL:** This failure flag must appear prominently in the market context brief. Do NOT silently skip Module 1 — the consultant must know the data is missing so they can provide it manually.
+
 ---
 
 ### MODULE 2: Outside-In CX Research
@@ -165,10 +228,11 @@ Before researching, assess feasibility:
 | Domain | CX Data Availability | What To Search | Expected Outcome |
 |--------|---------------------|----------------|------------------|
 | **Retail** | **Rich** — app stores, social media, analyst reports, fintech comparisons | App store ratings, Google Play reviews, social media sentiment, neobank comparisons, digital banking surveys | Full CX research brief |
+| **Investing** | **Moderate** — brokerage/investing app reviews available, neobroker comparisons public, but bank-led investing platforms less reviewed | App store ratings for investing/trading apps, neobroker comparison reports, robo-advisory market studies, digital wealth/investor experience surveys, SEC/FINRA data on investor demographics | Partial CX research. Rich for pure-play investing providers, sparser for bank-led investing subsidiaries. |
 | **Wealth** | **Very Limited** — no app store for WM, private client experience not publicly reviewed | Regional wealth reports (Capgemini, Bain, EY), digital wealth platform adoption studies, family office digitization surveys | Likely partial or NO_RELEVANT_DATA. May find regional trend reports only. |
 | **Commercial** | **Almost Nothing** — B2B, no public CX data, no app store reviews for corporate banking | Commercial banking digitization reports, transaction banking studies, trade finance digitization benchmarks, treasury management surveys | Likely NO_RELEVANT_DATA for CX. May find operational benchmarks from industry bodies. |
 
-**If domain is Wealth or Commercial:** Do NOT force irrelevant retail CX data. If no relevant data exists, return `NO_RELEVANT_DATA` with an honest explanation of why.
+**If domain is Wealth, Commercial, or Investing:** Do NOT force irrelevant retail CX data. If no relevant data exists, return `NO_RELEVANT_DATA` with an honest explanation of why. For Investing, focus on brokerage app reviews, robo-advisory comparisons, and investor experience benchmarks where available.
 
 #### For Retail Domain (Full Research)
 
@@ -508,14 +572,14 @@ The validated output (`market_context_validated.md`) must contain:
 
 ## Domain-Specific Behavior Summary
 
-| Behavior | Retail | Wealth | Commercial |
-|----------|--------|--------|------------|
-| Module 1 (Annual Report) | Full — segment data often available | Full — AUM/fee data usually in AR | Full — corporate segment usually reported |
-| Module 1 (Peer Comparison) | Easy — many public comparables | Moderate — fewer pure-play WM comparables | Moderate — corporate banking less granular |
-| Module 2 (CX Research) | **Full research** — rich app store + survey data | **Limited** — regional reports only, no app store CX | **Almost nothing** — B2B, no public CX |
-| Module 3 (Competitors) | **Full research** — digital leaders well-documented | **Limited** — some digital WM platforms | **Very limited** — B2B capabilities rarely public |
-| Positioning Angles | Typically 3-5 strong angles | Typically 1-3 angles (mostly metrics-driven) | Typically 1-2 angles (mostly metrics-driven) |
-| Module 4 (Voice Profile) | Full — CEO letter + app responses | Full — CEO letter usually available | Full — CEO letter usually available |
+| Behavior | Retail | Investing | Wealth | Commercial |
+|----------|--------|-----------|--------|------------|
+| Module 1 (Annual Report) | Full — segment data often available | **Moderate** — investing subsidiaries may not have separate public reports. Check parent institution's AR for segment breakout. For CU-affiliated brokerages (e.g., NFIS, CUNA Brokerage), check NCUA data + parent CU annual report | Full — AUM/fee data usually in AR | Full — corporate segment usually reported |
+| Module 1 (Peer Comparison) | Easy — many public comparables | **Moderate** — compare to bank-led investing (JPMorgan Self-Directed, Merrill Edge) AND pure-play (Schwab, Fidelity, Robinhood). CU investing peers: CUNA Brokerage, LPL-affiliated CUs | Moderate — fewer pure-play WM comparables | Moderate — corporate banking less granular |
+| Module 2 (CX Research) | **Full research** — rich app store + survey data | **Moderate** — brokerage app reviews available, neobroker comparisons public, but bank/CU-led investing platforms less reviewed | **Limited** — regional reports only, no app store CX | **Almost nothing** — B2B, no public CX |
+| Module 3 (Competitors) | **Full research** — digital leaders well-documented | **Full** — investing/brokerage competitors are well-documented (Robinhood, Schwab, Fidelity, SoFi, Betterment). Key metrics: penetration rate, speed-to-contact, advisor AUM, account funding rate | **Limited** — some digital WM platforms | **Very limited** — B2B capabilities rarely public |
+| Positioning Angles | Typically 3-5 strong angles | Typically 3-5 strong angles (penetration gap, digital experience gap, embedded investing opportunity, generational shift, advisor productivity) | Typically 1-3 angles (mostly metrics-driven) | Typically 1-2 angles (mostly metrics-driven) |
+| Module 4 (Voice Profile) | Full — CEO letter + app responses | Full — parent institution CEO letter usually available. Also check investing subsidiary marketing materials for brand voice | Full — CEO letter usually available | Full — CEO letter usually available |
 
 **Key principle:** The agent adapts its research depth to the domain reality. It never forces irrelevant data or pretends to have data it doesn't. When a module returns NO_RELEVANT_DATA, the report simply doesn't include that angle — the Assembly Agent knows how to build a compelling Act 1 with fewer inputs.
 

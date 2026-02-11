@@ -87,7 +87,7 @@ For each extractable file:
    ### Context
    - **Bank Type:** [Type]
    - **Region:** [Region]
-   - **Domain:** [Retail/SME/Corporate/Wealth]
+   - **Domain:** [Retail/SME/Corporate/Wealth/Investing]
 
    ### Pain Points Identified
    1. [Pain point with evidence]

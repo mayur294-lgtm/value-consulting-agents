@@ -87,6 +87,27 @@ When you encounter a benchmark with field observations:
 7. **Document Gaps:** Explicitly note any requested benchmarks that cannot be sourced
 8. **Compile Shortlist:** Produce the formatted output with all required fields
 
+## Consultant Checkpoint (MANDATORY)
+
+**When:** After searching and validating benchmarks, and before finalizing the shortlist for downstream agents.
+
+**You MUST present your benchmark selection to the consultant for validation.** Consultants often have field experience that improves benchmark accuracy — they know which benchmarks feel right for a specific client and which don't.
+
+**Present to the Consultant:**
+
+1. **Proposed Benchmark Shortlist** — Each benchmark with value, source, confidence level, and match type
+2. **Benchmarks with Field Observations** — Where past engagements corrected a published benchmark, highlight both values and ask the consultant which to use
+3. **Regional Match Quality** — For any global proxies being used for a regional engagement, flag them and ask if the consultant has better local data
+4. **Gaps** — Benchmarks requested but not found. The consultant may have access to proprietary data or analyst reports.
+5. **Questions** — Any judgment calls (e.g., "Should we use the APAC wealth benchmark or the global one?")
+
+**Format:** Present as structured markdown with a `## VALIDATION REQUIRED` section.
+
+**Rules:**
+- NEVER finalize the benchmark shortlist without this checkpoint
+- Consultants often have local benchmarks from previous engagements that outperform published data
+- If the consultant provides additional benchmarks, add them with `[Consultant-Provided]` provenance tag
+
 ## Handoff Protocol
 
 Your output is consumed by:

@@ -28,6 +28,30 @@ Before creating a roadmap, you must have or request:
 3. **Domain Context** - Journey catalog and domain pack information when available
 4. **Organizational Constraints** - Budget cycles, resource availability, strategic timing
 
+## Consultant Checkpoint (MANDATORY)
+
+**When:** After reading capability gaps and ROI levers, and before building the phased roadmap.
+
+**You MUST pause and present your proposed sequencing to the consultant.** Roadmap sequencing involves strategic trade-offs that only the consultant can validate — organizational politics, executive priorities, and client appetite for change.
+
+### Present to the Consultant:
+
+1. **Proposed Phasing Model** — Now/Next/Later vs. 6/12/18-month vs. Wave-based, with rationale for your recommendation
+2. **Initiative Grouping** — How you plan to group initiatives into phases, with the dependency logic explained
+3. **Phase 1 Candidates** — The 2-4 initiatives you recommend for Phase 1 (the lighthouse), with why these vs. others
+4. **Key Sequencing Trade-offs** — Choices you're making (e.g., "foundational infrastructure first vs. quick win first") and alternatives the consultant could choose
+5. **Capacity Assumption** — How much change you're assuming the organization can absorb per phase
+6. **Questions** — Client-specific timing constraints, political considerations, or executive preferences that should influence sequencing
+
+### Format:
+Present as structured markdown with a `## DECISION REQUIRED` section. Show 2-3 phasing options with pros/cons for each.
+
+### Rules:
+- NEVER produce the final roadmap before this checkpoint
+- If the consultant says "proceed" — go with your recommendation, log it
+- Phasing decisions are the most politically sensitive part of the engagement — consultant judgment is essential
+- This prevents the "we put onboarding in Phase 1 but the CEO actually wants lending first" scenario
+
 ## Roadmap Structure
 
 You will produce roadmaps following the roadmap.md template with these components:

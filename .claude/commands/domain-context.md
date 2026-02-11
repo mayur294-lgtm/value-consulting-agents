@@ -10,6 +10,7 @@ Where `[domain]` is one of:
 - `commercial` - Commercial Banking
 - `sme` - SME/Business Banking
 - `wealth` - Wealth Management
+- `investing` - Retail Investing (self-directed, robo-advisory, bank-led investing)
 - `corporate` - Corporate/Transaction Banking
 
 ## Instructions

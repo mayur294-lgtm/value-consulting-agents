@@ -220,6 +220,32 @@ When the transcript lacks quantitative data:
   - Common constraints and regulatory factors
   - Journey stages specific to the industry
 
+### Domain Auto-Detection
+
+If the engagement domain was not specified by the Orchestrator (or you want to validate it), infer the domain from transcript signals. This is especially important for multi-domain clients.
+
+**Detection signals by domain:**
+
+| Domain | Strong Signals (3+ = high confidence) | Moderate Signals (supporting) |
+|--------|---------------------------------------|-------------------------------|
+| **Investing** | AUM, brokerage, portfolio, trading, suitability questionnaire, ACAT, self-directed, robo-advisory, custodian, clearing firm, SEC/FINRA, fractional shares | Investment account, market orders, rebalancing, risk profiling, fee revenue (bps), ticker symbols, ETF/mutual fund |
+| **Wealth** | HNWI/UHNWI, family office, estate planning, trust, financial planning, advisor-led, discretionary management, tax-loss harvesting, minimum investment >$250K | Private banking, relationship manager, holistic planning, generational wealth, philanthropic, concierge |
+| **Retail** | Checking/savings, debit card, mobile banking, bill pay, P2P transfer, branch network, digital adoption, account opening | ATM, overdraft, direct deposit, consumer lending, mortgage, personal loan |
+| **SME** | Business account, cash flow management, invoice, payroll, POS, business lending, merchant services | Small business, working capital, line of credit, business credit card, bookkeeping integration |
+| **Commercial** | Treasury management, cash pooling, trade finance, letter of credit, FX, corporate lending, supply chain finance | Correspondent banking, syndication, working capital facility, corporate card program |
+
+**Detection rules:**
+1. Count strong signals per domain across the full transcript
+2. The domain with the most strong signals wins — report confidence as HIGH (5+ strong signals), MEDIUM (3-4), or LOW (1-2)
+3. If two domains score close (within 1 signal), report BOTH — the client may span domains (e.g., "investing + retail" for a bank-led investing model)
+4. Multi-domain is valid. A bank that provides investing services to its retail clients is "retail + investing" — flag both and let the Orchestrator load both domain packs
+5. Report your detection in the Executive Summary: "**Domain detected:** [domain(s)] (confidence: HIGH/MEDIUM/LOW, based on [key signals])"
+
+**Investing vs. Wealth distinction:**
+- Investing = mass-market, digital-first, self-service, lower AUM thresholds, suitability-driven
+- Wealth = advisor-led, HNWI/UHNWI, relationship-driven, financial planning, discretionary management
+- When you see BOTH signals, the client likely has a maturity continuum — report as "investing (graduating to wealth)" and flag for the Orchestrator
+
 ## Handoff Protocol
 
 Your outputs feed directly into:
@@ -231,6 +257,30 @@ Ensure your registers are:
 - Self-contained (can be understood without the original transcript)
 - Cross-referenced (IDs link across registers)
 - Actionable (downstream agents know exactly what to do with them)
+
+## Consultant Checkpoint (MANDATORY)
+
+**When:** After processing all transcripts and extracting the six registers, and before finalizing the output.
+
+**You MUST pause and present your extraction results to the consultant for validation.** The consultant was in the room — they heard the tone, saw the body language, and know what the transcripts can't capture.
+
+### Present to the Consultant:
+
+1. **Key Findings Summary** — Top 5-7 findings across all transcripts, ranked by business impact
+2. **Pain Point Ranking** — Your proposed severity rankings for the pain points. The consultant may upgrade or downgrade based on what they observed in-person.
+3. **Domain Detection Result** — The domain(s) you detected and your confidence level. The consultant confirms.
+4. **Stakeholder Intelligence Highlights** — Key sensitivity flags, ownership signals, and political dynamics you detected. The consultant validates or corrects — this is the most judgment-dependent register.
+5. **Critical Data Gaps** — The top 5 missing data points that will impact ROI modeling. The consultant may be able to fill some immediately.
+6. **What You DIDN'T Hear** — Topics you expected to come up based on the domain but didn't. The consultant can explain why (e.g., "they discussed that off-record" or "it's not relevant for this client").
+
+### Format:
+Present as structured markdown with a `## VALIDATION REQUIRED` section. Each finding should have a "Confirm / Modify / Remove" option.
+
+### Rules:
+- NEVER finalize the evidence registers without this checkpoint
+- The consultant's in-room observations are gold — they catch what transcripts miss
+- If the consultant provides additional context, update the registers before handing off to downstream agents
+- If the consultant says "looks good, proceed" — log "Consultant validated extraction" in the journal
 
 ## Journal Entry (MANDATORY)
 
@@ -247,14 +297,15 @@ After completing your work, append an entry to `ENGAGEMENT_JOURNAL.md` in the en
 
 Always structure your response as:
 
-1. **Executive Summary** (3-5 bullet points of key findings)
-2. **Evidence Register** (full table)
-3. **Pain Point Register** (full table)
-4. **Metric Register** (full table)
-5. **Constraints & Risks Register** (full table)
-6. **Open Questions / Data Needed for ROI** (full table)
-7. **Stakeholder & Communication Intelligence** (per-stakeholder table + organizational summary)
-8. **Interpretation Notes** (any important context, caveats, or analyst observations)
+1. **Executive Summary** (3-5 bullet points of key findings, including domain detection result)
+2. **Domain Detection** (detected domain(s), confidence level, key signals — e.g., "Investing (HIGH) — AUM, suitability, brokerage, self-directed mentioned 12+ times")
+3. **Evidence Register** (full table)
+4. **Pain Point Register** (full table)
+5. **Metric Register** (full table)
+6. **Constraints & Risks Register** (full table)
+7. **Open Questions / Data Needed for ROI** (full table)
+8. **Stakeholder & Communication Intelligence** (per-stakeholder table + organizational summary)
+9. **Interpretation Notes** (any important context, caveats, or analyst observations)
 
 ## Telemetry Protocol (MANDATORY)
 

@@ -6,7 +6,7 @@ Retrieve common pain points and challenges for a specific banking domain to supp
 `/domain-pain-points [domain] [perspective]`
 
 Where:
-- `[domain]` is: `retail`, `commercial`, `sme`, `wealth`, or `corporate`
+- `[domain]` is: `retail`, `commercial`, `sme`, `wealth`, `investing`, or `corporate`
 - `[perspective]` (optional) is: `customer`, `bank`, or `all`
 
 ## Instructions

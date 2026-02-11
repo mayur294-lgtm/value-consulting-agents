@@ -22,25 +22,35 @@ HTML_TEMPLATE_WITH_NAV = """<!DOCTYPE html>
         :root {{
             --primary: #1A56FF;
             --dark: #1A1F36;
-            --positive: #00B386;
-            --negative: #FF4444;
-            --warning: #FFC107;
-            --light-blue: #E8F0FF;
-            --light-gray: #F5F5F5;
-            --text: #333;
-            --border: #E0E0E0;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #0F172A;
+            --muted: #64748B;
+            --border: #E2E8F0;
+            --positive: #059669;
+            --negative: #DC2626;
+            --warning: #EA580C;
+            --accent: #2563EB;
+            --accent-light: #DBEAFE;
+            --L0: #DC2626; --L1: #EA580C; --L2: #0891B2; --L3: #059669; --L4: #2563EB;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+            --radius: 12px; --radius-lg: 16px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --nav-height: 70px;
         }}
 
-        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-
+        *, *::before, *::after {{ margin: 0; padding: 0; box-sizing: border-box; }}
         html {{ scroll-behavior: smooth; }}
 
         body {{
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
             line-height: 1.6;
             color: var(--text);
-            background: var(--light-gray);
+            background: var(--bg);
+            font-size: 15px;
         }}
 
         /* Navigation */
@@ -64,20 +74,22 @@ HTML_TEMPLATE_WITH_NAV = """<!DOCTYPE html>
             gap: 0.75rem;
             color: white;
             text-decoration: none;
-            font-weight: 700;
-            font-size: 1.2rem;
+            font-weight: 800;
+            font-size: 1.1rem;
             margin-right: 3rem;
+            letter-spacing: -0.3px;
         }}
 
         .nav-brand-icon {{
             width: 36px;
             height: 36px;
             background: var(--primary);
-            border-radius: 8px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 900;
         }}
 
         .nav-links {{
@@ -89,24 +101,25 @@ HTML_TEMPLATE_WITH_NAV = """<!DOCTYPE html>
         }}
 
         .nav-link {{
-            color: rgba(255,255,255,0.7);
+            color: rgba(255,255,255,0.55);
             text-decoration: none;
             padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.2s;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
             white-space: nowrap;
         }}
 
         .nav-link:hover {{
-            color: white;
-            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.06);
         }}
 
         .nav-link.active {{
             color: white;
             background: var(--primary);
+            box-shadow: 0 2px 8px rgba(26,86,255,0.3);
         }}
 
         .nav-toggle {{
@@ -120,11 +133,12 @@ HTML_TEMPLATE_WITH_NAV = """<!DOCTYPE html>
 
         /* Container */
         .container {{
-            max-width: 1400px;
+            max-width: 1360px;
             margin: 0 auto;
-            background: white;
+            background: var(--card);
             padding: 3rem 4rem;
             margin-top: var(--nav-height);
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
         }}
 
         section {{
@@ -132,74 +146,94 @@ HTML_TEMPLATE_WITH_NAV = """<!DOCTYPE html>
         }}
 
         h1 {{
-            color: var(--primary);
+            color: var(--text);
             font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: -1px;
             margin-bottom: 0.5rem;
             padding-bottom: 1rem;
-            border-bottom: 3px solid var(--primary);
+            border-bottom: 3px solid;
+            border-image: linear-gradient(90deg, #1A56FF, #7B2FFF) 1;
         }}
 
         h2 {{
-            color: var(--dark);
+            color: var(--text);
             font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
             margin-top: 2.5rem;
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
             border-bottom: 2px solid var(--border);
+            position: relative;
         }}
 
         h3 {{
             color: var(--primary);
-            font-size: 1.4rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: -0.2px;
             margin-top: 1.5rem;
             margin-bottom: 0.75rem;
         }}
 
         h4 {{
-            color: var(--dark);
-            font-size: 1.1rem;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-weight: 700;
             margin-top: 1.25rem;
             margin-bottom: 0.5rem;
         }}
 
-        p {{ margin-bottom: 1rem; }}
+        p {{ margin-bottom: 1rem; color: var(--muted); line-height: 1.7; }}
+        p strong {{ color: var(--text); }}
 
         table {{
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin: 1.5rem 0;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
         }}
 
         th {{
-            background: var(--dark);
-            color: white;
-            padding: 0.75rem 1rem;
+            font-weight: 700;
+            color: var(--muted);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 14px 20px;
             text-align: left;
-            font-weight: 600;
+            background: #F8FAFC;
+            border-bottom: 2px solid var(--border);
         }}
 
         td {{
-            padding: 0.75rem 1rem;
+            padding: 14px 20px;
             border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
         }}
 
-        tr:nth-child(even) {{ background: var(--light-gray); }}
-        tr:hover {{ background: var(--light-blue); }}
+        tr:last-child td {{ border-bottom: none; }}
+        tr:hover td {{ background: #F8FAFC; }}
 
         code {{
-            background: var(--light-gray);
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
+            background: #F1F5F9;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
             font-family: 'Fira Code', monospace;
             font-size: 0.85em;
+            color: var(--primary);
         }}
 
         pre {{
             background: var(--dark);
             color: #E0E0E0;
             padding: 1.5rem;
-            border-radius: 8px;
+            border-radius: var(--radius);
             overflow-x: auto;
             margin: 1.5rem 0;
             font-size: 0.85rem;
@@ -213,19 +247,20 @@ HTML_TEMPLATE_WITH_NAV = """<!DOCTYPE html>
         }}
 
         blockquote {{
-            border-left: 4px solid var(--primary);
+            border-left: 4px solid;
+            border-image: linear-gradient(to bottom, #1A56FF, #7B2FFF) 1;
             padding: 1rem 1.5rem;
             margin: 1.5rem 0;
-            color: #555;
+            color: var(--muted);
             font-style: italic;
-            background: var(--light-blue);
-            border-radius: 0 8px 8px 0;
+            background: var(--accent-light);
+            border-radius: 0 var(--radius) var(--radius) 0;
         }}
 
         ul, ol {{ margin: 1rem 0 1rem 2rem; }}
-        li {{ margin-bottom: 0.5rem; }}
+        li {{ margin-bottom: 0.5rem; color: var(--muted); }}
 
-        a {{ color: var(--primary); text-decoration: none; }}
+        a {{ color: var(--primary); text-decoration: none; font-weight: 600; }}
         a:hover {{ text-decoration: underline; }}
 
         hr {{
@@ -234,12 +269,39 @@ HTML_TEMPLATE_WITH_NAV = """<!DOCTYPE html>
             margin: 2rem 0;
         }}
 
-        strong {{ color: var(--dark); }}
+        strong {{ color: var(--text); font-weight: 700; }}
 
         /* Confidence badges */
-        .conf-high {{ background-color: #D4EDDA; padding: 2px 6px; border-radius: 3px; }}
-        .conf-med {{ background-color: #CCE5FF; padding: 2px 6px; border-radius: 3px; }}
-        .conf-low {{ background-color: #FFF3CD; padding: 2px 6px; border-radius: 3px; }}
+        .conf-high {{ background: #D1FAE5; color: #059669; padding: 6px 16px; border-radius: 10px; font-size: 0.72rem; font-weight: 800; letter-spacing: 1px; }}
+        .conf-med {{ background: #FEF3C7; color: #D97706; padding: 6px 16px; border-radius: 10px; font-size: 0.72rem; font-weight: 800; letter-spacing: 1px; }}
+        .conf-low {{ background: #FEF2F2; color: #DC2626; padding: 6px 16px; border-radius: 10px; font-size: 0.72rem; font-weight: 800; letter-spacing: 1px; }}
+
+        /* Score badges */
+        .score-badge {{ display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; color: #fff; }}
+        .score-badge.s0 {{ background: var(--L0); }}
+        .score-badge.s1 {{ background: var(--L1); }}
+        .score-badge.s2 {{ background: var(--L2); }}
+        .score-badge.s3 {{ background: var(--L3); }}
+        .score-badge.s4 {{ background: var(--L4); }}
+
+        /* Metric cards */
+        .metric-card {{ background: #0F172A; border: 1px solid #1E293B; border-radius: 20px; padding: 28px 20px; text-align: center; transition: all 0.35s ease; }}
+        .metric-card:hover {{ transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }}
+        .metric-val {{ font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 6px; letter-spacing: -1px; color: #FFFFFF; }}
+        .metric-lbl {{ font-size: 0.65rem; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }}
+        .card-grid {{ display: grid; gap: 16px; }}
+        .card-grid-2 {{ grid-template-columns: repeat(2, 1fr); }}
+        .card-grid-3 {{ grid-template-columns: repeat(3, 1fr); }}
+        .card-grid-4 {{ grid-template-columns: repeat(4, 1fr); }}
+
+        /* Card component */
+        .card {{ background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; box-shadow: var(--shadow-sm); transition: all 0.35s ease; }}
+        .card:hover {{ box-shadow: 0 8px 30px rgba(0,0,0,0.08); transform: translateY(-3px); }}
+
+        /* Dark feature section */
+        .dark-feature {{ background: #0B0F1A; border-radius: 28px; padding: 72px 56px; margin: 56px 0; position: relative; overflow: hidden; }}
+        .dark-feature h3 {{ font-size: 2.8rem; font-weight: 900; letter-spacing: -2px; line-height: 1.05; color: #FFFFFF; }}
+        .dark-feature p {{ color: rgba(255,255,255,0.4); }}
 
         /* Back to top */
         .back-to-top {{
@@ -273,17 +335,19 @@ HTML_TEMPLATE_WITH_NAV = """<!DOCTYPE html>
 
         /* Table of Contents */
         .toc {{
-            background: var(--light-gray);
-            border-radius: 12px;
+            background: #F8FAFC;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
             padding: 1.5rem 2rem;
             margin: 2rem 0;
         }}
 
         .toc-title {{
-            font-weight: 600;
-            color: var(--dark);
+            font-weight: 800;
+            color: var(--text);
             margin-bottom: 1rem;
             font-size: 1.1rem;
+            letter-spacing: -0.3px;
         }}
 
         .toc-list {{
@@ -296,38 +360,46 @@ HTML_TEMPLATE_WITH_NAV = """<!DOCTYPE html>
         }}
 
         .toc-item a {{
-            color: var(--primary);
+            color: var(--text);
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem;
-            border-radius: 6px;
-            transition: background 0.2s;
+            border-radius: 10px;
+            transition: all 0.25s ease;
         }}
 
-        .toc-item a:hover {{ background: white; }}
+        .toc-item a:hover {{ background: white; color: var(--primary); }}
 
         .toc-number {{
             background: var(--primary);
             color: white;
             width: 24px;
             height: 24px;
-            border-radius: 50%;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: 0.7rem;
+            font-weight: 800;
             flex-shrink: 0;
         }}
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {{ width: 8px; }}
+        ::-webkit-scrollbar-track {{ background: transparent; }}
+        ::-webkit-scrollbar-thumb {{ background: rgba(26,86,255,0.15); border-radius: 4px; }}
+        ::-webkit-scrollbar-thumb:hover {{ background: rgba(26,86,255,0.3); }}
+        ::selection {{ background: rgba(26,86,255,0.12); color: inherit; }}
 
         /* Print styles */
         @media print {{
             .nav {{ display: none; }}
             .back-to-top {{ display: none; }}
-            body {{ background: white; }}
+            body {{ background: white; font-size: 11px; }}
             .container {{
                 box-shadow: none;
                 padding: 0;
@@ -335,11 +407,22 @@ HTML_TEMPLATE_WITH_NAV = """<!DOCTYPE html>
             }}
         }}
 
-        /* Mobile responsive */
-        @media (max-width: 768px) {{
+        /* Responsive */
+        @media (max-width: 900px) {{
             .nav-links {{ display: none; }}
             .nav-toggle {{ display: block; }}
-            .container {{ padding: 1.5rem; }}
+            .container {{ padding: 2rem; }}
+            .card-grid-3, .card-grid-4 {{ grid-template-columns: 1fr 1fr; }}
+        }}
+
+        @media (max-width: 600px) {{
+            .container {{ padding: 1rem; }}
+            .card-grid-2, .card-grid-3, .card-grid-4 {{ grid-template-columns: 1fr; }}
+            h1 {{ font-size: 1.8rem; }}
+            h2 {{ font-size: 1.4rem; }}
+            table {{ font-size: 0.78rem; }}
+            th, td {{ padding: 10px 14px; }}
+            .dark-feature {{ padding: 36px 24px; border-radius: 20px; }}
         }}
     </style>
 </head>
