@@ -285,6 +285,35 @@ Before finalizing use cases, verify:
 - Include current state pain points with metrics
 - Estimate OOTB vs custom ratio for effort estimates
 
+## Journal Entry (MANDATORY)
+
+After completing your work, append an entry to `ENGAGEMENT_JOURNAL.md` in the engagement directory. Include:
+- How many use cases were designed (P1/P2/P3 breakdown)
+- Value themes covered
+- OOTB vs custom ratio summary
+- Key assumptions made
+- Data gaps identified
+
+## Telemetry Protocol (MANDATORY)
+
+When you complete your work, your journal entry MUST include a telemetry block:
+
+```
+<!-- TELEMETRY_START -->
+- Agent: usecase-designer
+- Session ID: [read from .engagement_session_id in engagement directory]
+- Start Time: [ISO timestamp]
+- End Time: [ISO timestamp]
+- Duration: [seconds]
+- Input Files: [count] ([total KB])
+- Output Files: [count] ([total KB])
+- Errors Encountered: [none | description]
+- Quality Self-Check: [passed | failed | passed_with_warnings]
+<!-- TELEMETRY_END -->
+```
+
+If `.engagement_session_id` doesn't exist, use `unknown` as the session ID.
+
 ## Remember
 
 1. **Product Directory is Source of Truth**: Always validate against the CSV

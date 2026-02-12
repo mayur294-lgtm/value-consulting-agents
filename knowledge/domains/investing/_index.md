@@ -11,7 +11,7 @@ Investing serves retail and mass-affluent clients with self-directed trading, ro
 | Model | Description | Examples | Primary Challenge |
 |-------|-------------|----------|-------------------|
 | **Pure Investing Provider** | Standalone brokerage or investing platform | Schwab, Fidelity, Vanguard, Robinhood, eToro, Interactive Brokers | Differentiating on experience, expanding to banking |
-| **Bank-Led Investing** | Bank or credit union offering investing to existing retail clients | NFCU/NFIS, Chase Self-Directed, HSBC InvestDirect, DBS Vickers | Capturing investment wallet before it leaves to competitors |
+| **Bank-Led Investing** | Bank or credit union offering investing to existing retail clients | [Large CU], Chase Self-Directed, HSBC InvestDirect, DBS Vickers | Capturing investment wallet before it leaves to competitors |
 
 Both models use the same journeys, products, and ROI levers — but the Acquire stage differs. Bank-led investing has the built-in advantage of an existing client relationship; pure investing providers must acquire from scratch.
 

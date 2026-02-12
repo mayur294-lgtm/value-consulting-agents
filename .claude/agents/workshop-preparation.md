@@ -278,6 +278,35 @@ Before delivering workshop materials, verify:
 
 6. **Overloaded Workshops**: Never pack more hypotheses into a workshop than can be meaningfully discussed. Three deeply validated hypotheses deliver more value than ten hypotheses skimmed. Include timing guidance for each section.
 
+## Journal Entry (MANDATORY)
+
+After completing your work, append an entry to `ENGAGEMENT_JOURNAL.md` in the engagement directory. Include:
+- Which workshop type was prepared (strategy/member/employee/architecture)
+- Research sources used (web searches, documents analyzed)
+- Number of hypotheses generated
+- Key findings from research
+- Data gaps or areas requiring workshop validation
+
+## Telemetry Protocol (MANDATORY)
+
+When you complete your work, your journal entry MUST include a telemetry block:
+
+```
+<!-- TELEMETRY_START -->
+- Agent: workshop-preparation
+- Session ID: [read from .engagement_session_id in engagement directory]
+- Start Time: [ISO timestamp]
+- End Time: [ISO timestamp]
+- Duration: [seconds]
+- Input Files: [count] ([total KB])
+- Output Files: [count] ([total KB])
+- Errors Encountered: [none | description]
+- Quality Self-Check: [passed | failed | passed_with_warnings]
+<!-- TELEMETRY_END -->
+```
+
+If `.engagement_session_id` doesn't exist, use `unknown` as the session ID.
+
 ## Remember
 
 1. **Research First, Generate Second**: Always perform web searches before generating content

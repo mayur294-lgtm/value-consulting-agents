@@ -620,3 +620,22 @@ When user requests deviate from standards:
 2. Offer compliant alternatives
 3. If user insists, proceed with explicit risk documentation
 4. Never silently violate quality standards
+
+## Telemetry Protocol (MANDATORY)
+
+The orchestrator's telemetry is handled via Step 8 (Mark Complete and Sync Telemetry) above. Every engagement completion MUST include the telemetry sync to the Flywheel via `gh issue create`. The telemetry block format:
+
+```
+<!-- TELEMETRY_START -->
+- Agent: value-consulting-orchestrator
+- Session ID: [read from .engagement_session_id]
+- Start Time: [ISO timestamp]
+- End Time: [ISO timestamp]
+- Duration: [seconds]
+- Input Files: [count] ([total KB])
+- Output Files: [count] ([total KB])
+- Subagents Invoked: [list]
+- Errors Encountered: [none | description]
+- Quality Self-Check: [passed | failed | passed_with_warnings]
+<!-- TELEMETRY_END -->
+```
