@@ -15,13 +15,19 @@ Architects design and maintain the system — agents, skills, tools, workflows, 
 
 **Can modify:** Everything — agents, skills, commands, tools, workflows, CLAUDE.md, templates, knowledge, benchmarks
 
+### Domain Leads
+
+Domain Leads are consultants who own a specific area and can modify files within that domain — including agents, tools, and templates scoped to their domain. Their changes still require architect review before merging.
+
+| Name | GitHub | Domain | Additional Access |
+|------|--------|--------|-------------------|
+| Mariam | @mariamt-coder | **ROI** | `roi-business-case-builder.md`, `tools/roi_excel_generator.py`, `templates/outputs/roi*` |
+
+**Important for Domain Leads:** When you pull the latest code, your domain files may have new sections (e.g., consultant checkpoints). When resolving conflicts, **merge both sides** — keep your improvements AND the new sections. Don't just pick "your version" wholesale.
+
 ### Consultants
 
 Consultants use the system for engagements and contribute learnings back.
-
-| Name | GitHub | Role |
-|------|--------|------|
-| Mariam | @mariamt-coder | Consultant |
 
 **Can modify:**
 - `knowledge/learnings/**` — extracted benchmarks, pain points, maturity scores, ROI patterns
@@ -29,14 +35,14 @@ Consultants use the system for engagements and contribute learnings back.
 - `benchmarks/**` — benchmark data corrections and additions
 
 **Cannot modify (PR will be blocked by CI):**
-- `.claude/agents/**` — agent definitions (prompt engineering)
+- `.claude/agents/**` — agent definitions (except Domain Lead exceptions above)
 - `.claude/commands/**` — skills and slash commands
 - `.claude/hooks/**` — git hooks and automation
-- `tools/**` — Python code
+- `tools/**` — Python code (except Domain Lead exceptions above)
 - `.github/**` — CI/CD workflows
 - `scripts/**` — automation scripts
 - `CLAUDE.md` — root configuration
-- `templates/outputs/**` — output templates
+- `templates/outputs/**` — output templates (except Domain Lead exceptions above)
 - `agents/definitions/**` — agent role definitions
 
 **If a consultant needs to suggest changes to restricted paths:** Open an issue describing the change, and an architect will implement it.
