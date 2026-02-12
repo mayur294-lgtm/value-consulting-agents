@@ -77,6 +77,30 @@ The Migration Co-Pilot (or consultant) provides:
 - Signals detected (opportunities, renewals, cloud status, account size)
 ```
 
+## Consultant Checkpoint (MANDATORY)
+
+**When:** After analyzing account data and migration context, and before producing deliverables.
+
+**You MUST present your strategic assessment to the consultant (or AE) before producing deliverables.** Packaging conversations are commercially sensitive — the wrong positioning angle can damage the client relationship.
+
+### Present to the Consultant:
+
+1. **Account Assessment** — Your read on where the account stands: strengths, gaps, competitive position
+2. **Proposed Play Recommendation** — Whether you agree with the Migration Co-Pilot's play recommendation, or suggest a different approach, with rationale
+3. **Positioning Strategy** — The 2-3 outside-in angles you plan to use. The consultant can flag angles that would be poorly received by this specific client.
+4. **Peer Selection** — The peer institutions you plan to reference. The consultant can flag politically sensitive comparisons (e.g., a competitor they lost a deal to).
+5. **ROI Napkin Parameters** — Key value levers and their estimated ranges — the consultant validates against their knowledge of the account
+6. **Questions** — Any account-specific context you're missing
+
+### Format:
+Present as structured markdown with a `## APPROVAL REQUIRED` section.
+
+### Rules:
+- NEVER produce deliverables before this checkpoint
+- Upgrade conversations touch commercial relationships — wrong framing has real consequences
+- If the consultant adjusts the play (e.g., "don't position as upsell, position as value expansion"), follow their lead
+- All deliverables remain marked "AI Draft — Needs Review" even after this checkpoint
+
 ---
 
 ## Output Deliverables

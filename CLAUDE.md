@@ -133,11 +133,26 @@ You also serve as the architect of a multi-agent consulting system. When working
 - Design for transparency and traceability
 - Avoid over-engineering; keep it simple
 
+## Backbase Product Knowledge (MCP)
+
+This project is connected to the **Backbase Infobank** via MCP (Model Context Protocol). This gives agents live access to the full Backbase platform knowledge base — product capabilities, architecture, APIs, and documentation.
+
+- **Server:** `https://mcp.backbase.io/mcp` (configured in `.mcp.json` and `.vscode/mcp.json`)
+- **Tools prefix:** `mcp__backbase-infobank__*`
+- **Auth:** Requires Backbase SSO. Each consultant must authenticate on first use. Without authentication, the server returns nothing — this protects Backbase IP if the repo is accessed by non-Backbase users.
+
+**When to use MCP vs. static knowledge:**
+- **MCP Infobank:** Product capabilities, feature availability, architecture details, API specs — anything that changes with releases
+- **Static files** (`/knowledge/`): Consulting methodology, value frameworks, benchmarks — things that don't change with product releases
+
+**For agent builders:** See [knowledge/platforms/backbase-mcp-integration.md](knowledge/platforms/backbase-mcp-integration.md) for full integration guide, including copy-paste prompt snippets for agent prompts.
+
 ## Working in This Repository
 
 ### File Organization
 
 - `/knowledge/` - Consulting context, principles, methodologies
+- `/knowledge/platforms/` - Platform integrations (MCP, APIs)
 - `/agents/` - Agent role definitions and instructions
 - `/templates/` - Input contracts and output templates
 - `/examples/` - Reference engagements with real outputs
@@ -184,6 +199,58 @@ You succeed in this repository when:
 ## Remember
 
 You are a VALUE CONSULTANT first. Every decision, every output, every analysis must serve the goal of helping executives make evidence-based decisions about business value creation.
+
+---
+
+## Contribution Tiers
+
+This project has two contribution tiers, enforced by CI:
+
+| Tier | Who | Can Modify |
+|------|-----|-----------|
+| **Architect** | Mayur (@mayur294-lgtm), Shobhit (@shobhitonnet) | Everything — agents, skills, tools, workflows, knowledge, templates |
+| **Consultant** | All other contributors | `knowledge/learnings/**`, `knowledge/domains/**`, `benchmarks/**` only |
+
+**Enforcement:** The `enforce-contribution-scope.yml` CI workflow blocks PRs from consultants that touch restricted paths (agents, skills, tools, workflows, CLAUDE.md, templates). Consultants contribute KNOWLEDGE back — not architecture.
+
+**Knowledge Learning Loop:** Every engagement MUST produce knowledge harvest entries (`knowledge/learnings/`). The `/publish` skill enforces this — it blocks publishing if engagement outputs exist without corresponding knowledge harvest entries. This ensures the system gets smarter with every engagement.
+
+---
+
+## Git Collaboration Protocol
+
+This project uses **automated git branching** so consultants never need to learn git. Claude handles all version control automatically.
+
+### How It Works
+
+1. **Session start** — A hook auto-creates a feature branch (e.g., `mayur/20260211-a3f2`). You never work on `main` directly.
+2. **During work** — All edits happen on the feature branch. No special action needed.
+3. **Publishing** — Consultant says "publish my changes" or runs `/publish`. Claude commits, pushes, and creates a Pull Request.
+4. **Reconciliation** — Run `/reconcile` to check all open PRs for conflicts, auto-merge approved clean ones, and resolve conflicts.
+
+### Rules for Claude (MANDATORY)
+
+- **NEVER commit directly to `main`** — always work on a feature branch
+- **NEVER force-push** to any branch
+- **NEVER auto-merge without user confirmation** — PRs need at least 1 human approval
+- **If on `main` when editing starts:** create a branch first using `{username}/{date}-{description}` naming
+- **Commit messages follow:** `{type}: {description}` (types: add, fix, update, refactor, docs)
+- **Stage files by name** — never use `git add -A` or `git add .`
+
+### Skills
+
+| Skill | What It Does | When to Use |
+|-------|-------------|-------------|
+| `/publish` | Commits, pushes, creates PR | When work is done and ready for review |
+| `/reconcile` | Checks all open PRs, merges clean ones, resolves conflicts | Periodically, or when PRs are piling up |
+
+### Conflict Resolution Priority
+
+When resolving merge conflicts:
+- **Agent prompts** (`.claude/agents/*.md`) — ALWAYS ask the user. Never auto-resolve.
+- **Knowledge files** (`knowledge/**`) — Additive merge if different sections; ask if same section.
+- **Tools/code** (`tools/**`) — ALWAYS ask the user.
+- **Config** (`.json`, `.yaml`) — Smart merge if different keys; ask if same keys.
 
 ---
 

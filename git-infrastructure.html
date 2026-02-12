@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Value Consulting AgenticOS — Git Infrastructure</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --dark: #0F1225;
+    --darker: #0A0D1A;
+    --card: #161A32;
+    --card-border: #232848;
+    --blue: #1A56FF;
+    --blue-glow: rgba(26, 86, 255, 0.3);
+    --cyan: #00D4FF;
+    --green: #00E68A;
+    --orange: #FF8C42;
+    --red: #FF4B6E;
+    --purple: #A855F7;
+    --yellow: #FFD600;
+    --text: #E8EAF0;
+    --muted: #8890A6;
+    --line: #2A3052;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--darker);
+    color: var(--text);
+    overflow-x: hidden;
+    line-height: 1.5;
+  }
+
+  /* ─── HEADER ─── */
+  .hero {
+    text-align: center;
+    padding: 60px 40px 30px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 500px;
+    background: radial-gradient(ellipse, var(--blue-glow) 0%, transparent 70%);
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #fff 40%, var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+  }
+  .hero .subtitle {
+    font-size: 18px;
+    color: var(--muted);
+    margin-top: 8px;
+    font-weight: 400;
+  }
+  .hero .badge-row {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+  .badge.blue   { border-color: var(--blue); color: var(--blue); background: rgba(26,86,255,0.08); }
+  .badge.green  { border-color: var(--green); color: var(--green); background: rgba(0,230,138,0.08); }
+  .badge.orange { border-color: var(--orange); color: var(--orange); background: rgba(255,140,66,0.08); }
+  .badge.purple { border-color: var(--purple); color: var(--purple); background: rgba(168,85,247,0.08); }
+  .badge.cyan   { border-color: var(--cyan); color: var(--cyan); background: rgba(0,212,255,0.08); }
+
+  /* ─── NAV TABS ─── */
+  .nav {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 20px 30px;
+    flex-wrap: wrap;
+  }
+  .nav button {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    color: var(--muted);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .nav button:hover { border-color: var(--blue); color: var(--text); }
+  .nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+    box-shadow: 0 0 20px var(--blue-glow);
+  }
+
+  /* ─── SECTIONS ─── */
+  .section { display: none; padding: 0 40px 60px; max-width: 1400px; margin: 0 auto; }
+  .section.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-title {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .section-desc {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 30px;
+  }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .card:hover {
+    border-color: var(--blue);
+    box-shadow: 0 0 30px rgba(26,86,255,0.08);
+  }
+  .card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card p, .card li { font-size: 14px; color: var(--muted); }
+  .card ul { list-style: none; padding-left: 0; }
+  .card ul li { padding: 4px 0; position: relative; padding-left: 18px; }
+  .card ul li::before { content: '▸'; position: absolute; left: 0; color: var(--blue); font-weight: 700; }
+
+  .icon { font-size: 22px; }
+
+  /* ─── FLOW DIAGRAM (SVG-based) ─── */
+  .flow-container {
+    position: relative;
+    overflow-x: auto;
+    padding: 20px 0;
+  }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .flow-node {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid;
+    white-space: nowrap;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .flow-node:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .flow-node .node-icon { font-size: 18px; }
+
+  .flow-node.blue   { background: rgba(26,86,255,0.12); border-color: var(--blue); color: var(--blue); }
+  .flow-node.green  { background: rgba(0,230,138,0.12); border-color: var(--green); color: var(--green); }
+  .flow-node.orange { background: rgba(255,140,66,0.12); border-color: var(--orange); color: var(--orange); }
+  .flow-node.purple { background: rgba(168,85,247,0.12); border-color: var(--purple); color: var(--purple); }
+  .flow-node.cyan   { background: rgba(0,212,255,0.12); border-color: var(--cyan); color: var(--cyan); }
+  .flow-node.red    { background: rgba(255,75,110,0.12); border-color: var(--red); color: var(--red); }
+  .flow-node.yellow { background: rgba(255,214,0,0.12); border-color: var(--yellow); color: var(--yellow); }
+
+  .arrow {
+    font-size: 24px;
+    color: var(--line);
+    flex-shrink: 0;
+  }
+  .arrow-down {
+    text-align: center;
+    color: var(--line);
+    font-size: 24px;
+    margin: 4px 0;
+  }
+
+  /* ─── GRID LAYOUTS ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  @media (max-width: 900px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* ─── TABLE ─── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead { background: var(--card); }
+  th {
+    padding: 14px 18px;
+    text-align: left;
+    font-weight: 700;
+    color: var(--text);
+    border-bottom: 1px solid var(--card-border);
+  }
+  td {
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(42,48,82,0.4);
+    color: var(--muted);
+  }
+  tr:hover td { background: rgba(26,86,255,0.04); }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .tag.opus   { background: rgba(168,85,247,0.15); color: var(--purple); }
+  .tag.sonnet { background: rgba(26,86,255,0.15); color: var(--blue); }
+  .tag.haiku  { background: rgba(0,230,138,0.15); color: var(--green); }
+
+  /* ─── FLYWHEEL LOOP ─── */
+  .flywheel-loop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin: 20px 0;
+  }
+  .flywheel-step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 28px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid;
+    min-width: 400px;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .flywheel-step:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  }
+  .flywheel-step .step-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .flywheel-step.blue   { background: rgba(26,86,255,0.08); border-color: rgba(26,86,255,0.3); color: var(--text); }
+  .flywheel-step.blue   .step-num { background: var(--blue); color: #fff; }
+  .flywheel-step.green  { background: rgba(0,230,138,0.08); border-color: rgba(0,230,138,0.3); color: var(--text); }
+  .flywheel-step.green  .step-num { background: var(--green); color: var(--dark); }
+  .flywheel-step.orange { background: rgba(255,140,66,0.08); border-color: rgba(255,140,66,0.3); color: var(--text); }
+  .flywheel-step.orange .step-num { background: var(--orange); color: var(--dark); }
+  .flywheel-step.purple { background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.3); color: var(--text); }
+  .flywheel-step.purple .step-num { background: var(--purple); color: #fff; }
+  .flywheel-step.cyan   { background: rgba(0,212,255,0.08); border-color: rgba(0,212,255,0.3); color: var(--text); }
+  .flywheel-step.cyan   .step-num { background: var(--cyan); color: var(--dark); }
+  .flywheel-step.red    { background: rgba(255,75,110,0.08); border-color: rgba(255,75,110,0.3); color: var(--text); }
+  .flywheel-step.red    .step-num { background: var(--red); color: #fff; }
+  .flywheel-step.yellow { background: rgba(255,214,0,0.08); border-color: rgba(255,214,0,0.3); color: var(--text); }
+  .flywheel-step.yellow .step-num { background: var(--yellow); color: var(--dark); }
+
+  .flywheel-connector {
+    width: 2px;
+    height: 20px;
+    background: var(--line);
+    position: relative;
+  }
+  .flywheel-connector::after {
+    content: '▼';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: var(--line);
+  }
+
+  .flywheel-branch {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin: 10px 0;
+  }
+
+  .detail-text {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 44px;
+    margin-top: 2px;
+  }
+
+  /* ─── RESILIENCE BAR ─── */
+  .resilience {
+    display: flex;
+    gap: 14px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .resilience-layer {
+    flex: 1;
+    min-width: 260px;
+    padding: 20px;
+    border-radius: 14px;
+    border: 1px solid;
+    position: relative;
+  }
+  .resilience-layer .layer-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .resilience-layer p { font-size: 13px; }
+
+  .resilience-layer.primary { border-color: var(--green); background: rgba(0,230,138,0.05); }
+  .resilience-layer.primary .layer-label { color: var(--green); }
+  .resilience-layer.backup { border-color: var(--orange); background: rgba(255,140,66,0.05); }
+  .resilience-layer.backup .layer-label { color: var(--orange); }
+  .resilience-layer.fallback { border-color: var(--red); background: rgba(255,75,110,0.05); }
+  .resilience-layer.fallback .layer-label { color: var(--red); }
+
+  /* ─── ANNOTATION ─── */
+  .annotation {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(255,214,0,0.1);
+    border: 1px solid rgba(255,214,0,0.2);
+    color: var(--yellow);
+    margin: 4px 0;
+  }
+
+  /* ─── COST PILL ─── */
+  .cost {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(0,230,138,0.1);
+    color: var(--green);
+    border: 1px solid rgba(0,230,138,0.2);
+  }
+
+  /* ─── RETURN ARROW (for flywheel) ─── */
+  .return-arrow {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    height: 50px;
+    margin: 0 auto;
+  }
+  .return-arrow svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ─── LABEL PILLS ─── */
+  .gh-label {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    margin: 2px;
+  }
+  .gh-label.telemetry   { background: #1F4529; color: #4ADE80; }
+  .gh-label.improvement  { background: #422006; color: #FB923C; }
+  .gh-label.ready        { background: #1E1B4B; color: #A78BFA; }
+  .gh-label.dev-agent    { background: #172554; color: #60A5FA; }
+  .gh-label.needs-review { background: #4C0519; color: #FDA4AF; }
+  .gh-label.needs-human  { background: #451A03; color: #FDBA74; }
+
+  /* ─── CODE SNIPPET ─── */
+  .code-block {
+    background: var(--darker);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-x: auto;
+    color: var(--muted);
+    margin: 12px 0;
+  }
+  .code-block .kw { color: var(--purple); }
+  .code-block .fn { color: var(--cyan); }
+  .code-block .str { color: var(--green); }
+  .code-block .cm { color: #555; }
+
+  /* ─── LEGEND ─── */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 16px 20px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    font-size: 12px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  /* Parallel marker */
+  .parallel-bracket {
+    border-left: 3px solid var(--cyan);
+    padding-left: 16px;
+    margin: 14px 0 14px 30px;
+  }
+  .parallel-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--cyan);
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<div class="hero">
+  <h1>Value Consulting AgenticOS</h1>
+  <div class="subtitle">Git Infrastructure &amp; Autonomous Agent Architecture</div>
+  <div class="badge-row">
+    <span class="badge blue">10+ Consulting Agents</span>
+    <span class="badge purple">4 Flywheel Agents</span>
+    <span class="badge green">3-Layer Telemetry Sync</span>
+    <span class="badge orange">Self-Improving Loop</span>
+    <span class="badge cyan">~$3-5 / Engagement</span>
+  </div>
+</div>
+
+<!-- ═══════════════════ NAV ═══════════════════ -->
+<div class="nav">
+  <button class="active" onclick="showSection('overview')">System Overview</button>
+  <button onclick="showSection('consulting')">Consulting Flow</button>
+  <button onclick="showSection('flywheel')">Flywheel Loop</button>
+  <button onclick="showSection('git')">Git Hooks &amp; CI</button>
+  <button onclick="showSection('agents')">Agent Directory</button>
+  <button onclick="showSection('knowledge')">Knowledge &amp; Templates</button>
+  <button onclick="showSection('cost')">Cost &amp; Routing</button>
+</div>
+
+<!-- ═══════════════════ 1. OVERVIEW ═══════════════════ -->
+<div id="overview" class="section active">
+  <div class="section-title">System Overview</div>
+  <div class="section-desc">A closed-loop autonomous consulting system that gets smarter with every engagement.</div>
+
+  <!-- High-Level Architecture -->
+  <div class="card">
+    <h3><span class="icon">🏗</span> Three-Layer Architecture</h3>
+    <div class="grid-3" style="margin-top:16px;">
+      <div style="text-align:center;">
+        <div class="flow-node blue" style="justify-content:center;display:inline-flex;">
+          <span class="node-icon">🧠</span> Consulting Agents
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;">10+ specialized agents<br>produce executive deliverables</p>
+      </div>
+      <div style="text-align:center;">
+        <div class="flow-node orange" style="justify-content:center;display:inline-flex;">
+          <span class="node-icon">⚙️</span> Git Infrastructure
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;">Hooks, CI/CD, telemetry sync<br>zero human action required</p>
+      </div>
+      <div style="text-align:center;">
+        <div class="flow-node purple" style="justify-content:center;display:inline-flex;">
+          <span class="node-icon">🔄</span> Flywheel Agents
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;">4 agents auto-improve<br>the system every cycle</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Big Picture Flow -->
+  <div class="card">
+    <h3><span class="icon">🌊</span> End-to-End Flow</h3>
+    <div class="flow-container" style="margin-top:16px;">
+      <div class="flow-row">
+        <div class="flow-node blue"><span class="node-icon">👤</span> Consultant</div>
+        <span class="arrow">→</span>
+        <div class="flow-node blue"><span class="node-icon">🎯</span> Orchestrator</div>
+        <span class="arrow">→</span>
+        <div class="flow-node blue"><span class="node-icon">🔍</span> Discovery</div>
+        <span class="arrow">→</span>
+        <div class="flow-node blue"><span class="node-icon">📊</span> Analysis Agents</div>
+        <span class="arrow">→</span>
+        <div class="flow-node blue"><span class="node-icon">📝</span> Assembly</div>
+        <span class="arrow">→</span>
+        <div class="flow-node green"><span class="node-icon">📦</span> Deliverables</div>
+      </div>
+      <div class="arrow-down">↓</div>
+      <div class="flow-row">
+        <div class="flow-node green"><span class="node-icon">📡</span> Telemetry Auto-Sync</div>
+        <span class="arrow">→</span>
+        <div class="flow-node orange"><span class="node-icon">🏷</span> GitHub Issues</div>
+        <span class="arrow">→</span>
+        <div class="flow-node orange"><span class="node-icon">📋</span> Triage Agent</div>
+        <span class="arrow">→</span>
+        <div class="flow-node purple"><span class="node-icon">🛠</span> Dev Agent</div>
+        <span class="arrow">→</span>
+        <div class="flow-node purple"><span class="node-icon">👁</span> Review Agent</div>
+        <span class="arrow">→</span>
+        <div class="flow-node cyan"><span class="node-icon">✅</span> PR Merge</div>
+      </div>
+      <div class="arrow-down">↓</div>
+      <div class="flow-row">
+        <div class="flow-node cyan"><span class="node-icon">🔄</span> System Improved — Next Engagement Benefits Automatically</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Repo Structure -->
+  <div class="card">
+    <h3><span class="icon">📁</span> Repository Structure</h3>
+    <div class="code-block">
+<span class="str">claudevc/</span>
+├── <span class="fn">.claude/</span>
+│   ├── <span class="fn">agents/</span>            <span class="cm"># 15+ agent definitions (orchestrator, discovery, assembly, dev, review, ...)</span>
+│   ├── <span class="fn">commands/</span>           <span class="cm"># 17 slash-command skills (/presentation, /domain-*, /scan-engagement, ...)</span>
+│   └── <span class="fn">settings.local.json</span> <span class="cm"># permissions (git, gh, python, pdftotext, web domains)</span>
+├── <span class="fn">.githooks/</span>
+│   ├── <span class="kw">post-commit</span>          <span class="cm"># telemetry extraction + auto-sync to GitHub Issues</span>
+│   └── <span class="kw">pre-push</span>             <span class="cm"># fallback telemetry sync</span>
+├── <span class="fn">.github/workflows/</span>
+│   ├── <span class="kw">triage-weekly.yml</span>    <span class="cm"># groups telemetry → improvement issues → "ready-for-dev" label</span>
+│   ├── <span class="kw">dev-agent.yml</span>        <span class="cm"># triggered by label → Dev → Test → Review → PR</span>
+│   ├── <span class="kw">test-agents.yml</span>      <span class="cm"># structural validation on agent/template PRs</span>
+│   └── <span class="kw">version-release.yml</span>  <span class="cm"># tag → changelog → GitHub Release → email to team</span>
+├── <span class="fn">knowledge/</span>
+│   ├── <span class="fn">domains/</span>             <span class="cm"># 12 banking domains (retail, SME, wealth, ...)</span>
+│   ├── <span class="fn">learnings/</span>           <span class="cm"># auto-harvested from engagements (Step 9)</span>
+│   └── <span class="fn">standards/</span>           <span class="cm"># benchmark evolution model, context management</span>
+├── <span class="fn">templates/</span>
+│   ├── <span class="fn">outputs/</span>             <span class="cm"># 10+ deliverable templates</span>
+│   ├── <span class="fn">emails/</span>              <span class="cm"># approval & release note HTML templates</span>
+│   └── <span class="fn">presentations/</span>       <span class="cm"># Prezi-style presentation templates</span>
+├── <span class="fn">scripts/</span>                 <span class="cm"># aggregate_issues.py, dev_agent.py, review_agent.py, ...</span>
+└── <span class="fn">engagements/</span>             <span class="cm"># per-client engagement folders with outputs</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 2. CONSULTING FLOW ═══════════════════ -->
+<div id="consulting" class="section">
+  <div class="section-title">Consulting Engagement Flow</div>
+  <div class="section-desc">How a Value Assessment engagement flows through the agent pipeline, from transcripts to executive deliverables.</div>
+
+  <div class="flywheel-loop">
+    <div class="flywheel-step blue">
+      <div class="step-num">1</div>
+      <div><strong>Orchestrator</strong> — Classifies engagement type, gathers inputs, creates ENGAGEMENT_JOURNAL.md</div>
+    </div>
+    <div class="detail-text">Domain auto-detection · Multi-transcript protocol · Benchmark confidence mode</div>
+    <div class="flywheel-connector"></div>
+
+    <div class="flywheel-step blue">
+      <div class="step-num">2</div>
+      <div><strong>Discovery Agent</strong> — Processes transcripts one-at-a-time → 6 structured registers</div>
+    </div>
+    <div class="detail-text">Evidence · Pain Points · Metrics · Constraints · Open Questions · Stakeholder Intelligence</div>
+    <div class="flywheel-connector"></div>
+
+    <div class="parallel-bracket" style="max-width:580px;">
+      <div class="parallel-label">⚡ Parallel Execution</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="flywheel-step cyan" style="min-width:auto;">
+          <div class="step-num">3a</div>
+          <div><strong>Market Context Researcher</strong> — Annual reports, CX data, competitor capabilities</div>
+        </div>
+        <div class="flywheel-step cyan" style="min-width:auto;">
+          <div class="step-num">3b</div>
+          <div><strong>Capability Agent</strong> — Maturity scoring, gap analysis, heat map</div>
+        </div>
+        <div class="flywheel-step cyan" style="min-width:auto;">
+          <div class="step-num">3c</div>
+          <div><strong>ROI Agent</strong> — 3-scenario financial model, sensitivity analysis</div>
+        </div>
+        <div class="flywheel-step cyan" style="min-width:auto;">
+          <div class="step-num">3d</div>
+          <div><strong>Roadmap Agent</strong> — Phased initiatives, dependencies, value milestones</div>
+        </div>
+      </div>
+    </div>
+    <div class="detail-text">All agents read from disk (no context passing) · Benchmark Librarian supports ROI & Capability</div>
+    <div class="flywheel-connector"></div>
+
+    <div class="flywheel-step purple">
+      <div class="step-num">4</div>
+      <div><strong>Assembly Agent</strong> — 7-act narrative construction with tone calibration</div>
+    </div>
+    <div class="detail-text">"Read the Room" protocol · Institutional voice wins · Stakeholder intelligence feeds tone</div>
+    <div class="flywheel-connector"></div>
+
+    <div class="flywheel-step orange">
+      <div class="step-num">5</div>
+      <div><strong>Cross-Deliverable Review</strong> — 6-point validation by Orchestrator</div>
+    </div>
+    <div class="detail-text">Numerical consistency · Evidence traceability · Assumption completeness · Narrative coherence · Gap disclosure</div>
+    <div class="flywheel-connector"></div>
+
+    <div class="flywheel-step green">
+      <div class="step-num">6</div>
+      <div><strong>Outputs</strong> — 5 executive-ready deliverables committed to <code>outputs/</code></div>
+    </div>
+    <div class="detail-text">executive_summary.md · assessment_report.md · roi_report.md · roadmap.md · capability_assessment.md</div>
+    <div class="flywheel-connector"></div>
+
+    <div class="flywheel-step green">
+      <div class="step-num">7</div>
+      <div><strong>Telemetry + Knowledge Harvest</strong> — Step 8 syncs telemetry, Step 9 harvests learnings</div>
+    </div>
+    <div class="detail-text">Benchmarks, pain points, capability patterns, ROI models → anonymized → knowledge/learnings/</div>
+  </div>
+
+  <!-- Disk-Based Handoff -->
+  <div class="card" style="margin-top:20px;">
+    <h3><span class="icon">💾</span> Disk-Based Agent Handoff (No Context Passing)</h3>
+    <p>Each agent writes its outputs to the engagement folder on disk. Downstream agents read from disk — <strong>no in-memory context is shared</strong>. This prevents context overflow and ensures traceability.</p>
+    <div class="flow-container" style="margin-top:14px;">
+      <div class="flow-row">
+        <div class="flow-node blue"><span class="node-icon">🔍</span> Discovery</div>
+        <span class="arrow">→ writes →</span>
+        <div class="flow-node green" style="border-style:dashed;"><span class="node-icon">📄</span> evidence_register.md<br>pain_points.md<br>metrics.md</div>
+        <span class="arrow">→ reads →</span>
+        <div class="flow-node blue"><span class="node-icon">📊</span> Capability / ROI / Roadmap</div>
+        <span class="arrow">→ writes →</span>
+        <div class="flow-node green" style="border-style:dashed;"><span class="node-icon">📄</span> capability_assessment.md<br>roi_report.md<br>roadmap.md</div>
+        <span class="arrow">→ reads →</span>
+        <div class="flow-node purple"><span class="node-icon">📝</span> Assembly</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 3. FLYWHEEL LOOP ═══════════════════ -->
+<div id="flywheel" class="section">
+  <div class="section-title">Flywheel: Self-Improving Loop</div>
+  <div class="section-desc">Every engagement makes the next one smarter. Zero human action required for the improvement cycle — only one approval step.</div>
+
+  <div class="annotation" style="margin-bottom:20px;">⚡ Only human touchpoint: Mayur approves the PR on GitHub</div>
+
+  <div class="flywheel-loop">
+    <div class="flywheel-step blue">
+      <div class="step-num">1</div>
+      <div><strong>Consultant runs engagement</strong><br><span style="font-size:12px;color:var(--muted);">Orchestrator logs telemetry blocks in ENGAGEMENT_JOURNAL.md</span></div>
+    </div>
+    <div class="flywheel-connector"></div>
+
+    <div class="flywheel-step green">
+      <div class="step-num">2</div>
+      <div><strong>Telemetry auto-syncs to GitHub</strong><br><span style="font-size:12px;color:var(--muted);">3 independent paths ensure delivery (see Resilience below)</span></div>
+    </div>
+    <div class="flywheel-connector"></div>
+
+    <div class="flywheel-step orange">
+      <div class="step-num">3</div>
+      <div><strong>Triage Agent groups &amp; prioritizes</strong><br><span style="font-size:12px;color:var(--muted);">Deduplicates, scores by frequency × severity × recency</span></div>
+    </div>
+    <div class="detail-text">
+      <span class="gh-label telemetry">telemetry</span> → grouped → <span class="gh-label improvement">improvement</span> → scored → <span class="gh-label ready">ready-for-dev</span>
+    </div>
+    <div class="flywheel-connector"></div>
+
+    <div class="flywheel-step purple">
+      <div class="step-num">4</div>
+      <div><strong>Dev Agent implements fix</strong><br><span style="font-size:12px;color:var(--muted);">Analyzes root cause → edits agents/knowledge/templates → creates branch</span></div>
+    </div>
+    <div class="detail-text"><span class="cost">~$5-15 per issue (Opus API)</span></div>
+    <div class="flywheel-connector"></div>
+
+    <div class="flywheel-step cyan">
+      <div class="step-num">5</div>
+      <div><strong>Test Agent validates structure</strong><br><span style="font-size:12px;color:var(--muted);">Markdown validation, telemetry protocol checks, template completeness</span></div>
+    </div>
+    <div class="detail-text"><span class="cost">$0 — pure Python, no LLM</span></div>
+    <div class="flywheel-connector"></div>
+
+    <div class="flywheel-step purple">
+      <div class="step-num">6</div>
+      <div><strong>Review Agent approves or rejects</strong><br><span style="font-size:12px;color:var(--muted);">APPROVED → PR created · REQUEST_CHANGES → Dev retries · ESCALATE → needs-human-review</span></div>
+    </div>
+    <div class="flywheel-connector"></div>
+
+    <div class="flywheel-step red">
+      <div class="step-num">7</div>
+      <div><strong>Mayur approves PR on GitHub</strong><br><span style="font-size:12px;color:var(--muted);">Email notification sent · Only human step in the entire loop</span></div>
+    </div>
+    <div class="flywheel-connector"></div>
+
+    <div class="flywheel-step yellow">
+      <div class="step-num">8</div>
+      <div><strong>Release Agent tags &amp; publishes</strong><br><span style="font-size:12px;color:var(--muted);">CHANGELOG updated · GitHub Release created · Email to vc@backbase.com</span></div>
+    </div>
+    <div class="detail-text"><span class="cost">$0 — Haiku model</span></div>
+  </div>
+
+  <!-- Return arrow -->
+  <div style="text-align:center;margin:10px 0 30px;">
+    <svg width="500" height="50" viewBox="0 0 500 50" style="max-width:100%;">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#1A56FF"/>
+        </marker>
+      </defs>
+      <path d="M400,5 C460,5 480,25 480,40 L20,40 C20,25 40,5 100,5"
+            fill="none" stroke="#1A56FF" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrowhead)"/>
+      <text x="250" y="35" text-anchor="middle" fill="#1A56FF" font-size="11" font-weight="700" font-family="Inter">System improved → next engagement benefits</text>
+    </svg>
+  </div>
+
+  <!-- Telemetry Resilience -->
+  <div class="card">
+    <h3><span class="icon">🛡</span> Three-Layer Telemetry Resilience</h3>
+    <p style="margin-bottom:14px;">Zero consultant action. Telemetry always reaches GitHub.</p>
+    <div class="resilience">
+      <div class="resilience-layer primary">
+        <div class="layer-label">Layer 1: Primary</div>
+        <p><strong>Orchestrator Step 8c</strong><br><code>gh issue create</code> runs directly at engagement end.</p>
+      </div>
+      <div class="resilience-layer backup">
+        <div class="layer-label">Layer 2: Backup</div>
+        <p><strong>post-commit hook</strong><br>Detects 5 output files committed. Syncs immediately.</p>
+      </div>
+      <div class="resilience-layer fallback">
+        <div class="layer-label">Layer 3: Fallback</div>
+        <p><strong>pre-push hook</strong><br>Syncs any cached telemetry from <code>.telemetry_cache.jsonl</code> on next push.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Knowledge Harvest -->
+  <div class="card">
+    <h3><span class="icon">🌾</span> Automatic Knowledge Harvest (Step 9)</h3>
+    <p>Every completed engagement makes the system smarter — before the consultant even finishes their coffee.</p>
+    <div class="grid-2" style="margin-top:14px;">
+      <div>
+        <ul>
+          <li><strong>Benchmarks</strong> — validated metrics → <code>knowledge/learnings/benchmarks/</code></li>
+          <li><strong>Pain Points</strong> — recurring patterns → <code>knowledge/learnings/pain_points/</code></li>
+          <li><strong>Capability Maturity</strong> → <code>knowledge/learnings/capability_frameworks/</code></li>
+          <li><strong>ROI Patterns</strong> → <code>knowledge/learnings/roi_models/</code></li>
+        </ul>
+      </div>
+      <div>
+        <ul>
+          <li>All data <strong>anonymized</strong> (client names removed)</li>
+          <li>Tracked in <code>EXTRACTION_REGISTRY.md</code></li>
+          <li><strong>Append-only benchmark evolution</strong> — originals never overridden</li>
+          <li>After 3+ consistent corrections, range widened</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 4. GIT HOOKS & CI ═══════════════════ -->
+<div id="git" class="section">
+  <div class="section-title">Git Hooks &amp; CI/CD Workflows</div>
+  <div class="section-desc">The plumbing that connects engagements to the Flywheel with zero manual intervention.</div>
+
+  <!-- Git Hooks -->
+  <div class="grid-2">
+    <div class="card">
+      <h3><span class="icon">🪝</span> post-commit hook</h3>
+      <p style="margin-bottom:10px;"><code>.githooks/post-commit</code></p>
+      <ul>
+        <li><strong>Journal mode:</strong> Parses ENGAGEMENT_JOURNAL.md for telemetry blocks</li>
+        <li><strong>Passive detection:</strong> Detects all 5 output files in a single commit</li>
+        <li>Writes to <code>.telemetry_cache.jsonl</code></li>
+        <li>If <code>gh</code> CLI available → creates GitHub Issue immediately</li>
+        <li>Creates <code>.telemetry_synced</code> marker to prevent dupes</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="icon">🪝</span> pre-push hook</h3>
+      <p style="margin-bottom:10px;"><code>.githooks/pre-push</code></p>
+      <ul>
+        <li>Fallback sync layer</li>
+        <li>Reads <code>.telemetry_cache.jsonl</code> if it exists</li>
+        <li>Creates GitHub Issue with accumulated telemetry</li>
+        <li>Clears cache after successful sync</li>
+        <li><strong>Never blocks push</strong> (always exit 0)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CI Workflows -->
+  <div style="margin-top:20px;">
+    <h3 style="font-size:20px;font-weight:700;margin-bottom:16px;">GitHub Actions Workflows</h3>
+  </div>
+
+  <div class="card">
+    <h3>
+      <span class="icon">🔁</span> triage-weekly.yml
+      <span class="cost" style="margin-left:auto;">$0 — no LLM</span>
+    </h3>
+    <p style="margin-bottom:8px;"><strong>Triggers:</strong> Weekly cron (Mon 8am UTC) + On telemetry issue creation (reactive) + Manual dispatch</p>
+    <div class="flow-row" style="margin-top:12px;">
+      <div class="flow-node green" style="font-size:12px;"><span class="node-icon">📡</span> Fetch telemetry issues</div>
+      <span class="arrow">→</span>
+      <div class="flow-node orange" style="font-size:12px;"><span class="node-icon">🔗</span> Group duplicates</div>
+      <span class="arrow">→</span>
+      <div class="flow-node orange" style="font-size:12px;"><span class="node-icon">📊</span> Score: freq × sev × recency</div>
+      <span class="arrow">→</span>
+      <div class="flow-node purple" style="font-size:12px;"><span class="node-icon">🏷</span> Label top: ready-for-dev</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>
+      <span class="icon">🤖</span> dev-agent.yml
+      <span class="cost" style="margin-left:auto;">~$5-15 per issue</span>
+    </h3>
+    <p style="margin-bottom:8px;"><strong>Trigger:</strong> <span class="gh-label ready">ready-for-dev</span> label applied to an issue</p>
+    <div class="flow-row" style="margin-top:12px;flex-wrap:wrap;">
+      <div class="flow-node blue" style="font-size:12px;"><span class="node-icon">✅</span> check-trigger</div>
+      <span class="arrow">→</span>
+      <div class="flow-node purple" style="font-size:12px;"><span class="node-icon">🛠</span> Dev Agent<br><span style="font-size:10px;">(Opus)</span></div>
+      <span class="arrow">→</span>
+      <div class="flow-node green" style="font-size:12px;"><span class="node-icon">🧪</span> Test Agent<br><span style="font-size:10px;">(Python)</span></div>
+      <span class="arrow">→</span>
+      <div class="flow-node purple" style="font-size:12px;"><span class="node-icon">👁</span> Review Agent<br><span style="font-size:10px;">(Opus)</span></div>
+      <span class="arrow">→</span>
+      <div class="flow-node cyan" style="font-size:12px;"><span class="node-icon">📬</span> Create PR + Email</div>
+    </div>
+    <p style="margin-top:10px;">If review fails → <span class="gh-label needs-human">needs-human-review</span></p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>
+        <span class="icon">🧪</span> test-agents.yml
+        <span class="cost" style="margin-left:auto;">$0</span>
+      </h3>
+      <p><strong>Trigger:</strong> PR modifying agents/, knowledge/, or templates/</p>
+      <ul>
+        <li>Validates markdown structure</li>
+        <li>Checks telemetry protocol presence</li>
+        <li>Validates template completeness</li>
+        <li>Posts results as PR comment</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>
+        <span class="icon">🚀</span> version-release.yml
+        <span class="cost" style="margin-left:auto;">$0</span>
+      </h3>
+      <p><strong>Trigger:</strong> Git tag push (<code>v*</code>)</p>
+      <ul>
+        <li>Extracts changelog for the version</li>
+        <li>Creates GitHub Release with notes</li>
+        <li>Renders release email HTML template</li>
+        <li>Sends announcement to vc@backbase.com</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- GitHub Labels -->
+  <div class="card" style="margin-top:20px;">
+    <h3><span class="icon">🏷</span> GitHub Label Flow</h3>
+    <div class="flow-row" style="margin-top:14px;">
+      <span class="gh-label telemetry">telemetry</span>
+      <span class="arrow" style="font-size:18px;">→ triage →</span>
+      <span class="gh-label improvement">improvement</span>
+      <span class="arrow" style="font-size:18px;">→ scored →</span>
+      <span class="gh-label ready">ready-for-dev</span>
+      <span class="arrow" style="font-size:18px;">→ dev →</span>
+      <span class="gh-label dev-agent">dev-agent</span>
+      <span class="gh-label needs-review">needs-review</span>
+    </div>
+    <p style="margin-top:10px;">Escalation path: <span class="gh-label needs-human">needs-human-review</span> — too complex for automation</p>
+  </div>
+</div>
+
+<!-- ═══════════════════ 5. AGENT DIRECTORY ═══════════════════ -->
+<div id="agents" class="section">
+  <div class="section-title">Agent Directory</div>
+  <div class="section-desc">All agents, their roles, models, and responsibilities.</div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--blue);"></span> Consulting</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--purple);"></span> Flywheel</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--green);"></span> Infrastructure</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th>Type</th>
+          <th>Model</th>
+          <th>Role</th>
+          <th>Key Outputs</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Orchestrator</strong></td>
+          <td><span style="color:var(--blue);">Consulting</span></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>Entry point. Classifies, delegates, validates, syncs.</td>
+          <td>ENGAGEMENT_JOURNAL.md</td>
+        </tr>
+        <tr>
+          <td><strong>Discovery</strong></td>
+          <td><span style="color:var(--blue);">Consulting</span></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>Processes transcripts → 6 structured registers</td>
+          <td>evidence_register.md, pain_points.md, metrics.md, stakeholder_intelligence.md</td>
+        </tr>
+        <tr>
+          <td><strong>Market Context</strong></td>
+          <td><span style="color:var(--blue);">Consulting</span></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>Outside-in research (annual reports, CX, competitors)</td>
+          <td>market_context_brief.md → validated by consultant</td>
+        </tr>
+        <tr>
+          <td><strong>Capability</strong></td>
+          <td><span style="color:var(--blue);">Consulting</span></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>Maturity scoring, gap analysis, heat map</td>
+          <td>capability_assessment.md</td>
+        </tr>
+        <tr>
+          <td><strong>ROI Builder</strong></td>
+          <td><span style="color:var(--blue);">Consulting</span></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>3-scenario financial model, sensitivity analysis</td>
+          <td>roi_report.md</td>
+        </tr>
+        <tr>
+          <td><strong>Roadmap</strong></td>
+          <td><span style="color:var(--blue);">Consulting</span></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>Phased initiatives, dependencies, value milestones</td>
+          <td>roadmap.md</td>
+        </tr>
+        <tr>
+          <td><strong>Assembly</strong></td>
+          <td><span style="color:var(--blue);">Consulting</span></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>7-act narrative, tone calibration ("Read the Room")</td>
+          <td>executive_summary.md, assessment_report.md</td>
+        </tr>
+        <tr>
+          <td><strong>Benchmark Librarian</strong></td>
+          <td><span style="color:var(--blue);">Consulting</span></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>Curates benchmarks with confidence tiers</td>
+          <td>Supports ROI &amp; Capability agents</td>
+        </tr>
+        <tr>
+          <td><strong>Workshop Prep</strong></td>
+          <td><span style="color:var(--blue);">Consulting</span></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>Prepares Ignite Inspire workshop decks</td>
+          <td>Pre-populated facilitation decks</td>
+        </tr>
+        <tr>
+          <td><strong>Workshop Synthesizer</strong></td>
+          <td><span style="color:var(--blue);">Consulting</span></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>Consolidates findings across 4 workshop types</td>
+          <td>Hypothesis validation matrix, prioritized use cases</td>
+        </tr>
+        <tr>
+          <td><strong>Use Case Designer</strong></td>
+          <td><span style="color:var(--blue);">Consulting</span></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>10-section use case docs, product directory validation</td>
+          <td>Structured use case documents</td>
+        </tr>
+        <tr style="background:rgba(168,85,247,0.04);">
+          <td><strong>Dev Agent</strong></td>
+          <td><span style="color:var(--purple);">Flywheel</span></td>
+          <td><span class="tag opus">Opus</span></td>
+          <td>Autonomous developer. Analyzes issues, implements fixes, creates PRs.</td>
+          <td>Code changes, dev_plan.md</td>
+        </tr>
+        <tr style="background:rgba(168,85,247,0.04);">
+          <td><strong>Review Agent</strong></td>
+          <td><span style="color:var(--purple);">Flywheel</span></td>
+          <td><span class="tag opus">Opus</span></td>
+          <td>Code reviews Dev Agent changes. APPROVED / REQUEST_CHANGES / ESCALATE.</td>
+          <td>Review verdict + feedback</td>
+        </tr>
+        <tr style="background:rgba(168,85,247,0.04);">
+          <td><strong>Coach Agent</strong></td>
+          <td><span style="color:var(--purple);">Flywheel</span></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>Analyzes consultant productivity patterns, sends coaching emails.</td>
+          <td>Monthly coaching reports</td>
+        </tr>
+        <tr style="background:rgba(0,230,138,0.04);">
+          <td><strong>Release Agent</strong></td>
+          <td><span style="color:var(--green);">Infra</span></td>
+          <td><span class="tag haiku">Haiku</span></td>
+          <td>Version bumping, CHANGELOG, release notes, email.</td>
+          <td>GitHub Release, team email</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Dev Agent Guardrails -->
+  <div class="card" style="margin-top:24px;">
+    <h3><span class="icon">🔒</span> Dev Agent Guardrails</h3>
+    <div class="grid-2" style="margin-top:12px;">
+      <div>
+        <p style="color:var(--green);font-weight:700;margin-bottom:6px;">CAN Modify</p>
+        <ul>
+          <li>Agent definitions (.claude/agents/)</li>
+          <li>Knowledge files (knowledge/)</li>
+          <li>Templates (templates/outputs/)</li>
+          <li>Commands (.claude/commands/)</li>
+        </ul>
+      </div>
+      <div>
+        <p style="color:var(--red);font-weight:700;margin-bottom:6px;">CANNOT Modify</p>
+        <ul>
+          <li>CLAUDE.md (project instructions)</li>
+          <li>README.md</li>
+          <li>Scripts (scripts/)</li>
+          <li>GitHub workflows (.github/)</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:12px;">
+      <strong>Hard rules:</strong> One fix per PR · Evidence required (cite issue #) · Benchmarks are append-only (never override)
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════ 6. KNOWLEDGE & TEMPLATES ═══════════════════ -->
+<div id="knowledge" class="section">
+  <div class="section-title">Knowledge Base &amp; Templates</div>
+  <div class="section-desc">The institutional memory that makes every engagement richer.</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3><span class="icon">📚</span> Knowledge Domains (12)</h3>
+      <div class="flow-row" style="flex-wrap:wrap;gap:8px;margin-top:12px;justify-content:flex-start;">
+        <div class="flow-node blue" style="padding:8px 14px;font-size:11px;">Retail</div>
+        <div class="flow-node blue" style="padding:8px 14px;font-size:11px;">SME</div>
+        <div class="flow-node blue" style="padding:8px 14px;font-size:11px;">Commercial</div>
+        <div class="flow-node blue" style="padding:8px 14px;font-size:11px;">Wealth</div>
+        <div class="flow-node blue" style="padding:8px 14px;font-size:11px;">Investing</div>
+        <div class="flow-node blue" style="padding:8px 14px;font-size:11px;">Corporate</div>
+        <div class="flow-node blue" style="padding:8px 14px;font-size:11px;">Islamic</div>
+        <div class="flow-node blue" style="padding:8px 14px;font-size:11px;">Payments</div>
+        <div class="flow-node blue" style="padding:8px 14px;font-size:11px;">Cards</div>
+        <div class="flow-node blue" style="padding:8px 14px;font-size:11px;">Lending</div>
+        <div class="flow-node blue" style="padding:8px 14px;font-size:11px;">Insurance</div>
+        <div class="flow-node blue" style="padding:8px 14px;font-size:11px;">Micro-finance</div>
+      </div>
+      <p style="margin-top:12px;">Each domain contains: benchmarks, personas, journeys, pain points, use cases, value propositions</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">🌾</span> Auto-Harvested Learnings</h3>
+      <p style="margin-bottom:10px;">Populated automatically by Step 9 after every engagement:</p>
+      <ul>
+        <li><code>knowledge/learnings/benchmarks/</code> — validated client metrics</li>
+        <li><code>knowledge/learnings/pain_points/</code> — recurring patterns</li>
+        <li><code>knowledge/learnings/capability_frameworks/</code></li>
+        <li><code>knowledge/learnings/roi_models/</code></li>
+        <li><code>EXTRACTION_REGISTRY.md</code> — tracks what's been harvested</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:0;">
+    <div class="card">
+      <h3><span class="icon">📋</span> Output Templates (10+)</h3>
+      <ul>
+        <li>engagement_journal.md</li>
+        <li>executive_summary.md</li>
+        <li>assessment_report.md</li>
+        <li>capability_assessment.md</li>
+        <li>roi_report.md</li>
+        <li>roadmap.md</li>
+        <li>market_context_brief.md</li>
+        <li>use_case_document.md</li>
+        <li>...and more</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">⌨️</span> Slash Commands (17)</h3>
+      <div class="grid-2" style="margin-top:8px;gap:8px;">
+        <div>
+          <p style="color:var(--cyan);font-weight:600;font-size:12px;margin-bottom:4px;">Domain</p>
+          <ul style="font-size:12px;">
+            <li>/domain-context</li>
+            <li>/domain-benchmarks</li>
+            <li>/domain-journeys</li>
+            <li>/domain-pain-points</li>
+            <li>/domain-usecases</li>
+            <li>/domain-value-props</li>
+          </ul>
+        </div>
+        <div>
+          <p style="color:var(--orange);font-weight:600;font-size:12px;margin-bottom:4px;">Output</p>
+          <ul style="font-size:12px;">
+            <li>/presentation</li>
+            <li>/presentation-v2</li>
+            <li>/prototype</li>
+            <li>/generate-roi-excel</li>
+            <li>/usecase-doc</li>
+            <li>/chunk-document</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:8px;">
+        <p style="color:var(--purple);font-weight:600;font-size:12px;margin-bottom:4px;">Flywheel</p>
+        <ul style="font-size:12px;">
+          <li>/sync-telemetry — manual telemetry push</li>
+          <li>/log-modification — log manual edits</li>
+          <li>/extract-learnings — harvest from engagement</li>
+          <li>/scan-engagement — check engagement health</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Benchmark Evolution -->
+  <div class="card">
+    <h3><span class="icon">📈</span> Benchmark Evolution Model</h3>
+    <p style="margin-bottom:12px;"><strong>Append-only, never override.</strong> Published benchmarks are immutable. Field observations accumulate.</p>
+    <div class="flow-row" style="flex-wrap:wrap;">
+      <div class="flow-node green" style="font-size:12px;">
+        <span class="node-icon">📊</span>
+        <div>
+          <strong>Original Benchmark</strong><br>
+          Source, date, value preserved
+        </div>
+      </div>
+      <span class="arrow">+</span>
+      <div class="flow-node orange" style="font-size:12px;">
+        <span class="node-icon">📝</span>
+        <div>
+          <strong>Field Observations</strong><br>
+          Client-validated data appended
+        </div>
+      </div>
+      <span class="arrow">→</span>
+      <div class="flow-node cyan" style="font-size:12px;">
+        <span class="node-icon">📐</span>
+        <div>
+          <strong>After 3+ corrections</strong><br>
+          Range widened, original kept
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <p style="font-size:12px;"><strong>Confidence tiers:</strong></p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+        <span class="badge green">[Industry] — published source</span>
+        <span class="badge blue">[Proxy] — similar domain</span>
+        <span class="badge orange">[Estimated] — calculated</span>
+        <span class="badge cyan">[Client-Validated] — from engagement</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 7. COST & ROUTING ═══════════════════ -->
+<div id="cost" class="section">
+  <div class="section-title">Model Routing &amp; Cost</div>
+  <div class="section-desc">Right model for each task. Opus reasons, Sonnet consults, Haiku automates.</div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>Model</th>
+          <th>Agents</th>
+          <th>Use Case</th>
+          <th>Cost Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Reasoning</strong></td>
+          <td><span class="tag opus">Opus</span></td>
+          <td>Dev Agent, Review Agent</td>
+          <td>Code analysis, implementation, code review</td>
+          <td>~$5-15 per Flywheel issue</td>
+        </tr>
+        <tr>
+          <td><strong>Consulting</strong></td>
+          <td><span class="tag sonnet">Sonnet</span></td>
+          <td>All 10+ consulting agents + Coach</td>
+          <td>Analysis, writing, research, assessment</td>
+          <td>~$3-5 per engagement</td>
+        </tr>
+        <tr>
+          <td><strong>Mechanical</strong></td>
+          <td><span class="tag haiku">Haiku</span></td>
+          <td>Release Agent</td>
+          <td>Changelog, version bump, release notes</td>
+          <td>~$0</td>
+        </tr>
+        <tr>
+          <td><strong>Visual Design</strong></td>
+          <td><span class="tag opus">Opus</span></td>
+          <td>/presentation, /prototype</td>
+          <td>Interactive HTML, Prezi-style decks</td>
+          <td>Per invocation</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-3" style="margin-top:24px;">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:48px;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">~$3-5</div>
+      <p style="font-weight:600;color:var(--text);margin-top:4px;">Per Engagement</p>
+      <p style="font-size:12px;">Full pipeline: discovery → assembly</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:48px;font-weight:900;background:linear-gradient(135deg,var(--purple),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">~$14-80</div>
+      <p style="font-weight:600;color:var(--text);margin-top:4px;">Monthly Flywheel</p>
+      <p style="font-size:12px;">2-4 improvement issues / week</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:48px;font-weight:900;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">1</div>
+      <p style="font-weight:600;color:var(--text);margin-top:4px;">Human Touchpoint</p>
+      <p style="font-size:12px;">PR approval on GitHub</p>
+    </div>
+  </div>
+
+  <!-- Permissions -->
+  <div class="card" style="margin-top:20px;">
+    <h3><span class="icon">🔐</span> Tool Permissions (settings.local.json)</h3>
+    <div class="grid-3" style="margin-top:12px;">
+      <div>
+        <p style="color:var(--blue);font-weight:600;font-size:12px;margin-bottom:4px;">Git &amp; GitHub</p>
+        <p style="font-size:12px;color:var(--muted);">git add/commit/push/status/diff/log/tag/remote<br>gh issue/pr/label/run/api</p>
+      </div>
+      <div>
+        <p style="color:var(--green);font-weight:600;font-size:12px;margin-bottom:4px;">Runtime</p>
+        <p style="font-size:12px;color:var(--muted);">python3, pip, node, pdftotext, uuidgen, touch, mkdir, ls, wc, tree</p>
+      </div>
+      <div>
+        <p style="color:var(--orange);font-weight:600;font-size:12px;margin-bottom:4px;">Web Access</p>
+        <p style="font-size:12px;color:var(--muted);">backbase.com, designsystem.backbase.com, GitHub CDN, Wikipedia, Medium, bian.org</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<div style="text-align:center;padding:40px;color:var(--muted);font-size:12px;">
+  <p>Value Consulting AgenticOS — Built on Claude Code</p>
+  <p style="margin-top:4px;">Repository: <code>claudevc/.claude</code> · Last updated: February 2026</p>
+</div>
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({ top: 200, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>

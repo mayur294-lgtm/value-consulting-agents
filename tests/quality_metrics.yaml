@@ -154,6 +154,28 @@ agent_definitions:
       pattern: "TELEMETRY_START"
       min_matches: 1
 
+# Consulting agent definition checks
+# These apply ONLY to consulting agents (not flywheel/infrastructure agents).
+# Consulting agents MUST have a Consultant Checkpoint section.
+consulting_agent_definitions:
+  # Which agents are consulting agents (require checkpoint)
+  agents:
+    - roi-business-case-builder
+    - usecase-designer
+    - capability-assessment
+    - roadmap-prioritization
+    - discovery-transcript-interpreter
+    - executive-narrative-assembler
+    - benchmark-librarian
+    - upgrade-analysis
+    - market-context-researcher
+    - workshop-preparation
+    - ignite-workshop-synthesizer
+  structural:
+    - name: "Has Consultant Checkpoint section"
+      pattern: "Consultant Checkpoint.*MANDATORY|Consultant Checkpoint"
+      min_matches: 1
+
 # Knowledge file checks
 knowledge_files:
   structural:

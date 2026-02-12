@@ -103,7 +103,7 @@ The Backbase platform orchestrates four lifecycle stages. Each stage spans MULTI
 - **Activate ≠ Onboarding.** Onboarding is Acquire. Activate starts AFTER the customer exists — it's about USAGE.
 - **Retain ≠ Human Assist only.** Self-service via Digital Banking is the primary cost-to-serve lever. Human Assist handles exceptions and high-value.
 - **Expand ≠ generic "engagement."** Name specific origination flows (CLO, pre-approved offers) and engagement mechanics (NBA engine, propensity models, life-event triggers).
-- **Domain matters.** The product mapping varies significantly by domain (retail vs. wealth vs. SME vs. commercial). ALWAYS check the domain-specific variations in the lexicon.
+- **Domain matters.** The product mapping varies significantly by domain (retail vs. wealth vs. SME vs. commercial vs. investing). ALWAYS check the domain-specific variations in the lexicon. For **Investing**, the lifecycle stages map to Acquire (account opening, banking-to-investing cross-sell) → Activate (first investment, robo enrollment, recurring setup) → Expand (ACAT transfer-in, additional accounts, advisory upgrade) → Retain (market volatility comms, rebalancing, self-service).
 
 ### 13 Product Lines (Quick Reference)
 
@@ -404,6 +404,27 @@ Before writing, establish these four settings:
 
 **If neither input is available** (no stakeholder intelligence, no voice profile): Default to "Measured" directness and proceed. The report will still be professional — just not personalized.
 
+### Step 2d: Consultant Checkpoint (MANDATORY)
+
+**Before writing the report, present your assembly plan to the consultant.** This is the most critical checkpoint in the entire engagement — the narrative choices you make here shape everything.
+
+**Present to the Consultant:**
+
+1. **Transformation Narrative Arc** — The "From X to Y" you've defined in Step 2b. The consultant confirms or refines it.
+2. **Tone Calibration Summary** — The directness dial, vocabulary mirror, and sensitivity map from Step 2c. The consultant validates or adjusts.
+3. **Act 1 Narrative Structure** — Your proposed story arc for Act 1 (the longest section). Which positioning angles, market data, and competitive examples will you lead with?
+4. **Persona Candidates** — The named personas you plan to thread through the report. The consultant confirms they resonate with the client.
+5. **Key Numbers** — The headline financial metrics that will anchor the executive summary (investment, return, payback). The consultant sanity-checks these.
+6. **Proposed External Examples** — The "what good looks like" examples you plan to reference in Act 4. The consultant can flag any that are politically sensitive or irrelevant.
+
+**Format:** Present as structured markdown with a `## APPROVAL REQUIRED` section.
+
+**Rules:**
+- NEVER begin writing the 7-act report before this checkpoint
+- The transformation arc and tone calibration are the two highest-leverage decisions — get them right
+- If the consultant says "proceed" — go with your plan, log it
+- If the consultant refines the narrative arc (e.g., "Not 'Unified Frontline' — call it 'Connected Advisor Ecosystem'"), incorporate it throughout ALL acts
+
 ### Step 3: Narrative Construction (7-Act Structure)
 Build the report following the 7-act structure from `/templates/outputs/assessment_report.md`:
 
@@ -605,6 +626,36 @@ Before declaring "ready to send":
 - [ ] Problem traceability chain intact (Problem → Capability → Journey → Business Impact)
 - [ ] Unconsidered needs appear in narrative (differentiator)
 
+### Step 7: Interactive HTML Dashboard Generation (MANDATORY)
+
+After completing the markdown deliverables and all quality checks, generate the premium interactive HTML dashboard by invoking the `/generate-assessment-html` skill.
+
+**Why this step exists:** Markdown deliverables are the canonical source of truth, but executives consume the interactive HTML dashboard. Every Ignite Assess engagement MUST produce this dashboard. It is not optional.
+
+**What the skill produces:** A single self-contained HTML file with:
+- **Premium Future UI-inspired design** — dark sidebar navigation, cream hero with massive editorial typography, bento grids, dark feature sections, phone-frame prototypes, scroll-reveal animations
+- **All 7 acts as interactive panels** — sidebar tab switching, each act rendered with appropriate visual components (metric cards, heatmaps, timelines, funnels, journey maps)
+- **Business line differentiation** — if the engagement has distinct business lines (e.g., Digital Investor vs Advisor-Led, Retail vs Commercial), they are visually separated with distinct color coding throughout
+- **Traceability links** — pain points, capability gaps, use cases, and ROI benefits are connected via `data-trace-id` attributes with hover highlighting across acts
+- **Phone-frame prototypes** for key use cases (if use case data exists)
+- **Future-state journey visualization** (if journey data exists)
+- **Responsive design** — works at desktop (1360px+), tablet (900px), and mobile (600px)
+
+**Input to the skill:** The skill reads the markdown outputs you produced in Steps 3-4 + the upstream artifacts from the engagement outputs directory. You do NOT need to prepare any additional data — the skill handles the content-to-component mapping.
+
+**Output:** `{engagement_code}_Consolidated_Assessment_Interactive.html` in the engagement outputs directory.
+
+**Quality check after generation:**
+- [ ] Open the HTML file in a browser and verify all 7 acts are present
+- [ ] Verify sidebar navigation switches between acts correctly
+- [ ] Verify hero section shows client-specific headline metrics
+- [ ] Verify business line split is visible (if applicable)
+- [ ] Verify capability heatmap is interactive (click cells to see details)
+- [ ] Verify ROI dashboard shows scenario toggle (conservative/likely/optimistic)
+- [ ] Verify the file is self-contained (works without internet, except hero image)
+
+Do NOT skip this step. The interactive HTML dashboard is a core deliverable of every Ignite Assess engagement.
+
 ## Output Format
 
 You will produce a final deliverable package consisting of:
@@ -612,6 +663,7 @@ You will produce a final deliverable package consisting of:
 1. **executive_summary.md** - One-page decision document
 2. **assessment_report.md** - Full assessment with all supporting detail
 3. **assumptions_register.md** - Consolidated list of all assumptions with sources and sensitivity
+4. **{engagement_code}_Consolidated_Assessment_Interactive.html** - Premium interactive HTML dashboard (generated via `/generate-assessment-html` skill)
 
 All outputs in clean Markdown, ready for direct transmission to client.
 

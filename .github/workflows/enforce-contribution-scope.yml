@@ -1,0 +1,169 @@
+name: "Guard: Contribution Scope"
+
+# Ensures consultants can only modify files within their assigned scope.
+# Architects (Mayur, Shobhit) can modify anything.
+# Domain Leads get additional access to specific paths (e.g., Mariam → ROI files).
+# This prevents accidental agent/skill/tool changes from non-authorized contributors.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-scope:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check contribution scope
+        id: scope
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          # ─── Architects: allowed to change anything ───
+          ARCHITECTS="mayur294-lgtm shobhitonnet"
+
+          if echo "$ARCHITECTS" | grep -qw "$PR_AUTHOR"; then
+            echo "result=architect" >> $GITHUB_OUTPUT
+            echo "✅ $PR_AUTHOR is an architect — all paths allowed"
+            exit 0
+          fi
+
+          echo "🔍 $PR_AUTHOR is a consultant — checking path restrictions..."
+
+          # ─── Get changed files ───
+          CHANGED=$(git diff --name-only origin/main...HEAD)
+
+          # ─── Base allowed paths for ALL consultants ───
+          ALLOWED_PATTERNS=(
+            "^knowledge/learnings/"
+            "^knowledge/domains/"
+            "^benchmarks/"
+          )
+
+          # ─── Domain Lead exceptions ───
+          # Domain Leads get additional write access to specific paths.
+          # Format: username:regex_pattern (one per line)
+          #
+          # To add a new domain lead, add a line below:
+          #   DOMAIN_LEADS+=("username:^path/pattern")
+
+          DOMAIN_LEADS=()
+
+          # Mariam — ROI Domain Lead
+          # Can modify: ROI agent, ROI templates, ROI Excel generator, ROI tools
+          DOMAIN_LEADS+=("mariamt-coder:^\.claude/agents/roi-business-case-builder\.md")
+          DOMAIN_LEADS+=("mariamt-coder:^templates/outputs/roi")
+          DOMAIN_LEADS+=("mariamt-coder:^tools/roi_excel_generator\.py")
+
+          # Shobhit — Ignite Inspire Domain Lead (also an architect, so this is redundant but documented)
+          # DOMAIN_LEADS+=("shobhitonnet:^\.claude/agents/workshop-preparation\.md")
+          # DOMAIN_LEADS+=("shobhitonnet:^\.claude/agents/ignite-workshop-synthesizer\.md")
+          # DOMAIN_LEADS+=("shobhitonnet:^knowledge/Ignite")
+
+          # ─── Build per-user allowed patterns ───
+          for entry in "${DOMAIN_LEADS[@]}"; do
+            lead_user="${entry%%:*}"
+            lead_pattern="${entry#*:}"
+            if [ "$PR_AUTHOR" = "$lead_user" ]; then
+              ALLOWED_PATTERNS+=("$lead_pattern")
+              echo "  📋 Domain lead access: $lead_pattern"
+            fi
+          done
+
+          VIOLATIONS=""
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            allowed=false
+            for pattern in "${ALLOWED_PATTERNS[@]}"; do
+              if echo "$file" | grep -qE "$pattern"; then
+                allowed=true
+                break
+              fi
+            done
+            if [ "$allowed" = false ]; then
+              VIOLATIONS="$VIOLATIONS\n- \`$file\`"
+            fi
+          done <<< "$CHANGED"
+
+          if [ -n "$VIOLATIONS" ]; then
+            echo "result=blocked" >> $GITHUB_OUTPUT
+            # Write violations to file for the comment step
+            printf "%b" "$VIOLATIONS" > /tmp/violations.txt
+            echo "❌ Consultant $PR_AUTHOR touched restricted paths"
+          else
+            echo "result=allowed" >> $GITHUB_OUTPUT
+            echo "✅ $PR_AUTHOR — all changes within allowed scope"
+          fi
+
+      - name: Comment on restricted PR
+        if: steps.scope.outputs.result == 'blocked'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const violations = fs.readFileSync('/tmp/violations.txt', 'utf8');
+            const author = context.payload.pull_request.user.login;
+
+            const body = `## ⚠️ Contribution Scope Check — Restricted Files Detected
+
+            **@${author}**, your PR modifies files outside your contribution scope.
+
+            **Consultants** can contribute to:
+            - \`knowledge/learnings/**\` — engagement learnings and benchmarks
+            - \`knowledge/domains/**\` — domain knowledge expansions
+            - \`benchmarks/**\` — benchmark data
+
+            **Domain Leads** get additional access to files in their domain (see CONTRIBUTING.md).
+
+            **These files require an architect** (@mayur294-lgtm or @shobhitonnet):
+            ${violations}
+
+            ### What to do:
+            1. **If these changes are in your domain:** Ask an architect to add you as a Domain Lead in the CI workflow
+            2. **If these changes are intentional but outside your domain:** Ask an architect to review and co-author
+            3. **If accidental:** Remove the restricted files from your branch and push again
+
+            ---
+            *This check is enforced by the contribution scope guard. See [CONTRIBUTING.md](../CONTRIBUTING.md) for role definitions.*`;
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.body.includes('Contribution Scope Check')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+            }
+
+      - name: Fail if blocked
+        if: steps.scope.outputs.result == 'blocked'
+        run: |
+          echo "❌ PR blocked: consultant touched architect-only paths"
+          echo "See the PR comment for details."
+          exit 1

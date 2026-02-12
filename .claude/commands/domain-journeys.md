@@ -6,7 +6,7 @@ Retrieve customer and operational journey maps for a specific banking domain.
 `/domain-journeys [domain] [journey-type]`
 
 Where:
-- `[domain]` is: `retail`, `commercial`, `sme`, `wealth`, or `corporate`
+- `[domain]` is: `retail`, `commercial`, `sme`, `wealth`, `investing`, or `corporate`
 - `[journey-type]` (optional) filters by journey category
 
 ## Journey Types by Domain
@@ -15,6 +15,7 @@ Where:
 **Commercial:** onboarding, operations, trade, service
 **SME:** acquisition, daily-banking, growth, service
 **Wealth:** acquisition, advisory, self-service, life-event, service
+**Investing:** account-opening, first-investment, asset-consolidation, robo-enrollment, retention
 **Corporate:** lifecycle, treasury, payments, trade, integration
 
 ## Instructions

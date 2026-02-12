@@ -6,7 +6,7 @@ Retrieve Backbase use cases and capabilities relevant to a specific banking doma
 `/domain-usecases [domain] [category]`
 
 Where:
-- `[domain]` is: `retail`, `commercial`, `sme`, `wealth`, or `corporate`
+- `[domain]` is: `retail`, `commercial`, `sme`, `wealth`, `investing`, or `corporate`
 - `[category]` (optional) filters by use case category
 
 ## Categories by Domain
@@ -15,6 +15,7 @@ Where:
 **Commercial:** onboarding, cash, payments, trade, lending, integration
 **SME:** onboarding, daily-banking, cashflow, integration, service
 **Wealth:** onboarding, portfolio, advisory, engagement, banking, family
+**Investing:** acquire, activate, expand, retain
 **Corporate:** onboarding, liquidity, payments, trade, integration, lending
 
 ## Instructions

@@ -1,5 +1,39 @@
 # Value Consulting AgenticOS — Code Owners
-# All changes require review from at least one owner.
-# Mayur and Shobhit bypass this via branch protection rules.
+#
+# Two contribution tiers:
+#   ARCHITECTS (Mayur, Shobhit) — can modify anything
+#   CONSULTANTS (everyone else) — can only contribute to knowledge/ and benchmarks/
+#
+# CODEOWNERS controls who gets auto-requested for review.
+# The enforce-contribution-scope.yml workflow enforces path restrictions.
 
+# ─── DEFAULT: Architects own everything ───
 * @mayur294-lgtm @shobhitonnet
+
+# ─── KNOWLEDGE: Consultants can contribute learnings ───
+# These paths are open for consultant contributions (knowledge harvest,
+# benchmark corrections, domain expansions). Architects still review.
+knowledge/learnings/** @mayur294-lgtm @shobhitonnet
+knowledge/domains/** @mayur294-lgtm @shobhitonnet
+benchmarks/** @mayur294-lgtm @shobhitonnet
+
+# ─── PROTECTED: Architect-only paths (explicit for clarity) ───
+# Agent definitions — prompt engineering, sensitive
+.claude/agents/** @mayur294-lgtm @shobhitonnet
+# Skills and commands — workflow logic
+.claude/commands/** @mayur294-lgtm @shobhitonnet
+# Settings and hooks — infrastructure
+.claude/settings.json @mayur294-lgtm @shobhitonnet
+.claude/hooks/** @mayur294-lgtm @shobhitonnet
+# Tools — Python code, security-sensitive
+tools/** @mayur294-lgtm @shobhitonnet
+# CI/CD workflows
+.github/** @mayur294-lgtm @shobhitonnet
+# Scripts
+scripts/** @mayur294-lgtm @shobhitonnet
+# Root config
+CLAUDE.md @mayur294-lgtm @shobhitonnet
+# Output templates — affect deliverable quality
+templates/outputs/** @mayur294-lgtm @shobhitonnet
+# Agent role definitions
+agents/definitions/** @mayur294-lgtm @shobhitonnet

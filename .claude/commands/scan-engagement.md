@@ -87,7 +87,7 @@ Output format:
 - **Bank Type:** [Retail/Commercial/Wealth/Universal]
 - **Engagement Type:** [Full/Lite/Proposal/Competitor/External]
 - **Year:** [2024/2025/2026]
-- **Domain:** [Retail/SME/Corporate/Wealth]
+- **Domain:** [Retail/SME/Corporate/Wealth/Investing]
 
 ## Content Inventory
 
