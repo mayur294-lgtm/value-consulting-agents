@@ -115,11 +115,17 @@ def run_checks(files: list, metrics: dict) -> dict:
         checks_to_run = []
 
         if file_type == 'agent_definition':
-            # Run agent definition structural checks
+            # Run agent definition structural checks (all agents)
             checks_to_run.extend(metrics.get('agent_definitions', {}).get('structural', []))
 
-            # Also run agent-specific output checks if they exist
+            # Run consulting-specific checks (only consulting agents need checkpoints)
             agent_name = get_agent_name(filepath)
+            consulting_config = metrics.get('consulting_agent_definitions', {})
+            consulting_agents = consulting_config.get('agents', [])
+            if agent_name in consulting_agents:
+                checks_to_run.extend(consulting_config.get('structural', []))
+
+            # Also run agent-specific output checks if they exist
             agent_metrics = metrics.get('agents', {}).get(agent_name, {})
             # Note: These are for outputs, not definitions.
             # We only check definition structure here.
