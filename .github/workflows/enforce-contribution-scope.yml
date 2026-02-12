@@ -1,0 +1,137 @@
+name: "Guard: Contribution Scope"
+
+# Ensures consultants can only modify knowledge and benchmark files.
+# Architects (Mayur, Shobhit) can modify anything.
+# This prevents accidental agent/skill/tool changes from non-architects.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-scope:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check contribution scope
+        id: scope
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          # ─── Architects: allowed to change anything ───
+          ARCHITECTS="mayur294-lgtm shobhitonnet"
+
+          if echo "$ARCHITECTS" | grep -qw "$PR_AUTHOR"; then
+            echo "result=architect" >> $GITHUB_OUTPUT
+            echo "✅ $PR_AUTHOR is an architect — all paths allowed"
+            exit 0
+          fi
+
+          echo "🔍 $PR_AUTHOR is a consultant — checking path restrictions..."
+
+          # ─── Get changed files ───
+          CHANGED=$(git diff --name-only origin/main...HEAD)
+
+          # ─── Define allowed paths for consultants ───
+          # Consultants can ONLY modify files under these paths:
+          ALLOWED_PATTERNS=(
+            "^knowledge/learnings/"
+            "^knowledge/domains/"
+            "^benchmarks/"
+          )
+
+          VIOLATIONS=""
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            allowed=false
+            for pattern in "${ALLOWED_PATTERNS[@]}"; do
+              if echo "$file" | grep -qE "$pattern"; then
+                allowed=true
+                break
+              fi
+            done
+            if [ "$allowed" = false ]; then
+              VIOLATIONS="$VIOLATIONS\n- \`$file\`"
+            fi
+          done <<< "$CHANGED"
+
+          if [ -n "$VIOLATIONS" ]; then
+            echo "result=blocked" >> $GITHUB_OUTPUT
+            # Write violations to file for the comment step
+            printf "%b" "$VIOLATIONS" > /tmp/violations.txt
+            echo "❌ Consultant $PR_AUTHOR touched restricted paths"
+          else
+            echo "result=allowed" >> $GITHUB_OUTPUT
+            echo "✅ Consultant $PR_AUTHOR — all changes within allowed scope"
+          fi
+
+      - name: Comment on restricted PR
+        if: steps.scope.outputs.result == 'blocked'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const violations = fs.readFileSync('/tmp/violations.txt', 'utf8');
+            const author = context.payload.pull_request.user.login;
+
+            const body = `## ⚠️ Contribution Scope Check — Restricted Files Detected
+
+            **@${author}**, your PR modifies files outside your contribution scope.
+
+            **Consultants** can contribute to:
+            - \`knowledge/learnings/**\` — engagement learnings and benchmarks
+            - \`knowledge/domains/**\` — domain knowledge expansions
+            - \`benchmarks/**\` — benchmark data
+
+            **These files require an architect** (@mayur294-lgtm or @shobhitonnet):
+            ${violations}
+
+            ### What to do:
+            1. **If these changes are intentional:** Ask an architect to review and co-author the changes
+            2. **If accidental:** Remove the restricted files from your branch and push again
+            3. **If you believe this is wrong:** Comment on this PR and tag an architect
+
+            ---
+            *This check is enforced by the contribution scope guard. See [CONTRIBUTING.md](../CONTRIBUTING.md) for role definitions.*`;
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.body.includes('Contribution Scope Check')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+            }
+
+      - name: Fail if blocked
+        if: steps.scope.outputs.result == 'blocked'
+        run: |
+          echo "❌ PR blocked: consultant touched architect-only paths"
+          echo "See the PR comment for details."
+          exit 1

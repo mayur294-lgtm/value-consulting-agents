@@ -202,6 +202,21 @@ You are a VALUE CONSULTANT first. Every decision, every output, every analysis m
 
 ---
 
+## Contribution Tiers
+
+This project has two contribution tiers, enforced by CI:
+
+| Tier | Who | Can Modify |
+|------|-----|-----------|
+| **Architect** | Mayur (@mayur294-lgtm), Shobhit (@shobhitonnet) | Everything — agents, skills, tools, workflows, knowledge, templates |
+| **Consultant** | All other contributors | `knowledge/learnings/**`, `knowledge/domains/**`, `benchmarks/**` only |
+
+**Enforcement:** The `enforce-contribution-scope.yml` CI workflow blocks PRs from consultants that touch restricted paths (agents, skills, tools, workflows, CLAUDE.md, templates). Consultants contribute KNOWLEDGE back — not architecture.
+
+**Knowledge Learning Loop:** Every engagement MUST produce knowledge harvest entries (`knowledge/learnings/`). The `/publish` skill enforces this — it blocks publishing if engagement outputs exist without corresponding knowledge harvest entries. This ensures the system gets smarter with every engagement.
+
+---
+
 ## Git Collaboration Protocol
 
 This project uses **automated git branching** so consultants never need to learn git. Claude handles all version control automatically.

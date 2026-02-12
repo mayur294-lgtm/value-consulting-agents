@@ -1,28 +1,85 @@
 # Contributing to Value Consulting AgenticOS
 
-## Owners
+## Contribution Tiers
+
+This project has two contribution tiers. The CI workflow `enforce-contribution-scope.yml` enforces these automatically.
+
+### Architects
+
+Architects design and maintain the system — agents, skills, tools, workflows, and methodology.
 
 | Name | GitHub | Role |
 |------|--------|------|
-| Mayur | @mayur294-lgtm | Owner |
-| Shobhit | @shobhitonnet | Owner |
+| Mayur | @mayur294-lgtm | Architect |
+| Shobhit | @shobhitonnet | Architect |
+
+**Can modify:** Everything — agents, skills, commands, tools, workflows, CLAUDE.md, templates, knowledge, benchmarks
+
+### Consultants
+
+Consultants use the system for engagements and contribute learnings back.
+
+| Name | GitHub | Role |
+|------|--------|------|
+| Mariam | @mariamt-coder | Consultant |
+
+**Can modify:**
+- `knowledge/learnings/**` — extracted benchmarks, pain points, maturity scores, ROI patterns
+- `knowledge/domains/**` — domain knowledge expansions (new personas, journeys, use cases)
+- `benchmarks/**` — benchmark data corrections and additions
+
+**Cannot modify (PR will be blocked by CI):**
+- `.claude/agents/**` — agent definitions (prompt engineering)
+- `.claude/commands/**` — skills and slash commands
+- `.claude/hooks/**` — git hooks and automation
+- `tools/**` — Python code
+- `.github/**` — CI/CD workflows
+- `scripts/**` — automation scripts
+- `CLAUDE.md` — root configuration
+- `templates/outputs/**` — output templates
+- `agents/definitions/**` — agent role definitions
+
+**If a consultant needs to suggest changes to restricted paths:** Open an issue describing the change, and an architect will implement it.
 
 ## How Changes Work
 
-### If you are an owner (Mayur or Shobhit)
+### If you are an architect
 
 - **Small changes** (typos, minor updates): push directly to `main`
 - **Significant changes** (new agents, domain packs, methodology updates): create a branch, open a PR, self-merge after review
 - Both workflows are valid. Use your judgment.
 
-### If you are a contributor
+### If you are a consultant
 
-1. Create a feature branch from `main`
-2. Make your changes
-3. Open a Pull Request
-4. Mayur or Shobhit will be auto-assigned as reviewers (via CODEOWNERS)
-5. One approval required to merge
-6. Squash-merge into `main`
+The system handles git for you — you never need to run git commands manually.
+
+1. **Start a session** — Claude Code auto-creates a feature branch for you
+2. **Do your work** — edit knowledge files, run engagements, extract learnings
+3. **Publish** — say "publish my changes" or run `/publish`. Claude commits, pushes, and creates a PR.
+4. **Review** — an architect reviews and merges your PR
+
+**Knowledge harvest is enforced:** If your branch contains engagement outputs but no `knowledge/learnings/` entries, `/publish` will block and ask you to run the knowledge harvest first. This ensures every engagement makes the system smarter.
+
+## The Knowledge Learning Loop
+
+After every engagement, the system should extract reusable knowledge:
+
+```
+Engagement Complete
+  → Orchestrator Step 9: Knowledge Harvest (automatic)
+  → Extracts: benchmarks, pain points, maturity scores, ROI patterns
+  → Anonymizes: client names → [Client-{domain}-{region}-{YYYY}]
+  → Writes to: knowledge/learnings/{category}/
+  → Updates: EXTRACTION_REGISTRY.md
+  → /publish enforces: no engagement outputs without harvest entries
+  → PR reviewed by architect
+  → Merged to main
+  → Next engagement uses improved knowledge
+```
+
+**Manual fallback:** If Step 9 didn't run (e.g., session ended early), consultants can run:
+- `/scan-engagement` — identifies extractable knowledge
+- `/extract-learnings` — extracts and writes structured knowledge
 
 ## Branch Naming
 

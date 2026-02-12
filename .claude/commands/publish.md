@@ -46,10 +46,25 @@ You are executing the `/publish` skill. This makes git invisible to the consulta
      Published with `/publish` by {consultant-name}
      ```
 
+## Knowledge Harvest Check
+
+9. Before creating the PR, check if this branch contains engagement output files:
+   ```
+   git diff --name-only origin/main...HEAD | grep -E "(evidence_register|capability_assessment|roi_report|assessment_report)"
+   ```
+   - **If engagement outputs ARE present:** Check if knowledge harvest entries also exist:
+     ```
+     git diff --name-only origin/main...HEAD | grep "knowledge/learnings/"
+     ```
+     - If `knowledge/learnings/` files are NOT in the diff → **STOP and warn the user:**
+       > "This branch contains engagement outputs but no knowledge harvest entries. The orchestrator's Step 9 should have extracted learnings into `knowledge/learnings/`. Please run the knowledge harvest before publishing — just ask me to 'run knowledge harvest for this engagement'. Then try `/publish` again."
+     - If `knowledge/learnings/` files ARE present → proceed (harvest was done)
+   - **If no engagement outputs:** proceed normally (this is a non-engagement change)
+
 ## Conflict Check
 
-9. After creating the PR, run `gh pr checks {pr-number}` to see if there are any CI issues.
-10. Run `gh pr view {pr-number} --json mergeable` to check if the PR can be cleanly merged.
+10. After creating the PR, run `gh pr checks {pr-number}` to see if there are any CI issues.
+11. Run `gh pr view {pr-number} --json mergeable` to check if the PR can be cleanly merged.
     - If `mergeable` is `CONFLICTING`: warn the user that there are conflicts with main, and suggest running `/reconcile` to resolve them.
     - If `mergeable` is `MERGEABLE`: tell the user the PR is clean and ready for review.
 
