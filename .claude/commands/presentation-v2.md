@@ -21,6 +21,8 @@ Use this skill when the user wants to:
 - Generate a shareable HTML presentation for internal or external audiences
 - Convert dense information into digestible, animated scenes
 
+**Do NOT use this skill for assessment dashboards.** For 7-act consolidated assessment reports with sidebar navigation, capability heatmaps, ROI dashboards, and traceability — use `/generate-assessment-html` instead.
+
 ## Content Types You Can Transform
 
 | Content Type | Approach |

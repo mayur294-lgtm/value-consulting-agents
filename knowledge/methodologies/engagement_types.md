@@ -7,6 +7,28 @@ This document defines the engagement taxonomy for the Value Consulting Agent Sys
 ## Engagement Hierarchy
 
 ```
+Client (Bank/Organization)                    ← Persistent across all engagements
+├── CLIENT_PROFILE.md                         ← Long-term memory, updated after each engagement
+│
+├── Initiative A (e.g., Digital Investor)     ← One engagement per initiative
+│   ├── Engagement Type: Detailed Assessment
+│   ├── Domain: investing
+│   └── Dir: 2026-01_investing_assessment/
+│
+├── Initiative B (e.g., Retail Onboarding)    ← Can run concurrently with A
+│   ├── Engagement Type: Ignite Light
+│   ├── Domain: retail
+│   └── Dir: 2026-03_retail_ignite/
+│
+└── Initiative C (e.g., Wealth Advisory)      ← Benefits from insights from A and B
+    ├── Engagement Type: Detailed Assessment
+    ├── Domain: wealth
+    └── Dir: 2026-06_wealth_assessment/
+```
+
+### Engagement Types (within an initiative)
+
+```
 Engagement Type
 ├── Ignite Light (Strategic Workshop)
 │   ├── Pre-Ignite Discovery Sessions
@@ -30,6 +52,14 @@ Engagement Type
     ├── Technology Deep Dive
     └── Use Case Validation & Business Value
 ```
+
+### Cross-Initiative Intelligence
+
+When a client has multiple initiatives:
+- **Prior engagement findings carry forward** — CLIENT_PROFILE.md captures cumulative knowledge
+- **Don't re-discover known context** — tech stack, org structure, and validated pain points persist
+- **Surface cross-domain patterns** — e.g., "manual processes" seen in both retail and wealth suggests a systemic issue, not a domain-specific one
+- **Cumulative value tracking** — total opportunity identified across all initiatives for this client
 
 ---
 
@@ -209,6 +239,16 @@ The Discovery Toolkit can import transcript analysis outputs:
 ```json
 {
   "engagement_config": {
+    "client": {
+      "short_name": "navy_federal",
+      "is_new_client": false,
+      "profile_path": "engagements/navy_federal/CLIENT_PROFILE.md",
+      "prior_engagements": ["2026-01_investing_assessment"]
+    },
+    "initiative": {
+      "name": "Retail Onboarding Transformation",
+      "relationship_to_prior": "Builds on investing assessment findings"
+    },
     "type": "ignite_light | detailed_assessment",
     "discovery_method": "workshop | transcript | hybrid",
     "tracks": ["digital_investor", "advisor_led"],

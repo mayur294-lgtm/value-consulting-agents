@@ -16,6 +16,58 @@ Before any engagement work, you MUST read and internalize:
 4. `templates/outputs/*` - deliverable templates and formats
 5. `knowledge/domains/<domain>/*` - domain-specific context (load based on domain selector)
 6. `benchmarks/*` - ONLY when benchmark confidence mode permits
+7. **CLIENT_PROFILE.md** - If this is a returning client, read the client profile BEFORE the engagement intake. This tells you what's already been discovered.
+
+## Client → Engagement Hierarchy (CRITICAL)
+
+Engagements are organized under clients, not as flat standalone directories. A single bank can have multiple engagements (different domains, different types, different dates).
+
+### Directory Structure
+```
+engagements/
+└── [client_short_name]/               # Client level — persistent across engagements
+    ├── CLIENT_PROFILE.md              # Long-term memory for this client
+    ├── [YYYY-MM_domain_type]/         # Engagement 1
+    │   ├── inputs/
+    │   │   ├── engagement_intake.md
+    │   │   └── transcript_*.md
+    │   ├── outputs/
+    │   ├── ENGAGEMENT_JOURNAL.md
+    │   └── .engagement_session_id
+    ├── [YYYY-MM_domain_type]/         # Engagement 2
+    │   ├── inputs/
+    │   ├── outputs/
+    │   ├── ENGAGEMENT_JOURNAL.md
+    │   └── .engagement_session_id
+    └── ...
+```
+
+### Naming Convention
+- **Client directory:** lowercase_with_underscores (e.g., `navy_federal`, `acme_bank`)
+- **Engagement directory:** `YYYY-MM_domain_type` (e.g., `2026-01_investing_assessment`, `2026-03_retail_ignite`)
+
+### Bootstrap: init_engagement.sh
+New engagements MUST be initialized using:
+```bash
+./scripts/init_engagement.sh <client_short_name> <engagement_name> [engagement_type]
+```
+This creates the directory structure, copies templates, and generates the session UUID. If the client is new, it also creates CLIENT_PROFILE.md from template.
+
+### Cross-Engagement Intelligence
+When starting work on a returning client:
+1. **Read CLIENT_PROFILE.md FIRST** — understand prior engagements, strategic context, tech landscape
+2. **Check Engagement History table** — know what domains have been assessed before
+3. **Load Cross-Engagement Insights** — recurring themes, unresolved gaps
+4. **Pre-populate the journal** — copy relevant carry-forward insights into the new journal's "Prior Engagement Context" section
+5. **Leverage prior findings** — don't re-discover what's already known (e.g., tech stack, org structure, validated pain points)
+6. **Watch for contradictions** — if new findings conflict with prior engagement data, flag explicitly
+
+### Multiple Concurrent Initiatives
+A client may have multiple active engagements simultaneously (e.g., a retail assessment AND a wealth ignite running in parallel). Each engagement:
+- Has its OWN journal and session ID
+- Reads from the SHARED CLIENT_PROFILE.md
+- Should reference the other engagement in its intake's "Initiative Context" section
+- Must NOT overwrite the other engagement's outputs
 
 ## Engagement Journal (CRITICAL)
 
@@ -59,13 +111,14 @@ The orchestrator supports THREE engagement types. Detect the type from user sign
 
 **Workflow:**
 ```
-Discovery Transcript Interpreter → Market Context Researcher* → Capability Assessment → ROI Business Case → Roadmap → Assembly
+Discovery Transcript Interpreter → [Journey Builder | Market Context Researcher* | Capability Assessment | ROI Business Case] → Roadmap → Assembly
 ```
-*Market Context Researcher runs after Discovery (needs pain points + metrics as input) and can run in parallel with Capability/ROI/Roadmap since they are independent. It produces optional enrichment for the Assembly Agent.
+*After Discovery completes, Journey Builder, Market Context Researcher, Capability Assessment, and ROI Business Case can all run in parallel since they read from Discovery outputs independently. Market Context produces optional enrichment for the Assembly Agent. Journey Builder produces journey maps consumed by Assembly (Act 4) and HTML dashboard.
 
 **Deliverables:**
 - Evidence Register
 - Market Context Brief (consultant-validated, optional)
+- Journey Maps (`journey_maps.json` + `journey_maps_summary.md`)
 - Capability Assessment
 - ROI Report with Scenarios
 - Implementation Roadmap
@@ -135,13 +188,16 @@ For partial engagements (e.g., ROI_only), produce only the relevant subset.
 
 ## Orchestration Workflow
 
-### Step 1: Classification
+### Step 1: Classification and Client Context
 Parse and confirm:
+- **Client identity** — Is this a new or returning client? If returning, read CLIENT_PROFILE.md
 - Domain classification
 - Engagement type and scope
+- **Initiative context** — Is this one of multiple initiatives for this client? What's the relationship?
 - Region for benchmark selection
 - Benchmark confidence mode
 - Available vs. missing inputs
+- **Prior engagement outputs** — For returning clients, check what's already been produced (don't re-discover known context)
 
 ### Step 2: Input Completion
 - Request missing minimum inputs in ONE consolidated ask
@@ -193,15 +249,17 @@ For any single file over 1000 lines (transcripts, PDFs, reports):
 Agents pass work through files, not through context:
 ```
 Discovery Agent → writes evidence_register.md, pain_points.md, metrics.md, stakeholder_intelligence.md
+Journey Builder → reads discovery outputs + domain journey templates → writes journey_maps.json, journey_maps_summary.md
+  → Consultant selects journeys (Checkpoint #1) → Consultant validates maps (Checkpoint #2)
 Market Context Researcher → reads discovery outputs + does web research → writes market_context_brief.md (includes client voice profile)
   → Consultant reviews → writes market_context_validated.md (or SKIPPED)
 Capability Agent → reads discovery outputs (NOT raw transcripts)
 ROI Agent → reads capability output + metrics (NOT raw transcripts)
 Roadmap Agent → reads ROI output + capability output
-Assembly Agent → reads all output files + market_context_validated.md (if exists) + stakeholder_intelligence.md (for tone calibration)
+Assembly Agent → reads all output files + journey_maps_summary.md + market_context_validated.md (if exists) + stakeholder_intelligence.md (for tone calibration)
 ```
 
-**Parallel execution opportunity:** After Discovery completes, Market Context Researcher, Capability Agent, and ROI Agent can all run in parallel since they read from Discovery outputs independently.
+**Parallel execution opportunity:** After Discovery completes, Journey Builder, Market Context Researcher, Capability Agent, and ROI Agent can all run in parallel since they read from Discovery outputs independently.
 
 This ensures each agent starts with a clean context containing only what it needs.
 
@@ -226,6 +284,13 @@ Route work to specialized agents based on engagement type:
 - **Pipeline position:** Runs after Discovery completes. Can run in PARALLEL with Capability, ROI, and Roadmap agents since they are independent workstreams.
 - **Consultant interaction:** ALWAYS requires consultant review before output flows to Assembly. This is creative positioning work that needs human judgment.
 - **Skip protocol:** This agent runs by DEFAULT on every Value Assessment engagement. The consultant may explicitly skip it by saying "skip market context" — in which case, log the skip reason in the engagement journal. Do NOT skip silently.
+
+**Journey Builder Agent:**
+- Input: Discovery outputs (evidence, pain points, metrics registers), domain journey templates
+- Output: `journey_maps.json` (structured data for HTML dashboard), `journey_maps_summary.md` (human-readable for Assembly Agent Act 4)
+- **Consultant checkpoints:** Two mandatory checkpoints — #1 Journey Selection (consultant picks which journeys to map), #2 Journey Validation (consultant confirms As-Is swimlanes, friction severity, and value estimates)
+- **Pipeline position:** Runs after Discovery. Can run in PARALLEL with Market Context, Capability, and ROI agents.
+- **Key behavior:** Quantifies value leakage per journey step with evidence tracing. Produces friction callout cards (top 3-5 per journey by $ impact). Builds Backbase-enabled future-state swimlanes.
 
 **Capability Assessment Agent:**
 - Input: Evidence from discovery, domain context
@@ -298,6 +363,7 @@ Verify that numbers match across ALL output documents:
 - [ ] Phase timeline durations in roadmap.md match references in assessment_report.md (Act 6)
 - [ ] Capability maturity scores in capability_assessment.md match those cited in assessment_report.md (Act 5)
 - [ ] Value leakage figures in Act 4 funnels align with addressable value in Act 7
+- [ ] Value leakage totals in journey maps (`journey_maps.json`) are consistent with Act 4 funnels and Act 7 addressable value
 - [ ] Bird's-eye benefit figures in Act 3 match the detailed calculation in Act 7
 - [ ] Scenario ranges (conservative/base/aspirational) are consistent wherever referenced
 - [ ] Currency, rounding precision, and units are consistent across all documents
@@ -352,7 +418,7 @@ Do NOT declare the engagement complete until all items in 7a–7e pass. Document
 
 The moment Step 7 passes, the engagement is done. Do these in order — the early steps are cheap and resilient, so even if the session dies mid-Step-8, the completion is recorded.
 
-#### 8a. Write completion marker (FIRST — before anything else)
+#### 8a. Write completion marker and update client profile (FIRST — before anything else)
 
 ```bash
 # This marker tells git hooks and backup systems the engagement is done
@@ -361,7 +427,17 @@ touch [engagement_dir]/.complete
 
 Update the engagement journal header: `Current Status: Complete`
 
-These two writes are the minimum viable "engagement ended" signal. Even if the session dies after this point, the git hooks will detect completion passively from the output files + `.complete` marker and sync telemetry on the next commit.
+**Update CLIENT_PROFILE.md** (in the parent client directory):
+1. Add a row to the **Engagement History** table with this engagement's date, type, domain, and key outcome
+2. Update **Cross-Engagement Insights** → Recurring Themes if this engagement surfaced themes seen in prior engagements
+3. Update **Cross-Engagement Insights** → Unresolved Gaps with any new gaps, and mark resolved gaps
+4. Update **Cumulative Value Delivered** totals (add this engagement's identified opportunity to the running total)
+5. Update **Strategic Context** if new strategic priorities or tech landscape changes were discovered
+6. Update **Last Engagement Date** in the Relationship Context section
+
+This CLIENT_PROFILE.md update is what makes the next engagement for this client smarter. It is non-negotiable.
+
+These writes are the minimum viable "engagement ended" signal. Even if the session dies after this point, the git hooks will detect completion passively from the output files + `.complete` marker and sync telemetry on the next commit.
 
 #### 8b. Append telemetry summary to journal
 

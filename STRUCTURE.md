@@ -11,10 +11,27 @@ This document provides an overview of the complete folder structure and purpose 
 ## Directory Structure
 
 ```
-claudevc/
+cortex/
 ├── README.md                          # Value Consulting philosophy & standards
 ├── CLAUDE.md                          # Claude's role and behavior in this repo
 ├── STRUCTURE.md                       # Repository structure overview
+│
+├── engagements/                       # Live engagement work (Client → Engagement hierarchy)
+│   └── [client_short_name]/           # One directory per client/bank
+│       ├── CLIENT_PROFILE.md          # Persistent client memory (survives across engagements)
+│       ├── [YYYY-MM_domain_type]/     # Individual engagement
+│       │   ├── inputs/                # Transcripts, intake form, artifacts
+│       │   │   └── engagement_intake.md
+│       │   ├── outputs/               # Agent-produced deliverables
+│       │   ├── ENGAGEMENT_JOURNAL.md  # Engagement-level system memory
+│       │   └── .engagement_session_id # Telemetry UUID
+│       └── [YYYY-MM_domain_type]/     # Another engagement for same client
+│           └── ...
+│
+├── scripts/                           # Utilities and automation
+│   ├── init_engagement.sh             # Bootstrap new engagement (creates hierarchy)
+│   ├── extract_telemetry.py           # Telemetry extraction
+│   └── ...
 │
 ├── knowledge/                         # Consulting knowledge base
 │   ├── README.md                      # Knowledge base overview
@@ -35,11 +52,14 @@ claudevc/
 │
 ├── templates/                         # Input contracts & output templates
 │   ├── README.md                      # Templates overview
+│   ├── client_profile.md              # Template for CLIENT_PROFILE.md
 │   ├── inputs/                        # Input data contracts
+│   │   ├── engagement_intake.md       # Engagement intake form (with client reference)
 │   │   ├── discovery_input_contract.md
 │   │   ├── financial_data_schema.md
 │   │   └── transcript_interpretation_guide.md
 │   └── outputs/                       # Deliverable templates
+│       ├── engagement_journal.md      # Journal template (with cross-engagement awareness)
 │       ├── executive_summary.md
 │       ├── assessment_report.md
 │       ├── capability_assessment.md
@@ -48,10 +68,34 @@ claudevc/
 │
 └── examples/                          # Reference engagements
     ├── README.md                      # Examples overview
-    └── engagements/                   # Complete engagement examples
+    ├── engagements/                   # Complete engagement examples
+    └── test_runs/                     # Test engagement runs
 ```
 
 ## Component Purposes
+
+### /engagements/ - Client → Engagement Hierarchy
+
+The primary working directory for all engagement work. Organized as a two-level hierarchy:
+
+**Level 1: Client** (`engagements/[client_short_name]/`)
+- One directory per bank/organization
+- Contains `CLIENT_PROFILE.md` — persistent memory that survives across engagements
+- Tracks strategic context, tech landscape, relationship history, cumulative insights
+
+**Level 2: Engagement** (`engagements/[client_short_name]/[YYYY-MM_domain_type]/`)
+- One directory per engagement/initiative
+- Naming convention: `YYYY-MM_domain_type` (e.g., `2026-01_investing_assessment`, `2026-03_retail_ignite`)
+- Contains inputs/, outputs/, journal, and session ID
+- Fully self-contained but references the parent CLIENT_PROFILE.md
+
+**Why this structure:**
+A single bank often has multiple engagements across different domains (retail, wealth, investing) and different types (assessment, ignite, hybrid). The client-level directory ensures:
+- Prior discovery insights carry forward (don't re-discover known context)
+- Cross-engagement patterns surface (themes visible only when comparing across domains)
+- Relationship history accumulates (stakeholder contacts, communication styles)
+
+**Bootstrap:** `./scripts/init_engagement.sh navy_federal 2026-02_retail_assessment assessment`
 
 ### /knowledge/ - Consulting Knowledge Base
 

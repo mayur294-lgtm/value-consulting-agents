@@ -6,12 +6,32 @@
 ## Engagement Summary
 
 - **Client:** [Client Name]
-- **Domain:** [retail | sme | commercial | corporate | wealth]
+- **Client Profile:** `engagements/[client_short_name]/CLIENT_PROFILE.md`
+- **Domain:** [retail | sme | commercial | corporate | wealth | investing]
 - **Region:** [e.g., Southeast Asia]
 - **Engagement Type:** [assessment | ignite | hybrid]
+- **Initiative Name:** [e.g., "Digital Investor Platform" — if multiple initiatives exist for this client]
 - **Started:** [Date]
 - **Current Status:** [In Progress | Paused | Complete]
 - **Last Updated:** [Date]
+
+## Prior Engagement Context
+
+> Auto-populated from CLIENT_PROFILE.md. Helps agents understand what's already been discovered.
+
+### Previous Engagements for This Client
+| Date | Engagement | Domain | Key Outcome |
+|------|-----------|--------|-------------|
+| — | — | — | — |
+
+### Carry-Forward Insights
+> Insights from prior engagements that are relevant to THIS engagement. Copied from CLIENT_PROFILE.md cross-engagement insights + engagement intake "Cross-Engagement Leverage" section.
+
+- [e.g., "Tech landscape validated in Jan 2026 — Fiserv DNA core, no changes expected"]
+- [e.g., "Pain point P3 (manual onboarding) scored 4/5 severity — use as anchor"]
+
+### Known Contradictions to Verify
+- [e.g., "Prior digital adoption rate was 40% — client now claims 60%"]
 
 ## Files Inventory
 
@@ -126,7 +146,16 @@
 ## How to Resume This Engagement
 
 1. Read this journal file — it contains the complete history
-2. Read `engagement_intake.md` — for client context
-3. Check the "Status After This Step" in the most recent journal entry — to see where we left off
-4. Read only the latest output files listed in "Outputs Produced" — NOT the raw transcripts
-5. Ask the consultant: "Based on the journal, here's where we left off: [summary]. What would you like to work on next?"
+2. Read `CLIENT_PROFILE.md` in the parent client directory — for persistent client context
+3. Read `engagement_intake.md` — for this specific engagement's scope
+4. Check the "Status After This Step" in the most recent journal entry — to see where we left off
+5. Read only the latest output files listed in "Outputs Produced" — NOT the raw transcripts
+6. Ask the consultant: "Based on the journal, here's where we left off: [summary]. What would you like to work on next?"
+
+## On Engagement Completion
+
+When this engagement is marked complete, the orchestrator MUST:
+1. Update `CLIENT_PROFILE.md` → Engagement History table with this engagement's summary
+2. Update `CLIENT_PROFILE.md` → Cross-Engagement Insights with any new recurring themes
+3. Update `CLIENT_PROFILE.md` → Strategic Context if new information was discovered
+4. Update `CLIENT_PROFILE.md` → Cumulative Value Delivered totals

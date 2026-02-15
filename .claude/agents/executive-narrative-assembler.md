@@ -296,6 +296,9 @@ Before assembly, verify you have received:
 - [ ] Roadmap with phases, initiatives, and timeline
 
 **Optional (enrich if available, proceed without if not):**
+- [ ] Journey Maps (`journey_maps_summary.md` + `journey_maps.json`) from Journey Builder Agent
+  - If exists: use for Act 4 — render As-Is swimlanes, friction callout cards, value leakage waterfalls, future-state swimlanes, and before/after metrics directly from these outputs (do NOT construct journey maps manually)
+  - If not exists: flag as "shallow" in Act 4 and recommend running `/build-journey` — construct lightweight journey narratives from discovery evidence, but acknowledge they lack the depth of Journey Builder output
 - [ ] Validated Market Context (`market_context_validated.md`) with positioning angles, financial correlations, outside-in research, and client communication voice profile
   - Check if file exists in engagement outputs directory
   - If exists: read and incorporate into narrative (especially Act 1 and Act 7) and use voice profile for tone calibration (Step 2c)
@@ -478,7 +481,16 @@ Build the report following the 7-act structure from `/templates/outputs/assessme
 
    Use this mapping when building Phase 1A/1B scope tables and per-journey solution component tables.
 
-4. **Act 4 — Deep-Dive Assessment:** Lifecycle stages (Acquire/Activate/Expand/Retain) with Challenges & Impact → Recommendations & Value pairs, persona profiles, **journey maps with swim-lane process flows** (As-Is → Friction → Benefits → Proposed Solution), architecture as-is → to-be (from Discovery + Capability + ROI)
+4. **Act 4 — Deep-Dive Assessment:** Lifecycle stages (Acquire/Activate/Expand/Retain) with Challenges & Impact → Recommendations & Value pairs, persona profiles, **journey maps with swim-lane process flows** (As-Is → Friction → Benefits → Proposed Solution), architecture as-is → to-be (from Discovery + Capability + ROI + Journey Builder)
+
+   **Journey Maps — Source Priority (CRITICAL):**
+   - **If `journey_maps_summary.md` exists** (from Journey Builder Agent): Render journey content directly from this file. Do NOT reconstruct journeys manually. The Journey Builder has already produced consultant-validated, evidence-backed, quantified journey maps. Use them as-is, integrating:
+     - **Friction Callout Cards** as hero-level callouts ABOVE each swimlane (top 3-5 per journey, ranked by $ impact)
+     - **As-Is Swimlane** tables from the Journey Builder output
+     - **Value Leakage Waterfall** from the aggregate data
+     - **Future-State Swimlane** with Backbase products named
+     - **Before/After Summary Metrics** table per journey
+   - **If `journey_maps_summary.md` does NOT exist**: Construct lightweight journey narratives from discovery evidence and domain knowledge. Flag in the report: "Journey maps were constructed from discovery evidence without dedicated journey analysis. Run `/build-journey` for deeper, consultant-validated journey maps with quantified value leakage."
 
    **Lifecycle Stage Definitions (MANDATORY):**
    Each lifecycle stage section MUST open with a **stage definition** that explains what this stage covers for the client's domain. Reference `knowledge/backbase_platform_lexicon.md` for the authoritative definitions and adapt to the domain. This grounds the reader and prevents confusion about what falls under each stage.
@@ -598,6 +610,10 @@ Before declaring "ready to send":
 - [ ] Act 4: Persona profiles included (named, human, with quotes)
 - [ ] Act 4: Personas referenced throughout subsequent sections (journey assessments, solutions, benefits)
 - [ ] Act 4: Journey maps with swim-lane process flows for each in-scope journey (As-Is → Friction → Benefits → Solution)
+- [ ] Act 4: Journey maps sourced from Journey Builder output (`journey_maps_summary.md`) when available — NOT manually constructed
+- [ ] Act 4: Friction callout cards present for top 3-5 frictions per journey (with $ impact and evidence quotes)
+- [ ] Act 4: Value leakage waterfall shows running cumulative total per journey
+- [ ] Act 4: Value leakage totals in journey maps are consistent with Act 7 addressable value
 - [ ] Act 4: **Each Proposed Solution includes "What Good Looks Like" external examples** (1-2 per journey)
 - [ ] Act 4: **Each Proposed Solution includes Backbase product-to-feature mapping table**
 - [ ] Act 4: Architecture as-is → to-be present

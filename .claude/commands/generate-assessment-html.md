@@ -22,6 +22,7 @@ The skill reads the following from the engagement outputs directory:
 6. `*_persona_*.json` or persona markdown — Persona library
 7. `*_use_case_*.json` or use case markdown — Use case library
 8. `market_context_validated.md` or `*_Market_Research.md` — Market context (if available)
+9. `journey_maps.json` — Journey maps with swimlane data, friction callouts, and value leakage (if available, from Journey Builder Agent)
 
 ## Output
 
@@ -289,6 +290,57 @@ h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
 .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 ::selection { background: rgba(26,86,255,0.12); color: inherit; }
 
+/* ══════════════════════════ JOURNEY SWIMLANE ══════════════════════════ */
+.journey-swimlane { background: #0F172A; border-radius: 20px; padding: 32px; margin: 24px 0; overflow-x: auto; }
+.journey-swimlane-title { font-size: 1.1rem; font-weight: 800; color: #FFFFFF; margin-bottom: 4px; letter-spacing: -0.3px; }
+.journey-swimlane-sub { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-bottom: 24px; }
+.swimlane-grid { display: grid; gap: 1px; background: rgba(255,255,255,0.06); border-radius: 12px; overflow: hidden; }
+.swimlane-header { background: rgba(255,255,255,0.08); padding: 10px 14px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.55); text-align: center; }
+.swimlane-actor { background: rgba(26,86,255,0.1); padding: 12px 14px; font-size: 0.72rem; font-weight: 700; color: #60A5FA; display: flex; align-items: center; }
+.swimlane-cell { background: rgba(255,255,255,0.03); padding: 12px 14px; font-size: 0.78rem; color: rgba(255,255,255,0.75); line-height: 1.5; min-height: 60px; transition: background 0.2s ease; }
+.swimlane-cell:hover { background: rgba(255,255,255,0.06); }
+.swimlane-cell.friction-critical { border-top: 3px solid #DC2626; }
+.swimlane-cell.friction-high { border-top: 3px solid #EA580C; }
+.swimlane-cell.friction-moderate { border-top: 3px solid #F59E0B; }
+.swimlane-cell.friction-minor { border-top: 3px solid #34D399; }
+.swimlane-time { font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+.swimlane-systems { font-size: 0.6rem; color: rgba(255,255,255,0.3); font-style: italic; margin-top: 2px; }
+.swimlane-value-lost { font-size: 0.72rem; font-weight: 800; color: #DC2626; margin-top: 6px; }
+.swimlane-toggle-group { display: inline-flex; background: rgba(255,255,255,0.06); border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 20px; }
+.swimlane-toggle-btn { padding: 8px 20px; border-radius: 8px; border: none; font-size: 0.78rem; font-weight: 700; cursor: pointer; background: none; color: rgba(255,255,255,0.5); transition: all 0.25s ease; font-family: inherit; }
+.swimlane-toggle-btn.active-current { background: rgba(220,38,38,0.15); color: #DC2626; }
+.swimlane-toggle-btn.active-future { background: rgba(52,211,153,0.15); color: #34D399; }
+.swimlane-panel { display: none; }
+.swimlane-panel.active { display: block; }
+
+/* ══════════════════════════ FRICTION CALLOUT CARDS ══════════════════════════ */
+.friction-callout { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin-bottom: 16px; position: relative; overflow: hidden; transition: all 0.35s ease; }
+.friction-callout:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); transform: translateY(-3px); }
+.friction-callout.severity-critical::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #DC2626, #EF4444); }
+.friction-callout.severity-high::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #EA580C, #FB923C); }
+.friction-callout.severity-moderate::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #F59E0B, #FBBF24); }
+.friction-callout-rank { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 6px; }
+.friction-callout-title { font-size: 1.05rem; font-weight: 800; color: var(--text); margin-bottom: 8px; letter-spacing: -0.3px; }
+.friction-callout-impact { font-size: 1.8rem; font-weight: 900; color: #DC2626; line-height: 1.1; margin-bottom: 12px; letter-spacing: -1px; }
+.friction-callout-quote { font-size: 0.85rem; font-style: italic; color: var(--muted); line-height: 1.7; padding: 12px 16px; border-left: 3px solid var(--border); margin-bottom: 14px; background: #F8FAFC; border-radius: 0 8px 8px 0; }
+.friction-callout-fix { font-size: 0.82rem; color: #059669; font-weight: 600; line-height: 1.6; }
+.friction-callout-fix strong { color: #047857; }
+.friction-callout-meta { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.friction-callout-tag { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 6px; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(26,86,255,0.06); color: var(--accent); border: 1px solid rgba(26,86,255,0.12); }
+
+/* ══════════════════════════ VALUE LEAKAGE WATERFALL ══════════════════════════ */
+.waterfall-container { background: #0F172A; border-radius: 20px; padding: 32px; margin: 24px 0; }
+.waterfall-title { font-size: 1.1rem; font-weight: 800; color: #FFFFFF; margin-bottom: 4px; letter-spacing: -0.3px; }
+.waterfall-sub { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-bottom: 24px; }
+.waterfall-bar-row { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.waterfall-label { min-width: 140px; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); text-align: right; }
+.waterfall-bar-track { flex: 1; height: 28px; background: rgba(255,255,255,0.04); border-radius: 6px; overflow: hidden; display: flex; position: relative; }
+.waterfall-bar-remaining { background: linear-gradient(90deg, #1A56FF, #3B82F6); height: 100%; transition: width 0.8s ease; border-radius: 6px 0 0 6px; }
+.waterfall-bar-leaked { background: linear-gradient(90deg, #DC2626, #EF4444); height: 100%; transition: width 0.8s ease; }
+.waterfall-value { min-width: 90px; font-size: 0.72rem; font-weight: 700; color: #DC2626; }
+.waterfall-cumulative { font-size: 0.82rem; font-weight: 800; color: #DC2626; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); text-align: right; }
+.waterfall-cumulative span { color: rgba(255,255,255,0.55); font-weight: 600; }
+
 /* ── Animations ── */
 @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes floatParticle { 0%,100% { transform: translateY(0) translateX(0); } 25% { transform: translateY(-20px) translateX(10px); } 50% { transform: translateY(-10px) translateX(-5px); } 75% { transform: translateY(-30px) translateX(15px); } }
@@ -548,6 +600,18 @@ document.addEventListener('mouseout', function(e) {
   }
 });
 
+/* ── JOURNEY SWIMLANE TOGGLE (Before/After) ── */
+function toggleJourney(journeyId, state, btn) {
+  var container = document.getElementById('journey-' + journeyId);
+  if (!container) return;
+  container.querySelectorAll('.swimlane-panel').forEach(function(p) { p.classList.remove('active'); });
+  container.querySelector('.swimlane-panel[data-state="' + state + '"]').classList.add('active');
+  container.querySelectorAll('.swimlane-toggle-btn').forEach(function(b) {
+    b.classList.remove('active-current', 'active-future');
+  });
+  btn.classList.add(state === 'current' ? 'active-current' : 'active-future');
+}
+
 /* ── FLOATING BACKGROUND PARTICLES ── */
 (function initParticles(){
   var colors = ['rgba(26,86,255,0.08)','rgba(123,47,255,0.06)','rgba(5,150,105,0.05)'];
@@ -740,6 +804,86 @@ renderHeatmap('hm-{{BL}}', caps_hm_{{BL}});
 </div>
 ```
 
+### 5.12 Journey Swimlane (Act 4 — from `journey_maps.json`)
+```html
+<div id="journey-{{JOURNEY_ID}}" class="journey-swimlane reveal">
+  <div class="journey-swimlane-title">{{JOURNEY_NAME}}</div>
+  <div class="journey-swimlane-sub">{{LIFECYCLE_STAGE}} &bull; Total Value Leakage: <span style="color:#DC2626;font-weight:800;">{{TOTAL_LEAKAGE}}</span>/year</div>
+  <div class="swimlane-toggle-group">
+    <button class="swimlane-toggle-btn active-current" onclick="toggleJourney('{{JOURNEY_ID}}','current',this)">Current State</button>
+    <button class="swimlane-toggle-btn" onclick="toggleJourney('{{JOURNEY_ID}}','future',this)">Backbase-Enabled</button>
+  </div>
+  <div class="swimlane-panel active" data-state="current">
+    <div class="swimlane-grid" style="grid-template-columns:120px repeat({{PHASE_COUNT}},1fr);">
+      <!-- Header row -->
+      <div class="swimlane-header"></div>
+      <div class="swimlane-header">{{PHASE_1}}</div>
+      <div class="swimlane-header">{{PHASE_2}}</div>
+      <!-- ... more phases ... -->
+      <!-- Actor rows -->
+      <div class="swimlane-actor">{{ACTOR_NAME}}</div>
+      <div class="swimlane-cell {{FRICTION_CLASS}}" data-trace-id="{{PAIN_POINT_ID}}">
+        {{ACTION}}
+        <div class="swimlane-time">{{ACTIVE_TIME}} &bull; {{ELAPSED_TIME}}</div>
+        <div class="swimlane-systems">{{SYSTEMS}}</div>
+        <div class="swimlane-value-lost">-{{VALUE_LOST}}</div>
+      </div>
+      <!-- ... more cells ... -->
+    </div>
+  </div>
+  <div class="swimlane-panel" data-state="future">
+    <div class="swimlane-grid" style="grid-template-columns:120px repeat({{FUTURE_PHASE_COUNT}},1fr);">
+      <!-- Future state grid with Backbase products and reduced steps -->
+      <div class="swimlane-header"></div>
+      <div class="swimlane-header" style="color:#34D399;">{{FUTURE_PHASE}}</div>
+      <div class="swimlane-actor">{{ACTOR_NAME}}</div>
+      <div class="swimlane-cell">
+        {{FUTURE_ACTION}}
+        <div class="swimlane-time" style="color:#34D399;">{{FUTURE_TIME}}</div>
+        <div class="swimlane-systems" style="color:rgba(52,211,153,0.5);">{{BACKBASE_PRODUCTS}}</div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+### 5.13 Friction Callout Cards (Act 4 — top 3-5 per journey)
+```html
+<div class="card-grid card-grid-2" style="margin-bottom:32px;">
+  <div class="friction-callout severity-{{SEVERITY}}" data-trace-id="{{PAIN_POINT_ID}}">
+    <div class="friction-callout-rank">Friction #{{RANK}}</div>
+    <div class="friction-callout-title">{{FRICTION_TITLE}}</div>
+    <div class="friction-callout-impact">{{DOLLAR_IMPACT}}<span style="font-size:0.65rem;color:var(--muted);font-weight:600;margin-left:4px;">/year</span></div>
+    <div class="friction-callout-quote">"{{EVIDENCE_QUOTE}}" — {{ATTRIBUTION}}</div>
+    <div class="friction-callout-fix"><strong>Fix:</strong> {{PROPOSED_FIX}} ({{BACKBASE_PRODUCTS}})</div>
+    <div class="friction-callout-meta">
+      <span class="friction-callout-tag">{{SEVERITY}}</span>
+      <span class="friction-callout-tag">{{IMPACT_CATEGORY}}</span>
+      <span class="friction-callout-tag">{{CAPABILITY_ID}}</span>
+    </div>
+  </div>
+</div>
+```
+
+### 5.14 Value Leakage Waterfall (Act 4 — per journey)
+```html
+<div class="waterfall-container reveal">
+  <div class="waterfall-title">Value Leakage — {{JOURNEY_NAME}}</div>
+  <div class="waterfall-sub">Step-by-step volume and value loss across the journey</div>
+  <!-- One bar per step with friction -->
+  <div class="waterfall-bar-row">
+    <div class="waterfall-label">{{STEP_NAME}}<br><span style="font-size:0.6rem;color:rgba(255,255,255,0.4);">{{VOLUME_ENTERING}} entering</span></div>
+    <div class="waterfall-bar-track">
+      <div class="waterfall-bar-remaining" style="width:{{REMAINING_PCT}}%;"></div>
+      <div class="waterfall-bar-leaked" style="width:{{LEAKED_PCT}}%;"></div>
+    </div>
+    <div class="waterfall-value">-{{VALUE_LOST}}</div>
+  </div>
+  <!-- ... more bars ... -->
+  <div class="waterfall-cumulative"><span>Cumulative leakage: </span>{{TOTAL_LEAKAGE}}/year</div>
+</div>
+```
+
 ### Panel-to-Component Mapping
 
 | Panel | Primary Components | Secondary Components |
@@ -748,7 +892,7 @@ renderHeatmap('hm-{{BL}}', caps_hm_{{BL}});
 | Act 1 — Strategic Alignment | Dark Feature, Expandable | Metric Cards (pain point counts) |
 | Act 2 — The Vision | Dark Feature, Cards | Bento Grid (vision stats) |
 | Act 3 — The Lighthouse | Persona Cards, Cards | Expandable (persona details) |
-| Act 4 — Deep-Dive | Expandable, Cards | Metric Cards (deep-dive findings) |
+| Act 4 — Deep-Dive | Journey Swimlane, Friction Callouts, Value Waterfall, Expandable, Persona Cards | Before/After Toggle, Metric Cards (deep-dive findings) |
 | Act 5 — Capability Map | Heatmap, Score Badges | Expandable (gap details) |
 | Act 6 — Roadmap | Timeline, Cards | Metric Cards (investment summary) |
 | Act 7 — Benefits Case | ROI Levers, ROI Grid | Scenario Toggle, Bento Grid |
@@ -887,7 +1031,9 @@ Extract scores from assessment JSON. Generate JavaScript arrays per business lin
 Extract lever data from ROI model. Generate 3 scenario datasets. Wire up scenario toggle.
 
 ### Step 7: Build Journey Visualization
-Map future-state journey: 5-7 stages, before/after, Backbase layers, metrics.
+If `journey_maps.json` exists: parse journey data and build per-journey swimlane components (5.12), friction callout cards (5.13), and value leakage waterfalls (5.14) for Act 4. Wire up the `toggleJourney()` function for before/after switching. Each journey gets its own swimlane container with a unique ID.
+
+If `journey_maps.json` does NOT exist: fall back to the existing Journey Rail (5.10) for future-state journey visualization with 5-7 stages, before/after, Backbase layers, metrics.
 
 ### Step 8: Build Phone Prototypes
 Top 3 use cases: phone-frame mockups with key screens.
@@ -912,6 +1058,10 @@ Run through the Quality Checklist below.
 - [ ] At least 3 phone-frame prototypes exist
 - [ ] Journey rail has all stages with before/after
 - [ ] Traceability: hover on pain point highlights linked capabilities
+- [ ] Journey swimlanes render with all actors and friction color indicators (if `journey_maps.json` exists)
+- [ ] Value leakage waterfall shows running cumulative total per journey (if `journey_maps.json` exists)
+- [ ] Before/After toggle switches between current-state and future-state swimlane panels (if `journey_maps.json` exists)
+- [ ] Friction callout cards show top 3-5 frictions per journey with $ impact and evidence quotes (if `journey_maps.json` exists)
 - [ ] No `{{PLACEHOLDER}}` markers remain
 - [ ] Responsive: correct at 1360px, 900px, 600px
 - [ ] Print: all panels visible
