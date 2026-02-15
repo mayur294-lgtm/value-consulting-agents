@@ -504,6 +504,34 @@ You can also:
 - **Skip the entire market context** — the Assembly Agent will produce the report without it
 ```
 
+### WhatsApp Summary (MANDATORY)
+
+At the very end of your output, ALWAYS include a `## WHATSAPP SUMMARY` section. This is what gets sent to WhatsApp — keep it under 500 words, bullet-point format:
+
+```markdown
+## WHATSAPP SUMMARY
+
+*Market Context — [Bank Name]*
+
+*Module 1 (Annual Report):* [DATA_FOUND / NO_RELEVANT_DATA]
+- [1-2 key metrics with values]
+- [Top-down → bottom-up correlation headline]
+
+*Module 2 (CX Research):* [DATA_FOUND / NO_RELEVANT_DATA]
+- [1-2 key findings]
+
+*Module 3 (Competitors):* [DATA_FOUND / NO_RELEVANT_DATA]
+- [1-2 key competitor insights]
+
+*Module 4 (Client Voice):* [DATA_FOUND / NO_RELEVANT_DATA]
+
+*Top Positioning Angle:* [Title — 1 sentence]
+
+*Decision needed:* Review the full brief and confirm which modules to include.
+```
+
+This section is stripped by the WhatsApp delivery layer. The full brief above it is saved for the Assembly Agent.
+
 ### Consultant Response Handling
 
 | Consultant Says | Agent Does |
