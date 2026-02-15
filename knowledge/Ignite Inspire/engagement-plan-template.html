@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[CLIENT] Ignite Engagement Plan | Backbase</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-dark: #091C35;
+    --primary-blue: #3366FF;
+    --cyan: #69FEFF;
+    --white: #FFFFFF;
+    --light-grey: #F3F6F9;
+    --light-blue: #E5EBFF;
+    --muted: #3A495D;
+    --green: #26BC71;
+    --amber: #FFAC09;
+    --red: #FF7262;
+    --text: #091C35;
+    --text-light: #5A6A7E;
+    --border: #E0E6ED;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Libre Franklin', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--white);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     SECTION: COVER (Dark background)
+     ═══════════════════════════════════════════════════════ */
+  .cover {
+    background: var(--primary-dark);
+    color: var(--white);
+    min-height: 100vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    page-break-after: always;
+  }
+  .cover .brand {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-bottom: 60px;
+    letter-spacing: 1px;
+  }
+  .cover h1 {
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .cover .subtitle {
+    font-size: 28px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 60px;
+  }
+  .cover .dates {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--cyan);
+    margin-bottom: 8px;
+  }
+  .cover .dates-value {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--white);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     SECTION DIVIDER (Blue background)
+     ═══════════════════════════════════════════════════════ */
+  .section-divider {
+    background: var(--primary-blue);
+    color: var(--white);
+    padding: 80px 80px;
+    min-height: 40vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    page-break-before: always;
+    page-break-after: always;
+  }
+  .section-divider .brand {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+  }
+  .section-divider .ghost-number {
+    position: absolute;
+    right: 80px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 200px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.08);
+    line-height: 1;
+  }
+  .section-divider h2 {
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .section-divider .section-subtitle {
+    font-size: 20px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.7);
+  }
+  .section-divider .cyan-accent {
+    width: 60px;
+    height: 4px;
+    background: var(--cyan);
+    margin-bottom: 24px;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     CONTENT SECTION (White background)
+     ═══════════════════════════════════════════════════════ */
+  .content-section {
+    background: var(--white);
+    padding: 60px 80px;
+    min-height: 80vh;
+    position: relative;
+    page-break-after: always;
+  }
+  .content-section .page-footer {
+    position: absolute;
+    bottom: 20px;
+    right: 80px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-light);
+    letter-spacing: 1px;
+  }
+  .content-section .page-number {
+    position: absolute;
+    top: 30px;
+    left: 80px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-light);
+  }
+
+  /* Title with blue accent square */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .section-title .accent {
+    width: 16px;
+    height: 16px;
+    background: var(--primary-blue);
+    flex-shrink: 0;
+  }
+  .section-title h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-title .subtitle {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-light);
+    margin-left: auto;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Objectives Pillars
+     ═══════════════════════════════════════════════════════ */
+  .objectives-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 40px;
+  }
+  .pillar {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+    padding: 28px 24px;
+  }
+  .pillar .num {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-blue);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 16px;
+  }
+  .pillar h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .pillar ul {
+    list-style: none;
+    padding: 0;
+  }
+  .pillar ul li {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 4px 0;
+    padding-left: 16px;
+    position: relative;
+  }
+  .pillar ul li::before {
+    content: '●';
+    position: absolute;
+    left: 0;
+    color: var(--primary-blue);
+    font-size: 8px;
+    top: 7px;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Cascading Choices
+     ═══════════════════════════════════════════════════════ */
+  .cascading-choices {
+    display: flex;
+    gap: 8px;
+    margin-top: 40px;
+    position: relative;
+    padding-bottom: 40px;
+  }
+  .cascade-step {
+    flex: 1;
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+    padding: 20px 16px;
+    position: relative;
+    transition: transform 0.2s;
+  }
+  .cascade-step:nth-child(1) { transform: translateY(0px); }
+  .cascade-step:nth-child(2) { transform: translateY(20px); }
+  .cascade-step:nth-child(3) { transform: translateY(40px); }
+  .cascade-step:nth-child(4) { transform: translateY(60px); }
+  .cascade-step:nth-child(5) { transform: translateY(80px); background: var(--white); border-style: dashed; opacity: 0.7; }
+  .cascade-step .step-num {
+    width: 36px;
+    height: 36px;
+    background: var(--primary-blue);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 900;
+    margin-bottom: 12px;
+  }
+  .cascade-step h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .cascade-step ul {
+    list-style: none;
+    padding: 0;
+  }
+  .cascade-step ul li {
+    font-size: 11px;
+    color: var(--muted);
+    padding: 2px 0;
+  }
+  .focus-overlay {
+    position: absolute;
+    top: -8px;
+    left: -4px;
+    width: calc(80% + 8px);
+    height: calc(100% - 20px);
+    border: 2px dashed var(--primary-blue);
+    border-radius: 16px;
+    pointer-events: none;
+  }
+  .focus-label {
+    position: absolute;
+    top: -14px;
+    left: 20px;
+    background: var(--primary-blue);
+    color: var(--white);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .postlab-label {
+    position: absolute;
+    bottom: -28px;
+    right: 0;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Agenda Cards
+     ═══════════════════════════════════════════════════════ */
+  .agenda-card {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+  .agenda-card .day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--primary-blue);
+  }
+  .agenda-card .day-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary-blue);
+  }
+  .agenda-card .day-header .total-hours {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-light);
+    background: var(--white);
+    padding: 4px 16px;
+    border-radius: 20px;
+  }
+  .agenda-item {
+    display: flex;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .agenda-item:last-child { border-bottom: none; }
+  .agenda-item .item-num {
+    width: 32px;
+    height: 32px;
+    background: var(--primary-blue);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .agenda-item .item-content { flex: 1; }
+  .agenda-item .item-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .agenda-item .item-desc {
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.5;
+  }
+  .agenda-item .item-meta {
+    font-size: 12px;
+    color: var(--muted);
+    min-width: 100px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .agenda-item .presenter {
+    font-size: 11px;
+    color: var(--primary-blue);
+    font-weight: 600;
+  }
+  .lunch-break {
+    text-align: center;
+    padding: 12px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-light);
+    letter-spacing: 2px;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Workshop Table
+     ═══════════════════════════════════════════════════════ */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 32px;
+    font-size: 13px;
+  }
+  table thead th {
+    background: var(--primary-blue);
+    color: var(--white);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  table thead th:first-child { border-radius: 8px 0 0 0; }
+  table thead th:last-child { border-radius: 0 8px 0 0; }
+  table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table tbody tr:nth-child(even) { background: var(--light-grey); }
+  table tbody tr:hover { background: var(--light-blue); }
+
+  /* Status badges */
+  .badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-done { background: #E8F8F0; color: var(--green); }
+  .badge-scheduled { background: #E8F8F0; color: var(--green); }
+  .badge-tbd { background: #FFF5E0; color: var(--amber); }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: V Approach Cards
+     ═══════════════════════════════════════════════════════ */
+  .v-approach-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 32px;
+  }
+  .v-card {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+    padding: 24px 20px;
+  }
+  .v-card h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 8px;
+  }
+  .v-card p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Timeline
+     ═══════════════════════════════════════════════════════ */
+  .timeline {
+    display: flex;
+    gap: 4px;
+    margin-top: 32px;
+    align-items: stretch;
+  }
+  .timeline-phase {
+    flex: 1;
+    border-radius: 12px;
+    padding: 24px 20px;
+    min-height: 160px;
+    position: relative;
+  }
+  .timeline-phase.prework { background: var(--light-grey); border: 1px solid var(--border); }
+  .timeline-phase.workshops { background: var(--light-blue); border: 1px solid var(--primary-blue); }
+  .timeline-phase.ignite { background: var(--primary-blue); color: var(--white); }
+  .timeline-phase.postwork { background: var(--light-grey); border: 1px dashed var(--border); }
+  .timeline-phase h4 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .timeline-phase .month {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .timeline-phase ul {
+    list-style: none;
+    padding: 0;
+    font-size: 12px;
+  }
+  .timeline-phase ul li {
+    padding: 3px 0;
+  }
+  .timeline-phase.ignite h4 { color: var(--cyan); }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Deliverables
+     ═══════════════════════════════════════════════════════ */
+  .deliverables-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 32px;
+  }
+  .deliverable-card {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+    padding: 28px 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .deliverable-card .icon {
+    width: 44px;
+    height: 44px;
+    background: var(--primary-blue);
+    color: var(--white);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .deliverable-card h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .deliverable-card p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     SECTION: CLOSING (Dark background)
+     ═══════════════════════════════════════════════════════ */
+  .closing {
+    background: var(--primary-dark);
+    color: var(--white);
+    min-height: 60vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    page-break-before: always;
+  }
+  .closing h2 {
+    font-size: 52px;
+    font-weight: 900;
+    margin-bottom: 24px;
+  }
+  .closing .brand {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    letter-spacing: 1px;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     DATA COLLECTION TWO-COLUMN
+     ═══════════════════════════════════════════════════════ */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 32px;
+    margin-top: 24px;
+  }
+  .doc-box {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .doc-box h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .doc-box ul {
+    list-style: none;
+    padding: 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .doc-box ul li { padding: 3px 0; }
+
+  /* Print styles */
+  @media print {
+    body { font-size: 12px; }
+    .cover, .section-divider, .content-section, .closing { min-height: auto; }
+    .section-divider .ghost-number { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 1: COVER PAGE (Dark background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="brand">Backbase</div>
+  <!-- AGENT: Replace [CLIENT] with actual client name -->
+  <h1>[CLIENT] Ignite Lab</h1>
+  <div class="subtitle">Engagement Plan</div>
+  <div class="dates">Ignite Dates:</div>
+  <!-- AGENT: Replace with actual onsite dates -->
+  <div class="dates-value">12 - 13 January 2026</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 2: OBJECTIVES — Section Divider (Blue background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">01</div>
+  <div class="cyan-accent"></div>
+  <h2>Ignite Day Objectives</h2>
+  <div class="section-subtitle">Elevating the Conversation</div>
+</div>
+
+<!-- SECTION 2: OBJECTIVES — Content (White background) -->
+<div class="content-section">
+  <div class="page-number">3</div>
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Objectives of Ignite Lab Working Sessions</h2>
+  </div>
+
+  <div class="objectives-grid">
+    <div class="pillar">
+      <div class="num">01</div>
+      <!-- AGENT: Customize to client context -->
+      <h3>[CLIENT] Strategy & Backbase Fitment</h3>
+      <ul>
+        <li>Align with [CLIENT] on key organizational strategic objectives & how Backbase fits</li>
+        <li>Identify differentiating strategies & use cases and Backbase fitment</li>
+      </ul>
+    </div>
+    <div class="pillar">
+      <div class="num">02</div>
+      <!-- AGENT: If client has specific go-live name, use it (e.g., "2026 F&F Live") -->
+      <h3>Align on Prioritization for Roadmap</h3>
+      <ul>
+        <li>Value & complexity based prioritization for [CLIENT] roadmap</li>
+        <li>Define scope for next go-live</li>
+      </ul>
+    </div>
+    <div class="pillar">
+      <div class="num">03</div>
+      <h3>Creating Architectural & Implementation Blueprint</h3>
+      <ul>
+        <li>Create target architecture with key dependencies & effort areas</li>
+        <li>Plan for implementation and create WBS</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top: 32px; font-size: 13px; color: var(--text-light); text-align: center;">
+    [CLIENT] - Backbase Ignite Lab
+  </div>
+
+  <div class="page-footer">Backbase | 3</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 3: CASCADING CHOICES FRAMEWORK (White background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+  <div class="page-number">4</div>
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Introduction to the Cascading Choices Framework</h2>
+    <span class="subtitle">Success is about making the right choices</span>
+  </div>
+
+  <div class="cascading-choices">
+    <div class="focus-overlay">
+      <div class="focus-label">Our Focus for Ignite Lab</div>
+    </div>
+    <div class="postlab-label">Post Ignite Lab Follow ups &#8594;</div>
+
+    <div class="cascade-step">
+      <div class="step-num">1</div>
+      <h4>What are our key strategic themes?</h4>
+      <ul>
+        <li>Goals & objectives</li>
+        <li>Financial and non-financial objectives</li>
+      </ul>
+    </div>
+    <div class="cascade-step">
+      <div class="step-num">2</div>
+      <!-- AGENT: Use "Member" for CU, "Customer" for Bank -->
+      <h4>Where will we play?</h4>
+      <ul>
+        <li>[Member/Customer] segments</li>
+        <li>Product/Service Offering Mix</li>
+      </ul>
+    </div>
+    <div class="cascade-step">
+      <div class="step-num">3</div>
+      <h4>How will we win?</h4>
+      <ul>
+        <li>Value proposition</li>
+        <li>Tech ecosystem</li>
+        <li>Use cases</li>
+      </ul>
+    </div>
+    <div class="cascade-step">
+      <div class="step-num">4</div>
+      <h4>How will we configure?</h4>
+      <ul>
+        <li>Technical solutioning</li>
+        <li>People, process & tech</li>
+      </ul>
+    </div>
+    <div class="cascade-step">
+      <div class="step-num">5</div>
+      <h4>What are our priority actions?</h4>
+      <ul>
+        <li>Implementation plan</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 4</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 4: IGNITE DAY AGENDA — Section Divider (Blue background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">02</div>
+  <div class="cyan-accent"></div>
+  <h2>Ignite Day Agenda</h2>
+  <!-- AGENT: Replace with actual dates -->
+  <div class="section-subtitle">12th & 13th January Schedule</div>
+</div>
+
+<!-- SECTION 4: DAY 1 AGENDA — Content (White background) -->
+<div class="content-section">
+  <div class="page-number">5</div>
+
+  <div class="agenda-card">
+    <div class="day-header">
+      <!-- AGENT: Replace with actual date -->
+      <h3>Day 1: 12th January</h3>
+      <!-- AGENT: Calculate total hours -->
+      <span class="total-hours">Ignite Lab Agenda (5 Hrs)</span>
+    </div>
+
+    <div class="agenda-item">
+      <div class="item-num">01</div>
+      <div class="item-content">
+        <div class="item-title">Welcome & Introductions</div>
+      </div>
+      <div class="item-meta">
+        ~15 min
+        <!-- AGENT: Replace with actual presenter names -->
+        <div class="presenter">(Sales Lead | CS Lead)</div>
+      </div>
+    </div>
+
+    <div class="agenda-item">
+      <div class="item-num">02</div>
+      <div class="item-content">
+        <div class="item-title">[CLIENT] Strategic Themes</div>
+        <div class="item-desc">Backbase to share their understanding of [CLIENT] strategy & how Backbase is aligned to their long term strategy and short term goals</div>
+      </div>
+      <div class="item-meta">
+        1 Hr
+        <div class="presenter">([CLIENT] & Backbase)</div>
+      </div>
+    </div>
+
+    <div class="agenda-item">
+      <div class="item-num">03</div>
+      <div class="item-content">
+        <!-- AGENT: Use "Member" or "Customer" based on client type -->
+        <div class="item-title">[CLIENT] Use Cases — Member Experience</div>
+        <div class="item-desc">Backbase to showcase product alignment with [CLIENT] table stake & differentiating use cases discovered.</div>
+      </div>
+      <div class="item-meta">
+        2 Hrs
+        <div class="presenter">(VC Name / SE Name)</div>
+      </div>
+    </div>
+
+    <div class="lunch-break">- - - - - - - - - - Lunch (1 Hour) - - - - - - - - - -</div>
+
+    <div class="agenda-item">
+      <div class="item-num">04</div>
+      <div class="item-content">
+        <div class="item-title">[CLIENT] Use Cases — Employee Experience</div>
+        <div class="item-desc">Given [CLIENT]'s digital ambitions and use cases & Backbase product fitment, explore operational challenges & objectives from the employee experience perspective</div>
+      </div>
+      <div class="item-meta">
+        1 Hr 30 Min
+        <div class="presenter">(VC Name / SE Name)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 5</div>
+</div>
+
+<!-- SECTION 4: DAY 2 AGENDA — Content (White background) -->
+<div class="content-section">
+  <div class="page-number">6</div>
+
+  <div class="agenda-card">
+    <div class="day-header">
+      <h3>Day 2: 13th January</h3>
+      <span class="total-hours">Ignite Lab Agenda (5.5 Hrs)</span>
+    </div>
+
+    <div class="agenda-item">
+      <div class="item-num">01</div>
+      <div class="item-content">
+        <div class="item-title">Recap from Day 1</div>
+      </div>
+      <div class="item-meta">
+        30 Min
+        <div class="presenter">(VC Name)</div>
+      </div>
+    </div>
+
+    <div class="agenda-item">
+      <div class="item-num">02</div>
+      <div class="item-content">
+        <div class="item-title">[CLIENT] Architecture Fitment</div>
+        <div class="item-desc">Architecture fitment and solutioning to evaluate technical feasibility of the use cases and call out gaps.</div>
+      </div>
+      <div class="item-meta">
+        1 Hr 30 Min
+        <div class="presenter">(SE Name / SA Name)</div>
+      </div>
+    </div>
+
+    <div class="agenda-item">
+      <div class="item-num">03</div>
+      <div class="item-content">
+        <div class="item-title">Use Case Prioritization</div>
+        <div class="item-desc">Collaborate to prioritize use cases based on business impact and complexity</div>
+      </div>
+      <div class="item-meta">
+        1 Hr 30 Min
+        <div class="presenter">(VC Name)</div>
+      </div>
+    </div>
+
+    <div class="lunch-break">- - - - - - - - - - Lunch (1 Hour) - - - - - - - - - -</div>
+
+    <div class="agenda-item">
+      <div class="item-num">04</div>
+      <div class="item-content">
+        <div class="item-title">Implementation Discussion & Planning</div>
+        <div class="item-desc">Discussing key milestones & requirements for implementation plan & proposal</div>
+      </div>
+      <div class="item-meta">
+        1 Hr
+        <div class="presenter">(Services Name)</div>
+      </div>
+    </div>
+
+    <div class="agenda-item">
+      <div class="item-num">05</div>
+      <div class="item-content">
+        <div class="item-title">Plan of Action & Wrap Up</div>
+        <div class="item-desc">Create an action plan for follow ups, technical solutioning & implementation plan</div>
+      </div>
+      <div class="item-meta">
+        1 Hr
+        <div class="presenter">(Sales Lead / CS Lead)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 6</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 5: PRE-WORKSHOPS — Section Divider (Blue background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">03</div>
+  <div class="cyan-accent"></div>
+  <h2>Preparation Workshops</h2>
+  <div class="section-subtitle">Backbase - [CLIENT] Collaboration</div>
+</div>
+
+<!-- SECTION 5: PRE-WORKSHOP TABLE — Content (White background) -->
+<div class="content-section">
+  <div class="page-number">7</div>
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Replace date with actual validation deadline -->
+    <h2>Pre-Ignite Preparation Sessions <span style="font-weight:400; font-size:14px; color:var(--text-light);">(remote — to be conducted before 10th Dec)</span></h2>
+  </div>
+
+  <!-- AGENT: Populate rows from Phase 2 selections -->
+  <table>
+    <thead>
+      <tr>
+        <th>Sl No</th>
+        <th>Domain</th>
+        <th>Workshop Agenda / Outcome</th>
+        <th>Client Participants</th>
+        <th>Status</th>
+        <th>Duration</th>
+        <th>Proposed Dates</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>#1</td>
+        <td><strong>Executive/Business Goal Alignment</strong></td>
+        <td>Understanding of executive vision, strategy, goals and challenges (customers, employees & IT)</td>
+        <td>Digital Leadership: Member Experience, Branch & call center operations and IT</td>
+        <td><span class="badge badge-done">Done</span></td>
+        <td>1 hr</td>
+        <td>First Week of December</td>
+      </tr>
+      <tr>
+        <td>#2</td>
+        <td><strong>Member Experience Workshop</strong></td>
+        <td>Understanding and assess digital maturity of relevant Member Experiences</td>
+        <td>Digital Leadership: Member Experience<br><em>Optional: Business Product Owners</em></td>
+        <td><span class="badge badge-done">Done</span></td>
+        <td>2 hrs</td>
+        <td>First Week of December</td>
+      </tr>
+      <tr>
+        <td>#3</td>
+        <td><strong>Branch & Call Center Servicing Workshop</strong></td>
+        <td>Understanding and assess operational challenges, key journeys & use cases</td>
+        <td>Digital leadership, Branch/Call center operations</td>
+        <td><span class="badge badge-scheduled">Scheduled</span></td>
+        <td>1 hr</td>
+        <td>15th Dec</td>
+      </tr>
+      <tr>
+        <td>#4</td>
+        <td><strong>IT Architecture & Operations Priorities</strong></td>
+        <td>Understand IT architecture, operating model, current challenges, goals and IT maintenance costs</td>
+        <td>Enterprise architect, business users of application</td>
+        <td><span class="badge badge-tbd">TBD</span></td>
+        <td>1 hr</td>
+        <td>Second Week of December</td>
+      </tr>
+      <tr>
+        <td>#5</td>
+        <td><strong>Current App Demo from [CLIENT]</strong></td>
+        <td>[CLIENT] to demo current app experience on member & employee side</td>
+        <td>Digital Team</td>
+        <td><span class="badge badge-tbd">TBD</span></td>
+        <td>1 hr</td>
+        <td>Second Week of December</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-title" style="margin-top: 32px;">
+    <div class="accent"></div>
+    <h2>Document Request</h2>
+  </div>
+
+  <!-- AGENT: Populate from Phase 5 selections -->
+  <table>
+    <thead>
+      <tr>
+        <th>Sl No</th>
+        <th>Document</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>#1</td>
+        <td><strong>Digital Strategy Document</strong></td>
+        <td>Digital strategy, objectives, key initiatives and challenges</td>
+      </tr>
+      <tr>
+        <td>#2</td>
+        <td><strong>Member Research</strong></td>
+        <td>Customer research with segments and persona</td>
+      </tr>
+      <tr>
+        <td>#3</td>
+        <td><strong>Enterprise Architecture Diagram</strong></td>
+        <td>Explaining key applications in architecture and use cases</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">Backbase | 7</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 7: V APPROACH — Content (White background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+  <div class="page-number">9</div>
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>'V' Approach</h2>
+    <span class="subtitle">Summary of the Engagement Plan | Key points</span>
+  </div>
+
+  <!-- AGENT: CALCULATE hours and meeting count from actual pre-workshop selections -->
+  <div class="v-approach-grid">
+    <div class="v-card">
+      <!-- AGENT: Sum all pre-workshop durations -->
+      <h4>6 Hours of Investment</h4>
+      <p>We will start with executive statements, drill down on key themes at operational level and present it back during executive readout</p>
+    </div>
+    <div class="v-card">
+      <!-- AGENT: Count pre-workshops -->
+      <h4>Required for 5 meetings</h4>
+      <p>(workshops, strategy & business alignment, branch, call center & IT) depending on agreed duration</p>
+    </div>
+    <div class="v-card">
+      <!-- AGENT: Use validation date from Phase 2 -->
+      <h4>Validation by January 7th</h4>
+      <p>Report and solutioning ready for executive read out by First week of January</p>
+    </div>
+    <div class="v-card">
+      <!-- AGENT: Use engagement name -->
+      <h4>Focus of Ignite Onsite</h4>
+      <p>Backbase engagement will be focused on presenting tailored proposition & Backbase fit for [CLIENT]</p>
+    </div>
+    <div class="v-card">
+      <h4>Tailored Content</h4>
+      <p>Backbase will create tailored case studies, assessments and solutions/demos as per the [CLIENT] strategic themes & challenges</p>
+    </div>
+    <div class="v-card">
+      <h4>High level data intake</h4>
+      <p>We will collect high level data around customer journeys, processes and technology to develop business value</p>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 9</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 8: DATA COLLECTION — Content (White background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+  <div class="page-number">10</div>
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Pre-Workshop Data Collection</h2>
+    <span class="subtitle">What data collection will we need?</span>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <!-- AGENT: Populate from Phase 5 selections -->
+      <table>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Request</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Digital Strategy Document | Personas research (needs, pain gains) | Call center call volume data | Branch volume data</td></tr>
+          <tr><td>2</td><td>New dream state or Use Cases</td></tr>
+          <tr><td>3</td><td>Reverse Demo - Current Mobile Process/Journey Flows (loan origination, servicing)</td></tr>
+          <tr><td>4</td><td>Enterprise and IT Architecture Diagram</td></tr>
+          <tr><td>5</td><td>Evaluation that has already been done on Tech assessment of current apps</td></tr>
+          <tr><td>6</td><td>Backbase questionnaire (business & customer metrics)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="doc-box" style="margin-bottom: 16px;">
+        <h4>[CLIENT] Existing Documents</h4>
+        <ul>
+          <li>Strategy documents</li>
+          <li>Member segmentation</li>
+          <li>Call Center reports</li>
+          <li>Business Process Flows & IT</li>
+        </ul>
+      </div>
+      <div class="doc-box">
+        <h4>Backbase Questionnaires<br>(Backbase to Share with [CLIENT])</h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 10</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 9: TIMELINE — Content (White background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+  <div class="page-number">11</div>
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Proposed Plan & Timeline</h2>
+  </div>
+
+  <!-- AGENT: Replace month labels and activities with actual dates -->
+  <div class="timeline">
+    <div class="timeline-phase prework">
+      <h4>Backbase</h4>
+      <div class="month">November 2025</div>
+      <ul>
+        <li>Pre Work</li>
+        <li>Data Collection</li>
+        <li>Questionnaire</li>
+      </ul>
+      <div style="margin-top: 16px;">
+        <h4 style="color: var(--primary-blue);">[CLIENT]</h4>
+        <ul>
+          <li>Executive Touch Point Kickoff</li>
+        </ul>
+      </div>
+    </div>
+    <div class="timeline-phase workshops">
+      <h4>Backbase</h4>
+      <div class="month">December 2025</div>
+      <ul>
+        <li>Pre-Ignite Discovery Workshops</li>
+        <li style="margin-top: 8px; font-weight: 600;">Backbase Assessment / Prep</li>
+      </ul>
+      <div style="margin-top: 16px;">
+        <h4 style="color: var(--primary-blue);">[CLIENT]</h4>
+        <ul>
+          <li>Pre Work</li>
+          <li>Demo of current apps</li>
+        </ul>
+      </div>
+    </div>
+    <div class="timeline-phase ignite">
+      <h4>Onsite Ignite</h4>
+      <!-- AGENT: Replace with actual dates -->
+      <div class="month">January 2026</div>
+      <ul>
+        <li style="font-weight: 700;">Time with [CLIENT]</li>
+        <li style="font-weight: 700;">2 days (Jan 12-13)</li>
+        <li style="font-weight: 700;">Onsite Ignite Workshops</li>
+      </ul>
+    </div>
+    <div class="timeline-phase postwork">
+      <h4>Backbase</h4>
+      <div class="month">Post-Ignite</div>
+      <ul>
+        <li>Backbase: Proposal Building (TBD)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 11</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 10: DELIVERABLES — Section Divider (Blue background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">04</div>
+  <div class="cyan-accent"></div>
+  <h2>Final Deliverables</h2>
+</div>
+
+<!-- SECTION 10: DELIVERABLES — Content (White background) -->
+<div class="content-section">
+  <div class="page-number">13</div>
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Introducing IGNITE</h2>
+    <span class="subtitle">Key Deliverables for [CLIENT]:</span>
+  </div>
+
+  <!-- AGENT: Customize deliverables based on Phase 4 selections -->
+  <div class="deliverables-grid">
+    <div class="deliverable-card">
+      <div class="icon">1</div>
+      <div>
+        <h4>[CLIENT] Strategy — Use Cases & Backbase Fit</h4>
+        <p>Strategic alignment assessment showing how Backbase fits [CLIENT]'s organizational objectives and digital transformation goals</p>
+      </div>
+    </div>
+    <div class="deliverable-card">
+      <div class="icon">2</div>
+      <div>
+        <h4>Uncover Differentiating & AI Use Cases</h4>
+        <p>Prioritized use case library with member experience, employee experience, and AI-powered use cases mapped to Backbase capabilities</p>
+      </div>
+    </div>
+    <div class="deliverable-card">
+      <div class="icon">3</div>
+      <div>
+        <h4>Architecture Blueprint</h4>
+        <p>Target architecture with integration approach, dependency mapping, and technical feasibility assessment</p>
+      </div>
+    </div>
+    <div class="deliverable-card">
+      <div class="icon">4</div>
+      <div>
+        <h4>Strategy to Execution Roadmap</h4>
+        <p>Phased implementation roadmap aligned to business value with clear milestones and workstream definition</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 13</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 11: CLOSING (Dark background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="closing">
+  <h2>THANK YOU</h2>
+  <div class="brand">Backbase</div>
+</div>
+
+</body>
+</html>

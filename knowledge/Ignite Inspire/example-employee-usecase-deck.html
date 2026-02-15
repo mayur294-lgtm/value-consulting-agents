@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dubai Islamic Bank Employee Use Case Design | Backbase</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-dark: #091C35;
+    --primary-blue: #3366FF;
+    --cyan: #69FEFF;
+    --white: #FFFFFF;
+    --light-grey: #F3F6F9;
+    --light-blue: #E5EBFF;
+    --muted: #3A495D;
+    --green: #26BC71;
+    --amber: #FFAC09;
+    --red: #FF7262;
+    --text: #091C35;
+    --text-light: #5A6A7E;
+    --border: #E0E6ED;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 15px; line-height: 1.6; color: var(--text); background: var(--white); }
+
+  .cover { background: var(--primary-dark); color: var(--white); min-height: 100vh; padding: 60px 80px; display: flex; flex-direction: column; justify-content: center; position: relative; page-break-after: always; }
+  .cover .brand { font-size: 22px; font-weight: 600; color: var(--primary-blue); margin-bottom: 60px; letter-spacing: 1px; }
+  .cover h1 { font-size: 48px; font-weight: 900; line-height: 1.15; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 60px; }
+  .cover .meta { font-size: 16px; font-weight: 400; color: var(--cyan); }
+
+  .section-divider { background: var(--primary-blue); color: var(--white); padding: 80px 80px; min-height: 40vh; display: flex; flex-direction: column; justify-content: center; position: relative; page-break-before: always; page-break-after: always; }
+  .section-divider .brand { font-size: 18px; font-weight: 600; margin-bottom: 40px; letter-spacing: 1px; }
+  .section-divider .ghost-number { position: absolute; right: 80px; top: 50%; transform: translateY(-50%); font-size: 200px; font-weight: 900; color: rgba(255,255,255,0.08); line-height: 1; }
+  .section-divider h2 { font-size: 42px; font-weight: 900; line-height: 1.2; margin-bottom: 8px; }
+  .section-divider .section-subtitle { font-size: 20px; font-weight: 300; color: rgba(255,255,255,0.7); }
+  .section-divider .cyan-accent { width: 60px; height: 4px; background: var(--cyan); margin-bottom: 24px; }
+
+  .content-section { background: var(--white); padding: 60px 80px; min-height: 80vh; position: relative; page-break-after: always; }
+  .content-section .page-footer { position: absolute; bottom: 20px; right: 80px; font-size: 11px; font-weight: 600; color: var(--text-light); letter-spacing: 1px; }
+
+  .closing { background: var(--primary-dark); color: var(--white); min-height: 60vh; padding: 60px 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; page-break-before: always; }
+  .closing h2 { font-size: 42px; font-weight: 900; margin-bottom: 16px; }
+  .closing .subtitle { font-size: 20px; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 40px; }
+  .closing .brand { font-size: 18px; font-weight: 600; color: var(--primary-blue); letter-spacing: 1px; }
+
+  .section-title { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+  .section-title .accent { width: 16px; height: 16px; background: var(--primary-blue); flex-shrink: 0; }
+  .section-title h2 { font-size: 24px; font-weight: 700; color: var(--text); }
+  .section-title .subtitle { font-size: 14px; font-weight: 400; color: var(--text-light); margin-left: auto; }
+
+  .objective-statement { background: var(--light-grey); border: 1px solid var(--light-blue); border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0; padding: 24px 28px; font-size: 16px; line-height: 1.6; margin-bottom: 40px; }
+  .methodology-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+  .method-block { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 20px 16px; text-align: center; }
+  .method-block .block-num { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: var(--primary-blue); color: #fff; border-radius: 50%; font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .method-block h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .method-block p { font-size: 12px; color: var(--text-light); }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; text-align: center; }
+  .stat-card .stat-value { font-size: 36px; font-weight: 900; color: var(--primary-blue); }
+  .stat-card .stat-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+  .recap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+  .recap-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; }
+  .recap-card .recap-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary-blue); margin-bottom: 8px; }
+  .recap-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .recap-card ul { list-style: none; padding: 0; }
+  .recap-card ul li { font-size: 13px; color: var(--text-light); padding: 3px 0 3px 16px; position: relative; }
+  .recap-card ul li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--primary-blue); position: absolute; left: 0; top: 10px; }
+
+  .data-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; font-size: 13px; }
+  .data-table thead th { background: var(--primary-blue); color: #fff; padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .data-table thead th:first-child { border-radius: 8px 0 0 0; }
+  .data-table thead th:last-child { border-radius: 0 8px 0 0; }
+  .data-table tbody td { padding: 12px 16px; border-bottom: 1px solid var(--light-blue); }
+  .data-table tbody tr:nth-child(even) { background: var(--light-grey); }
+
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; }
+  .badge-p1 { background: rgba(51,102,255,0.12); color: var(--primary-blue); }
+  .badge-p2 { background: rgba(58,73,93,0.12); color: var(--muted); }
+  .badge-p3 { background: rgba(90,106,126,0.08); color: var(--text-light); }
+
+  .usecase-spec { margin-bottom: 60px; }
+  .usecase-header { background: var(--light-grey); border: 1px solid var(--light-blue); border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0; padding: 24px 28px; margin-bottom: 32px; }
+  .usecase-header .uc-id { font-size: 12px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1.5px; }
+  .usecase-header h3 { font-size: 22px; font-weight: 900; color: var(--text); margin-top: 4px; }
+  .usecase-header .uc-meta { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+  .usecase-header .uc-meta span { font-size: 12px; color: var(--text-light); }
+
+  .spec-section { margin-bottom: 28px; }
+  .spec-section h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-blue); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--light-blue); }
+  .spec-section p { font-size: 14px; color: var(--text-light); line-height: 1.7; }
+  .spec-section ul { list-style: none; padding: 0; }
+  .spec-section ul li { font-size: 14px; color: var(--text-light); padding: 4px 0 4px 16px; position: relative; line-height: 1.5; }
+  .spec-section ul li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--primary-blue); position: absolute; left: 0; top: 11px; }
+
+  .happy-path-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .happy-path-table th { background: var(--light-grey); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); border-bottom: 2px solid var(--light-blue); }
+  .happy-path-table td { padding: 10px 14px; font-size: 13px; color: var(--text-light); border-bottom: 1px solid var(--light-blue); }
+  .happy-path-table .step-num { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: var(--primary-blue); color: #fff; border-radius: 50%; font-size: 11px; font-weight: 700; }
+
+  .integration-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .integration-table th { background: var(--primary-blue); color: #fff; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .integration-table td { padding: 10px 14px; font-size: 13px; color: var(--text-light); border-bottom: 1px solid var(--light-blue); }
+  .integration-table tr:nth-child(even) { background: var(--light-grey); }
+
+  .dod-list { list-style: none; padding: 0; }
+  .dod-list li { font-size: 14px; color: var(--text-light); padding: 6px 0 6px 28px; position: relative; line-height: 1.5; }
+  .dod-list li::before { content: ''; width: 16px; height: 16px; border: 2px solid var(--primary-blue); border-radius: 3px; position: absolute; left: 0; top: 8px; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .summary-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; }
+  .summary-card .sc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .summary-card .sc-id { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1px; }
+  .summary-card h4 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .summary-card p { font-size: 13px; color: var(--text-light); line-height: 1.6; margin-bottom: 8px; }
+  .summary-card .sc-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .summary-card .sc-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 4px; background: var(--light-blue); color: var(--primary-blue); }
+
+  .p3-list { list-style: none; padding: 0; }
+  .p3-list li { font-size: 14px; color: var(--text-light); padding: 10px 16px; border-bottom: 1px solid var(--light-blue); display: flex; align-items: center; gap: 12px; }
+  .p3-list .p3-id { font-size: 11px; font-weight: 700; color: var(--muted); min-width: 60px; }
+
+  .next-steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .next-step-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0; padding: 20px; }
+  .next-step-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .next-step-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+
+  .persona-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  .persona-mini { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 20px; text-align: center; }
+  .persona-mini .pm-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--light-blue); margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
+  .persona-mini .pm-avatar svg { width: 28px; height: 28px; fill: var(--primary-blue); }
+  .persona-mini h4 { font-size: 14px; font-weight: 700; color: var(--text); }
+  .persona-mini p { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+
+  .switching-tax-bar { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px 32px; display: flex; align-items: center; gap: 32px; margin-bottom: 32px; }
+  .st-value { font-size: 42px; font-weight: 900; color: var(--red); }
+  .st-label { font-size: 14px; color: var(--text-light); }
+
+  /* === PROTOTYPE: BROWSER FRAME === */
+  .prototype-embed { margin: 48px auto; max-width: 1200px; }
+  .prototype-label { text-align: center; margin-bottom: 20px; }
+  .proto-badge { display: inline-block; background: var(--primary-blue); color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; padding: 6px 16px; border-radius: 20px; margin-bottom: 8px; }
+  .proto-title { display: block; font-size: 16px; font-weight: 600; color: var(--text); margin-top: 4px; }
+
+  .browser-frame { width: 100%; max-width: 1160px; margin: 0 auto; background: var(--white); border-radius: 12px; box-shadow: 0 8px 40px rgba(9,28,53,0.15); border: 1px solid var(--border); overflow: hidden; }
+  .browser-chrome { height: 40px; background: var(--light-grey); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 12px; }
+  .browser-dots { display: flex; gap: 6px; }
+  .browser-dots .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .browser-dots .dot.red { background: #FF5F57; }
+  .browser-dots .dot.yellow { background: #FFBD2E; }
+  .browser-dots .dot.green { background: #28C840; }
+  .browser-url { flex: 1; background: var(--white); border-radius: 6px; padding: 4px 12px; font-size: 12px; color: var(--text-light); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  .browser-screen { width: 100%; height: 640px; position: relative; overflow: hidden; }
+
+  .browser-screen .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--white); }
+  .browser-screen .screen.active { display: flex; }
+
+  .screen .desktop-layout { display: flex; height: 100%; }
+  .screen .desktop-sidebar { width: 220px; background: var(--primary-dark); color: #fff; padding: 20px 16px; flex-shrink: 0; }
+  .screen .desktop-sidebar .sidebar-logo { font-size: 16px; font-weight: 700; color: var(--primary-blue); margin-bottom: 24px; letter-spacing: 0.5px; }
+  .screen .desktop-sidebar .sidebar-item { padding: 10px 12px; border-radius: 8px; font-size: 13px; cursor: default; margin-bottom: 4px; color: rgba(255,255,255,0.6); }
+  .screen .desktop-sidebar .sidebar-item.active { background: rgba(51,102,255,0.25); color: #fff; font-weight: 600; }
+  .screen .desktop-main { flex: 1; overflow-y: auto; padding: 24px 32px; }
+  .screen .desktop-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--light-blue); }
+  .screen .desktop-topbar h2 { font-size: 20px; font-weight: 700; color: var(--text); }
+
+  .screen .data-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .screen .data-card { flex: 1; min-width: 160px; background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 10px; padding: 16px; }
+  .screen .data-card .dc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-light); letter-spacing: 0.5px; }
+  .screen .data-card .dc-value { font-size: 22px; font-weight: 900; color: var(--primary-blue); margin-top: 4px; }
+
+  .screen .tab-bar { display: flex; border-bottom: 2px solid var(--light-blue); margin-bottom: 20px; }
+  .screen .tab { padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--text-light); cursor: default; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+  .screen .tab.active { color: var(--primary-blue); border-bottom-color: var(--primary-blue); }
+
+  .screen .activity-row { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--light-blue); align-items: flex-start; }
+  .screen .activity-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; font-weight: 700; }
+  .screen .activity-content { flex: 1; }
+  .screen .activity-content .ac-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .screen .activity-content .ac-desc { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+  .screen .activity-time { font-size: 11px; color: var(--text-light); white-space: nowrap; }
+
+  .screen .detail-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+  .screen .detail-card h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+
+  .proto-nav { display: flex; justify-content: center; align-items: center; gap: 24px; margin-top: 20px; padding: 12px 0; }
+  .proto-nav button { background: var(--light-grey); border: 1px solid var(--light-blue); color: var(--text); padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Libre Franklin', sans-serif; transition: background 0.2s; }
+  .proto-nav button:hover:not(:disabled) { background: var(--light-blue); }
+  .proto-nav button:disabled { opacity: 0.4; cursor: default; }
+  .proto-counter { font-size: 14px; font-weight: 600; color: var(--text-light); min-width: 60px; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- S1: COVER -->
+<div class="cover">
+  <div class="brand">Backbase</div>
+  <h1>Dubai Islamic Bank<br>Employee Use Case Design</h1>
+  <div class="subtitle">Backbase Ignite &mdash; Digital Assist Specifications &amp; Prototypes</div>
+  <div class="meta">February 2026 &nbsp;|&nbsp; Prepared by Value Consulting</div>
+</div>
+
+<!-- S2: SECTION DIVIDER -->
+<div class="section-divider">
+  <div class="brand">Backbase</div><div class="ghost-number">01</div><div class="cyan-accent"></div>
+  <h2>Employee Use Cases</h2>
+  <div class="section-subtitle">Objectives, Approach &amp; Workshop Findings</div>
+</div>
+
+<!-- S3: OBJECTIVES -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Objectives &amp; Approach</h2></div>
+  <div class="objective-statement">
+    This document translates the validated findings from DIB's Employee Experience and Architecture workshops into detailed Digital Assist use case specifications. Each Priority 1 use case includes a complete 10-section design specification and a navigable desktop prototype demonstrating the proposed employee experience.
+  </div>
+  <div class="methodology-grid">
+    <div class="method-block"><div class="block-num">1</div><h4>Synthesize</h4><p>Consolidate EX + Architecture findings</p></div>
+    <div class="method-block"><div class="block-num">2</div><h4>Prioritize</h4><p>Rank by switching tax reduction</p></div>
+    <div class="method-block"><div class="block-num">3</div><h4>Design</h4><p>10-section spec per P1 use case</p></div>
+    <div class="method-block"><div class="block-num">4</div><h4>Prototype</h4><p>Desktop browser prototype per P1</p></div>
+  </div>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;3</div>
+</div>
+
+<!-- S4: WORKSHOP RECAP -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Workshop Findings Recap</h2><span class="subtitle">Foundation for employee use cases</span></div>
+  <div class="recap-grid">
+    <div class="recap-card">
+      <div class="recap-label">Strategy Workshop</div>
+      <h3>Strategic Themes</h3>
+      <ul>
+        <li>Operational Efficiency &amp; Cost Reduction</li>
+        <li>Digital-First Shariah-Compliant Banking</li>
+        <li>Personalized Customer Journeys</li>
+      </ul>
+    </div>
+    <div class="recap-card">
+      <div class="recap-label">Employee Experience</div>
+      <h3>Key EX Findings</h3>
+      <ul>
+        <li>$5.4M annual system switching tax across 13 systems</li>
+        <li>No unified customer view — 6 systems for one inquiry</li>
+        <li>Manual financing workflows add 3-5 days to decisions</li>
+        <li>6-week training period for new relationship managers</li>
+      </ul>
+    </div>
+    <div class="recap-card">
+      <div class="recap-label">Architecture</div>
+      <h3>Architecture Enablers</h3>
+      <ul>
+        <li>Core: Temenos T24, private cloud UAE</li>
+        <li>Integration hub replacing 47 P2P connections</li>
+        <li>Unified identity layer planned</li>
+      </ul>
+    </div>
+    <div class="recap-card">
+      <div class="recap-label">Customer Experience</div>
+      <h3>CX-to-EX Linkage</h3>
+      <ul>
+        <li>Customer digital journeys need employee continuation</li>
+        <li>Branch visitors expect staff to see their online activity</li>
+        <li>Financing decisions must match digital speed</li>
+      </ul>
+    </div>
+  </div>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;4</div>
+</div>
+
+<!-- S5: SECTION DIVIDER -->
+<div class="section-divider">
+  <div class="brand">Backbase</div><div class="ghost-number">02</div><div class="cyan-accent"></div>
+  <h2>Digital Assist</h2>
+  <div class="section-subtitle">Employee Personas &amp; Switching Tax Recap</div>
+</div>
+
+<!-- S6: PERSONA & SWITCHING TAX RECAP -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Employee Personas &amp; Switching Tax</h2></div>
+  <div class="persona-mini-grid">
+    <div class="persona-mini">
+      <div class="pm-avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></div>
+      <h4>Noor Al-Fahim</h4>
+      <p>Relationship Manager | Branch</p>
+    </div>
+    <div class="persona-mini">
+      <div class="pm-avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></div>
+      <h4>Saeed Al-Hashemi</h4>
+      <p>Contact Center Agent | Phone</p>
+    </div>
+    <div class="persona-mini">
+      <div class="pm-avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></div>
+      <h4>Rania Mahmoud</h4>
+      <p>Financing Specialist | Branch</p>
+    </div>
+  </div>
+  <div class="switching-tax-bar">
+    <div class="st-value">$5.4M</div>
+    <div>
+      <div style="font-weight: 700; color: var(--text);">Annual System Switching Tax</div>
+      <div class="st-label">Across 13 systems, 3 roles, 3 channels &mdash; $3.1M projected savings with Digital Assist</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;6</div>
+</div>
+
+<!-- S7: USE CASE INVENTORY -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Use Case Inventory</h2><span class="subtitle">All employee use cases by priority</span></div>
+  <table class="data-table">
+    <thead><tr><th>ID</th><th>Use Case</th><th>Priority</th><th>Module</th><th>DA Capability</th><th>Approach</th></tr></thead>
+    <tbody>
+      <tr><td>UC-E01</td><td>One View, Every Context</td><td><span class="badge badge-p1">P1</span></td><td>Digital Assist</td><td>360&deg; View + Omnichannel</td><td>Configuration</td></tr>
+      <tr><td>UC-E02</td><td>Guided Financing Assist</td><td><span class="badge badge-p1">P1</span></td><td>Digital Assist</td><td>Guided Workflows</td><td>Config + Extension</td></tr>
+      <tr><td>UC-E03</td><td>Never Drop the Ball</td><td><span class="badge badge-p2">P2</span></td><td>Digital Assist</td><td>Case Management</td><td>Configuration</td></tr>
+      <tr><td>UC-E04</td><td>Warm Handoff, Zero Repeat</td><td><span class="badge badge-p2">P2</span></td><td>Digital Assist</td><td>Collaboration</td><td>Configuration</td></tr>
+      <tr><td>UC-E05</td><td>Know Before They Knock</td><td><span class="badge badge-p3">P3</span></td><td>Digital Assist</td><td>Appointments</td><td>Extension</td></tr>
+      <tr><td>UC-E06</td><td>Branch Pulse</td><td><span class="badge badge-p3">P3</span></td><td>Digital Assist</td><td>Analytics</td><td>Extension</td></tr>
+    </tbody>
+  </table>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;7</div>
+</div>
+
+<!-- S8: SECTION DIVIDER -->
+<div class="section-divider">
+  <div class="brand">Backbase</div><div class="ghost-number">03</div><div class="cyan-accent"></div>
+  <h2>Priority 1 Use Cases</h2>
+  <div class="section-subtitle">Detailed specifications with interactive prototypes</div>
+</div>
+
+<!-- ================================================================ -->
+<!-- UC-E01: ONE VIEW, EVERY CONTEXT -->
+<!-- ================================================================ -->
+<div class="content-section">
+  <div class="usecase-spec">
+    <div class="usecase-header">
+      <div class="uc-id">UC-E01</div>
+      <h3>One View, Every Context</h3>
+      <div class="uc-meta">
+        <span><strong>Priority:</strong> P1</span>
+        <span><strong>Category:</strong> Tablestakes</span>
+        <span><strong>Module:</strong> Digital Assist</span>
+        <span><strong>Capability:</strong> 360&deg; View + Omnichannel Context</span>
+      </div>
+    </div>
+
+    <div class="spec-section"><h4>2. Business Context</h4>
+      <p><strong>Strategic Alignment:</strong> Directly enables "Operational Efficiency" by eliminating the 6-system lookup currently required for a single customer inquiry.</p>
+      <p style="margin-top:8px"><strong>Business Value:</strong> Reduce average inquiry handling time by 65% (from 4.5 min to 1.5 min), save $1.8M annually in switching tax, increase first-contact resolution from 62% to 85%.</p>
+      <p style="margin-top:8px"><strong>Current State:</strong> Relationship managers and contact center agents toggle between T24, CRM, card system, document imaging, digital banking admin, and email to assemble a customer view. No visibility into customer's digital journey.</p>
+      <p style="margin-top:8px"><strong>Pain Points Addressed:</strong></p>
+      <ul>
+        <li>"I ask the customer to wait while I check 5 different systems."</li>
+        <li>"A customer called about their online financing application and I couldn't see it."</li>
+        <li>"Every time a customer is transferred, they have to repeat everything."</li>
+      </ul>
+    </div>
+
+    <div class="spec-section"><h4>3. User Context</h4>
+      <p><strong>Primary Persona:</strong> Noor Al-Fahim — Relationship Manager, branch-based, serves 200+ customers, needs instant context.</p>
+      <p style="margin-top:8px"><strong>Secondary Personas:</strong> Saeed Al-Hashemi (Contact Center), Rania Mahmoud (Financing Specialist)</p>
+      <p style="margin-top:8px"><strong>User Goal:</strong> See everything about a customer in one screen — accounts, history, digital activity, open cases, and relevant context — before or during the conversation.</p>
+      <p style="margin-top:8px"><strong>Success Criteria:</strong> Complete customer context available within 3 seconds, digital journey visible, interaction notes saved and shared across channels.</p>
+    </div>
+
+    <div class="spec-section"><h4>4. Happy Path Specification</h4>
+      <p><strong>Preconditions:</strong> Employee is authenticated in Digital Assist. Customer record exists.</p>
+      <p style="margin-top:8px"><strong>Trigger:</strong> Employee searches for customer or customer is auto-identified (inbound call, appointment).</p>
+      <table class="happy-path-table">
+        <thead><tr><th>Step</th><th>Employee Action</th><th>System Response</th></tr></thead>
+        <tbody>
+          <tr><td><span class="step-num">1</span></td><td>Searches customer name or ID</td><td>Display customer 360 dashboard</td></tr>
+          <tr><td><span class="step-num">2</span></td><td>Views digital context tab</td><td>Show customer's recent app/web activity, abandoned journeys</td></tr>
+          <tr><td><span class="step-num">3</span></td><td>Reviews interaction history</td><td>Show timeline of all interactions across channels</td></tr>
+          <tr><td><span class="step-num">4</span></td><td>Initiates quick action</td><td>Open pre-filled workflow (e.g., address change, card block)</td></tr>
+          <tr><td><span class="step-num">5</span></td><td>Adds interaction note</td><td>Save note linked to customer record, visible to all channels</td></tr>
+          <tr><td><span class="step-num">6</span></td><td>Completes or hands off</td><td>Update case status, warm transfer with full context</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:12px"><strong>Postconditions:</strong> Interaction recorded, customer context updated, case progressed, notes visible to next agent.</p>
+    </div>
+
+    <div class="spec-section"><h4>5. Screen Flow</h4>
+      <ul>
+        <li><strong>Screen 1:</strong> Customer Search — Search bar with recent customers</li>
+        <li><strong>Screen 2:</strong> 360 Dashboard — Accounts, balances, key data, alerts</li>
+        <li><strong>Screen 3:</strong> Digital Context — Recent app activity, abandoned journeys</li>
+        <li><strong>Screen 4:</strong> Interaction History — Timeline across all channels</li>
+        <li><strong>Screen 5:</strong> Quick Actions — Pre-filled common tasks</li>
+        <li><strong>Screen 6:</strong> Notes &amp; Handoff — Save notes, warm transfer</li>
+      </ul>
+    </div>
+
+    <div class="spec-section"><h4>6. Data Requirements</h4>
+      <p><strong>Input Data:</strong> Customer search query (name, ID, phone, IBAN).</p>
+      <p style="margin-top:8px"><strong>System Data:</strong> Account balances (T24), product holdings, transaction history, card status, digital session data, CRM interaction log, open cases.</p>
+      <p style="margin-top:8px"><strong>Output Data:</strong> Interaction notes, case updates, action triggers.</p>
+    </div>
+
+    <div class="spec-section"><h4>7. Integration Requirements</h4>
+      <table class="integration-table">
+        <thead><tr><th>System</th><th>Integration Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Temenos T24</td><td>Real-time API (via Hub)</td><td>Account balances, product holdings, transaction history</td></tr>
+          <tr><td>Card Management</td><td>Real-time API (via Hub)</td><td>Card status, spending data</td></tr>
+          <tr><td>CRM</td><td>Real-time API (via Hub)</td><td>Interaction history, customer notes</td></tr>
+          <tr><td>Digital Banking Platform</td><td>Event-driven (via Hub)</td><td>Digital session data, abandoned journeys</td></tr>
+          <tr><td>Document Management</td><td>API (via Hub)</td><td>Customer documents</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="spec-section"><h4>8. Backbase Implementation</h4>
+      <p><strong>Module:</strong> Digital Assist (360 View + Omnichannel Context)</p>
+      <p style="margin-top:8px"><strong>Approach:</strong> Configuration (core OOTB capability, integration configuration required)</p>
+      <p style="margin-top:8px"><strong>Key Components:</strong> Customer 360 Widget, Activity Timeline Widget, Digital Context Widget, Quick Action Launcher, Notes Widget</p>
+      <p style="margin-top:8px"><strong>Customization Notes:</strong> T24 data model mapping, Arabic/English language toggle, DIB-specific quick actions, digital journey event mapping.</p>
+    </div>
+
+    <div class="spec-section"><h4>9. Definition of Done</h4>
+      <ul class="dod-list">
+        <li>Customer 360 dashboard loads within 3 seconds for any customer</li>
+        <li>All accounts, products, and balances displayed from T24</li>
+        <li>Digital journey activity visible (last 30 days of app/web sessions)</li>
+        <li>Interaction notes saved and visible across branch, CC, and back office</li>
+        <li>Quick actions launch pre-filled workflows for top 10 common tasks</li>
+        <li>Average inquiry handling time reduced to under 2 minutes</li>
+      </ul>
+    </div>
+
+    <div class="spec-section"><h4>10. Interactive Prototype</h4></div>
+  </div>
+
+  <!-- EMBEDDED PROTOTYPE: UC-E01 — Desktop Browser Frame -->
+  <div class="prototype-embed" data-proto-id="UCE01">
+    <div class="prototype-label">
+      <span class="proto-badge">Interactive Prototype</span>
+      <span class="proto-title">UC-E01: One View, Every Context</span>
+    </div>
+    <div class="browser-frame">
+      <div class="browser-chrome">
+        <div class="browser-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+        <div class="browser-url">assist.dib.ae/customer-360</div>
+      </div>
+      <div class="browser-screen">
+
+        <!-- Screen 1: Search -->
+        <div class="screen active" data-screen="1">
+          <div class="desktop-layout">
+            <div class="desktop-sidebar">
+              <div class="sidebar-logo">DIB Assist</div>
+              <div class="sidebar-item active">Customer Search</div>
+              <div class="sidebar-item">My Queue</div>
+              <div class="sidebar-item">Cases</div>
+              <div class="sidebar-item">Tasks</div>
+              <div class="sidebar-item">Reports</div>
+            </div>
+            <div class="desktop-main">
+              <div class="desktop-topbar"><h2>Customer Search</h2><span style="font-size:13px; color:var(--text-light);">Noor Al-Fahim | Al Barsha Branch</span></div>
+              <div style="max-width:600px;">
+                <div style="background:var(--light-grey); border:1px solid var(--light-blue); border-radius:10px; padding:14px 16px; font-size:15px; color:var(--text); margin-bottom:24px;">Khalid Al-Rashid</div>
+              </div>
+              <div style="font-size:13px; font-weight:700; color:var(--muted); margin-bottom:12px;">SEARCH RESULTS</div>
+              <div class="detail-card" style="border-left:3px solid var(--primary-blue); cursor:default;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div style="font-size:15px; font-weight:700; color:var(--text);">Khalid Al-Rashid</div>
+                    <div style="font-size:12px; color:var(--text-light); margin-top:2px;">ID: 784-1996-*****-1 &middot; +971 55 123 4567 &middot; Al Islami Current</div>
+                  </div>
+                  <span style="font-size:12px; color:var(--green); font-weight:600; background:rgba(38,188,113,0.12); padding:3px 10px; border-radius:4px;">Active</span>
+                </div>
+              </div>
+              <div style="font-size:13px; font-weight:700; color:var(--muted); margin:24px 0 12px;">RECENT CUSTOMERS</div>
+              <div class="detail-card"><div style="font-size:13px; color:var(--text);">Fatima Al-Hakim</div><div style="font-size:11px; color:var(--text-light);">Viewed 2 hours ago</div></div>
+              <div class="detail-card"><div style="font-size:13px; color:var(--text);">Ahmed Al-Mansoori</div><div style="font-size:11px; color:var(--text-light);">Viewed yesterday</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen 2: 360 Dashboard -->
+        <div class="screen" data-screen="2">
+          <div class="desktop-layout">
+            <div class="desktop-sidebar">
+              <div class="sidebar-logo">DIB Assist</div>
+              <div class="sidebar-item active">Customer 360</div>
+              <div class="sidebar-item">My Queue</div>
+              <div class="sidebar-item">Cases</div>
+              <div class="sidebar-item">Tasks</div>
+            </div>
+            <div class="desktop-main">
+              <div class="desktop-topbar">
+                <div>
+                  <h2>Khalid Al-Rashid</h2>
+                  <div style="font-size:12px; color:var(--text-light);">ID: 784-1996-*****-1 &middot; Premium Segment &middot; Customer since 2021</div>
+                </div>
+                <span style="font-size:12px; font-weight:600; color:var(--amber); background:rgba(255,172,9,0.12); padding:4px 12px; border-radius:4px;">1 Open Case</span>
+              </div>
+              <div class="data-row">
+                <div class="data-card"><div class="dc-label">Total Relationship</div><div class="dc-value">AED 287K</div></div>
+                <div class="data-card"><div class="dc-label">Products</div><div class="dc-value">4</div></div>
+                <div class="data-card"><div class="dc-label">Tenure</div><div class="dc-value">4.2 yrs</div></div>
+                <div class="data-card"><div class="dc-label">Last Contact</div><div class="dc-value">3 days</div></div>
+              </div>
+              <div class="tab-bar">
+                <div class="tab active">Accounts</div>
+                <div class="tab">Digital Context</div>
+                <div class="tab">History</div>
+                <div class="tab">Documents</div>
+              </div>
+              <div class="detail-card"><div style="display:flex; justify-content:space-between;"><div><h4>Al Islami Current Account</h4><div style="font-size:12px; color:var(--text-light);">IBAN: AE07 0240 **** **** 8391</div></div><div style="font-size:18px; font-weight:900; color:var(--primary-blue);">AED 42,300</div></div></div>
+              <div class="detail-card"><div style="display:flex; justify-content:space-between;"><div><h4>Al Islami Savings</h4><div style="font-size:12px; color:var(--text-light);">IBAN: AE07 0240 **** **** 4521</div></div><div style="font-size:18px; font-weight:900; color:var(--primary-blue);">AED 95,150</div></div></div>
+              <div class="detail-card"><div style="display:flex; justify-content:space-between;"><div><h4>Personal Financing (Murabaha)</h4><div style="font-size:12px; color:var(--text-light);">Remaining: AED 112,000 &middot; Monthly: AED 3,456</div></div><div style="font-size:14px; font-weight:700; color:var(--green);">On Track</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen 3: Digital Context -->
+        <div class="screen" data-screen="3">
+          <div class="desktop-layout">
+            <div class="desktop-sidebar">
+              <div class="sidebar-logo">DIB Assist</div>
+              <div class="sidebar-item active">Customer 360</div>
+              <div class="sidebar-item">My Queue</div>
+              <div class="sidebar-item">Cases</div>
+              <div class="sidebar-item">Tasks</div>
+            </div>
+            <div class="desktop-main">
+              <div class="desktop-topbar"><h2>Khalid Al-Rashid</h2></div>
+              <div class="tab-bar">
+                <div class="tab">Accounts</div>
+                <div class="tab active">Digital Context</div>
+                <div class="tab">History</div>
+                <div class="tab">Documents</div>
+              </div>
+              <div class="detail-card" style="border-left:3px solid var(--amber);">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                  <span style="font-size:11px; font-weight:700; color:var(--amber); text-transform:uppercase;">Abandoned Journey</span>
+                </div>
+                <h4>Credit Card Application — Started 2 days ago</h4>
+                <div style="font-size:12px; color:var(--text-light); margin-top:4px;">Reached Step 3 of 6 (Employment Details) then dropped off. Device: iPhone 14 Pro, App v4.2.1</div>
+                <div style="margin-top:8px;"><span style="font-size:12px; color:var(--primary-blue); font-weight:600; cursor:default;">Continue this journey for customer &rarr;</span></div>
+              </div>
+              <div style="font-size:13px; font-weight:700; color:var(--muted); margin:20px 0 12px;">RECENT DIGITAL ACTIVITY</div>
+              <div class="activity-row">
+                <div class="activity-icon" style="background:rgba(51,102,255,0.12); color:var(--primary-blue);">A</div>
+                <div class="activity-content"><div class="ac-title">Logged into Mobile App</div><div class="ac-desc">Checked account balance, viewed transactions</div></div>
+                <div class="activity-time">Today, 9:14 AM</div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon" style="background:rgba(51,102,255,0.12); color:var(--primary-blue);">T</div>
+                <div class="activity-content"><div class="ac-title">International Transfer</div><div class="ac-desc">AED 5,000 to UK account (completed)</div></div>
+                <div class="activity-time">Yesterday</div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon" style="background:rgba(255,172,9,0.12); color:var(--amber);">C</div>
+                <div class="activity-content"><div class="ac-title">Credit Card Application Started</div><div class="ac-desc">Abandoned at Step 3 — Employment Details</div></div>
+                <div class="activity-time">2 days ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen 4: Interaction History -->
+        <div class="screen" data-screen="4">
+          <div class="desktop-layout">
+            <div class="desktop-sidebar">
+              <div class="sidebar-logo">DIB Assist</div>
+              <div class="sidebar-item active">Customer 360</div>
+              <div class="sidebar-item">My Queue</div>
+              <div class="sidebar-item">Cases</div>
+              <div class="sidebar-item">Tasks</div>
+            </div>
+            <div class="desktop-main">
+              <div class="desktop-topbar"><h2>Khalid Al-Rashid</h2></div>
+              <div class="tab-bar">
+                <div class="tab">Accounts</div>
+                <div class="tab">Digital Context</div>
+                <div class="tab active">History</div>
+                <div class="tab">Documents</div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon" style="background:rgba(38,188,113,0.12); color:var(--green);">B</div>
+                <div class="activity-content"><div class="ac-title">Branch Visit — Al Barsha</div><div class="ac-desc">Financing inquiry. Advised on Murabaha structure. Customer satisfied. — Noor Al-Fahim</div></div>
+                <div class="activity-time">5 days ago</div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon" style="background:rgba(51,102,255,0.12); color:var(--primary-blue);">P</div>
+                <div class="activity-content"><div class="ac-title">Phone Call — Contact Center</div><div class="ac-desc">Card delivery status inquiry. Card dispatched, tracking provided. — Saeed Al-Hashemi</div></div>
+                <div class="activity-time">2 weeks ago</div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon" style="background:rgba(51,102,255,0.12); color:var(--primary-blue);">D</div>
+                <div class="activity-content"><div class="ac-title">Digital — App Message</div><div class="ac-desc">Asked about international transfer limits. Resolved via FAQ link.</div></div>
+                <div class="activity-time">3 weeks ago</div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon" style="background:rgba(38,188,113,0.12); color:var(--green);">B</div>
+                <div class="activity-content"><div class="ac-title">Branch Visit — Dubai Mall</div><div class="ac-desc">Account opening. Al Islami Current Account + Savings opened. — Mariam Al-Nasser</div></div>
+                <div class="activity-time">4 years ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen 5: Quick Actions -->
+        <div class="screen" data-screen="5">
+          <div class="desktop-layout">
+            <div class="desktop-sidebar">
+              <div class="sidebar-logo">DIB Assist</div>
+              <div class="sidebar-item active">Customer 360</div>
+              <div class="sidebar-item">My Queue</div>
+              <div class="sidebar-item">Cases</div>
+              <div class="sidebar-item">Tasks</div>
+            </div>
+            <div class="desktop-main">
+              <div class="desktop-topbar"><h2>Quick Actions — Khalid Al-Rashid</h2></div>
+              <div class="data-row">
+                <div class="data-card" style="cursor:default; text-align:center;"><div style="font-size:24px; margin-bottom:6px;">&#128179;</div><div style="font-size:13px; font-weight:700; color:var(--text);">Block/Unblock Card</div></div>
+                <div class="data-card" style="cursor:default; text-align:center;"><div style="font-size:24px; margin-bottom:6px;">&#127968;</div><div style="font-size:13px; font-weight:700; color:var(--text);">Update Address</div></div>
+                <div class="data-card" style="cursor:default; text-align:center;"><div style="font-size:24px; margin-bottom:6px;">&#128196;</div><div style="font-size:13px; font-weight:700; color:var(--text);">Request Statement</div></div>
+                <div class="data-card" style="cursor:default; text-align:center;"><div style="font-size:24px; margin-bottom:6px;">&#128274;</div><div style="font-size:13px; font-weight:700; color:var(--text);">Reset Password</div></div>
+              </div>
+              <div class="data-row">
+                <div class="data-card" style="cursor:default; text-align:center; border-color:var(--primary-blue);"><div style="font-size:24px; margin-bottom:6px;">&#128179;</div><div style="font-size:13px; font-weight:700; color:var(--primary-blue);">Continue CC Application</div><div style="font-size:11px; color:var(--amber); margin-top:4px;">Abandoned 2 days ago</div></div>
+                <div class="data-card" style="cursor:default; text-align:center;"><div style="font-size:24px; margin-bottom:6px;">&#128176;</div><div style="font-size:13px; font-weight:700; color:var(--text);">New Financing</div></div>
+                <div class="data-card" style="cursor:default; text-align:center;"><div style="font-size:24px; margin-bottom:6px;">&#128233;</div><div style="font-size:13px; font-weight:700; color:var(--text);">Send Message</div></div>
+                <div class="data-card" style="cursor:default; text-align:center;"><div style="font-size:24px; margin-bottom:6px;">&#128197;</div><div style="font-size:13px; font-weight:700; color:var(--text);">Schedule Appointment</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen 6: Notes & Handoff -->
+        <div class="screen" data-screen="6">
+          <div class="desktop-layout">
+            <div class="desktop-sidebar">
+              <div class="sidebar-logo">DIB Assist</div>
+              <div class="sidebar-item active">Customer 360</div>
+              <div class="sidebar-item">My Queue</div>
+              <div class="sidebar-item">Cases</div>
+              <div class="sidebar-item">Tasks</div>
+            </div>
+            <div class="desktop-main">
+              <div class="desktop-topbar"><h2>Add Note — Khalid Al-Rashid</h2></div>
+              <div class="detail-card">
+                <h4>Interaction Summary</h4>
+                <div style="background:var(--white); border:1px solid var(--light-blue); border-radius:8px; padding:12px; min-height:100px; margin-top:8px; font-size:13px; color:var(--text);">
+                  Customer visited branch to discuss credit card options. Noticed abandoned CC application from 2 days ago — helped customer complete the application in-branch. Customer selected Platinum Card with travel benefits. Application submitted for approval.
+                </div>
+              </div>
+              <div class="data-row" style="margin-top:16px;">
+                <div class="data-card" style="text-align:center; border-color:var(--primary-blue);">
+                  <div style="font-size:13px; font-weight:700; color:var(--primary-blue);">Save &amp; Close</div>
+                </div>
+                <div class="data-card" style="text-align:center;">
+                  <div style="font-size:13px; font-weight:700; color:var(--text);">Transfer to Specialist</div>
+                  <div style="font-size:11px; color:var(--text-light); margin-top:4px;">Full context will be shared</div>
+                </div>
+                <div class="data-card" style="text-align:center;">
+                  <div style="font-size:13px; font-weight:700; color:var(--text);">Create Follow-up Task</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="proto-nav">
+      <button class="proto-back" disabled>&larr; Back</button>
+      <span class="proto-counter">1 / 6</span>
+      <button class="proto-next">Next &rarr;</button>
+    </div>
+  </div>
+  <script>
+  (function(){var p=document.querySelector('[data-proto-id="UCE01"]'),c=1,s=p.querySelectorAll('.screen'),t=s.length,ct=p.querySelector('.proto-counter'),bb=p.querySelector('.proto-back'),nb=p.querySelector('.proto-next');function sh(n){for(var i=0;i<s.length;i++)s[i].classList.remove('active');p.querySelector('[data-screen="'+n+'"]').classList.add('active');c=n;ct.textContent=n+' / '+t;bb.disabled=(n===1);nb.disabled=(n===t);}bb.addEventListener('click',function(){if(c>1)sh(c-1);});nb.addEventListener('click',function(){if(c<t)sh(c+1);});})();
+  </script>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;9</div>
+</div>
+
+<!-- ================================================================ -->
+<!-- UC-E02: GUIDED FINANCING ASSIST -->
+<!-- ================================================================ -->
+<div class="content-section">
+  <div class="usecase-spec">
+    <div class="usecase-header">
+      <div class="uc-id">UC-E02</div>
+      <h3>Guided Financing Assist</h3>
+      <div class="uc-meta">
+        <span><strong>Priority:</strong> P1</span>
+        <span><strong>Category:</strong> Differentiating</span>
+        <span><strong>Module:</strong> Digital Assist</span>
+        <span><strong>Capability:</strong> Guided Workflows</span>
+      </div>
+    </div>
+
+    <div class="spec-section"><h4>2. Business Context</h4>
+      <p><strong>Strategic Alignment:</strong> Directly enables "Operational Efficiency" and "Personalized Customer Journeys" by streamlining the employee-assisted financing workflow from 45 minutes across 6 systems to 15 minutes in one platform.</p>
+      <p style="margin-top:8px"><strong>Business Value:</strong> Reduce financing processing time by 67%, increase branch financing throughput by 3x, reduce training time for financing specialists from 6 weeks to 2 weeks.</p>
+      <p style="margin-top:8px"><strong>Current State:</strong> Financing specialists toggle between T24, LOS, credit bureau portal, document management, email, and Excel to process a single application. Manual data entry across systems leads to errors and delays.</p>
+      <p style="margin-top:8px"><strong>Pain Points Addressed:</strong></p>
+      <ul>
+        <li>"I enter the same customer data into 4 different systems for one financing application."</li>
+        <li>"I can't tell the customer when their financing will be approved because I can't see the pipeline status."</li>
+        <li>"New hires need 6 weeks to learn the financing process across all systems."</li>
+      </ul>
+    </div>
+
+    <div class="spec-section"><h4>3. User Context</h4>
+      <p><strong>Primary Persona:</strong> Rania Mahmoud — Financing Specialist, branch-based, processes 8-12 financing applications per day.</p>
+      <p style="margin-top:8px"><strong>User Goal:</strong> Process a customer financing application from intake to approval in a single guided workflow without switching systems.</p>
+      <p style="margin-top:8px"><strong>Success Criteria:</strong> Application submitted with all required data and documents, decision received within the appointment, customer leaves with clear next steps.</p>
+    </div>
+
+    <div class="spec-section"><h4>4. Happy Path Specification</h4>
+      <p><strong>Preconditions:</strong> Customer is identified in Digital Assist. Financing product is selected.</p>
+      <p style="margin-top:8px"><strong>Trigger:</strong> Employee opens "New Financing" from customer 360 or quick actions.</p>
+      <table class="happy-path-table">
+        <thead><tr><th>Step</th><th>Employee Action</th><th>System Response</th></tr></thead>
+        <tbody>
+          <tr><td><span class="step-num">1</span></td><td>Opens customer context</td><td>Display pre-filled customer data with product recommendation</td></tr>
+          <tr><td><span class="step-num">2</span></td><td>Selects product and calculates</td><td>Real-time calculator with profit structure and schedule</td></tr>
+          <tr><td><span class="step-num">3</span></td><td>Fills application form</td><td>Pre-populated from 360 data, guided step-by-step</td></tr>
+          <tr><td><span class="step-num">4</span></td><td>Captures documents</td><td>Scan/upload with OCR validation and checklist</td></tr>
+          <tr><td><span class="step-num">5</span></td><td>Confirms Shariah review</td><td>Display compliance check with Fatwa board certification</td></tr>
+          <tr><td><span class="step-num">6</span></td><td>Submits for approval</td><td>Route to decision engine, display real-time status</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:12px"><strong>Postconditions:</strong> Application submitted, documents stored, decision pending or received, customer notification scheduled.</p>
+    </div>
+
+    <div class="spec-section"><h4>5. Screen Flow</h4>
+      <ul>
+        <li><strong>Screen 1:</strong> Customer Context — Pre-filled data, product recommendation</li>
+        <li><strong>Screen 2:</strong> Product &amp; Calculator — Murabaha/Ijarah selection, real-time calculation</li>
+        <li><strong>Screen 3:</strong> Application Form — Guided form with pre-filled fields</li>
+        <li><strong>Screen 4:</strong> Document Collection — Checklist with scan/upload</li>
+        <li><strong>Screen 5:</strong> Shariah Review — Compliance confirmation</li>
+        <li><strong>Screen 6:</strong> Submission &amp; Status — Approval pipeline view</li>
+      </ul>
+    </div>
+
+    <div class="spec-section"><h4>6. Data Requirements</h4>
+      <p><strong>Input Data:</strong> Financing amount, tenor, employment details (verified), supporting documents.</p>
+      <p style="margin-top:8px"><strong>System Data:</strong> Customer profile (T24), salary history, credit bureau score, product eligibility, Shariah-approved rates.</p>
+      <p style="margin-top:8px"><strong>Output Data:</strong> Financing application record, document package, decision request, customer notification.</p>
+    </div>
+
+    <div class="spec-section"><h4>7. Integration Requirements</h4>
+      <table class="integration-table">
+        <thead><tr><th>System</th><th>Integration Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Temenos T24</td><td>Real-time API (via Hub)</td><td>Customer data, salary records, financing creation</td></tr>
+          <tr><td>Credit Bureau (AECB)</td><td>Real-time API</td><td>Credit score and liability check</td></tr>
+          <tr><td>Decision Engine</td><td>Real-time API</td><td>Instant pre-approval decision</td></tr>
+          <tr><td>Document Management</td><td>API (via Hub)</td><td>Document storage and retrieval</td></tr>
+          <tr><td>Notification Service</td><td>Event-driven</td><td>Customer SMS/push for decision</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="spec-section"><h4>8. Backbase Implementation</h4>
+      <p><strong>Module:</strong> Digital Assist (Guided Workflows)</p>
+      <p style="margin-top:8px"><strong>Approach:</strong> Configuration + Extension (Shariah workflow and Murabaha calculation are custom)</p>
+      <p style="margin-top:8px"><strong>Key Components:</strong> Guided Workflow Engine, Calculator Widget, Document Capture Widget, Approval Pipeline Widget</p>
+      <p style="margin-top:8px"><strong>Customization Notes:</strong> Murabaha/Ijarah product logic, T24 financing creation adapter, AECB integration, Arabic document OCR.</p>
+    </div>
+
+    <div class="spec-section"><h4>9. Definition of Done</h4>
+      <ul class="dod-list">
+        <li>Application form pre-populated with 80%+ of customer data from 360 view</li>
+        <li>Profit rate calculator updates in real-time within the guided workflow</li>
+        <li>Document checklist ensures 100% completeness before submission</li>
+        <li>Decision received within 60 seconds for pre-qualified customers</li>
+        <li>End-to-end processing time under 15 minutes (down from 45)</li>
+        <li>New specialist can complete workflow after 2 weeks of training (down from 6)</li>
+      </ul>
+    </div>
+
+    <div class="spec-section"><h4>10. Interactive Prototype</h4></div>
+  </div>
+
+  <!-- EMBEDDED PROTOTYPE: UC-E02 — Desktop Browser Frame -->
+  <div class="prototype-embed" data-proto-id="UCE02">
+    <div class="prototype-label">
+      <span class="proto-badge">Interactive Prototype</span>
+      <span class="proto-title">UC-E02: Guided Financing Assist</span>
+    </div>
+    <div class="browser-frame">
+      <div class="browser-chrome">
+        <div class="browser-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+        <div class="browser-url">assist.dib.ae/financing/new</div>
+      </div>
+      <div class="browser-screen">
+
+        <div class="screen active" data-screen="1">
+          <div class="desktop-layout">
+            <div class="desktop-sidebar">
+              <div class="sidebar-logo">DIB Assist</div>
+              <div class="sidebar-item">Customer 360</div>
+              <div class="sidebar-item active">Financing Assist</div>
+              <div class="sidebar-item">Cases</div>
+              <div class="sidebar-item">Tasks</div>
+            </div>
+            <div class="desktop-main">
+              <div class="desktop-topbar"><h2>New Financing — Customer Context</h2><div style="font-size:12px; color:var(--text-light);">Step 1 of 6</div></div>
+              <div class="detail-card" style="border-left:3px solid var(--primary-blue);">
+                <h4>Customer: Fatima Al-Hakim</h4>
+                <div style="display:flex; gap:32px; margin-top:8px; font-size:13px; color:var(--text-light);">
+                  <div>ID: 784-1988-*****-7</div>
+                  <div>Segment: Premium</div>
+                  <div>Salary: AED 22,000/mo</div>
+                  <div>Since: 2019</div>
+                </div>
+              </div>
+              <div class="data-row" style="margin-top:16px;">
+                <div class="data-card"><div class="dc-label">Pre-Qualified Amount</div><div class="dc-value">AED 250K</div></div>
+                <div class="data-card"><div class="dc-label">Existing Liabilities</div><div class="dc-value">AED 0</div></div>
+                <div class="data-card"><div class="dc-label">Credit Score</div><div class="dc-value" style="color:var(--green);">720</div></div>
+                <div class="data-card"><div class="dc-label">DBR Available</div><div class="dc-value">50%</div></div>
+              </div>
+              <div class="detail-card" style="border-left:3px solid var(--green);">
+                <h4 style="color:var(--green);">Recommendation</h4>
+                <div style="font-size:13px; color:var(--text-light); margin-top:4px;">Based on salary history and credit profile, customer qualifies for Murabaha Personal Financing up to AED 250,000 at 4.99% p.a.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="screen" data-screen="2">
+          <div class="desktop-layout">
+            <div class="desktop-sidebar">
+              <div class="sidebar-logo">DIB Assist</div>
+              <div class="sidebar-item">Customer 360</div>
+              <div class="sidebar-item active">Financing Assist</div>
+              <div class="sidebar-item">Cases</div>
+              <div class="sidebar-item">Tasks</div>
+            </div>
+            <div class="desktop-main">
+              <div class="desktop-topbar"><h2>Product &amp; Calculator</h2><div style="font-size:12px; color:var(--text-light);">Step 2 of 6</div></div>
+              <div class="data-row">
+                <div class="data-card" style="border-color:var(--primary-blue); flex:1;">
+                  <div style="font-size:11px; font-weight:700; color:var(--primary-blue); text-transform:uppercase;">Selected</div>
+                  <div style="font-size:16px; font-weight:700; color:var(--text); margin-top:4px;">Murabaha Personal Financing</div>
+                  <div style="font-size:12px; color:var(--text-light); margin-top:2px;">Cost-plus structure, fixed payments</div>
+                </div>
+                <div class="data-card" style="flex:1;">
+                  <div style="font-size:11px; font-weight:700; color:var(--text-light); text-transform:uppercase;">Alternative</div>
+                  <div style="font-size:16px; font-weight:700; color:var(--text); margin-top:4px;">Ijarah Financing</div>
+                  <div style="font-size:12px; color:var(--text-light); margin-top:2px;">Lease-based, gradual ownership</div>
+                </div>
+              </div>
+              <div class="detail-card" style="margin-top:16px;">
+                <h4>Payment Calculator</h4>
+                <div style="display:flex; gap:24px; margin-top:12px;">
+                  <div style="flex:1;"><div style="font-size:12px; color:var(--text-light); margin-bottom:4px;">Amount</div><div style="background:var(--white); border:1px solid var(--light-blue); border-radius:8px; padding:10px 12px; font-size:15px; font-weight:700;">AED 150,000</div></div>
+                  <div style="flex:1;"><div style="font-size:12px; color:var(--text-light); margin-bottom:4px;">Tenor</div><div style="background:var(--white); border:1px solid var(--light-blue); border-radius:8px; padding:10px 12px; font-size:15px; font-weight:700;">48 months</div></div>
+                  <div style="flex:1;"><div style="font-size:12px; color:var(--text-light); margin-bottom:4px;">Profit Rate</div><div style="background:var(--white); border:1px solid var(--light-blue); border-radius:8px; padding:10px 12px; font-size:15px; font-weight:700; color:var(--primary-blue);">4.99% p.a.</div></div>
+                </div>
+                <div style="display:flex; gap:24px; margin-top:16px; padding-top:16px; border-top:1px solid var(--light-blue);">
+                  <div><div style="font-size:12px; color:var(--text-light);">Monthly Payment</div><div style="font-size:20px; font-weight:900; color:var(--primary-blue);">AED 3,456</div></div>
+                  <div><div style="font-size:12px; color:var(--text-light);">Total Profit</div><div style="font-size:20px; font-weight:900; color:var(--text);">AED 15,888</div></div>
+                  <div><div style="font-size:12px; color:var(--text-light);">Total Cost</div><div style="font-size:20px; font-weight:900; color:var(--text);">AED 165,888</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="screen" data-screen="3">
+          <div class="desktop-layout">
+            <div class="desktop-sidebar">
+              <div class="sidebar-logo">DIB Assist</div>
+              <div class="sidebar-item">Customer 360</div>
+              <div class="sidebar-item active">Financing Assist</div>
+              <div class="sidebar-item">Cases</div>
+              <div class="sidebar-item">Tasks</div>
+            </div>
+            <div class="desktop-main">
+              <div class="desktop-topbar"><h2>Application Form</h2><div style="font-size:12px; color:var(--text-light);">Step 3 of 6</div></div>
+              <div style="background:rgba(38,188,113,0.08); border:1px solid rgba(38,188,113,0.2); border-radius:8px; padding:10px 16px; margin-bottom:20px; font-size:13px; color:var(--green); font-weight:600;">80% pre-filled from customer 360 data</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div><div style="font-size:12px; color:var(--text-light); margin-bottom:4px;">Full Name</div><div style="background:var(--light-grey); border:1px solid var(--light-blue); border-radius:8px; padding:10px 12px; font-size:14px;">Fatima Al-Hakim</div></div>
+                <div><div style="font-size:12px; color:var(--text-light); margin-bottom:4px;">Emirates ID</div><div style="background:var(--light-grey); border:1px solid var(--light-blue); border-radius:8px; padding:10px 12px; font-size:14px;">784-1988-*****-7</div></div>
+                <div><div style="font-size:12px; color:var(--text-light); margin-bottom:4px;">Employer</div><div style="background:var(--light-grey); border:1px solid var(--light-blue); border-radius:8px; padding:10px 12px; font-size:14px;">Emirates National Oil Company</div></div>
+                <div><div style="font-size:12px; color:var(--text-light); margin-bottom:4px;">Monthly Salary</div><div style="background:var(--light-grey); border:1px solid var(--light-blue); border-radius:8px; padding:10px 12px; font-size:14px;">AED 22,000</div></div>
+                <div><div style="font-size:12px; color:var(--text-light); margin-bottom:4px;">Employment Duration</div><div style="background:var(--light-grey); border:1px solid var(--light-blue); border-radius:8px; padding:10px 12px; font-size:14px;">5 years, 2 months</div></div>
+                <div><div style="font-size:12px; color:var(--text-light); margin-bottom:4px;">Purpose of Financing</div><div style="background:var(--white); border:1px solid var(--primary-blue); border-radius:8px; padding:10px 12px; font-size:14px; color:var(--text);">Home renovation</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="screen" data-screen="4">
+          <div class="desktop-layout">
+            <div class="desktop-sidebar">
+              <div class="sidebar-logo">DIB Assist</div>
+              <div class="sidebar-item">Customer 360</div>
+              <div class="sidebar-item active">Financing Assist</div>
+              <div class="sidebar-item">Cases</div>
+              <div class="sidebar-item">Tasks</div>
+            </div>
+            <div class="desktop-main">
+              <div class="desktop-topbar"><h2>Document Collection</h2><div style="font-size:12px; color:var(--text-light);">Step 4 of 6</div></div>
+              <div class="detail-card" style="border-left:3px solid var(--green);">
+                <div style="display:flex; justify-content:space-between; align-items:center;"><h4>Emirates ID</h4><span style="color:var(--green); font-weight:700; font-size:13px;">&#10003; On File</span></div>
+              </div>
+              <div class="detail-card" style="border-left:3px solid var(--green);">
+                <div style="display:flex; justify-content:space-between; align-items:center;"><h4>Salary Certificate</h4><span style="color:var(--green); font-weight:700; font-size:13px;">&#10003; Uploaded</span></div>
+              </div>
+              <div class="detail-card" style="border-left:3px solid var(--amber);">
+                <div style="display:flex; justify-content:space-between; align-items:center;"><h4>Bank Statements (3 months)</h4><span style="color:var(--amber); font-weight:700; font-size:13px;">Scanning...</span></div>
+              </div>
+              <div class="detail-card" style="border-left:3px solid var(--light-blue);">
+                <div style="display:flex; justify-content:space-between; align-items:center;"><h4>Proof of Address</h4><span style="font-size:13px; color:var(--primary-blue); font-weight:600; cursor:default;">Upload</span></div>
+              </div>
+              <div style="margin-top:16px; font-size:13px; color:var(--text-light);">3 of 4 documents collected. Complete the checklist to proceed.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="screen" data-screen="5">
+          <div class="desktop-layout">
+            <div class="desktop-sidebar">
+              <div class="sidebar-logo">DIB Assist</div>
+              <div class="sidebar-item">Customer 360</div>
+              <div class="sidebar-item active">Financing Assist</div>
+              <div class="sidebar-item">Cases</div>
+              <div class="sidebar-item">Tasks</div>
+            </div>
+            <div class="desktop-main">
+              <div class="desktop-topbar"><h2>Shariah Compliance Review</h2><div style="font-size:12px; color:var(--text-light);">Step 5 of 6</div></div>
+              <div class="detail-card" style="border-left:3px solid var(--primary-blue);">
+                <h4 style="color:var(--primary-blue);">Murabaha Financing Structure</h4>
+                <div style="font-size:13px; color:var(--text-light); margin-top:8px; line-height:1.6;">
+                  DIB purchases the commodity at AED 150,000 and sells to the customer at AED 165,888 (cost + agreed profit of AED 15,888). Customer pays in 48 equal monthly installments of AED 3,456.
+                </div>
+                <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--light-blue);">
+                  <div style="font-size:12px; color:var(--green); font-weight:600;">&#10003; Reviewed by DIB Fatwa &amp; Shariah Supervisory Board</div>
+                  <div style="font-size:12px; color:var(--green); font-weight:600; margin-top:4px;">&#10003; Certification #FSB-2026-0142</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; margin-top:16px;">
+                <div style="width:18px; height:18px; border:2px solid var(--primary-blue); border-radius:3px; background:var(--primary-blue); display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px;">&#10003;</div>
+                <span style="font-size:13px; color:var(--text);">Customer has reviewed and accepted the Shariah disclosure</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="screen" data-screen="6">
+          <div class="desktop-layout">
+            <div class="desktop-sidebar">
+              <div class="sidebar-logo">DIB Assist</div>
+              <div class="sidebar-item">Customer 360</div>
+              <div class="sidebar-item active">Financing Assist</div>
+              <div class="sidebar-item">Cases</div>
+              <div class="sidebar-item">Tasks</div>
+            </div>
+            <div class="desktop-main">
+              <div class="desktop-topbar"><h2>Application Submitted</h2><div style="font-size:12px; color:var(--text-light);">Step 6 of 6</div></div>
+              <div style="text-align:center; padding:24px 0;">
+                <div style="width:64px; height:64px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:#fff; font-size:28px; font-weight:700;">&#10003;</div>
+                <div style="font-size:20px; font-weight:900; color:var(--text);">Application Submitted Successfully</div>
+                <div style="font-size:14px; color:var(--text-light); margin-top:4px;">Reference: FIN-2026-00847</div>
+              </div>
+              <div class="data-row">
+                <div class="data-card"><div class="dc-label">Status</div><div class="dc-value" style="color:var(--green); font-size:16px;">Pre-Approved</div></div>
+                <div class="data-card"><div class="dc-label">Decision Time</div><div class="dc-value" style="font-size:16px;">42 seconds</div></div>
+                <div class="data-card"><div class="dc-label">Disbursement</div><div class="dc-value" style="font-size:16px;">Within 24h</div></div>
+                <div class="data-card"><div class="dc-label">Processing Time</div><div class="dc-value" style="font-size:16px;">12 minutes</div></div>
+              </div>
+              <div class="detail-card" style="border-left:3px solid var(--green); margin-top:16px;">
+                <h4>Customer Notification</h4>
+                <div style="font-size:13px; color:var(--text-light); margin-top:4px;">SMS and push notification sent to Fatima Al-Hakim confirming pre-approval and next steps.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="proto-nav">
+      <button class="proto-back" disabled>&larr; Back</button>
+      <span class="proto-counter">1 / 6</span>
+      <button class="proto-next">Next &rarr;</button>
+    </div>
+  </div>
+  <script>
+  (function(){var p=document.querySelector('[data-proto-id="UCE02"]'),c=1,s=p.querySelectorAll('.screen'),t=s.length,ct=p.querySelector('.proto-counter'),bb=p.querySelector('.proto-back'),nb=p.querySelector('.proto-next');function sh(n){for(var i=0;i<s.length;i++)s[i].classList.remove('active');p.querySelector('[data-screen="'+n+'"]').classList.add('active');c=n;ct.textContent=n+' / '+t;bb.disabled=(n===1);nb.disabled=(n===t);}bb.addEventListener('click',function(){if(c>1)sh(c-1);});nb.addEventListener('click',function(){if(c<t)sh(c+1);});})();
+  </script>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;10</div>
+</div>
+
+<!-- S12: SECTION DIVIDER -->
+<div class="section-divider">
+  <div class="brand">Backbase</div><div class="ghost-number">04</div><div class="cyan-accent"></div>
+  <h2>Additional Use Cases</h2>
+  <div class="section-subtitle">Priority 2 &amp; Priority 3 for future phases</div>
+</div>
+
+<!-- S13: P2/P3 CARDS -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Priority 2 Use Cases</h2><span class="subtitle">Summary specifications</span></div>
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="sc-header"><span class="sc-id">UC-E03</span><span class="badge badge-p2">P2</span></div>
+      <h4>Never Drop the Ball</h4>
+      <p>End-to-end case management for customer requests, complaints, and escalations. Track every case from creation to resolution with SLA monitoring and automatic escalation.</p>
+      <div class="sc-meta"><span class="sc-tag">Case Management</span><span class="sc-tag">Configuration</span></div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-header"><span class="sc-id">UC-E04</span><span class="badge badge-p2">P2</span></div>
+      <h4>Warm Handoff, Zero Repeat</h4>
+      <p>Transfer customer context between channels seamlessly. When a customer moves from app to phone to branch, the next agent sees the full history without asking the customer to repeat.</p>
+      <div class="sc-meta"><span class="sc-tag">Collaboration</span><span class="sc-tag">Configuration</span></div>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:48px;"><div class="accent"></div><h2>Priority 3 Use Cases</h2><span class="subtitle">Future consideration</span></div>
+  <ul class="p3-list">
+    <li><span class="p3-id">UC-E05</span> Know Before They Knock — Pre-populate customer context before scheduled appointments with predicted intent</li>
+    <li><span class="p3-id">UC-E06</span> Branch Pulse — Real-time branch performance dashboard with queue analytics and staff utilization</li>
+  </ul>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;13</div>
+</div>
+
+<!-- S14: IMPLEMENTATION SUMMARY -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Digital Assist Capability Mapping &amp; Next Steps</h2></div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-value">2</div><div class="stat-label">P1 Use Cases</div></div>
+    <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">Prototype Screens</div></div>
+    <div class="stat-card"><div class="stat-value">$3.1M</div><div class="stat-label">Projected Savings</div></div>
+    <div class="stat-card"><div class="stat-value">6</div><div class="stat-label">Total Use Cases</div></div>
+  </div>
+  <div class="next-steps-grid">
+    <div class="next-step-card">
+      <h4>Immediate</h4>
+      <p>Stakeholder review of UC-E01 and UC-E02 prototypes with branch managers and contact center leads. Validate data availability from T24.</p>
+    </div>
+    <div class="next-step-card">
+      <h4>Short-term</h4>
+      <p>Detailed integration requirements for T24, CRM, and card management APIs. User acceptance criteria finalization with Noor and Rania.</p>
+    </div>
+    <div class="next-step-card">
+      <h4>Medium-term</h4>
+      <p>Elaborate UC-E03 (Case Management) and UC-E04 (Warm Handoff). Plan pilot with Al Barsha branch for UC-E01 deployment.</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;14</div>
+</div>
+
+<!-- S15: CLOSING -->
+<div class="closing">
+  <h2>Next Steps</h2>
+  <div class="subtitle">From use case design to Digital Assist implementation</div>
+  <div class="brand" style="margin-top: 40px;">Backbase</div>
+</div>
+
+</body>
+</html>

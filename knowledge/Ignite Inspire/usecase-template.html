@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- AGENT: Replace [CLIENT] with actual client name -->
+<!-- AGENT: Replace [TYPE] with "Member" or "Customer" or "Employee" depending on document type -->
+<title>[CLIENT] [TYPE] Use Case Design | Backbase</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-dark: #091C35;
+    --primary-blue: #3366FF;
+    --cyan: #69FEFF;
+    --white: #FFFFFF;
+    --light-grey: #F3F6F9;
+    --light-blue: #E5EBFF;
+    --muted: #3A495D;
+    --green: #26BC71;
+    --amber: #FFAC09;
+    --red: #FF7262;
+    --text: #091C35;
+    --text-light: #5A6A7E;
+    --border: #E0E6ED;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px; line-height: 1.6; color: var(--text); background: var(--white);
+  }
+
+  /* === COVER (Dark background) === */
+  .cover {
+    background: var(--primary-dark); color: var(--white); min-height: 100vh;
+    padding: 60px 80px; display: flex; flex-direction: column; justify-content: center;
+    position: relative; page-break-after: always;
+  }
+  .cover .brand { font-size: 22px; font-weight: 600; color: var(--primary-blue); margin-bottom: 60px; letter-spacing: 1px; }
+  .cover h1 { font-size: 48px; font-weight: 900; line-height: 1.15; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 60px; }
+  .cover .meta { font-size: 16px; font-weight: 400; color: var(--cyan); }
+
+  /* === SECTION DIVIDER (Blue background) === */
+  .section-divider {
+    background: var(--primary-blue); color: var(--white); padding: 80px 80px;
+    min-height: 40vh; display: flex; flex-direction: column; justify-content: center;
+    position: relative; page-break-before: always; page-break-after: always;
+  }
+  .section-divider .brand { font-size: 18px; font-weight: 600; margin-bottom: 40px; letter-spacing: 1px; }
+  .section-divider .ghost-number {
+    position: absolute; right: 80px; top: 50%; transform: translateY(-50%);
+    font-size: 200px; font-weight: 900; color: rgba(255,255,255,0.08); line-height: 1;
+  }
+  .section-divider h2 { font-size: 42px; font-weight: 900; line-height: 1.2; margin-bottom: 8px; }
+  .section-divider .section-subtitle { font-size: 20px; font-weight: 300; color: rgba(255,255,255,0.7); }
+  .section-divider .cyan-accent { width: 60px; height: 4px; background: var(--cyan); margin-bottom: 24px; }
+
+  /* === CONTENT SECTION (White background) === */
+  .content-section {
+    background: var(--white); padding: 60px 80px; min-height: 80vh;
+    position: relative; page-break-after: always;
+  }
+  .content-section .page-footer {
+    position: absolute; bottom: 20px; right: 80px;
+    font-size: 11px; font-weight: 600; color: var(--text-light); letter-spacing: 1px;
+  }
+
+  /* === CLOSING (Dark background) === */
+  .closing {
+    background: var(--primary-dark); color: var(--white); min-height: 60vh;
+    padding: 60px 80px; display: flex; flex-direction: column; justify-content: center;
+    align-items: center; text-align: center; position: relative; page-break-before: always;
+  }
+  .closing h2 { font-size: 42px; font-weight: 900; margin-bottom: 16px; }
+  .closing .subtitle { font-size: 20px; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 40px; }
+  .closing .brand { font-size: 18px; font-weight: 600; color: var(--primary-blue); letter-spacing: 1px; }
+
+  /* === TITLE === */
+  .section-title { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+  .section-title .accent { width: 16px; height: 16px; background: var(--primary-blue); flex-shrink: 0; }
+  .section-title h2 { font-size: 24px; font-weight: 700; color: var(--text); }
+  .section-title .subtitle { font-size: 14px; font-weight: 400; color: var(--text-light); margin-left: auto; }
+
+  /* === OBJECTIVE STATEMENT === */
+  .objective-statement {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0;
+    padding: 24px 28px; font-size: 16px; line-height: 1.6; margin-bottom: 40px;
+  }
+
+  /* === METHOD GRID === */
+  .methodology-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+  .method-block {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 20px 16px; text-align: center;
+  }
+  .method-block .block-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; background: var(--primary-blue); color: #fff;
+    border-radius: 50%; font-size: 14px; font-weight: 700; margin-bottom: 10px;
+  }
+  .method-block h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .method-block p { font-size: 12px; color: var(--text-light); }
+
+  /* === STATS === */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px; text-align: center;
+  }
+  .stat-card .stat-value { font-size: 36px; font-weight: 900; color: var(--primary-blue); }
+  .stat-card .stat-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+  /* === RECAP CARDS === */
+  .recap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+  .recap-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .recap-card .recap-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--primary-blue); margin-bottom: 8px;
+  }
+  .recap-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .recap-card p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+  .recap-card ul { list-style: none; padding: 0; }
+  .recap-card ul li { font-size: 13px; color: var(--text-light); padding: 3px 0 3px 16px; position: relative; }
+  .recap-card ul li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--primary-blue); position: absolute; left: 0; top: 10px; }
+
+  /* === TABLES === */
+  .data-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; font-size: 13px; }
+  .data-table thead th {
+    background: var(--primary-blue); color: #fff; padding: 12px 16px;
+    text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .data-table thead th:first-child { border-radius: 8px 0 0 0; }
+  .data-table thead th:last-child { border-radius: 0 8px 0 0; }
+  .data-table tbody td { padding: 12px 16px; border-bottom: 1px solid var(--light-blue); }
+  .data-table tbody tr:nth-child(even) { background: var(--light-grey); }
+  .data-table tbody tr:hover { background: var(--light-blue); }
+
+  /* === PRIORITY BADGES === */
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; }
+  .badge-p1 { background: rgba(51,102,255,0.12); color: var(--primary-blue); }
+  .badge-p2 { background: rgba(58,73,93,0.12); color: var(--muted); }
+  .badge-p3 { background: rgba(90,106,126,0.08); color: var(--text-light); }
+  .badge-tablestakes { background: rgba(38,188,113,0.12); color: var(--green); }
+
+  /* === USE CASE SPEC SECTION === */
+  .usecase-spec { margin-bottom: 60px; }
+  .usecase-header {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0;
+    padding: 24px 28px; margin-bottom: 32px;
+  }
+  .usecase-header .uc-id { font-size: 12px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1.5px; }
+  .usecase-header h3 { font-size: 22px; font-weight: 900; color: var(--text); margin-top: 4px; }
+  .usecase-header .uc-meta { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+  .usecase-header .uc-meta span { font-size: 12px; color: var(--text-light); }
+
+  .spec-section { margin-bottom: 28px; }
+  .spec-section h4 {
+    font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--primary-blue); margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--light-blue);
+  }
+  .spec-section p { font-size: 14px; color: var(--text-light); line-height: 1.7; }
+  .spec-section ul { list-style: none; padding: 0; }
+  .spec-section ul li { font-size: 14px; color: var(--text-light); padding: 4px 0 4px 16px; position: relative; line-height: 1.5; }
+  .spec-section ul li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--primary-blue); position: absolute; left: 0; top: 11px; }
+
+  /* === HAPPY PATH TABLE === */
+  .happy-path-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .happy-path-table th {
+    background: var(--light-grey); padding: 10px 14px; text-align: left;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--muted); border-bottom: 2px solid var(--light-blue);
+  }
+  .happy-path-table td { padding: 10px 14px; font-size: 13px; color: var(--text-light); border-bottom: 1px solid var(--light-blue); }
+  .happy-path-table .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; background: var(--primary-blue); color: #fff;
+    border-radius: 50%; font-size: 11px; font-weight: 700;
+  }
+
+  /* === INTEGRATION TABLE === */
+  .integration-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .integration-table th {
+    background: var(--primary-blue); color: #fff; padding: 10px 14px;
+    text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .integration-table td { padding: 10px 14px; font-size: 13px; color: var(--text-light); border-bottom: 1px solid var(--light-blue); }
+  .integration-table tr:nth-child(even) { background: var(--light-grey); }
+
+  /* === DEFINITION OF DONE === */
+  .dod-list { list-style: none; padding: 0; }
+  .dod-list li { font-size: 14px; color: var(--text-light); padding: 6px 0 6px 28px; position: relative; line-height: 1.5; }
+  .dod-list li::before {
+    content: ''; width: 16px; height: 16px; border: 2px solid var(--primary-blue);
+    border-radius: 3px; position: absolute; left: 0; top: 8px;
+  }
+
+  /* === P2 SUMMARY CARDS === */
+  .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .summary-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .summary-card .sc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .summary-card .sc-id { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1px; }
+  .summary-card h4 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .summary-card p { font-size: 13px; color: var(--text-light); line-height: 1.6; margin-bottom: 8px; }
+  .summary-card .sc-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .summary-card .sc-tag {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 3px 8px; border-radius: 4px; background: var(--light-blue); color: var(--primary-blue);
+  }
+
+  /* === P3 LIST === */
+  .p3-list { list-style: none; padding: 0; }
+  .p3-list li {
+    font-size: 14px; color: var(--text-light); padding: 10px 16px; border-bottom: 1px solid var(--light-blue);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .p3-list .p3-id { font-size: 11px; font-weight: 700; color: var(--muted); min-width: 60px; }
+
+  /* === IMPLEMENTATION SUMMARY === */
+  .impl-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+  .impl-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .impl-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+
+  /* ============================================= */
+  /* === PROTOTYPE EMBEDDING STYLES === */
+  /* ============================================= */
+
+  .prototype-embed {
+    margin: 48px auto; max-width: 500px; /* phone: centered narrow */
+    /* AGENT: For employee/browser prototypes use max-width: 1200px */
+  }
+  .prototype-embed.browser-type { max-width: 1200px; }
+
+  .prototype-label {
+    text-align: center; margin-bottom: 20px;
+  }
+  .proto-badge {
+    display: inline-block; background: var(--primary-blue); color: #fff;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+    padding: 6px 16px; border-radius: 20px; margin-bottom: 8px;
+  }
+  .proto-title {
+    display: block; font-size: 16px; font-weight: 600; color: var(--text); margin-top: 4px;
+  }
+
+  /* === PHONE FRAME === */
+  .phone-frame {
+    width: 375px; height: 812px; margin: 0 auto;
+    background: var(--white); border-radius: 40px;
+    box-shadow: 0 8px 40px rgba(9,28,53,0.15);
+    border: 12px solid var(--primary-dark);
+    overflow: hidden; position: relative;
+  }
+  .phone-notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 150px; height: 30px; background: var(--primary-dark);
+    border-radius: 0 0 20px 20px; z-index: 10;
+  }
+  .phone-screen { width: 100%; height: 100%; position: relative; overflow: hidden; }
+
+  /* === BROWSER FRAME === */
+  .browser-frame {
+    width: 100%; max-width: 1160px; margin: 0 auto;
+    background: var(--white); border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(9,28,53,0.15);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .browser-chrome {
+    height: 40px; background: var(--light-grey); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 16px; gap: 12px;
+  }
+  .browser-dots { display: flex; gap: 6px; }
+  .browser-dots .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .browser-dots .dot.red { background: #FF5F57; }
+  .browser-dots .dot.yellow { background: #FFBD2E; }
+  .browser-dots .dot.green { background: #28C840; }
+  .browser-url {
+    flex: 1; background: var(--white); border-radius: 6px; padding: 4px 12px;
+    font-size: 12px; color: var(--text-light);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .browser-screen { width: 100%; height: 720px; position: relative; overflow: hidden; }
+
+  /* === PROTOTYPE SCREENS (shared) === */
+  .phone-screen .screen,
+  .browser-screen .screen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: none; flex-direction: column;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--white);
+  }
+  .phone-screen .screen.active,
+  .browser-screen .screen.active { display: flex; }
+
+  /* === Prototype internal components === */
+  .screen .screen-header {
+    padding: 50px 20px 20px; background: var(--primary-blue); color: #fff;
+  }
+  .phone-screen .screen .screen-header { padding-top: 50px; }
+  .browser-screen .screen .screen-header { padding: 20px 32px; }
+  .screen .screen-header .step-indicator { font-size: 12px; opacity: 0.8; }
+  .screen .screen-header h2 { font-size: 22px; font-weight: 700; margin-top: 6px; }
+  .screen .screen-header p { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+
+  .screen .screen-body { flex: 1; padding: 20px; overflow-y: auto; }
+  .browser-screen .screen .screen-body { padding: 24px 32px; }
+
+  .screen .screen-footer { padding: 16px 20px; border-top: 1px solid #E5EBFF; }
+  .browser-screen .screen .screen-footer { padding: 16px 32px; }
+
+  /* Prototype form elements */
+  .screen .proto-btn {
+    width: 100%; padding: 14px; background: var(--primary-blue); color: #fff;
+    border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
+    cursor: default; /* non-interactive prototype */
+  }
+  .screen .proto-btn-outline {
+    width: 100%; padding: 14px; background: transparent; color: var(--primary-blue);
+    border: 2px solid var(--primary-blue); border-radius: 12px; font-size: 16px;
+    font-weight: 600; margin-top: 10px; cursor: default;
+  }
+  .screen .proto-input {
+    width: 100%; padding: 12px 14px; background: var(--light-grey);
+    border: 1px solid var(--light-blue); border-radius: 10px; font-size: 15px;
+    color: var(--text); margin-bottom: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .screen .proto-label {
+    display: block; font-size: 13px; font-weight: 600; color: var(--text);
+    margin-bottom: 6px;
+  }
+  .screen .proto-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 16px; margin-bottom: 12px;
+  }
+  .screen .proto-card.selected { border-color: var(--primary-blue); background: #F0F4FF; }
+  .screen .proto-card h4 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .screen .proto-card p { font-size: 13px; color: var(--text-light); }
+
+  .screen .proto-success {
+    text-align: center; padding: 40px 20px;
+  }
+  .screen .proto-checkmark {
+    width: 80px; height: 80px; border-radius: 50%; background: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px; color: #fff; font-size: 36px; font-weight: 700;
+  }
+  .screen .proto-progress {
+    height: 4px; background: var(--light-blue); border-radius: 2px; margin-bottom: 20px;
+  }
+  .screen .proto-progress-fill { height: 100%; background: var(--primary-blue); border-radius: 2px; }
+
+  /* Status row for processing screens */
+  .screen .status-row {
+    display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 14px; color: var(--text-light);
+  }
+  .screen .status-check { color: var(--green); font-weight: 700; }
+  .screen .status-spinner { color: var(--primary-blue); font-weight: 700; }
+
+  /* Desktop-specific: sidebar + main layout */
+  .screen .desktop-layout { display: flex; height: 100%; }
+  .screen .desktop-sidebar {
+    width: 240px; background: var(--primary-dark); color: #fff; padding: 20px;
+    flex-shrink: 0;
+  }
+  .screen .desktop-sidebar h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+  .screen .desktop-sidebar .sidebar-item {
+    padding: 10px 12px; border-radius: 8px; font-size: 13px; cursor: default; margin-bottom: 4px;
+    color: rgba(255,255,255,0.7);
+  }
+  .screen .desktop-sidebar .sidebar-item.active { background: rgba(51,102,255,0.3); color: #fff; }
+  .screen .desktop-main { flex: 1; overflow-y: auto; }
+
+  /* Desktop data cards */
+  .screen .data-row {
+    display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .screen .data-card {
+    flex: 1; min-width: 180px; background: var(--light-grey);
+    border: 1px solid var(--light-blue); border-radius: 10px; padding: 16px;
+  }
+  .screen .data-card .dc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-light); letter-spacing: 0.5px; }
+  .screen .data-card .dc-value { font-size: 22px; font-weight: 900; color: var(--primary-blue); margin-top: 4px; }
+
+  /* Tab bar for desktop screens */
+  .screen .tab-bar {
+    display: flex; border-bottom: 2px solid var(--light-blue); margin-bottom: 20px;
+  }
+  .screen .tab {
+    padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--text-light);
+    cursor: default; border-bottom: 2px solid transparent; margin-bottom: -2px;
+  }
+  .screen .tab.active { color: var(--primary-blue); border-bottom-color: var(--primary-blue); }
+
+  /* === PROTOTYPE NAVIGATION === */
+  .proto-nav {
+    display: flex; justify-content: center; align-items: center; gap: 24px;
+    margin-top: 20px; padding: 12px 0;
+  }
+  .proto-nav button {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    color: var(--text); padding: 10px 24px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: 'Libre Franklin', sans-serif;
+    transition: background 0.2s;
+  }
+  .proto-nav button:hover:not(:disabled) { background: var(--light-blue); }
+  .proto-nav button:disabled { opacity: 0.4; cursor: default; }
+  .proto-counter { font-size: 14px; font-weight: 600; color: var(--text-light); min-width: 60px; text-align: center; }
+
+  /* === PROP ARCH / JOURNEY RECAP === */
+  .journey-stages {
+    display: flex; gap: 0; margin: 32px 0; overflow-x: auto;
+  }
+  .journey-stage {
+    flex: 1; min-width: 160px; padding: 20px 16px; text-align: center;
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    position: relative;
+  }
+  .journey-stage:first-child { border-radius: 12px 0 0 12px; }
+  .journey-stage:last-child { border-radius: 0 12px 12px 0; }
+  .journey-stage h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .journey-stage .stage-ucs { font-size: 11px; color: var(--primary-blue); font-weight: 600; }
+  .journey-stage .stage-arrow {
+    position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
+    width: 0; height: 0; border-left: 10px solid var(--light-blue);
+    border-top: 10px solid transparent; border-bottom: 10px solid transparent;
+    z-index: 1;
+  }
+
+  /* === PERSONA RECAP CARDS === */
+  .persona-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  .persona-mini {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 20px; text-align: center;
+  }
+  .persona-mini .pm-avatar {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--light-blue);
+    margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;
+  }
+  .persona-mini .pm-avatar svg { width: 28px; height: 28px; fill: var(--primary-blue); }
+  .persona-mini h4 { font-size: 14px; font-weight: 700; color: var(--text); }
+  .persona-mini p { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+
+  /* === SWITCHING TAX MINI === */
+  .switching-tax-bar {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px 32px; display: flex; align-items: center;
+    gap: 32px; margin-bottom: 32px;
+  }
+  .st-value { font-size: 42px; font-weight: 900; color: var(--red); }
+  .st-label { font-size: 14px; color: var(--text-light); }
+
+  /* === NEXT STEPS === */
+  .next-steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .next-step-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0;
+    padding: 20px;
+  }
+  .next-step-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .next-step-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================= -->
+<!-- S1: COVER (DARK) -->
+<!-- ============================================================= -->
+<div class="cover">
+  <div class="brand">Backbase</div>
+  <!-- AGENT: Replace [CLIENT] with client name -->
+  <h1>[CLIENT]<br>[TYPE] Use Case Design</h1>
+  <!-- AGENT: Replace subtitle with appropriate description -->
+  <div class="subtitle">Backbase Ignite — Use Case Specifications &amp; Prototypes</div>
+  <!-- AGENT: Replace date and consultant name -->
+  <div class="meta">[Month Year] &nbsp;|&nbsp; Prepared by [Consultant Name]</div>
+</div>
+
+<!-- ============================================================= -->
+<!-- S2: SECTION DIVIDER -->
+<!-- ============================================================= -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">01</div>
+  <div class="cyan-accent"></div>
+  <!-- AGENT: Replace with "Customer Use Cases" or "Employee Use Cases" -->
+  <h2>[TYPE] Use Cases</h2>
+  <div class="section-subtitle">Objectives, Approach &amp; Workshop Findings</div>
+</div>
+
+<!-- ============================================================= -->
+<!-- S3: OBJECTIVES & AGENDA (WHITE) -->
+<!-- ============================================================= -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Objectives &amp; Approach</h2>
+  </div>
+
+  <div class="objective-statement">
+    <!-- AGENT: Customize objective statement for the client -->
+    This document translates the validated findings from [CLIENT]'s Ignite workshops into
+    detailed use case specifications with embedded interactive prototypes. Each Priority 1
+    use case includes a complete 10-section design specification and a navigable prototype
+    demonstrating the proposed digital experience.
+  </div>
+
+  <div class="methodology-grid">
+    <div class="method-block">
+      <div class="block-num">1</div>
+      <h4>Synthesize</h4>
+      <p>Consolidate findings from all 4 workshops</p>
+    </div>
+    <div class="method-block">
+      <div class="block-num">2</div>
+      <h4>Prioritize</h4>
+      <p>Rank use cases by value, fit &amp; feasibility</p>
+    </div>
+    <div class="method-block">
+      <div class="block-num">3</div>
+      <h4>Design</h4>
+      <p>10-section specification per P1 use case</p>
+    </div>
+    <div class="method-block">
+      <div class="block-num">4</div>
+      <h4>Prototype</h4>
+      <p>Interactive embedded prototype per P1</p>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;3</div>
+</div>
+
+<!-- ============================================================= -->
+<!-- S4: WORKSHOP RECAP (WHITE) -->
+<!-- ============================================================= -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Workshop Findings Recap</h2>
+    <span class="subtitle">Foundation for use case design</span>
+  </div>
+
+  <div class="recap-grid">
+    <div class="recap-card">
+      <div class="recap-label">Strategy Workshop</div>
+      <!-- AGENT: Replace with validated strategic themes from Agent 1 -->
+      <h3>Strategic Themes</h3>
+      <ul>
+        <li>[Theme 1 from Agent 1]</li>
+        <li>[Theme 2 from Agent 1]</li>
+        <li>[Theme 3 from Agent 1]</li>
+      </ul>
+    </div>
+    <!-- AGENT: For MEMBER doc, include CX recap. For EMPLOYEE doc, replace with EX recap -->
+    <div class="recap-card">
+      <div class="recap-label">Experience Workshop</div>
+      <!-- AGENT: Replace with CX or EX key findings -->
+      <h3>[Member/Employee] Experience Priorities</h3>
+      <ul>
+        <li>[Priority 1 from Agent 2 or 3]</li>
+        <li>[Priority 2 from Agent 2 or 3]</li>
+        <li>[Priority 3 from Agent 2 or 3]</li>
+      </ul>
+    </div>
+    <!-- AGENT: For MEMBER doc, show EX linkage. For EMPLOYEE doc, show switching tax -->
+    <div class="recap-card">
+      <div class="recap-label">Employee Experience</div>
+      <!-- AGENT: Replace with EX key findings from Agent 3 -->
+      <h3>EX-to-CX Linkage</h3>
+      <ul>
+        <li>[Finding 1 from Agent 3]</li>
+        <li>[Finding 2 from Agent 3]</li>
+      </ul>
+    </div>
+    <div class="recap-card">
+      <div class="recap-label">Architecture Workshop</div>
+      <!-- AGENT: Replace with architecture key findings from Agent 4 -->
+      <h3>Architecture Enablers</h3>
+      <ul>
+        <li>[Core system: Vendor/Version]</li>
+        <li>[Integration approach]</li>
+        <li>[Key constraint or opportunity]</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;4</div>
+</div>
+
+<!-- ============================================================= -->
+<!-- S5: SECTION DIVIDER -->
+<!-- ============================================================= -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">02</div>
+  <div class="cyan-accent"></div>
+  <!-- AGENT: For MEMBER doc: "Your Digital Experience". For EMPLOYEE doc: "Digital Assist" -->
+  <h2>[Your Digital Experience / Digital Assist]</h2>
+  <!-- AGENT: For MEMBER doc: journey stages. For EMPLOYEE doc: persona & switching tax recap -->
+  <div class="section-subtitle">[Proposition Architecture / Employee Persona] Recap</div>
+</div>
+
+<!-- ============================================================= -->
+<!-- S6: JOURNEY / PERSONA RECAP (WHITE) -->
+<!-- AGENT: For MEMBER doc, show proposition architecture journey stages. -->
+<!-- AGENT: For EMPLOYEE doc, show employee personas and switching tax. -->
+<!-- ============================================================= -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Replace heading based on document type -->
+    <h2>[Proposition Architecture / Employee Personas &amp; Switching Tax]</h2>
+  </div>
+
+  <!-- AGENT: FOR MEMBER DOC — Journey Stages from Agent 2 -->
+  <!-- Replace stage names and mapped use cases -->
+  <div class="journey-stages">
+    <div class="journey-stage">
+      <!-- AGENT: Replace with Stage 1 name from prop arch -->
+      <h4>[Stage 1]</h4>
+      <div class="stage-ucs">UC-M01, UC-M02</div>
+      <div class="stage-arrow"></div>
+    </div>
+    <div class="journey-stage">
+      <!-- AGENT: Replace with Stage 2 name -->
+      <h4>[Stage 2]</h4>
+      <div class="stage-ucs">UC-M03</div>
+      <div class="stage-arrow"></div>
+    </div>
+    <div class="journey-stage">
+      <!-- AGENT: Replace with Stage 3 name -->
+      <h4>[Stage 3]</h4>
+      <div class="stage-ucs">UC-M04, UC-M05</div>
+      <div class="stage-arrow"></div>
+    </div>
+    <div class="journey-stage">
+      <!-- AGENT: Replace with Stage 4 name -->
+      <h4>[Stage 4]</h4>
+      <div class="stage-ucs">UC-M06, UC-M07</div>
+    </div>
+  </div>
+
+  <!-- AGENT: FOR EMPLOYEE DOC — Persona mini cards + switching tax -->
+  <!-- AGENT: Replace persona names, roles, and switching tax figures -->
+  <!--
+  <div class="persona-mini-grid">
+    <div class="persona-mini">
+      <div class="pm-avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></div>
+      <h4>[Persona Name]</h4>
+      <p>[Role] | [Channel]</p>
+    </div>
+    <div class="persona-mini">
+      <div class="pm-avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></div>
+      <h4>[Persona Name]</h4>
+      <p>[Role] | [Channel]</p>
+    </div>
+    <div class="persona-mini">
+      <div class="pm-avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></div>
+      <h4>[Persona Name]</h4>
+      <p>[Role] | [Channel]</p>
+    </div>
+  </div>
+  <div class="switching-tax-bar">
+    <div class="st-value">$[X.X]M</div>
+    <div>
+      <div style="font-weight: 700; color: var(--text);">Annual System Switching Tax</div>
+      <div class="st-label">Across [N] systems, [N] roles, [N] channels</div>
+    </div>
+  </div>
+  -->
+
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;6</div>
+</div>
+
+<!-- ============================================================= -->
+<!-- S7: USE CASE INVENTORY TABLE (WHITE) -->
+<!-- ============================================================= -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Use Case Inventory</h2>
+    <span class="subtitle">All identified use cases by priority</span>
+  </div>
+
+  <!-- AGENT: Populate table with all use cases -->
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Use Case</th>
+        <th>Priority</th>
+        <th>Module</th>
+        <!-- AGENT: For MEMBER doc use "Journey Stage", for EMPLOYEE doc use "DA Capability" -->
+        <th>[Stage / Capability]</th>
+        <th>Approach</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- AGENT: Replace rows with actual use cases. One row per use case. -->
+      <tr>
+        <td>UC-[X]01</td>
+        <td>[Experience-Centric Name]</td>
+        <td><span class="badge badge-p1">P1</span></td>
+        <td>[Module]</td>
+        <td>[Stage/Capability]</td>
+        <td>[OOTB / Config / Extension / Custom]</td>
+      </tr>
+      <tr>
+        <td>UC-[X]02</td>
+        <td>[Experience-Centric Name]</td>
+        <td><span class="badge badge-p1">P1</span></td>
+        <td>[Module]</td>
+        <td>[Stage/Capability]</td>
+        <td>[Approach]</td>
+      </tr>
+      <!-- AGENT: Continue for all use cases (P1, P2, P3) -->
+      <tr>
+        <td>UC-[X]04</td>
+        <td>[Experience-Centric Name]</td>
+        <td><span class="badge badge-p2">P2</span></td>
+        <td>[Module]</td>
+        <td>[Stage/Capability]</td>
+        <td>[Approach]</td>
+      </tr>
+      <tr>
+        <td>UC-[X]07</td>
+        <td>[Experience-Centric Name]</td>
+        <td><span class="badge badge-p3">P3</span></td>
+        <td>[Module]</td>
+        <td>[Stage/Capability]</td>
+        <td>[Approach]</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;7</div>
+</div>
+
+<!-- ============================================================= -->
+<!-- S8: SECTION DIVIDER — Priority 1 Use Cases -->
+<!-- ============================================================= -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">03</div>
+  <div class="cyan-accent"></div>
+  <h2>Priority 1 Use Cases</h2>
+  <div class="section-subtitle">Detailed specifications with interactive prototypes</div>
+</div>
+
+<!-- ============================================================= -->
+<!-- S9: P1 USE CASE #1 — FULL SPEC + EMBEDDED PROTOTYPE -->
+<!-- AGENT: Repeat this block for each P1 use case -->
+<!-- ============================================================= -->
+<div class="content-section">
+  <div class="usecase-spec">
+    <div class="usecase-header">
+      <!-- AGENT: Replace with actual use case ID and name -->
+      <div class="uc-id">UC-[X]01</div>
+      <h3>[Experience-Centric Name]</h3>
+      <div class="uc-meta">
+        <!-- AGENT: Replace meta values -->
+        <span><strong>Priority:</strong> P1</span>
+        <span><strong>Category:</strong> [Tablestakes / Differentiating]</span>
+        <span><strong>Module:</strong> [Backbase Module]</span>
+        <!-- AGENT: For MEMBER use "Stage:", for EMPLOYEE use "Capability:" -->
+        <span><strong>[Stage/Capability]:</strong> [Value]</span>
+      </div>
+    </div>
+
+    <!-- Section 1: Use Case Overview is in the header above -->
+
+    <!-- Section 2: Business Context -->
+    <div class="spec-section">
+      <h4>2. Business Context</h4>
+      <!-- AGENT: Replace with actual business context from workshop findings -->
+      <p><strong>Strategic Alignment:</strong> [How this links to Agent 1 themes]</p>
+      <p style="margin-top:8px"><strong>Business Value:</strong> [Revenue / Cost / Experience impact]</p>
+      <p style="margin-top:8px"><strong>Current State:</strong> [How it's done today]</p>
+      <p style="margin-top:8px"><strong>Pain Points Addressed:</strong></p>
+      <ul>
+        <!-- AGENT: Replace with validated pain points from workshops -->
+        <li>[Pain point 1 from workshop]</li>
+        <li>[Pain point 2 from workshop]</li>
+        <li>[Pain point 3 from workshop]</li>
+      </ul>
+    </div>
+
+    <!-- Section 3: User Context -->
+    <div class="spec-section">
+      <h4>3. User Context</h4>
+      <!-- AGENT: Replace persona and goal details -->
+      <p><strong>Primary Persona:</strong> [Persona name from Agent 2 or 3]</p>
+      <p style="margin-top:8px"><strong>User Goal:</strong> [What the user wants to achieve]</p>
+      <p style="margin-top:8px"><strong>Success Criteria:</strong> [How they know they succeeded]</p>
+    </div>
+
+    <!-- Section 4: Happy Path -->
+    <div class="spec-section">
+      <h4>4. Happy Path Specification</h4>
+      <!-- AGENT: Replace preconditions and trigger -->
+      <p><strong>Preconditions:</strong> [What must be true]</p>
+      <p style="margin-top:8px"><strong>Trigger:</strong> [What initiates this journey]</p>
+      <!-- AGENT: Replace steps with actual happy path -->
+      <table class="happy-path-table">
+        <thead><tr><th>Step</th><th>User Action</th><th>System Response</th></tr></thead>
+        <tbody>
+          <tr><td><span class="step-num">1</span></td><td>[Action]</td><td>[Response]</td></tr>
+          <tr><td><span class="step-num">2</span></td><td>[Action]</td><td>[Response]</td></tr>
+          <!-- AGENT: Continue for all steps -->
+          <tr><td><span class="step-num">N</span></td><td>[Action]</td><td>[Response]</td></tr>
+        </tbody>
+      </table>
+      <!-- AGENT: Replace postconditions -->
+      <p style="margin-top:12px"><strong>Postconditions:</strong> [What's true after completion]</p>
+    </div>
+
+    <!-- Section 5: Screen Flow -->
+    <div class="spec-section">
+      <h4>5. Screen Flow</h4>
+      <ul>
+        <!-- AGENT: Replace with screen names matching prototype -->
+        <li><strong>Screen 1:</strong> [Name] — [Purpose]</li>
+        <li><strong>Screen 2:</strong> [Name] — [Purpose]</li>
+        <!-- AGENT: Continue for all screens -->
+        <li><strong>Screen N:</strong> [Name] — [Purpose]</li>
+      </ul>
+    </div>
+
+    <!-- Section 6: Data Requirements -->
+    <div class="spec-section">
+      <h4>6. Data Requirements</h4>
+      <!-- AGENT: Replace data requirements -->
+      <p><strong>Input Data:</strong> [What user provides]</p>
+      <p style="margin-top:8px"><strong>System Data:</strong> [What system retrieves]</p>
+      <p style="margin-top:8px"><strong>Output Data:</strong> [What's created/updated]</p>
+    </div>
+
+    <!-- Section 7: Integration Requirements -->
+    <div class="spec-section">
+      <h4>7. Integration Requirements</h4>
+      <!-- AGENT: Replace with actual integrations aligned to Agent 4 -->
+      <table class="integration-table">
+        <thead><tr><th>System</th><th>Integration Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>[System]</td><td>[API / Event / Batch]</td><td>[Purpose]</td></tr>
+          <!-- AGENT: Continue for all integrations -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 8: Backbase Implementation -->
+    <div class="spec-section">
+      <h4>8. Backbase Implementation</h4>
+      <!-- AGENT: Replace implementation details -->
+      <p><strong>Module:</strong> [Specific Backbase module]</p>
+      <p style="margin-top:8px"><strong>Approach:</strong> [OOTB / Configuration / Extension / Custom]</p>
+      <p style="margin-top:8px"><strong>Key Components:</strong> [List components]</p>
+      <p style="margin-top:8px"><strong>Customization Notes:</strong> [What needs client-specific work]</p>
+    </div>
+
+    <!-- Section 9: Definition of Done -->
+    <div class="spec-section">
+      <h4>9. Definition of Done</h4>
+      <ul class="dod-list">
+        <!-- AGENT: Replace with measurable acceptance criteria -->
+        <li>[Measurable acceptance criterion 1]</li>
+        <li>[Measurable acceptance criterion 2]</li>
+        <li>[Measurable acceptance criterion 3]</li>
+        <li>[Measurable acceptance criterion 4]</li>
+      </ul>
+    </div>
+
+    <!-- Section 10: Interactive Prototype -->
+    <div class="spec-section">
+      <h4>10. Interactive Prototype</h4>
+    </div>
+  </div>
+
+  <!-- ====== EMBEDDED PROTOTYPE ====== -->
+  <!-- AGENT: For MEMBER use cases, use phone-frame. For EMPLOYEE, use browser-frame. -->
+  <!-- AGENT: Replace data-proto-id with unique ID per use case (e.g., UCM01, UCE01) -->
+  <div class="prototype-embed" data-proto-id="UC[X]01">
+    <div class="prototype-label">
+      <span class="proto-badge">Interactive Prototype</span>
+      <!-- AGENT: Replace with use case ID and name -->
+      <span class="proto-title">UC-[X]01: [Experience-Centric Name]</span>
+    </div>
+
+    <!-- AGENT: For MEMBER doc use .phone-frame, for EMPLOYEE doc use .browser-frame -->
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+
+        <!-- AGENT: Screen 1 — Replace all screen content with use-case-specific UI -->
+        <div class="screen active" data-screen="1">
+          <div class="screen-header">
+            <div class="step-indicator">Step 1 of [N]</div>
+            <h2>[Screen 1 Title]</h2>
+            <p>[Screen 1 subtitle]</p>
+          </div>
+          <div class="screen-body">
+            <!-- AGENT: Replace with screen-specific content -->
+            <p style="color:#5A6A7E; font-size:14px;">[Screen content placeholder]</p>
+          </div>
+          <div class="screen-footer">
+            <div class="proto-btn">[CTA Text]</div>
+          </div>
+        </div>
+
+        <!-- AGENT: Screen 2 -->
+        <div class="screen" data-screen="2">
+          <div class="screen-header">
+            <div class="step-indicator">Step 2 of [N]</div>
+            <h2>[Screen 2 Title]</h2>
+          </div>
+          <div class="screen-body">
+            <!-- AGENT: Replace with screen-specific content -->
+          </div>
+          <div class="screen-footer">
+            <div class="proto-btn">[CTA Text]</div>
+          </div>
+        </div>
+
+        <!-- AGENT: Continue adding screens. Last screen should show success state. -->
+        <!-- AGENT: Ensure screen count matches Section 5 Screen Flow -->
+
+      </div>
+    </div>
+
+    <!-- AGENT: For EMPLOYEE doc, replace .phone-frame block above with:
+    <div class="browser-frame">
+      <div class="browser-chrome">
+        <div class="browser-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+        <div class="browser-url">assist.[client].com/[path]</div>
+      </div>
+      <div class="browser-screen">
+        [screens here]
+      </div>
+    </div>
+    -->
+
+    <div class="proto-nav">
+      <button class="proto-back" disabled>&larr; Back</button>
+      <!-- AGENT: Replace total count -->
+      <span class="proto-counter">1 / [N]</span>
+      <button class="proto-next">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- AGENT: Each prototype needs its own IIFE script. Replace UC[X]01 with correct ID. -->
+  <script>
+  (function() {
+    var proto = document.querySelector('[data-proto-id="UC[X]01"]');
+    var current = 1;
+    var screens = proto.querySelectorAll('.screen');
+    var total = screens.length;
+    var counter = proto.querySelector('.proto-counter');
+    var backBtn = proto.querySelector('.proto-back');
+    var nextBtn = proto.querySelector('.proto-next');
+    function show(n) {
+      for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
+      proto.querySelector('[data-screen="' + n + '"]').classList.add('active');
+      current = n;
+      counter.textContent = n + ' / ' + total;
+      backBtn.disabled = (n === 1);
+      nextBtn.disabled = (n === total);
+    }
+    backBtn.addEventListener('click', function() { if (current > 1) show(current - 1); });
+    nextBtn.addEventListener('click', function() { if (current < total) show(current + 1); });
+  })();
+  </script>
+
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;9</div>
+</div>
+
+<!-- AGENT: REPEAT the entire S9 block (content-section with usecase-spec + prototype-embed) -->
+<!-- AGENT: for each additional P1 use case (UC-[X]02, UC-[X]03, etc.) -->
+<!-- AGENT: Ensure each prototype has a UNIQUE data-proto-id and matching IIFE script -->
+
+<!-- ============================================================= -->
+<!-- S14: SECTION DIVIDER — Additional Use Cases -->
+<!-- ============================================================= -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">04</div>
+  <div class="cyan-accent"></div>
+  <h2>Additional Use Cases</h2>
+  <div class="section-subtitle">Priority 2 &amp; Priority 3 use cases for future phases</div>
+</div>
+
+<!-- ============================================================= -->
+<!-- S15: P2 SUMMARY CARDS (WHITE) -->
+<!-- ============================================================= -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Priority 2 Use Cases</h2>
+    <span class="subtitle">Summary specifications — no prototypes</span>
+  </div>
+
+  <div class="summary-grid">
+    <!-- AGENT: Repeat this card for each P2 use case -->
+    <div class="summary-card">
+      <div class="sc-header">
+        <span class="sc-id">UC-[X]04</span>
+        <span class="badge badge-p2">P2</span>
+      </div>
+      <!-- AGENT: Replace name, description, value -->
+      <h4>[Experience-Centric Name]</h4>
+      <p>[2-3 sentence description of the use case, its value, and why it's P2 not P1]</p>
+      <div class="sc-meta">
+        <!-- AGENT: Replace tags -->
+        <span class="sc-tag">[Module]</span>
+        <span class="sc-tag">[Approach]</span>
+        <span class="sc-tag">[Stage/Capability]</span>
+      </div>
+    </div>
+    <!-- AGENT: Add more P2 cards as needed -->
+  </div>
+
+  <!-- P3 List -->
+  <div class="section-title" style="margin-top:48px;">
+    <div class="accent"></div>
+    <h2>Priority 3 Use Cases</h2>
+    <span class="subtitle">Future consideration</span>
+  </div>
+
+  <ul class="p3-list">
+    <!-- AGENT: Replace with P3 use cases -->
+    <li><span class="p3-id">UC-[X]08</span> [Experience-Centric Name] — [One-line description]</li>
+    <li><span class="p3-id">UC-[X]09</span> [Experience-Centric Name] — [One-line description]</li>
+  </ul>
+
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;15</div>
+</div>
+
+<!-- ============================================================= -->
+<!-- S17: IMPLEMENTATION SUMMARY & NEXT STEPS (WHITE) -->
+<!-- ============================================================= -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Implementation Summary &amp; Next Steps</h2>
+  </div>
+
+  <!-- AGENT: Replace stats with actual use case counts -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <!-- AGENT: Replace with total P1 count -->
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">P1 Use Cases</div>
+    </div>
+    <div class="stat-card">
+      <!-- AGENT: Replace with total prototype screen count -->
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">Prototype Screens</div>
+    </div>
+    <div class="stat-card">
+      <!-- AGENT: Replace with P2 count -->
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">P2 Use Cases</div>
+    </div>
+    <div class="stat-card">
+      <!-- AGENT: Replace with total use case count -->
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">Total Use Cases</div>
+    </div>
+  </div>
+
+  <!-- AGENT: Replace next steps with actual recommendations -->
+  <div class="next-steps-grid">
+    <div class="next-step-card">
+      <h4>Immediate</h4>
+      <!-- AGENT: Replace with actual next steps -->
+      <p>[Immediate action items — e.g., stakeholder review of P1 specs and prototypes]</p>
+    </div>
+    <div class="next-step-card">
+      <h4>Short-term</h4>
+      <!-- AGENT: Replace -->
+      <p>[Short-term actions — e.g., detailed requirements for P1, architecture design]</p>
+    </div>
+    <div class="next-step-card">
+      <h4>Medium-term</h4>
+      <!-- AGENT: Replace -->
+      <p>[Medium-term actions — e.g., P2 use case elaboration, implementation planning]</p>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;17</div>
+</div>
+
+<!-- ============================================================= -->
+<!-- S18: CLOSING (DARK) -->
+<!-- ============================================================= -->
+<div class="closing">
+  <!-- AGENT: Customize closing message -->
+  <h2>Next Steps</h2>
+  <div class="subtitle">From use case design to implementation</div>
+  <div class="brand" style="margin-top: 40px;">Backbase</div>
+</div>
+
+</body>
+</html>

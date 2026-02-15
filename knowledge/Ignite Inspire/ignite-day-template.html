@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- AGENT: Replace [CLIENT] with actual client name -->
+<title>[CLIENT] Ignite Day Presentation | Backbase</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-dark: #091C35;
+    --primary-blue: #3366FF;
+    --cyan: #69FEFF;
+    --white: #FFFFFF;
+    --light-grey: #F3F6F9;
+    --light-blue: #E5EBFF;
+    --muted: #3A495D;
+    --green: #26BC71;
+    --amber: #FFAC09;
+    --red: #FF7262;
+    --text: #091C35;
+    --text-light: #5A6A7E;
+    --border: #E0E6ED;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 15px; line-height: 1.6; color: var(--text); background: var(--white); }
+
+  /* ═══════════════════════════════════════════════════
+     COVER (Dark background)
+     ═══════════════════════════════════════════════════ */
+  .cover { background: var(--primary-dark); color: var(--white); min-height: 100vh; padding: 60px 80px; display: flex; flex-direction: column; justify-content: center; position: relative; page-break-after: always; }
+  .cover .brand { font-size: 22px; font-weight: 600; color: var(--primary-blue); margin-bottom: 60px; letter-spacing: 1px; }
+  .cover h1 { font-size: 48px; font-weight: 900; line-height: 1.15; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 60px; }
+  .cover .meta { font-size: 16px; font-weight: 400; color: var(--cyan); }
+
+  /* ═══════════════════════════════════════════════════
+     SECTION DIVIDER (Blue background)
+     ═══════════════════════════════════════════════════ */
+  .section-divider { background: var(--primary-blue); color: var(--white); padding: 80px 80px; min-height: 40vh; display: flex; flex-direction: column; justify-content: center; position: relative; page-break-before: always; page-break-after: always; }
+  .section-divider .brand { font-size: 18px; font-weight: 600; margin-bottom: 40px; letter-spacing: 1px; }
+  .section-divider .ghost-number { position: absolute; right: 80px; top: 50%; transform: translateY(-50%); font-size: 200px; font-weight: 900; color: rgba(255,255,255,0.08); line-height: 1; }
+  .section-divider h2 { font-size: 42px; font-weight: 900; line-height: 1.2; margin-bottom: 8px; }
+  .section-divider .section-subtitle { font-size: 20px; font-weight: 300; color: rgba(255,255,255,0.7); }
+  .section-divider .cyan-accent { width: 60px; height: 4px; background: var(--cyan); margin-bottom: 24px; }
+
+  /* ═══════════════════════════════════════════════════
+     CONTENT SECTION (White background)
+     ═══════════════════════════════════════════════════ */
+  .content-section { background: var(--white); padding: 60px 80px; min-height: 80vh; position: relative; page-break-after: always; }
+  .content-section .page-footer { position: absolute; bottom: 20px; right: 80px; font-size: 11px; font-weight: 600; color: var(--text-light); letter-spacing: 1px; }
+
+  /* ═══════════════════════════════════════════════════
+     CLOSING (Dark background)
+     ═══════════════════════════════════════════════════ */
+  .closing { background: var(--primary-dark); color: var(--white); min-height: 60vh; padding: 60px 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; page-break-before: always; }
+  .closing h2 { font-size: 42px; font-weight: 900; margin-bottom: 16px; }
+  .closing .subtitle { font-size: 20px; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 40px; }
+  .closing .brand { font-size: 18px; font-weight: 600; color: var(--primary-blue); letter-spacing: 1px; }
+
+  /* ═══════════════════════════════════════════════════
+     TITLE with blue accent square
+     ═══════════════════════════════════════════════════ */
+  .section-title { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+  .section-title .accent { width: 16px; height: 16px; background: var(--primary-blue); flex-shrink: 0; }
+  .section-title h2 { font-size: 24px; font-weight: 700; color: var(--text); }
+  .section-title .subtitle { font-size: 14px; font-weight: 400; color: var(--text-light); margin-left: auto; }
+
+  /* ═══════════════════════════════════════════════════
+     OBJECTIVE STATEMENT
+     ═══════════════════════════════════════════════════ */
+  .objective-statement { background: var(--light-grey); border: 1px solid var(--light-blue); border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0; padding: 24px 28px; font-size: 16px; line-height: 1.6; margin-bottom: 40px; }
+
+  /* ═══════════════════════════════════════════════════
+     STATS GRID
+     ═══════════════════════════════════════════════════ */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; text-align: center; }
+  .stat-card .stat-value { font-size: 36px; font-weight: 900; color: var(--primary-blue); }
+  .stat-card .stat-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+  /* ═══════════════════════════════════════════════════
+     CARD GRIDS (Recap, Theme, VP, Persona, etc.)
+     ═══════════════════════════════════════════════════ */
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+  .card-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .card-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; }
+  .card .card-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary-blue); margin-bottom: 8px; }
+  .card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .card p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+  .card ul { list-style: none; padding: 0; }
+  .card ul li { font-size: 13px; color: var(--text-light); padding: 3px 0 3px 16px; position: relative; }
+  .card ul li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--primary-blue); position: absolute; left: 0; top: 10px; }
+
+  /* Card border variants */
+  .card.blue-border { border-left: 4px solid var(--primary-blue); }
+  .card.green-border { border-left: 4px solid var(--green); }
+  .card.red-border { border-left: 4px solid var(--red); }
+  .card.amber-border { border-left: 4px solid var(--amber); }
+
+  /* ═══════════════════════════════════════════════════
+     AGENDA (Day 1 / Day 2 columns)
+     ═══════════════════════════════════════════════════ */
+  .agenda-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+  .agenda-day h3 { font-size: 18px; font-weight: 900; color: var(--primary-blue); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--light-blue); }
+  .agenda-item { display: flex; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--light-blue); }
+  .agenda-item .agenda-time { font-size: 13px; font-weight: 600; color: var(--primary-blue); min-width: 80px; }
+  .agenda-item .agenda-session { font-size: 14px; color: var(--text); }
+  .agenda-item .agenda-session span { display: block; font-size: 12px; color: var(--text-light); }
+
+  /* ═══════════════════════════════════════════════════
+     PRINCIPLES GRID
+     ═══════════════════════════════════════════════════ */
+  .principles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  .principle-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; text-align: center; }
+  .principle-card .principle-icon { font-size: 28px; margin-bottom: 12px; }
+  .principle-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .principle-card p { font-size: 12px; color: var(--text-light); }
+
+  /* ═══════════════════════════════════════════════════
+     TEAM GRID
+     ═══════════════════════════════════════════════════ */
+  .team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .team-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 20px; text-align: center; }
+  .team-card .team-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--primary-blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; margin: 0 auto 12px; }
+  .team-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .team-card p { font-size: 12px; color: var(--text-light); }
+
+  /* ═══════════════════════════════════════════════════
+     NORTH STAR / BIG QUOTE
+     ═══════════════════════════════════════════════════ */
+  .north-star { text-align: center; padding: 60px 40px; }
+  .north-star .vision-quote { font-size: 28px; font-weight: 900; color: var(--text); line-height: 1.4; margin-bottom: 24px; }
+  .north-star .vision-quote::before { content: '\201C'; color: var(--primary-blue); font-size: 48px; display: block; margin-bottom: -10px; }
+  .north-star .attribution { font-size: 14px; color: var(--text-light); font-style: italic; }
+
+  .big-quote { text-align: center; padding: 80px 60px; }
+  .big-quote p { font-size: 32px; font-weight: 300; color: var(--text); line-height: 1.5; }
+  .big-quote p strong { font-weight: 900; color: var(--primary-blue); }
+
+  /* ═══════════════════════════════════════════════════
+     JOURNEY / PROPOSITION ARCHITECTURE
+     ═══════════════════════════════════════════════════ */
+  .journey-stages { display: flex; gap: 0; margin: 32px 0; }
+  .journey-stage { flex: 1; padding: 20px 16px; text-align: center; background: var(--light-grey); border: 1px solid var(--light-blue); position: relative; }
+  .journey-stage:first-child { border-radius: 12px 0 0 12px; }
+  .journey-stage:last-child { border-radius: 0 12px 12px 0; }
+  .journey-stage h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .journey-stage .stage-desc { font-size: 11px; color: var(--text-light); }
+  .journey-stage .stage-ucs { font-size: 11px; color: var(--primary-blue); font-weight: 600; margin-top: 8px; }
+  .journey-stage .stage-arrow { position: absolute; right: -10px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 10px solid var(--light-blue); border-top: 10px solid transparent; border-bottom: 10px solid transparent; z-index: 1; }
+
+  /* ═══════════════════════════════════════════════════
+     PERSONA CARDS
+     ═══════════════════════════════════════════════════ */
+  .persona-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  .persona-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; }
+  .persona-card .persona-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--primary-dark); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .persona-card .persona-avatar svg { width: 28px; height: 28px; fill: #fff; }
+  .persona-card h4 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .persona-card .persona-demo { font-size: 12px; color: var(--text-light); margin-bottom: 12px; }
+  .persona-card .persona-needs { font-size: 12px; color: var(--muted); }
+
+  /* ═══════════════════════════════════════════════════
+     TABLES
+     ═══════════════════════════════════════════════════ */
+  .data-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; font-size: 13px; }
+  .data-table thead th { background: var(--primary-blue); color: #fff; padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .data-table thead th:first-child { border-radius: 8px 0 0 0; }
+  .data-table thead th:last-child { border-radius: 0 8px 0 0; }
+  .data-table tbody td { padding: 12px 16px; border-bottom: 1px solid var(--light-blue); }
+  .data-table tbody tr:nth-child(even) { background: var(--light-grey); }
+
+  /* ═══════════════════════════════════════════════════
+     PRIORITY BADGES
+     ═══════════════════════════════════════════════════ */
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; }
+  .badge-p1 { background: rgba(51,102,255,0.12); color: var(--primary-blue); }
+  .badge-p2 { background: rgba(58,73,93,0.12); color: var(--muted); }
+  .badge-p3 { background: rgba(90,106,126,0.08); color: var(--text-light); }
+  .badge-tablestakes { background: rgba(38,188,113,0.12); color: var(--green); }
+  .badge-ootb { background: rgba(38,188,113,0.12); color: var(--green); }
+  .badge-config { background: rgba(51,102,255,0.12); color: var(--primary-blue); }
+  .badge-extension { background: rgba(255,172,9,0.12); color: var(--amber); }
+  .badge-custom { background: rgba(255,114,98,0.12); color: var(--red); }
+
+  /* ═══════════════════════════════════════════════════
+     USE CASE FLOW (Current → Future → Prototype)
+     ═══════════════════════════════════════════════════ */
+  .usecase-block { margin-bottom: 60px; padding-bottom: 40px; border-bottom: 2px solid var(--light-blue); }
+  .usecase-block:last-child { border-bottom: none; }
+
+  .usecase-header { background: var(--light-grey); border: 1px solid var(--light-blue); border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0; padding: 24px 28px; margin-bottom: 32px; }
+  .usecase-header .uc-id { font-size: 12px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1.5px; }
+  .usecase-header h3 { font-size: 22px; font-weight: 900; color: var(--text); margin-top: 4px; }
+  .usecase-header .uc-meta { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+  .usecase-header .uc-meta span { font-size: 12px; color: var(--text-light); }
+
+  .usecase-flow { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: stretch; margin-bottom: 32px; }
+  .state-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; }
+  .state-card.current { border-left: 4px solid var(--red); }
+  .state-card.future { border-left: 4px solid var(--green); }
+  .state-card h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .state-card.current h4 { color: var(--red); }
+  .state-card.future h4 { color: var(--green); }
+  .state-card ul { list-style: none; padding: 0; }
+  .state-card ul li { font-size: 13px; color: var(--text-light); padding: 4px 0; }
+  .flow-arrow { display: flex; align-items: center; font-size: 32px; color: var(--primary-blue); font-weight: 900; padding: 0 8px; }
+
+  .impl-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 20px 24px; margin-top: 24px; }
+  .impl-card h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-blue); margin-bottom: 10px; }
+  .impl-card p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+
+  /* ═══════════════════════════════════════════════════
+     SWITCHING TAX HERO
+     ═══════════════════════════════════════════════════ */
+  .switching-tax-hero { text-align: center; padding: 40px; background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 16px; margin-bottom: 32px; }
+  .switching-tax-hero .tax-amount { font-size: 64px; font-weight: 900; color: var(--red); line-height: 1; }
+  .switching-tax-hero .tax-label { font-size: 18px; font-weight: 600; color: var(--text); margin-top: 8px; }
+  .switching-tax-hero .tax-detail { font-size: 14px; color: var(--text-light); margin-top: 4px; }
+
+  /* ═══════════════════════════════════════════════════
+     ARCHITECTURE DIAGRAMS
+     ═══════════════════════════════════════════════════ */
+  .arch-diagram { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 16px; padding: 32px; margin-bottom: 32px; }
+  .arch-layer { display: flex; gap: 8px; flex-wrap: wrap; padding: 16px 0; }
+  .arch-layer-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; width: 100%; }
+  .arch-system { background: var(--white); border: 1px solid var(--light-blue); border-radius: 8px; padding: 10px 16px; font-size: 12px; font-weight: 600; color: var(--text); }
+  .arch-strip { width: 100%; height: 4px; border-radius: 2px; margin: 4px 0; }
+  .arch-strip.red { background: var(--red); }
+  .arch-strip.blue { background: var(--primary-blue); }
+
+  /* ═══════════════════════════════════════════════════
+     PLATFORM OVERVIEW (Standard Content)
+     ═══════════════════════════════════════════════════ */
+  .platform-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 32px 0; }
+  .platform-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; text-align: center; }
+  .platform-card .platform-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--primary-blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; margin: 0 auto 12px; }
+  .platform-card h4 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .platform-card p { font-size: 12px; color: var(--text-light); }
+
+  /* ═══════════════════════════════════════════════════
+     METHODOLOGY / STEPS
+     ═══════════════════════════════════════════════════ */
+  .methodology-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 32px 0; }
+  .method-block { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 20px 16px; text-align: center; }
+  .method-block .block-num { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: var(--primary-blue); color: #fff; border-radius: 50%; font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .method-block h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .method-block p { font-size: 12px; color: var(--text-light); }
+
+  /* ═══════════════════════════════════════════════════
+     PRIORITIZATION SCATTER PLOT
+     ═══════════════════════════════════════════════════ */
+  .scatter-container { text-align: center; margin: 32px 0; }
+  .scatter-container svg { max-width: 100%; height: auto; }
+  .scatter-legend { display: flex; justify-content: center; gap: 24px; margin-top: 16px; flex-wrap: wrap; }
+  .scatter-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-light); }
+  .scatter-legend-item .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* ═══════════════════════════════════════════════════
+     ROADMAP PHASES
+     ═══════════════════════════════════════════════════ */
+  .roadmap-phases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 32px 0; }
+  .phase-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; position: relative; overflow: hidden; }
+  .phase-card .phase-num { position: absolute; top: -10px; right: 16px; font-size: 72px; font-weight: 900; color: rgba(51,102,255,0.06); line-height: 1; }
+  .phase-card .phase-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary-blue); margin-bottom: 4px; }
+  .phase-card h3 { font-size: 18px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+  .phase-card .phase-timeline { font-size: 12px; font-weight: 600; color: var(--text-light); margin-bottom: 16px; }
+  .phase-card h5 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin: 12px 0 6px; }
+  .phase-card ul { list-style: none; padding: 0; }
+  .phase-card ul li { font-size: 12px; color: var(--text-light); padding: 2px 0 2px 14px; position: relative; }
+  .phase-card ul li::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--primary-blue); position: absolute; left: 0; top: 9px; }
+  .phase-card .phase-promise { background: rgba(51,102,255,0.06); border-radius: 8px; padding: 12px; margin-top: 16px; font-size: 13px; font-style: italic; color: var(--muted); }
+  .phase-card .phase-metric { font-size: 12px; color: var(--primary-blue); font-weight: 600; margin-top: 8px; }
+
+  /* ═══════════════════════════════════════════════════
+     TIMELINE (Horizontal)
+     ═══════════════════════════════════════════════════ */
+  .timeline { display: flex; position: relative; margin: 48px 0 32px; padding: 0 20px; }
+  .timeline::before { content: ''; position: absolute; top: 24px; left: 40px; right: 40px; height: 3px; background: var(--light-blue); }
+  .timeline-item { flex: 1; text-align: center; position: relative; }
+  .timeline-item .timeline-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--primary-blue); margin: 16px auto 12px; position: relative; z-index: 1; }
+  .timeline-item .timeline-label { font-size: 13px; font-weight: 700; color: var(--text); }
+  .timeline-item .timeline-desc { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+
+  /* ═══════════════════════════════════════════════════
+     NEXT STEPS / DECISION MATRIX
+     ═══════════════════════════════════════════════════ */
+  .next-steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  .next-step-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0; padding: 20px; }
+  .next-step-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .next-step-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+  .next-step-card .step-owner { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 8px; }
+
+  .decision-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+  .decision-table th { background: var(--primary-blue); color: #fff; padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .decision-table td { padding: 12px 16px; border-bottom: 1px solid var(--light-blue); font-size: 13px; color: var(--text-light); }
+  .decision-table tr:nth-child(even) { background: var(--light-grey); }
+
+  /* ═══════════════════════════════════════════════════
+     P2 SUMMARY CARDS
+     ═══════════════════════════════════════════════════ */
+  .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+  .summary-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; }
+  .summary-card .sc-id { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1px; }
+  .summary-card h4 { font-size: 16px; font-weight: 700; color: var(--text); margin: 8px 0; }
+  .summary-card p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+  .summary-card .sc-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .sc-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 4px; background: var(--light-blue); color: var(--primary-blue); }
+
+  /* ═══════════════════════════════════════════════════
+     PROTOTYPE EMBEDDING
+     ═══════════════════════════════════════════════════ */
+  .prototype-embed { margin: 48px auto; max-width: 500px; }
+  .prototype-embed.browser-type { max-width: 1200px; }
+  .prototype-label { text-align: center; margin-bottom: 20px; }
+  .proto-badge { display: inline-block; background: var(--primary-blue); color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; padding: 6px 16px; border-radius: 20px; margin-bottom: 8px; }
+  .proto-title { display: block; font-size: 16px; font-weight: 600; color: var(--text); margin-top: 4px; }
+
+  /* Phone Frame */
+  .phone-frame { width: 375px; height: 812px; margin: 0 auto; background: var(--white); border-radius: 40px; box-shadow: 0 8px 40px rgba(9,28,53,0.15); border: 12px solid var(--primary-dark); overflow: hidden; position: relative; }
+  .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 150px; height: 30px; background: var(--primary-dark); border-radius: 0 0 20px 20px; z-index: 10; }
+  .phone-screen { width: 100%; height: 100%; position: relative; overflow: hidden; }
+
+  /* Browser Frame */
+  .browser-frame { width: 100%; max-width: 1160px; margin: 0 auto; background: var(--white); border-radius: 12px; box-shadow: 0 8px 40px rgba(9,28,53,0.15); border: 1px solid var(--border); overflow: hidden; }
+  .browser-chrome { height: 40px; background: var(--light-grey); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 12px; }
+  .browser-dots { display: flex; gap: 6px; }
+  .browser-dots .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .browser-dots .dot.red { background: #FF5F57; }
+  .browser-dots .dot.yellow { background: #FFBD2E; }
+  .browser-dots .dot.green { background: #28C840; }
+  .browser-url { flex: 1; background: var(--white); border-radius: 6px; padding: 4px 12px; font-size: 12px; color: var(--text-light); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  .browser-screen { width: 100%; height: 720px; position: relative; overflow: hidden; }
+
+  /* Prototype Screens */
+  .phone-screen .screen,
+  .browser-screen .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--white); }
+  .phone-screen .screen.active,
+  .browser-screen .screen.active { display: flex; }
+  .screen .screen-header { padding: 50px 20px 20px; background: var(--primary-blue); color: #fff; }
+  .phone-screen .screen .screen-header { padding-top: 50px; }
+  .browser-screen .screen .screen-header { padding: 20px 32px; }
+  .screen .screen-header .step-indicator { font-size: 12px; opacity: 0.8; }
+  .screen .screen-header h2 { font-size: 22px; font-weight: 700; margin-top: 6px; }
+  .screen .screen-header p { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+  .screen .screen-body { flex: 1; padding: 20px; overflow-y: auto; }
+  .browser-screen .screen .screen-body { padding: 24px 32px; }
+  .screen .screen-footer { padding: 16px 20px; border-top: 1px solid #E5EBFF; }
+  .browser-screen .screen .screen-footer { padding: 16px 32px; }
+  .screen .proto-btn { width: 100%; padding: 14px; background: #3366FF; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: default; font-family: inherit; }
+  .screen .proto-btn-outline { width: 100%; padding: 14px; background: transparent; color: #3366FF; border: 2px solid #3366FF; border-radius: 12px; font-size: 16px; font-weight: 600; margin-top: 10px; cursor: default; font-family: inherit; }
+  .screen .proto-input { width: 100%; padding: 12px 14px; background: #F3F6F9; border: 1px solid #E5EBFF; border-radius: 10px; font-size: 15px; color: #091C35; margin-bottom: 14px; font-family: inherit; }
+  .screen .proto-label { display: block; font-size: 13px; font-weight: 600; color: #091C35; margin-bottom: 6px; }
+  .screen .proto-card { background: #F3F6F9; border: 1px solid #E5EBFF; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .screen .proto-card.selected { border-color: #3366FF; background: #F0F4FF; }
+  .screen .proto-card h4 { font-size: 15px; font-weight: 700; color: #091C35; margin-bottom: 4px; }
+  .screen .proto-card p { font-size: 13px; color: #5A6A7E; }
+  .screen .proto-success { text-align: center; padding: 40px 20px; }
+  .screen .proto-checkmark { width: 80px; height: 80px; border-radius: 50%; background: #26BC71; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #fff; font-size: 36px; font-weight: 700; }
+  .screen .proto-progress { height: 4px; background: #E5EBFF; border-radius: 2px; margin-bottom: 20px; }
+  .screen .proto-progress-fill { height: 100%; background: #3366FF; border-radius: 2px; }
+
+  /* Prototype Navigation */
+  .proto-nav { display: flex; justify-content: center; align-items: center; gap: 24px; margin-top: 20px; }
+  .proto-nav button { background: var(--light-grey); border: 1px solid var(--light-blue); color: var(--text); padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Libre Franklin', sans-serif; }
+  .proto-nav button:hover:not(:disabled) { background: var(--light-blue); }
+  .proto-nav button:disabled { opacity: 0.4; cursor: default; }
+  .proto-counter { font-size: 14px; font-weight: 600; color: var(--text-light); min-width: 60px; text-align: center; }
+
+  /* ═══════════════════════════════════════════════════
+     STANDARD CONTENT LABEL
+     ═══════════════════════════════════════════════════ */
+  .bb-slide-label { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); background: var(--light-grey); border: 1px solid var(--light-blue); padding: 3px 10px; border-radius: 4px; margin-bottom: 16px; }
+
+  /* ═══════════════════════════════════════════════════
+     STANDARD SLIDE IMAGE (from brand-assets)
+     ═══════════════════════════════════════════════════ */
+  .bb-slide-img { width: 100%; border-radius: 12px; box-shadow: 0 4px 24px rgba(9,28,53,0.1); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     COVER
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="brand">Backbase</div>
+  <!-- AGENT: Replace [CLIENT] with client name -->
+  <h1>[CLIENT]<br>Ignite Engagement</h1>
+  <!-- AGENT: Replace with engagement subtitle -->
+  <div class="subtitle">Backbase Ignite — Workshop Findings &amp; Transformation Roadmap</div>
+  <!-- AGENT: Replace [MONTH YEAR] with actual date -->
+  <div class="meta">[MONTH YEAR] &nbsp;|&nbsp; Backbase Value Consulting</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     DIVIDER: SESSION 1 — Introductions & Context Setting
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">01</div>
+  <div class="cyan-accent"></div>
+  <h2>Introductions &amp; Context Setting</h2>
+  <div class="section-subtitle">Agenda, Principles &amp; Team</div>
+</div>
+
+
+<!-- S1: AGENDA -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Agenda</h2></div>
+  <div class="agenda-grid">
+    <div class="agenda-day">
+      <h3>Day 1</h3>
+      <!-- AGENT: Replace session times and names based on engagement -->
+      <div class="agenda-item">
+        <div class="agenda-time">09:00</div>
+        <div class="agenda-session">Introductions &amp; Context Setting<span>Agenda, principles, team</span></div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">09:30</div>
+        <div class="agenda-session">Strategy &amp; Backbase Alignment<span>North Star, themes, objectives</span></div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">10:30</div>
+        <div class="agenda-session">Backbase Platform Overview<span>Platform, frontline, AI architecture</span></div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">11:00</div>
+        <div class="agenda-session">Value Propositions<span>Differentiating value propositions</span></div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">11:45</div>
+        <div class="agenda-session">Break</div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">12:00</div>
+        <!-- AGENT: Replace Member/Customer based on engagement type -->
+        <div class="agenda-session">[Member/Customer] Experience<span>Segments, journey, use cases, demos</span></div>
+      </div>
+    </div>
+    <div class="agenda-day">
+      <h3>Day 2</h3>
+      <!-- AGENT: Replace session times and names based on engagement -->
+      <div class="agenda-item">
+        <div class="agenda-time">09:00</div>
+        <div class="agenda-session">Employee Experience<span>Personas, switching tax, use cases, demos</span></div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">10:00</div>
+        <div class="agenda-session">Architecture Fitment<span>Current state, target state, integration</span></div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">10:45</div>
+        <div class="agenda-session">Break</div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">11:00</div>
+        <div class="agenda-session">Prioritization &amp; Roadmap<span>Value x Complexity, 3-phase roadmap</span></div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">12:00</div>
+        <div class="agenda-session">Implementation &amp; Next Steps<span>Approach, timeline, decisions</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 1</div>
+</div>
+
+
+<!-- S2: PRINCIPLES & TEAM -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Ignite Principles &amp; Team</h2></div>
+  <!-- AGENT: Customize principles if needed -->
+  <div class="principles-grid">
+    <div class="principle-card">
+      <div class="principle-icon">&#9670;</div>
+      <h4>Hypothesis-Driven</h4>
+      <p>We bring informed hypotheses, you validate with real-world knowledge</p>
+    </div>
+    <div class="principle-card">
+      <div class="principle-icon">&#9670;</div>
+      <h4>Collaborative</h4>
+      <p>We co-create solutions, not present pre-baked answers</p>
+    </div>
+    <div class="principle-card">
+      <div class="principle-icon">&#9670;</div>
+      <h4>Outcome-Focused</h4>
+      <p>Every recommendation ties to measurable business outcomes</p>
+    </div>
+    <div class="principle-card">
+      <div class="principle-icon">&#9670;</div>
+      <h4>Evidence-Based</h4>
+      <p>Findings grounded in workshops, data, and industry benchmarks</p>
+    </div>
+    <div class="principle-card">
+      <div class="principle-icon">&#9670;</div>
+      <h4>Actionable</h4>
+      <p>You leave with a prioritized roadmap and clear next steps</p>
+    </div>
+    <div class="principle-card">
+      <div class="principle-icon">&#9670;</div>
+      <h4>Transparent</h4>
+      <p>All assumptions visible, all trade-offs discussed</p>
+    </div>
+  </div>
+  <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Backbase Team</h3>
+  <div class="team-grid">
+    <!-- AGENT: Replace with actual team members -->
+    <div class="team-card">
+      <div class="team-avatar">NN</div>
+      <h4>[Name]</h4>
+      <p>[Role]</p>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">NN</div>
+      <h4>[Name]</h4>
+      <p>[Role]</p>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">NN</div>
+      <h4>[Name]</h4>
+      <p>[Role]</p>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">NN</div>
+      <h4>[Name]</h4>
+      <p>[Role]</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 2</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     DIVIDER: SESSION 2 — Strategy & Backbase Alignment
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">02</div>
+  <div class="cyan-accent"></div>
+  <!-- AGENT: Replace [CLIENT] -->
+  <h2>[CLIENT] Strategy &amp; Backbase Alignment</h2>
+  <div class="section-subtitle">North Star, Strategic Themes &amp; Technology Objectives</div>
+</div>
+
+
+<!-- S3: NORTH STAR -->
+<div class="content-section">
+  <!-- AGENT: Replace [CLIENT] -->
+  <div class="section-title"><div class="accent"></div><h2>[CLIENT] North Star</h2><div class="subtitle">Validated in Strategy Workshop</div></div>
+  <div class="north-star">
+    <!-- AGENT: Replace with validated North Star vision statement from Agent 1 -->
+    <div class="vision-quote">[Validated North Star vision statement from Agent 1]</div>
+    <!-- AGENT: Replace with attribution -->
+    <div class="attribution">— [Client] Strategic Vision</div>
+  </div>
+  <!-- AGENT: Add lifecycle visual or supporting diagram if applicable -->
+  <div class="page-footer">Backbase | 3</div>
+</div>
+
+
+<!-- S4: STRATEGIC THEMES -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Strategic Themes</h2><div class="subtitle">Validated in Strategy Workshop</div></div>
+  <!-- AGENT: Replace with 3-5 strategic themes from Agent 1, each with name, description, KPI, Backbase alignment -->
+  <div class="card-grid">
+    <div class="card blue-border">
+      <div class="card-label">Theme 1</div>
+      <h3>[Theme Name]</h3>
+      <p>[Theme description and Backbase alignment]</p>
+      <p style="margin-top: 12px; font-size: 12px; font-weight: 600; color: var(--primary-blue);">KPI: [Measurable KPI]</p>
+    </div>
+    <div class="card blue-border">
+      <div class="card-label">Theme 2</div>
+      <h3>[Theme Name]</h3>
+      <p>[Theme description and Backbase alignment]</p>
+      <p style="margin-top: 12px; font-size: 12px; font-weight: 600; color: var(--primary-blue);">KPI: [Measurable KPI]</p>
+    </div>
+    <!-- AGENT: Add more theme cards as needed (3-5 total) -->
+  </div>
+  <div class="page-footer">Backbase | 4</div>
+</div>
+
+
+<!-- S5: TECHNOLOGY OBJECTIVES -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Technology Objectives</h2></div>
+  <!-- AGENT: Replace with 2-4 technology objectives from Agent 1 -->
+  <div class="card-grid cols-3">
+    <div class="card green-border">
+      <div class="card-label">Objective 1</div>
+      <h3>[Objective Name]</h3>
+      <p>[Current challenge and target state]</p>
+    </div>
+    <div class="card green-border">
+      <div class="card-label">Objective 2</div>
+      <h3>[Objective Name]</h3>
+      <p>[Current challenge and target state]</p>
+    </div>
+    <div class="card green-border">
+      <div class="card-label">Objective 3</div>
+      <h3>[Objective Name]</h3>
+      <p>[Current challenge and target state]</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 5</div>
+</div>
+
+
+<!-- S6: BIG QUOTE -->
+<div class="content-section">
+  <div class="big-quote">
+    <!-- AGENT: Replace with a powerful summary statement synthesized from strategy findings -->
+    <p>[Client] is on a mission to <strong>[bold key phrase]</strong> — and the digital banking platform is the foundation that makes it possible.</p>
+  </div>
+  <div class="page-footer">Backbase | 6</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     DIVIDER: SESSION 3 — Backbase Platform
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">03</div>
+  <div class="cyan-accent"></div>
+  <h2>Backbase Platform</h2>
+  <div class="section-subtitle">Engagement Banking Platform Overview</div>
+</div>
+
+
+<!-- S7: PLATFORM OVERVIEW (STANDARD) -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Backbase Engagement Banking Platform</h2></div>
+  <span class="bb-slide-label">Backbase Standard</span>
+  <!-- AGENT: This is standard Backbase content. Embed the platform overview image from brand-assets/standard-slides/01-platform-overview.jpg as base64.
+       Convert to base64 and use: <img src="data:image/jpeg;base64,..." alt="Backbase Platform Overview" class="bb-slide-img">
+       The image shows the 6-product suite diagram. Keep the text-based cards below as a fallback or remove them if the image is sufficient. -->
+  <!-- AGENT: EMBED IMAGE: brand-assets/standard-slides/01-platform-overview.jpg -->
+  <div class="platform-grid">
+    <div class="platform-card">
+      <div class="platform-icon">O</div>
+      <h4>Onboarding</h4>
+      <p>Digital account opening and customer onboarding journeys</p>
+    </div>
+    <div class="platform-card">
+      <div class="platform-icon">B</div>
+      <h4>Banking</h4>
+      <p>Day-to-day banking, payments, and money management</p>
+    </div>
+    <div class="platform-card">
+      <div class="platform-icon">L</div>
+      <h4>Lending</h4>
+      <p>Loan origination, servicing, and collections</p>
+    </div>
+    <div class="platform-card">
+      <div class="platform-icon">I</div>
+      <h4>Investing</h4>
+      <p>Wealth management and investment journeys</p>
+    </div>
+    <div class="platform-card">
+      <div class="platform-icon">A</div>
+      <h4>Assist</h4>
+      <p>Employee-facing unified platform for frontline and back office</p>
+    </div>
+    <div class="platform-card">
+      <div class="platform-icon">E</div>
+      <h4>Engage</h4>
+      <p>Customer engagement, communication, and marketing</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 7</div>
+</div>
+
+
+<!-- S8: UNIFIED FRONTLINE (STANDARD) -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Unified Frontline Operations for Banks</h2></div>
+  <span class="bb-slide-label">Backbase Standard</span>
+  <!-- AGENT: Embed the unified frontline image from brand-assets/standard-slides/02-unified-frontline.jpg as base64.
+       Convert to base64 and use: <img src="data:image/jpeg;base64,..." alt="Backbase Unified Frontline Operations" class="bb-slide-img">
+       Customize the description below for client context (Member vs Customer terminology). -->
+  <!-- AGENT: EMBED IMAGE: brand-assets/standard-slides/02-unified-frontline.jpg -->
+  <div class="page-footer">Backbase | 8</div>
+</div>
+
+<!-- S8b: CUSTOMER/MEMBER OPERATING MODEL (STANDARD) -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>The Customer Operating Model</h2></div>
+  <span class="bb-slide-label">Backbase Standard</span>
+  <!-- AGENT: Embed the member operating model image from brand-assets/standard-slides/04-member-operating-model.jpg as base64.
+       Convert to base64 and use: <img src="data:image/jpeg;base64,..." alt="Customer Operating Model" class="bb-slide-img">
+       Replace "Customer" with "Member" for credit unions. -->
+  <!-- AGENT: EMBED IMAGE: brand-assets/standard-slides/04-member-operating-model.jpg -->
+  <div class="page-footer">Backbase | 9</div>
+</div>
+
+
+<!-- S9: AI-READY PLATFORM (STANDARD) -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>The AI-Ready Platform for Banks</h2></div>
+  <span class="bb-slide-label">Backbase Standard</span>
+  <!-- AGENT: Embed the AI-ready platform image from brand-assets/standard-slides/05-ai-ready-platform.jpg as base64.
+       Convert to base64 and use: <img src="data:image/jpeg;base64,..." alt="Backbase AI-Ready Platform" class="bb-slide-img">
+       The image shows the 4-plane stack (Experience, Capability/Intelligence, Integration, and AI Orchestration layers).
+       Keep or remove the card-based fallback below depending on whether a deeper discussion is needed. -->
+  <!-- AGENT: EMBED IMAGE: brand-assets/standard-slides/05-ai-ready-platform.jpg -->
+  <div class="card-grid cols-3">
+    <div class="card blue-border">
+      <div class="card-label">Experience Plane</div>
+      <h3>Journeys &amp; UX</h3>
+      <p>Omnichannel experiences, responsive UI, journey orchestration across all touchpoints</p>
+    </div>
+    <div class="card blue-border">
+      <div class="card-label">Capability / Intelligence Plane</div>
+      <h3>Business Logic &amp; AI</h3>
+      <p>Decisioning, workflow orchestration, ML models, and intelligent automation</p>
+    </div>
+    <div class="card blue-border">
+      <div class="card-label">Integration Plane</div>
+      <h3>Connectors &amp; APIs</h3>
+      <p>Core banking adapters, API gateway, event-driven integration hub</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 10</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     DIVIDER: SESSION 4 — Value Propositions
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">04</div>
+  <div class="cyan-accent"></div>
+  <h2>Value Propositions</h2>
+  <div class="section-subtitle">Differentiating Capabilities &amp; Reference Examples</div>
+</div>
+
+
+<!-- S10: VALUE PROPOSITIONS -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Differentiating Value Propositions</h2></div>
+  <!-- AGENT: Replace with 3-4 value propositions derived from Agent 1/2 findings + Backbase capabilities -->
+  <div class="card-grid">
+    <div class="card blue-border">
+      <div class="card-label">Value Proposition 1</div>
+      <h3>[VP Name]</h3>
+      <p>[Description of the value proposition and how it addresses client's strategic themes]</p>
+    </div>
+    <div class="card blue-border">
+      <div class="card-label">Value Proposition 2</div>
+      <h3>[VP Name]</h3>
+      <p>[Description of the value proposition and how it addresses client's strategic themes]</p>
+    </div>
+    <div class="card blue-border">
+      <div class="card-label">Value Proposition 3</div>
+      <h3>[VP Name]</h3>
+      <p>[Description of the value proposition and how it addresses client's strategic themes]</p>
+    </div>
+    <!-- AGENT: Add VP 4 if applicable -->
+  </div>
+  <div class="page-footer">Backbase | 10</div>
+</div>
+
+
+<!-- S11: VP DEEP-DIVES -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Value Proposition Deep-Dives</h2></div>
+  <!-- AGENT: Add 1-2 reference client examples per VP. Include client name, region, results. -->
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Reference Example</div>
+      <h3>[Reference Client Name]</h3>
+      <p>[What they achieved with Backbase, relevant metrics, and how it relates to this client's VP]</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Reference Example</div>
+      <h3>[Reference Client Name]</h3>
+      <p>[What they achieved with Backbase, relevant metrics, and how it relates to this client's VP]</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 11</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     DIVIDER: SESSION 5 — Member/Customer Experience
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">05</div>
+  <div class="cyan-accent"></div>
+  <!-- AGENT: Replace Member/Customer -->
+  <h2>[Member/Customer] Experience</h2>
+  <div class="section-subtitle">Segments, Journey, Use Cases &amp; Demos</div>
+</div>
+
+
+<!-- S12: SEGMENTS / PERSONAS -->
+<div class="content-section">
+  <!-- AGENT: Replace Member/Customer -->
+  <div class="section-title"><div class="accent"></div><h2>[Member/Customer] Segments</h2><div class="subtitle">Validated in CX Workshop</div></div>
+  <!-- AGENT: Replace with 3-5 persona cards from Agent 2 -->
+  <div class="persona-grid">
+    <div class="persona-card">
+      <div class="persona-avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg></div>
+      <h4>[Persona Name]</h4>
+      <div class="persona-demo">[Age range] | [Key demographic]</div>
+      <div class="persona-needs">[Primary need / motivation]</div>
+    </div>
+    <div class="persona-card">
+      <div class="persona-avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg></div>
+      <h4>[Persona Name]</h4>
+      <div class="persona-demo">[Age range] | [Key demographic]</div>
+      <div class="persona-needs">[Primary need / motivation]</div>
+    </div>
+    <div class="persona-card">
+      <div class="persona-avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg></div>
+      <h4>[Persona Name]</h4>
+      <div class="persona-demo">[Age range] | [Key demographic]</div>
+      <div class="persona-needs">[Primary need / motivation]</div>
+    </div>
+    <!-- AGENT: Add more persona cards as needed -->
+  </div>
+  <div class="page-footer">Backbase | 12</div>
+</div>
+
+
+<!-- S13: JOURNEY / PROPOSITION ARCHITECTURE -->
+<div class="content-section">
+  <!-- AGENT: Replace Member/Customer -->
+  <div class="section-title"><div class="accent"></div><h2>[Member/Customer] Journey</h2><div class="subtitle">Proposition Architecture from CX Workshop</div></div>
+  <!-- AGENT: Replace with journey stages from Agent 2 proposition architecture -->
+  <div class="journey-stages">
+    <div class="journey-stage">
+      <h4>[Stage 1]</h4>
+      <div class="stage-desc">[Description]</div>
+      <div class="stage-ucs">[N] use cases</div>
+      <div class="stage-arrow"></div>
+    </div>
+    <div class="journey-stage">
+      <h4>[Stage 2]</h4>
+      <div class="stage-desc">[Description]</div>
+      <div class="stage-ucs">[N] use cases</div>
+      <div class="stage-arrow"></div>
+    </div>
+    <div class="journey-stage">
+      <h4>[Stage 3]</h4>
+      <div class="stage-desc">[Description]</div>
+      <div class="stage-ucs">[N] use cases</div>
+      <div class="stage-arrow"></div>
+    </div>
+    <div class="journey-stage">
+      <h4>[Stage 4]</h4>
+      <div class="stage-desc">[Description]</div>
+      <div class="stage-ucs">[N] use cases</div>
+    </div>
+    <!-- AGENT: Adjust number of stages to match Agent 2 output -->
+  </div>
+  <div class="page-footer">Backbase | 13</div>
+</div>
+
+
+<!-- S14: TABLESTAKE USE CASES -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Tablestake Capabilities</h2></div>
+  <!-- AGENT: Replace with tablestake capability grid from Agent 2 -->
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Capability</th>
+        <th>Current State</th>
+        <th>Backbase Module</th>
+        <th>Approach</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- AGENT: Replace rows with actual tablestake capabilities -->
+      <tr><td>[Capability name]</td><td>[Current status]</td><td>[Module]</td><td><span class="badge badge-ootb">OOTB</span></td></tr>
+      <tr><td>[Capability name]</td><td>[Current status]</td><td>[Module]</td><td><span class="badge badge-config">Config</span></td></tr>
+      <!-- AGENT: Add more rows -->
+    </tbody>
+  </table>
+  <div class="page-footer">Backbase | 14</div>
+</div>
+
+
+<!-- S15: DIFFERENTIATING USE CASES + PROTOTYPES -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Differentiating Use Cases</h2><div class="subtitle">Priority 1 Use Cases with Live Demos</div></div>
+
+  <!-- AGENT: For EACH P1 member use case, repeat this block: usecase-header → usecase-flow → prototype-embed → impl-card -->
+  <div class="usecase-block">
+    <div class="usecase-header">
+      <!-- AGENT: Replace with use case ID and name from Agent 5 -->
+      <div class="uc-id">UC-M01 <span class="badge badge-p1">P1</span></div>
+      <h3>[Use Case Experience Name]</h3>
+      <div class="uc-meta">
+        <span>Segment: [Persona]</span>
+        <span>Module: [Backbase module]</span>
+        <span>Stage: [Prop arch stage]</span>
+      </div>
+    </div>
+    <div class="usecase-flow">
+      <div class="state-card current">
+        <h4>Today</h4>
+        <ul>
+          <!-- AGENT: Replace with current state pain points -->
+          <li>[Current pain point 1]</li>
+          <li>[Current pain point 2]</li>
+          <li>[Current metric]</li>
+        </ul>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="state-card future">
+        <h4>With Backbase</h4>
+        <ul>
+          <!-- AGENT: Replace with future state improvements -->
+          <li>[Future improvement 1]</li>
+          <li>[Future improvement 2]</li>
+          <li>[Target metric]</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- AGENT: Embed phone frame prototype from Agent 5 for this use case -->
+    <div class="prototype-embed">
+      <div class="prototype-label">
+        <span class="proto-badge">Interactive Prototype</span>
+        <!-- AGENT: Replace with UC name and screen count -->
+        <span class="proto-title">[UC Name] — [N] Screens</span>
+      </div>
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <!-- AGENT: Use unique ID per prototype (e.g., proto-m01) -->
+        <div class="phone-screen" id="proto-m01">
+          <!-- AGENT: Insert prototype screens from Agent 5 output -->
+          <div class="screen active">
+            <!-- AGENT: Screen 1 content -->
+          </div>
+          <div class="screen">
+            <!-- AGENT: Screen 2 content -->
+          </div>
+          <!-- AGENT: Add more screens as needed -->
+        </div>
+      </div>
+      <div class="proto-nav">
+        <button class="prev-btn" disabled>&#8592; Back</button>
+        <span class="proto-counter">1 / [N]</span>
+        <button class="next-btn">Next &#8594;</button>
+      </div>
+    </div>
+    <!-- AGENT: Add IIFE navigation script for this prototype (see IIFE pattern) -->
+
+    <div class="impl-card">
+      <h4>Backbase Implementation</h4>
+      <!-- AGENT: Replace with implementation details from Agent 5 -->
+      <p><strong>Module:</strong> [Module name] &nbsp; <strong>Approach:</strong> <span class="badge badge-config">[Approach]</span></p>
+      <p style="margin-top: 8px;">[Key implementation notes]</p>
+    </div>
+  </div>
+
+  <!-- AGENT: Repeat usecase-block for each P1 member use case -->
+  <!-- AGENT: For P2 use cases, use summary-grid instead (see S16 pattern) -->
+
+  <div class="page-footer">Backbase | 15</div>
+</div>
+
+
+<!-- S16: COMBINED USE CASE GRID -->
+<div class="content-section">
+  <!-- AGENT: Replace Member/Customer -->
+  <div class="section-title"><div class="accent"></div><h2>Combined [Member/Customer] Use Case Inventory</h2></div>
+  <!-- AGENT: Replace with full use case table from Agent 2/5 -->
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Use Case</th>
+        <th>Priority</th>
+        <th>Segment</th>
+        <th>Module</th>
+        <th>Approach</th>
+        <th>Phase</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- AGENT: Replace with actual use case rows -->
+      <tr><td>UC-M01</td><td>[Name]</td><td><span class="badge badge-p1">P1</span></td><td>[Segment]</td><td>[Module]</td><td>[Approach]</td><td>Phase 1</td></tr>
+      <tr><td>UC-M02</td><td>[Name]</td><td><span class="badge badge-p1">P1</span></td><td>[Segment]</td><td>[Module]</td><td>[Approach]</td><td>Phase 1</td></tr>
+      <tr><td>UC-M03</td><td>[Name]</td><td><span class="badge badge-p2">P2</span></td><td>[Segment]</td><td>[Module]</td><td>[Approach]</td><td>Phase 2</td></tr>
+      <!-- AGENT: Add all use cases -->
+    </tbody>
+  </table>
+  <div class="page-footer">Backbase | 16</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     DIVIDER: SESSION 6 — Employee Experience
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">06</div>
+  <div class="cyan-accent"></div>
+  <h2>Employee Experience</h2>
+  <div class="section-subtitle">Personas, Switching Tax, Use Cases &amp; Demos</div>
+</div>
+
+
+<!-- S17: EMPLOYEE PERSONAS -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Employee Personas</h2><div class="subtitle">Validated in EX Workshop</div></div>
+  <!-- AGENT: Replace with 2-4 employee persona cards from Agent 3 -->
+  <div class="persona-grid">
+    <div class="persona-card">
+      <div class="persona-avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg></div>
+      <h4>[Name / Role]</h4>
+      <div class="persona-demo">[Channel] | [# systems daily]</div>
+      <div class="persona-needs">[Top pain point]</div>
+    </div>
+    <!-- AGENT: Add more employee persona cards -->
+  </div>
+  <div class="page-footer">Backbase | 17</div>
+</div>
+
+
+<!-- S18: SWITCHING TAX & CHALLENGES -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>System Switching Tax</h2><div class="subtitle">Quantified in EX Workshop</div></div>
+  <!-- AGENT: Replace with switching tax figure and challenge cards from Agent 3 -->
+  <div class="switching-tax-hero">
+    <div class="tax-amount">$[X.X]M</div>
+    <div class="tax-label">Annual Switching Tax</div>
+    <div class="tax-detail">Across [N] systems | [N] employees affected</div>
+  </div>
+  <div class="card-grid">
+    <!-- AGENT: Replace with top 3-4 employee challenges from Agent 3 -->
+    <div class="card red-border">
+      <div class="card-label">Challenge 1</div>
+      <h3>[Challenge Name]</h3>
+      <p>[Description and business impact]</p>
+    </div>
+    <div class="card red-border">
+      <div class="card-label">Challenge 2</div>
+      <h3>[Challenge Name]</h3>
+      <p>[Description and business impact]</p>
+    </div>
+    <!-- AGENT: Add more challenge cards -->
+  </div>
+  <div class="page-footer">Backbase | 18</div>
+</div>
+
+
+<!-- S19: EMPLOYEE USE CASES + PROTOTYPES -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Employee Use Cases</h2><div class="subtitle">Priority 1 Use Cases with Live Demos</div></div>
+
+  <!-- AGENT: For EACH P1 employee use case, repeat this block -->
+  <div class="usecase-block">
+    <div class="usecase-header">
+      <!-- AGENT: Replace with employee use case ID and name from Agent 5 -->
+      <div class="uc-id">UC-E01 <span class="badge badge-p1">P1</span></div>
+      <h3>[Employee Use Case Experience Name]</h3>
+      <div class="uc-meta">
+        <span>Persona: [Employee role]</span>
+        <span>Module: Assist</span>
+        <span>Channel: [Branch/CC/Back Office]</span>
+      </div>
+    </div>
+    <div class="usecase-flow">
+      <div class="state-card current">
+        <h4>Today</h4>
+        <ul>
+          <!-- AGENT: Replace with current state -->
+          <li>[Current friction 1]</li>
+          <li>[Current friction 2]</li>
+        </ul>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="state-card future">
+        <h4>With Digital Assist</h4>
+        <ul>
+          <!-- AGENT: Replace with future state -->
+          <li>[Future improvement 1]</li>
+          <li>[Future improvement 2]</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- AGENT: Embed browser frame prototype from Agent 5 -->
+    <div class="prototype-embed browser-type">
+      <div class="prototype-label">
+        <span class="proto-badge">Interactive Prototype</span>
+        <!-- AGENT: Replace with UC name and screen count -->
+        <span class="proto-title">[UC Name] — [N] Screens</span>
+      </div>
+      <div class="browser-frame">
+        <div class="browser-chrome">
+          <div class="browser-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+          <!-- AGENT: Replace [client] in URL -->
+          <div class="browser-url">[client].backbase.com/assist</div>
+        </div>
+        <!-- AGENT: Use unique ID per prototype (e.g., proto-e01) -->
+        <div class="browser-screen" id="proto-e01">
+          <!-- AGENT: Insert prototype screens from Agent 5 output -->
+          <div class="screen active">
+            <!-- AGENT: Screen 1 content -->
+          </div>
+          <div class="screen">
+            <!-- AGENT: Screen 2 content -->
+          </div>
+          <!-- AGENT: Add more screens as needed -->
+        </div>
+      </div>
+      <div class="proto-nav">
+        <button class="prev-btn" disabled>&#8592; Back</button>
+        <span class="proto-counter">1 / [N]</span>
+        <button class="next-btn">Next &#8594;</button>
+      </div>
+    </div>
+    <!-- AGENT: Add IIFE navigation script for this prototype -->
+
+    <div class="impl-card">
+      <h4>Backbase Implementation</h4>
+      <!-- AGENT: Replace with implementation details -->
+      <p><strong>Module:</strong> Assist &nbsp; <strong>Approach:</strong> <span class="badge badge-config">[Approach]</span></p>
+      <p style="margin-top: 8px;">[Key implementation notes]</p>
+    </div>
+  </div>
+
+  <!-- AGENT: Repeat for each P1 employee use case -->
+
+  <div class="page-footer">Backbase | 19</div>
+</div>
+
+
+<!-- S20: COMBINED EMPLOYEE UC GRID -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Combined Employee Use Case Inventory</h2></div>
+  <!-- AGENT: Replace with full employee use case table -->
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Use Case</th>
+        <th>Priority</th>
+        <th>Persona</th>
+        <th>Module</th>
+        <th>Approach</th>
+        <th>Phase</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- AGENT: Replace with actual employee use case rows -->
+      <tr><td>UC-E01</td><td>[Name]</td><td><span class="badge badge-p1">P1</span></td><td>[Persona]</td><td>Assist</td><td>[Approach]</td><td>Phase 1</td></tr>
+      <!-- AGENT: Add all employee use cases -->
+    </tbody>
+  </table>
+  <div class="page-footer">Backbase | 20</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     DIVIDER: SESSION 7 — Architecture Fitment
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">07</div>
+  <div class="cyan-accent"></div>
+  <h2>Architecture Fitment</h2>
+  <div class="section-subtitle">Current State, Target State &amp; Integration Approach</div>
+</div>
+
+
+<!-- S21: CURRENT STATE & CHALLENGES -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Current Architecture &amp; Challenges</h2><div class="subtitle">Validated in Architecture Workshop</div></div>
+  <!-- AGENT: Replace with current state architecture from Agent 4 -->
+  <div class="arch-diagram">
+    <!-- AGENT: Build layered architecture with system cards from Agent 4 -->
+    <div class="arch-layer">
+      <div class="arch-layer-label">Digital Channels</div>
+      <!-- AGENT: Replace with actual channel systems -->
+      <div class="arch-system">[System 1]</div>
+      <div class="arch-system">[System 2]</div>
+    </div>
+    <div class="arch-strip red"></div>
+    <div class="arch-layer">
+      <div class="arch-layer-label">Core Banking &amp; Services</div>
+      <!-- AGENT: Replace with actual core systems -->
+      <div class="arch-system">[Core Banking]</div>
+      <div class="arch-system">[System 3]</div>
+      <div class="arch-system">[System 4]</div>
+    </div>
+  </div>
+  <!-- AGENT: Replace with architecture challenge cards from Agent 4 -->
+  <div class="card-grid">
+    <div class="card red-border">
+      <div class="card-label">Challenge 1</div>
+      <h3>[Architecture Challenge]</h3>
+      <p>[CX + EX impact description]</p>
+    </div>
+    <div class="card red-border">
+      <div class="card-label">Challenge 2</div>
+      <h3>[Architecture Challenge]</h3>
+      <p>[CX + EX impact description]</p>
+    </div>
+    <!-- AGENT: Add more challenge cards -->
+  </div>
+  <div class="page-footer">Backbase | 21</div>
+</div>
+
+
+<!-- S22: TARGET STATE -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Target State with Backbase</h2></div>
+  <!-- AGENT: Replace with target state architecture from Agent 4 -->
+  <div class="arch-diagram">
+    <!-- AGENT: Build target state with Backbase positioned as hub -->
+    <div class="arch-layer">
+      <div class="arch-layer-label">Experience Layer (Backbase)</div>
+      <div class="arch-system" style="background: rgba(51,102,255,0.1); border-color: var(--primary-blue);">Backbase Digital Banking</div>
+      <div class="arch-system" style="background: rgba(51,102,255,0.1); border-color: var(--primary-blue);">Backbase Assist</div>
+    </div>
+    <div class="arch-strip blue"></div>
+    <div class="arch-layer">
+      <div class="arch-layer-label">Integration Hub (Backbase)</div>
+      <div class="arch-system" style="background: rgba(51,102,255,0.1); border-color: var(--primary-blue);">Grand Central</div>
+    </div>
+    <div class="arch-strip blue"></div>
+    <div class="arch-layer">
+      <div class="arch-layer-label">Retained Systems</div>
+      <!-- AGENT: Replace with retained core systems -->
+      <div class="arch-system">[Core Banking]</div>
+      <div class="arch-system">[Retained System]</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 22</div>
+</div>
+
+
+<!-- S23: INTEGRATION APPROACH (STANDARD) -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Integration via Backbase Hub</h2></div>
+  <span class="bb-slide-label">Backbase Standard</span>
+  <!-- AGENT: Embed the Grand Central image from brand-assets/standard-slides/13-grand-central.jpg as base64.
+       Convert to base64 and use: <img src="data:image/jpeg;base64,..." alt="Backbase Grand Central" class="bb-slide-img">
+       The image shows the integration hub architecture. Customize description with client's specific systems. -->
+  <!-- AGENT: EMBED IMAGE: brand-assets/standard-slides/13-grand-central.jpg -->
+  <div class="objective-statement" style="margin-top: 24px;">
+    Backbase Integration Services ("Grand Central") acts as the central hub for all integrations. No point-to-point connections — every system communicates through the hub, providing a single integration layer that is easier to manage, monitor, and evolve.
+  </div>
+  <!-- AGENT: OPTIONAL — Also embed brand-assets/standard-slides/16-agent-platform.jpg for Agent Platform overview -->
+  <div class="page-footer">Backbase | 23</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     DIVIDER: SESSION 8 — Prioritization & Roadmap
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">08</div>
+  <div class="cyan-accent"></div>
+  <h2>Prioritization &amp; Roadmap</h2>
+  <div class="section-subtitle">Value x Complexity Matrix &amp; 3-Phase Implementation Plan</div>
+</div>
+
+
+<!-- S24: PRIORITIZATION FRAMEWORK -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Prioritization Framework</h2></div>
+  <div class="objective-statement">
+    We prioritize use cases across three dimensions: <strong>Business Value</strong> (revenue, cost, experience impact), <strong>Implementation Complexity</strong> (technical effort, integration, timeline), and <strong>Strategic Alignment</strong> (fit with your stated goals and themes).
+  </div>
+  <div class="card-grid cols-3">
+    <div class="card green-border">
+      <div class="card-label">Lever 1</div>
+      <h3>Business Value</h3>
+      <p>Revenue uplift, cost reduction, risk mitigation, and experience improvement</p>
+    </div>
+    <div class="card amber-border">
+      <div class="card-label">Lever 2</div>
+      <h3>Implementation Complexity</h3>
+      <p>Technical effort, integration requirements, timeline, and resource needs</p>
+    </div>
+    <div class="card blue-border">
+      <div class="card-label">Lever 3</div>
+      <h3>Strategic Alignment</h3>
+      <p>Fit with North Star, strategic themes, and technology objectives</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 24</div>
+</div>
+
+
+<!-- S25: VALUE x COMPLEXITY MATRIX -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Value x Complexity Matrix</h2></div>
+  <!-- AGENT: Generate SVG scatter plot with all use cases plotted at their Value/Complexity coordinates -->
+  <div class="scatter-container">
+    <svg viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg" style="max-width: 700px;">
+      <!-- Grid background -->
+      <rect x="60" y="20" width="520" height="420" fill="#F3F6F9" rx="8"/>
+
+      <!-- Quadrant fills -->
+      <rect x="60" y="20" width="260" height="210" fill="rgba(38,188,113,0.08)" rx="8"/>
+      <rect x="320" y="20" width="260" height="210" fill="rgba(51,102,255,0.08)"/>
+      <rect x="60" y="230" width="260" height="210" fill="rgba(58,73,93,0.05)"/>
+      <rect x="320" y="230" width="260" height="210" fill="rgba(255,114,98,0.08)" rx="8"/>
+
+      <!-- Quadrant labels -->
+      <text x="190" y="50" text-anchor="middle" font-family="Libre Franklin" font-size="13" font-weight="700" fill="#26BC71" opacity="0.6">QUICK WINS</text>
+      <text x="450" y="50" text-anchor="middle" font-family="Libre Franklin" font-size="13" font-weight="700" fill="#3366FF" opacity="0.6">STRATEGIC</text>
+      <text x="190" y="430" text-anchor="middle" font-family="Libre Franklin" font-size="13" font-weight="700" fill="#3A495D" opacity="0.4">FILL</text>
+      <text x="450" y="430" text-anchor="middle" font-family="Libre Franklin" font-size="13" font-weight="700" fill="#FF7262" opacity="0.6">DEPRIORITIZE</text>
+
+      <!-- Grid lines -->
+      <line x1="60" y1="230" x2="580" y2="230" stroke="#E5EBFF" stroke-width="2" stroke-dasharray="6,4"/>
+      <line x1="320" y1="20" x2="320" y2="440" stroke="#E5EBFF" stroke-width="2" stroke-dasharray="6,4"/>
+
+      <!-- Axes -->
+      <line x1="60" y1="440" x2="580" y2="440" stroke="#091C35" stroke-width="1.5"/>
+      <line x1="60" y1="20" x2="60" y2="440" stroke="#091C35" stroke-width="1.5"/>
+
+      <!-- Axis labels -->
+      <text x="320" y="475" text-anchor="middle" font-family="Libre Franklin" font-size="12" font-weight="600" fill="#3A495D">Implementation Complexity &#8594;</text>
+      <text x="15" y="230" text-anchor="middle" font-family="Libre Franklin" font-size="12" font-weight="600" fill="#3A495D" transform="rotate(-90 15 230)">Business Value &#8594;</text>
+
+      <!-- Scale marks -->
+      <text x="60" y="455" text-anchor="middle" font-family="Libre Franklin" font-size="10" fill="#5A6A7E">1</text>
+      <text x="190" y="455" text-anchor="middle" font-family="Libre Franklin" font-size="10" fill="#5A6A7E">2</text>
+      <text x="320" y="455" text-anchor="middle" font-family="Libre Franklin" font-size="10" fill="#5A6A7E">3</text>
+      <text x="450" y="455" text-anchor="middle" font-family="Libre Franklin" font-size="10" fill="#5A6A7E">4</text>
+      <text x="580" y="455" text-anchor="middle" font-family="Libre Franklin" font-size="10" fill="#5A6A7E">5</text>
+
+      <text x="50" y="440" text-anchor="end" font-family="Libre Franklin" font-size="10" fill="#5A6A7E">1</text>
+      <text x="50" y="335" text-anchor="end" font-family="Libre Franklin" font-size="10" fill="#5A6A7E">2</text>
+      <text x="50" y="230" text-anchor="end" font-family="Libre Franklin" font-size="10" fill="#5A6A7E">3</text>
+      <text x="50" y="125" text-anchor="end" font-family="Libre Franklin" font-size="10" fill="#5A6A7E">4</text>
+      <text x="50" y="25" text-anchor="end" font-family="Libre Franklin" font-size="10" fill="#5A6A7E">5</text>
+
+      <!-- AGENT: Plot use cases as circles. Formula: cx = 60 + (complexity-1)*130, cy = 440 - (value-1)*105 -->
+      <!-- AGENT: Member UCs = filled circle, Employee UCs = outlined circle -->
+      <!-- AGENT: Example dots below — REPLACE with actual use cases and coordinates -->
+      <circle cx="190" cy="65" r="10" fill="#3366FF" stroke="#3366FF" stroke-width="2"/>
+      <text x="205" y="70" font-family="Libre Franklin" font-size="10" font-weight="600" fill="#091C35">[UC-M01]</text>
+
+      <circle cx="320" cy="125" r="10" fill="#3366FF" stroke="#3366FF" stroke-width="2"/>
+      <text x="335" y="130" font-family="Libre Franklin" font-size="10" font-weight="600" fill="#091C35">[UC-M02]</text>
+
+      <circle cx="450" cy="65" r="10" fill="none" stroke="#3366FF" stroke-width="2"/>
+      <text x="465" y="70" font-family="Libre Franklin" font-size="10" font-weight="600" fill="#091C35">[UC-E01]</text>
+
+      <!-- AGENT: Add all use case dots with correct coordinates -->
+    </svg>
+  </div>
+  <div class="scatter-legend">
+    <div class="scatter-legend-item"><div class="dot" style="background: #3366FF;"></div> Member/Customer UC (filled)</div>
+    <div class="scatter-legend-item"><div class="dot" style="background: none; border: 2px solid #3366FF;"></div> Employee UC (outlined)</div>
+    <div class="scatter-legend-item"><div class="dot" style="background: #26BC71;"></div> Quick Wins</div>
+    <div class="scatter-legend-item"><div class="dot" style="background: #3366FF;"></div> Strategic</div>
+    <div class="scatter-legend-item"><div class="dot" style="background: #3A495D;"></div> Fill</div>
+    <div class="scatter-legend-item"><div class="dot" style="background: #FF7262;"></div> Deprioritize</div>
+  </div>
+  <div class="page-footer">Backbase | 25</div>
+</div>
+
+
+<!-- S26: 3-PHASE ROADMAP -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>3-Phase Transformation Roadmap</h2></div>
+  <!-- AGENT: Replace phase details with consultant-validated roadmap from Phase 4 -->
+  <div class="roadmap-phases">
+    <div class="phase-card">
+      <div class="phase-num">1</div>
+      <div class="phase-label">Phase 1</div>
+      <!-- AGENT: Replace phase name and timeline -->
+      <h3>[Phase Name]</h3>
+      <div class="phase-timeline">[Timeline, e.g., "Months 1-9"]</div>
+      <h5>Scope</h5>
+      <ul>
+        <!-- AGENT: Replace with Phase 1 scope items -->
+        <li>[Use case / capability 1]</li>
+        <li>[Use case / capability 2]</li>
+        <li>[Use case / capability 3]</li>
+      </ul>
+      <h5>Backbase Products</h5>
+      <ul>
+        <!-- AGENT: Replace with applicable Backbase products -->
+        <li>[Product 1]</li>
+        <li>[Product 2]</li>
+      </ul>
+      <!-- AGENT: Replace with member/customer promise -->
+      <div class="phase-promise">"[Member/Customer Promise — one-liner future state]"</div>
+      <!-- AGENT: Replace with measurable success metric -->
+      <div class="phase-metric">Success: [Measurable KPI]</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">2</div>
+      <div class="phase-label">Phase 2</div>
+      <!-- AGENT: Replace with Phase 2 details -->
+      <h3>[Phase Name]</h3>
+      <div class="phase-timeline">[Timeline]</div>
+      <h5>Scope</h5>
+      <ul>
+        <li>[Use case / capability]</li>
+        <!-- AGENT: Add more -->
+      </ul>
+      <h5>Backbase Products</h5>
+      <ul>
+        <li>[Product]</li>
+        <!-- AGENT: Add more -->
+      </ul>
+      <div class="phase-promise">"[Member/Customer Promise]"</div>
+      <div class="phase-metric">Success: [KPI]</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">3</div>
+      <div class="phase-label">Phase 3</div>
+      <!-- AGENT: Replace with Phase 3 details -->
+      <h3>[Phase Name]</h3>
+      <div class="phase-timeline">[Timeline]</div>
+      <h5>Scope</h5>
+      <ul>
+        <li>[Use case / capability]</li>
+        <!-- AGENT: Add more -->
+      </ul>
+      <h5>Backbase Products</h5>
+      <ul>
+        <li>[Product]</li>
+        <!-- AGENT: Add more -->
+      </ul>
+      <div class="phase-promise">"[Member/Customer Promise]"</div>
+      <div class="phase-metric">Success: [KPI]</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 26</div>
+</div>
+
+
+<!-- S27: PHASE DETAILS -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Phase Implementation Details</h2></div>
+  <!-- AGENT: Replace with per-phase Backbase product mapping and challenge resolution -->
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Use Cases</th>
+        <th>Backbase Products</th>
+        <th>Challenges Solved</th>
+        <th>Value Unlocked</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- AGENT: Replace with actual phase details -->
+      <tr><td><strong>Phase 1</strong></td><td>[UC list]</td><td>[Product list]</td><td>[Challenge refs]</td><td>[Value summary]</td></tr>
+      <tr><td><strong>Phase 2</strong></td><td>[UC list]</td><td>[Product list]</td><td>[Challenge refs]</td><td>[Value summary]</td></tr>
+      <tr><td><strong>Phase 3</strong></td><td>[UC list]</td><td>[Product list]</td><td>[Challenge refs]</td><td>[Value summary]</td></tr>
+    </tbody>
+  </table>
+  <div class="page-footer">Backbase | 27</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     DIVIDER: SESSION 9 — Implementation & Next Steps
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">09</div>
+  <div class="cyan-accent"></div>
+  <h2>Implementation &amp; Next Steps</h2>
+  <div class="section-subtitle">Approach, Timeline &amp; Decisions</div>
+</div>
+
+
+<!-- S28: IMPLEMENTATION APPROACH (STANDARD) -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Implementation Approach</h2></div>
+  <span class="bb-slide-label">Backbase Standard</span>
+  <!-- AGENT: Standard Adopt & Connect methodology — customize with client-specific details -->
+  <div class="objective-statement">
+    Backbase follows the <strong>Adopt &amp; Connect</strong> methodology — start with proven out-of-the-box capabilities, connect to your existing systems, extend for differentiation, and operate with continuous improvement.
+  </div>
+  <div class="methodology-grid">
+    <div class="method-block">
+      <div class="block-num">1</div>
+      <h4>Adopt</h4>
+      <p>Start with OOTB capabilities from the Backbase platform</p>
+    </div>
+    <div class="method-block">
+      <div class="block-num">2</div>
+      <h4>Connect</h4>
+      <p>Integrate with existing core banking and systems via Grand Central</p>
+    </div>
+    <div class="method-block">
+      <div class="block-num">3</div>
+      <h4>Extend</h4>
+      <p>Build differentiating experiences on the Backbase extension framework</p>
+    </div>
+    <div class="method-block">
+      <div class="block-num">4</div>
+      <h4>Operate</h4>
+      <p>Continuous improvement with managed services and DevOps</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 28</div>
+</div>
+
+
+<!-- S29: TIMELINE -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Implementation Timeline</h2></div>
+  <!-- AGENT: Replace with actual timeline milestones from roadmap -->
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-label">Kickoff</div>
+      <!-- AGENT: Replace with date -->
+      <div class="timeline-desc">[Month Year]</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-label">Phase 1 Go-Live</div>
+      <div class="timeline-desc">[Month Year]</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-label">Phase 2 Go-Live</div>
+      <div class="timeline-desc">[Month Year]</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-label">Phase 3 Go-Live</div>
+      <div class="timeline-desc">[Month Year]</div>
+    </div>
+    <!-- AGENT: Add or adjust timeline items -->
+  </div>
+  <div class="page-footer">Backbase | 29</div>
+</div>
+
+
+<!-- S30: NEXT STEPS & DECISIONS -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Next Steps &amp; Decisions</h2></div>
+  <!-- AGENT: Replace with actual next steps, action items, and decisions needed -->
+  <div class="next-steps-grid">
+    <div class="next-step-card">
+      <h4>[Action Item 1]</h4>
+      <p>[Description of what needs to happen]</p>
+      <div class="step-owner">Owner: [Name/Team]</div>
+    </div>
+    <div class="next-step-card">
+      <h4>[Action Item 2]</h4>
+      <p>[Description of what needs to happen]</p>
+      <div class="step-owner">Owner: [Name/Team]</div>
+    </div>
+    <div class="next-step-card">
+      <h4>[Action Item 3]</h4>
+      <p>[Description of what needs to happen]</p>
+      <div class="step-owner">Owner: [Name/Team]</div>
+    </div>
+  </div>
+
+  <h3 style="font-size: 18px; font-weight: 700; margin: 32px 0 16px;">Decisions Needed</h3>
+  <!-- AGENT: Replace with decision matrix -->
+  <table class="decision-table">
+    <thead>
+      <tr>
+        <th>Decision</th>
+        <th>Options</th>
+        <th>Deadline</th>
+        <th>Owner</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>[Decision 1]</td><td>[Options]</td><td>[Date]</td><td>[Owner]</td></tr>
+      <tr><td>[Decision 2]</td><td>[Options]</td><td>[Date]</td><td>[Owner]</td></tr>
+      <!-- AGENT: Add more decisions -->
+    </tbody>
+  </table>
+  <div class="page-footer">Backbase | 30</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     CLOSING
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="closing">
+  <!-- AGENT: Customize closing message -->
+  <h2>Let's make it happen together.</h2>
+  <div class="subtitle">The foundation for your digital transformation starts now.</div>
+  <div class="brand">Backbase</div>
+</div>
+
+</body>
+</html>
