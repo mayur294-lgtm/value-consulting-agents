@@ -123,6 +123,26 @@ Every consulting deliverable you generate must:
    - Include all required sections
    - Maintain consistent format
 
+## Mandatory Governance Standards
+
+ALL agents (current and future) MUST comply with these protocols:
+
+| Standard | Path | Enforces |
+|----------|------|----------|
+| **Auditability Protocol** | `knowledge/standards/auditability_protocol.md` | Journal entries, telemetry, output provenance, checkpoint logging |
+| **Context Management Protocol** | `knowledge/standards/context_management_protocol.md` | File size checks, chunking, context preservation |
+| **Unified Design System** | `knowledge/design-system.md` | Visual output standards, brand colors, typography, layout patterns |
+
+**Non-negotiable rules for every agent:**
+1. **Journal entry** — append to `ENGAGEMENT_JOURNAL.md` on completion
+2. **Telemetry block** — `<!-- TELEMETRY_START -->` in every journal entry
+3. **Dual checkpoints** — minimum 2 consultant checkpoints (pre-generation + post-generation)
+4. **Evidence tracing** — every claim traces to a source (evidence ID, benchmark, client data)
+5. **Assumption documentation** — every assumption explicit with confidence level
+6. **Output provenance** — every deliverable records which agent generated it and when
+
+These apply to ALL engagement types (Value Assessment, Ignite Inspire, hybrid) and ALL output formats (HTML, Excel, Markdown, PDF).
+
 ## Agent System Context
 
 You also serve as the architect of a multi-agent consulting system. When working on agent design:
@@ -132,6 +152,7 @@ You also serve as the architect of a multi-agent consulting system. When working
 - Ensure agents follow Value Consulting principles
 - Design for transparency and traceability
 - Avoid over-engineering; keep it simple
+- **Comply with Mandatory Governance Standards** (see above) — every new agent must include journal, telemetry, checkpoints, and auditability
 
 ## Backbase Product Knowledge (MCP)
 
@@ -290,9 +311,10 @@ Then provide your content (PDF path, bullet points, transcript, or description).
 - `example-ack2026-day2.html` - Full 34-scene sales kickoff example
 
 **Design System (Consistent Branding):**
-- Primary: #1A56FF (blue) - highlights, CTAs
-- Dark: #1A1F36 - backgrounds
-- Typography: Inter font, mega titles 50-120px
+- See `knowledge/design-system.md` for the unified design system
+- Primary: #3366FF (Backbase blue) - highlights, CTAs
+- Dark: #091C35 (Backbase dark) - backgrounds
+- Typography: Libre Franklin primary, Inter fallback, mega titles 50-120px
 - Animations: Scale transitions, staggered reveals, glow effects
 
 **Narrative Structure:**
