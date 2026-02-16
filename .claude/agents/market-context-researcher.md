@@ -108,15 +108,27 @@ Extract metrics relevant to the engagement domain. Not all metrics will be avail
 - `[Regulator]` — from central bank or regulatory publications
 - `[Not Available]` — searched but not found
 
-#### Step 3: Peer Comparison
+#### Step 3: Peer Bank Selection + Consultant Confirmation
 
-Find 2-3 peer banks for comparison. Search priority:
+**Step 3a: Identify candidate peers.** Find 2-3 peer banks using this priority:
 1. **Same country, same size tier** — ideal comparison
 2. **Same country, different size** — if same-size peers unavailable
 3. **Same region, similar profile** — if country-level peers limited
 4. **Regional/global digital leader** — as aspirational benchmark
 
-For each peer, extract the same metrics where available. WebSearch queries:
+**Step 3b: STOP — Confirm peer selection with consultant before researching.**
+
+Present to the consultant:
+> "I plan to compare [Client] against these peers:
+> 1. [Peer A] — [rationale: same country, similar size, listed]
+> 2. [Peer B] — [rationale: same region, digital leader]
+> 3. [Peer C] — [rationale: aspirational benchmark]
+>
+> Are these the right comparisons? Any banks you want added or removed?"
+
+Only proceed to detailed peer research after consultant confirms. This prevents wasted research cycles on wrong comparisons and ensures the competitive narrative resonates with the client's board.
+
+**Step 3c: Research confirmed peers.** For each peer, extract the same metrics where available. WebSearch queries:
 - "[peer bank name] annual report [year]"
 - "[peer bank name] cost to income ratio"
 - "[peer bank name] digital banking"
@@ -417,7 +429,7 @@ Strength: [Strong / Moderate / Weak — based on evidence quality]
 
 ---
 
-## Consultant Interaction Model
+## Consultant Checkpoint
 
 **You MUST present findings to the consultant before they flow to the Assembly Agent.**
 

@@ -248,18 +248,18 @@ For any single file over 1000 lines (transcripts, PDFs, reports):
 
 Agents pass work through files, not through context:
 ```
-Discovery Agent → writes evidence_register.md, pain_points.md, metrics.md, stakeholder_intelligence.md
+Discovery Agent → writes evidence_register.md (with lifecycle tags per item), pain_points.md, metrics.md, stakeholder_intelligence.md
 Journey Builder → reads discovery outputs + domain journey templates → writes journey_maps.json, journey_maps_summary.md
   → Consultant selects journeys (Checkpoint #1) → Consultant validates maps (Checkpoint #2)
 Market Context Researcher → reads discovery outputs + does web research → writes market_context_brief.md (includes client voice profile)
   → Consultant reviews → writes market_context_validated.md (or SKIPPED)
 Capability Agent → reads discovery outputs (NOT raw transcripts)
-ROI Agent → reads capability output + metrics (NOT raw transcripts)
+ROI Agent → reads evidence_register.md (lifecycle tags + value themes) + capability output + metrics + market_context_validated.md (if exists, for metric anchoring) + knowledge/domains/{domain}/benchmarks.md + knowledge/domains/{domain}/roi_levers.md (if exists) + Ignite synthesis (if hybrid) — NOT raw transcripts
 Roadmap Agent → reads ROI output + capability output
 Assembly Agent → reads all output files + journey_maps_summary.md + market_context_validated.md (if exists) + stakeholder_intelligence.md (for tone calibration)
 ```
 
-**Parallel execution opportunity:** After Discovery completes, Journey Builder, Market Context Researcher, Capability Agent, and ROI Agent can all run in parallel since they read from Discovery outputs independently.
+**Parallel execution opportunity:** After Discovery completes, Journey Builder, Market Context Researcher, Capability Agent, and ROI Agent can all run in parallel since they read from Discovery outputs independently. ROI Agent can start in parallel, but if `market_context_validated.md` becomes available before the ROI agent completes its modeling step, it should incorporate the published financial metrics as validation anchors. If market context is not available, ROI proceeds without it.
 
 This ensures each agent starts with a clean context containing only what it needs.
 
@@ -297,8 +297,16 @@ Route work to specialized agents based on engagement type:
 - Output: Maturity scores, gap analysis, capability heat map
 
 **ROI Agent:**
-- Input: Pain points, capability gaps, benchmark data
-- Output: Benefits mapping, cost model, scenarios (best/worst/likely), assumptions register
+- Input: Evidence register (with lifecycle tags), capability gaps, financial data (baseline metrics, costs, rates), region/context, initiative scope, domain benchmark file (`knowledge/domains/{domain}/benchmarks.md`), domain ROI levers file (`knowledge/domains/{domain}/roi_levers.md` if exists)
+- **Lifecycle context (MUST provide):** Before invoking the ROI agent, compute and pass:
+  - Lifecycle stage distribution from the evidence register (e.g., "Acquire: 3 items, Expand: 7 items, Retain: 5 items")
+  - Primary value themes identified in discovery (e.g., "churn prevention, cross-sell, RM productivity")
+  - Ignite use case priorities (if hybrid engagement — pass the prioritized use case list from the Ignite Workshop Synthesizer)
+  - Domain-specific guidance (e.g., "wealth engagement — expect RM productivity and AUM growth as primary levers, not onboarding volume")
+  - Explicit scope exclusions if any (e.g., "onboarding is NOT in scope per client direction")
+- **Instruction to ROI agent:** "Derive value levers from the evidence register lifecycle tags and discovery themes. Do NOT default to onboarding + servicing. Follow the 4-step Consultant Checkpoint (Evidence Scan → Lever Candidate Mapping → Coverage Check → Present to Consultant) before building the model."
+- **Context rule:** ROI agent reads evidence register, capability assessment, and financial data — never raw transcripts
+- Output: Benefits mapping, cost model, scenarios (conservative/moderate/aggressive), assumptions register, Excel ROI model
 
 **Roadmap Agent:**
 - Input: Prioritized capabilities, ROI outputs, dependencies

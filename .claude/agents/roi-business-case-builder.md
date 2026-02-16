@@ -36,13 +36,40 @@ You MUST read and follow `knowledge/standards/context_management_protocol.md` be
 ## Required Inputs
 
 Before building any ROI model, you must have:
-1. **Evidence Register** from Discovery Agent (with evidence IDs) — **read this, not raw transcripts**
+1. **Evidence Register** from Discovery Agent (with evidence IDs and lifecycle tags) — **read this, not raw transcripts**
 2. **Capability Assessment** from Capability Agent — for gap-to-value mapping
 3. **Financial data** per financial_data_schema.md (baseline metrics, costs, rates)
 4. **Region/context** for benchmark selection
 5. **Initiative scope** (what is being evaluated)
+6. **Market Context Brief** *(optional but recommended)* — `market_context_validated.md` from the Market Context Researcher. Contains the client's published financials (C/I ratio, segment revenue, customer counts, digital adoption rates) and peer bank comparisons. When present, use these as **validation anchors** for your assumptions — any assumption that conflicts with published data must be flagged with a note explaining the discrepancy.
+7. **Ignite Workshop Synthesis** *(optional — hybrid engagements only)* — prioritized use cases and value themes from the Ignite Workshop Synthesizer. When present, this is the **primary source** for lever selection, superseding evidence-count thresholds.
+8. **Domain benchmarks** *(auto-loaded)* — `knowledge/domains/{domain}/benchmarks.md` — engagement-sourced metrics for the engagement's domain
+9. **Domain ROI levers** *(auto-loaded if exists)* — `knowledge/domains/{domain}/roi_levers.md` — pre-built value lever templates with calculation formulas and ranges
 
-If any required input is missing, explicitly request it before proceeding.
+If any required input (1-5) is missing, explicitly request it before proceeding. Inputs 6-9 are optional — check whether the orchestrator provided them or if the files exist.
+
+### Domain Knowledge Loading (inputs 8-9)
+
+Before building calculations, load the domain-specific knowledge files:
+
+1. **Read `knowledge/domains/{domain}/benchmarks.md`** — contains channel transaction costs, digital adoption rates, cross-sell ratios, retention rates, and other metrics sourced from actual engagements. Use these as baseline parameters instead of generic estimates.
+2. **Read `knowledge/domains/{domain}/roi_levers.md`** (if exists) — contains pre-built value lever templates with calculation formulas, typical ranges, and confidence tiers. Use these as starting points for lever selection instead of building calculations from scratch.
+3. **Apply benchmark evolution rules** from `knowledge/standards/benchmark_evolution.md`:
+   - `[Client-Validated]` benchmarks: use directly with High confidence
+   - `[Industry]` benchmarks: use with Medium confidence
+   - `[Proxy]` benchmarks: apply 20% conservative haircut, flag as Low confidence
+   - `[Estimated]` benchmarks: use as directional only, trigger wider sensitivity analysis
+
+When a domain ROI levers file exists, the lever selection step (Step 2) should start from these templates and select/customize based on the evidence register, not invent calculations from scratch.
+
+### Market Context Anchoring (when input 6 is available)
+
+Before building calculations, check if `market_context_validated.md` exists. If it does:
+1. Extract the client's published financial metrics (C/I ratio, revenue per segment, customer counts, digital adoption %)
+2. For each assumption in your model, check if a published metric contradicts or supports it
+3. Use the client's actual numbers (tagged `[Annual Report]` or `[Investor Presentation]`) as the baseline instead of estimates where possible
+4. Flag any assumption where your estimate differs >20% from published data: "Note: Model assumes X, but client's published figure is Y — validate with client"
+5. Use peer bank metrics as benchmark anchors for "best-in-class" scenarios
 
 ## Consultant Checkpoint (MANDATORY)
 
@@ -50,17 +77,140 @@ If any required input is missing, explicitly request it before proceeding.
 
 **You MUST pause and present your proposed approach to the consultant for approval.** This prevents hours of rework on lever selection, assumption calibration, and scenario design.
 
-### Present to the Consultant:
+### Step 0: Bank Entity Confirmation (for Market Context Research)
 
-1. **Proposed Benefit Levers** — Table of top 5-8 levers: name, type (revenue uplift / cost avoidance), estimated annual value range, confidence level, and supporting evidence IDs
-2. **Levers NOT Included** — Levers you considered but excluded, with rationale. The consultant may disagree and want them added.
-3. **Key Baseline Assumptions** — The 5-10 assumptions that most drive the model: volumes, rates, costs, adoption curves. Flag which ones you are least confident about.
-4. **Scenario Parameters** — Proposed conservative/base/aspirational curve parameters
-5. **Peer/Benchmark Selection** — Which benchmarks you plan to use, with confidence labels
-6. **Questions** — Any data gaps, ambiguous evidence, or judgment calls that need consultant input
+Before proceeding with the evidence scan, confirm the bank entity that will be used for market context research and annual report analysis:
+
+1. **Identify the bank** from the engagement intake, client profile, or discovery outputs
+2. **Determine the legal entity** — for banks with subsidiaries or divisions (e.g., "HNB — Wealth Management Division" vs "HNB PLC"), clarify which entity's financials are relevant
+3. **Check for public data availability** — is the bank publicly listed? What stock ticker? Which exchange? What is the most recent annual report year?
+
+Present to the consultant:
+
+```
+## Bank Entity Confirmation
+
+Bank Name: [Full legal name]
+Country: [Country]
+Stock Ticker: [Ticker] ([Exchange]) — or "Private / Not Listed"
+Most Recent Annual Report: [Year] — [Available / Not Found / Not Applicable]
+Division/Segment Focus: [e.g., "Retail Banking" or "Wealth Management Division"]
+
+Is this the correct entity for market context research and annual report anchoring?
+If the bank has a parent company or holding structure, should we use parent or subsidiary financials?
+```
+
+**Rules:**
+- NEVER proceed without confirming the bank entity — incorrect identification wastes all market context research
+- If the bank is not publicly listed or annual reports are not available, note this explicitly — the model will proceed with client-provided data only
+- If `market_context_validated.md` already exists from a prior step, skip this confirmation and use the validated entity
+
+### Step 1: Evidence Scan — Lifecycle Distribution
+
+Before proposing any levers, scan the evidence register and compute the lifecycle distribution:
+
+1. **Read every evidence item** from the evidence register (or discovery output)
+2. **Extract lifecycle tags** — each evidence item should have a lifecycle stage: Acquire, Activate, Expand, Retain (or equivalent)
+3. **Compute distribution** — count evidence items per lifecycle stage
+
+Present to the consultant:
+
+```
+Lifecycle Distribution (from N evidence items):
+  Acquire:  X items (XX%)
+  Activate: X items (XX%)
+  Expand:   X items (XX%)
+  Retain:   X items (XX%)
+  Untagged: X items
+```
+
+If evidence items lack lifecycle tags, infer them from context and note "inferred" next to the tag.
+
+### Step 2: Lever Candidate Mapping
+
+**If Ignite Workshop Synthesis is present (hybrid engagement):**
+
+Start from the Ignite priorities, then validate against the evidence register:
+
+1. Map each Ignite-prioritized use case to the **Value Lever Reference Menu** (8 categories above)
+2. Mark all Ignite-mapped categories as strong candidates regardless of evidence count
+3. Scan the evidence register for additional categories NOT covered by Ignite — apply the standard evidence-count rules (below) for those
+4. Flag any Ignite priorities that have ZERO supporting evidence items — these are valid levers but will have lower confidence in the model
+
+**If no Ignite synthesis (standard Value Assessment):**
+
+Derive levers purely from the evidence register using the lifecycle distribution from Step 1:
+
+Cross-reference the lifecycle distribution against the **Value Lever Reference Menu** (8 categories above):
+
+| # | Category | Lifecycle | Evidence Items | Candidate? | Rationale |
+|---|----------|-----------|---------------|------------|-----------|
+| 1 | Customer Onboarding (CASA) | Acquire | E1, E5, E12 | Yes | 3 items mention acquisition friction |
+| 2 | Loan / Product Origination | Acquire | — | No | No lending evidence |
+| 3 | Credit Card Origination | Acquire | E8 | Maybe | 1 item, low confidence |
+| 4 | Loyalty & Retention | Retain | E2, E3, E7, E9, E14 | **Yes** | 5 items — churn is a top theme |
+| 5 | Product Penetration / Cross-sell | Expand | E4, E6, E11 | Yes | Cross-sell opportunities cited |
+| 6 | Fee Income Uplift | Expand | — | No | No fee income evidence |
+| 7 | Customer Servicing | Retain | E10, E13 | Yes | Branch/call center volumes cited |
+| 8 | IT Cost Savings | N/A | E15 | Maybe | Legacy stack mentioned but no cost data |
+
+**Rules for candidate selection (both paths):**
+- **2+ evidence items** → strong candidate (include unless consultant overrides)
+- **1 evidence item** → weak candidate (flag as "Maybe" — let consultant decide)
+- **0 evidence items** → exclude unless consultant explicitly adds it
+- **Ignite-prioritized use case** → strong candidate regardless of evidence count (confidence depends on evidence support)
+
+### Step 2b: Capability-to-Lever Mapping (MANDATORY)
+
+Before finalizing candidates, map Backbase capabilities to each lever using three sources:
+
+1. **Extract from Capability Assessment (input #2):** Read the capability assessment output and identify every gap where Backbase is the recommended solution. Build a mapping:
+
+   | Capability Gap ID | Gap Description | Backbase Product | Target Maturity |
+   |-------------------|----------------|-----------------|-----------------|
+   | CAP-ACQ-003 | Manual account opening, 45-min branch process | Digital Onboarding | 3 (Orchestrated) |
+   | CAP-SVC-007 | No self-service for address/profile changes | Digital Banking (Self-Service) | 3 (Orchestrated) |
+
+2. **Map gaps to lever candidates:** For each lever candidate from Step 2, link it to the capability gaps it addresses. A lever with zero capability gaps mapped is suspicious — either the capability assessment missed something, or the lever isn't grounded in a real platform capability.
+
+3. **Validate enablers via MCP Infobank:** For each unique Backbase product/capability in the mapping, query MCP to confirm:
+   - The capability exists in the current platform
+   - The claimed impact mechanism is plausible (e.g., "Digital Onboarding reduces manual KYC" — does the product actually automate KYC?)
+   - If MCP is unavailable, fall back to the domain `roi_levers.md` enabler sections and note the fallback
+
+**Output:** Add "Backbase Enablers" and "Capability Gap Addressed" columns to the lever candidate table from Step 2. Present this enriched table in Step 4.
+
+**Rule:** Every lever MUST have at least one Backbase Enabler confirmed via MCP (or domain lever file as fallback). A lever with no identifiable Backbase enabler cannot claim "Backbase enables X" — either find the enabler or reclassify the lever as "market/operational improvement (not platform-dependent)."
+
+### Step 3: Coverage Check
+
+Verify lifecycle coverage before proposing the final lever set:
+
+- **Minimum 3 of 8 categories** must be represented (unless evidence strongly limits scope)
+- **Flag lifecycle gaps** — if a lifecycle stage has 2+ evidence items but ZERO lever candidates, something is wrong. Revisit.
+- **Flag over-concentration** — if >70% of levers come from a single lifecycle stage, flag this to the consultant with the question: "Is this engagement truly focused on [stage], or are we missing levers?"
+
+### Step 4: Present to the Consultant
+
+Combine Steps 0-3 into a single `## DECISION REQUIRED` section:
+
+1. **Bank Entity Confirmation** — from Step 0. Show bank name, country, ticker, annual report availability, and ask for confirmation
+2. **Lifecycle Distribution** — table from Step 1
+3. **Proposed Benefit Levers** — table of top 5-8 levers derived from Steps 2-2b: name, category, lifecycle stage, type (revenue uplift / cost avoidance), estimated annual value range, confidence level, supporting evidence IDs, **Backbase Enablers** (MCP-validated), and **Capability Gap(s) Addressed**
+4. **Levers NOT Included** — categories from Step 2 marked "No" or "Maybe", with rationale. The consultant may disagree and want them added.
+5. **Coverage Check Result** — from Step 3. Flag any gaps or concentration issues.
+6. **Key Baseline Assumptions** — the 5-10 assumptions that most drive the model: volumes, rates, costs, adoption curves. Flag which ones you are least confident about.
+7. **Scenario Parameters** — proposed conservative/base/aspirational curve parameters, using the per-category curves from the Value Lever Reference Menu
+8. **Peer/Benchmark Selection** — which benchmarks you plan to use, with confidence labels
+9. **Market Context Status** — whether `market_context_validated.md` is available, and if so, which published metrics will be used as validation anchors
+10. **Questions** — any data gaps, ambiguous evidence, or judgment calls that need consultant input
 
 ### Format:
-Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## DECISION REQUIRED` heading. Include a table of proposed levers and a table of key assumptions, each with a column for "Your Input."
+Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## DECISION REQUIRED` heading. Include:
+- Lifecycle distribution summary
+- Table of proposed levers with a column for "Your Input"
+- Table of excluded levers with a column for "Override? (Y/N)"
+- Table of key assumptions with a column for "Your Input"
 
 Example structure:
 ```
@@ -73,8 +223,10 @@ Example structure:
 
 ### Rules:
 - NEVER build the Excel model or write the report before this checkpoint
+- NEVER skip Steps 1-3 and jump straight to proposing levers — the evidence scan IS the lever selection process
 - If the consultant says "proceed" — go with your recommendation, log "Consultant approved proposed approach" in the journal
 - If the consultant provides feedback — incorporate ALL of it before building
+- If the consultant adds a lever with no evidence support, log it as "Consultant-directed, no evidence — confidence: Low"
 - This checkpoint typically takes 2-3 minutes and saves hours of rework
 
 ## Output Formats
@@ -84,22 +236,72 @@ You MUST produce BOTH outputs:
 1. **Excel ROI Model** (PRIMARY) - Using `tools/roi_excel_generator.py`
 2. **Executive Summary Report** (SECONDARY) - Markdown for presentation
 
-### Excel Model Structure (REQUIRED)
+### Knowledge References (MANDATORY)
 
-Use the `tools/roi_excel_generator.py` to generate an Excel model with:
+Before building any ROI model, consult these reference files to understand the full range of value levers and calculation methodology:
 
-| Sheet | Purpose | Key Contents |
-|-------|---------|--------------|
-| Cover Page | Client info, date, currency | Client name, analysis period, selected scenario |
-| Instructions | How to use the model | Cell legends, sheet descriptions |
-| Results Dashboard | Key metrics summary | ROI, NPV, IRR, Payback Period |
-| All Inputs | Editable parameters | Basic info, curves, lever inputs |
-| Cashflows | 5-year projections | Benefits, costs, net cashflow by year |
-| Servicing Analysis | Task-level breakdown | Time per task, Backbase impact, cost avoided |
-| Scenarios | Three scenario definitions | Conservative, Moderate, Aggressive parameters |
-| Assumptions | Complete register | All assumptions with sources and owners |
+| Reference | Path | Purpose |
+|-----------|------|---------|
+| Business Case Builder Template | `knowledge/Business Case Builder_ ROI Calculator (Final).xlsx` | **Canonical ROI template** — shows full lifecycle lever structure, loading curves per category, cashflow rollup, and servicing task breakdown for a generic "Bank A" engagement |
+| MSB ROI Assessment | `knowledge/MSB - RB ROI Assessment.xlsx` | **Real engagement example** (Vietnam retail bank) — demonstrates extended levers including CC origination, product upsell, fee income, and granular servicing items with data source annotations |
+| ROI Examples | `knowledge/domains/roi_examples.md` | Worked examples: Seabank, HNB Wealth, Goodbody |
+| Domain Value Levers | `knowledge/domains/[domain]/` | Domain-specific benchmarks and value drivers |
+| ROI Pattern Library | `knowledge/learnings/roi_models/` | Reusable patterns: wealth, lending, LATAM, tech rationalization |
 
-To generate the Excel model, prepare a configuration JSON and invoke:
+**Rule:** Do NOT default to onboarding + servicing. Derive your value levers from the engagement evidence and select from the full lifecycle menu below.
+
+### Value Lever Reference Menu
+
+The following table defines ALL available value lever categories. Select the levers that match the engagement context — any combination is valid. Each engagement should include levers from **at least 3 categories** unless evidence strongly limits scope.
+
+| # | Category | Lifecycle Stage | Lever Type | Sub-Drivers | Loading Curve |
+|---|----------|----------------|------------|-------------|---------------|
+| 1 | **Customer Onboarding (CASA)** | Acquire | Revenue uplift + Cost avoidance | Website conversion uplift, branch conversion uplift, reduce branch visits, reduce sales visits, reduce call center calls | Customer/Loan Acquisition curve |
+| 2 | **Loan / Product Origination** | Acquire | Revenue uplift + Cost avoidance | Lending conversion uplift (USL, mortgage), reduce origination branch visits, reduce origination call center calls, reduce back-office tasks | Customer/Loan Acquisition curve |
+| 3 | **Credit Card Origination** | Acquire | Revenue uplift + Cost avoidance | CC conversion uplift, reduce CC branch visits, reduce CC call center calls, reduce CC back-office tasks | Customer/Loan Acquisition curve |
+| 4 | **Loyalty & Retention** | Retain | Revenue uplift | Churn reduction (% of customers retained × avg income), digital re-engagement of inactive customers | Customer Churn curve (slower ramp — typically 0% Y1) |
+| 5 | **Product Penetration / Cross-sell** | Expand | Revenue uplift | Upsell during onboarding, digital product bundling, share of wallet growth, products-per-customer increase | Product Penetration curve |
+| 6 | **Fee Income Uplift** | Expand | Revenue uplift | Transaction fee growth from digital engagement, FX/payments fee uplift, advisory fee uplift | Product Penetration curve |
+| 7 | **Customer Servicing** | Retain | Cost avoidance | Branch servicing tasks, call center tasks, back-office tasks — each with volume × time × FTE rate × Backbase impact | Customer Servicing curve |
+| 8 | **IT Cost Savings** | N/A | Cost avoidance | Legacy system decommission (licenses, hosting, maintenance), vendor consolidation, parallel-run period costs | Implementation curve (tied to migration timeline) |
+
+**Each category has its own loading/effectiveness curve.** Do not apply a single curve across all lever types. The reference files show:
+- Acquisition/Origination: Typically faster ramp (30% Y1 implementation)
+- Churn/Retention: Delayed effect (often 0% Y1, ramps from Y2)
+- Product Penetration: Moderate ramp (0% Y1, builds with digital adoption)
+- Servicing: Faster ramp (tied to channel migration)
+- IT Cost Savings: Step-function (tied to decommission milestones)
+
+### Excel Model Structure (REQUIRED — Formula-Based)
+
+The Excel model uses **live formulas** — changing any input recalculates all downstream values automatically. No VBA. Use `tools/roi_excel_generator.py` to generate.
+
+**Data flow (one-directional, no cycles):**
+```
+Scenario Data → Model Inputs → Lever Sheets → Cashflows → Results Dashboard
+                                    ↓
+                            Servicing Detail
+```
+
+| Sheet | Type | Purpose |
+|-------|------|---------|
+| Cover Page | Static | Client info, date, currency |
+| Instructions | Static | Cell color legends, sheet descriptions |
+| Table of Contents | Static | Sheet listing by layer |
+| Scenario Data | INPUT | 3-column table: Conservative / Moderate / Aggressive curves and impacts |
+| Model Inputs | INPUT | **All editable parameters** — scenario dropdown (1/2/3), INDEX formulas for scenario-dependent values, lever inputs with confidence coloring, investment schedule |
+| Servicing Detail | CALC | Task-level dual-dimension formulas: Vol Saving = Baseline × Vol Deflection, Time Saving = Remaining Vol × Time × Time Reduction × Rate |
+| Lever: {name} | CALC | One sheet per value lever group — driver formulas reference Model Inputs, year-by-year = Benefit × impl_curve × eff_curve |
+| Cashflows | CALC | Cross-sheet formulas referencing lever sheet totals, `=NPV()`, `=IFERROR(IRR(...))`, payback via nested `IF()` |
+| Results Dashboard | OUTPUT | All values reference Cashflows and lever sheets — no Python-computed values |
+| Assumptions | Static | Assumptions register with sources |
+| Data Gaps | Static | Items requiring client validation |
+
+**Scenario switching:** Model Inputs cell C5 has a dropdown (1=Conservative, 2=Moderate, 3=Aggressive). All scenario-dependent values use `=INDEX('Scenario Data'!C{row}:E{row}, 1, ScenarioIndex)`. Changing the dropdown recalculates everything.
+
+**Named ranges:** ScenarioIndex, DiscountRate, License_Y1..Y5, Impl_Y1..Y5
+
+To generate the Excel model, prepare a `value_lever_groups` config JSON and invoke:
 
 ```python
 from tools.roi_excel_generator import ROIModelGenerator
@@ -111,31 +313,104 @@ config = {
     "discount_rate": 0.12,
     "selected_scenario": "Moderate",
     "scenarios": {
-        "conservative": {
-            "implementation_curve": [0.1, 0.6, 0.8, 0.9, 1.0],
-            "effectiveness_curve": [0.1, 0.25, 0.45, 0.7, 0.85],
-            "levers": {"event_uplift": 0.1, "onboarding_impact": 0.2}
-        },
-        "moderate": {...},
-        "aggressive": {...}
+        "conservative": { "curves": { "acquisition": {"implementation": [...], "effectiveness": [...]}, ... } },
+        "moderate":     { "curves": { ... } },
+        "aggressive":   { "curves": { ... } }
     },
     "investment": {
         "license": [1200000, 1200000, 1200000, 1200000, 1200000],
         "implementation": [2000000, 400000, 400000, 400000, 400000]
     },
-    "levers": [
-        {"id": "L1", "name": "Prospecting", "type": "revenue_uplift", "values": [...]},
-        {"id": "L2", "name": "Servicing", "type": "cost_avoidance", "values": [...]}
+    "value_lever_groups": {
+        "customer_onboarding": {
+            "group_name": "Customer Onboarding — Customer Acquisition",
+            "category": "customer_onboarding",
+            "evidence_ids": ["E1", "E3"],
+            "revenue_drivers": {
+                "digital_casa": { "name": "Digital CASA Conversion", "potential_annual_benefit": 600000, "confidence": "medium" }
+            },
+            "cost_drivers": {},
+            "servicing_analysis": null
+        },
+        "customer_servicing": {
+            "group_name": "Customer Servicing",
+            "category": "servicing",
+            "evidence_ids": ["E4", "E5"],
+            "revenue_drivers": {},
+            "cost_drivers": {},
+            "servicing_analysis": {
+                "branch": { "channel_name": "Branch", "tasks": [
+                    {"task": "Account Opening", "yearly_volume": 50000, "time_spent_hours": 0.5, "fte_rate": 25, "volume_deflection_rate": 0.25, "time_reduction_rate": 0.15}
+                ]},
+                "call_center": { ... },
+                "back_office": { ... }
+            }
+        }
+    },
+    "bank_profile": {
+        "bank_name": "Bank Name",
+        "country": "Country",
+        "currency": "USD",
+        "stock_ticker": "TICK.EX",
+        "report_year": "2024",
+        "report_source": "Annual Report 2024 + Client Data",
+        "market_context_status": "VALIDATED",
+        "key_metrics": [
+            {"metric": "Total Customers", "value": 180000, "confidence": "HIGH", "source": "CLIENT DATA"}
+        ],
+        "derived_metrics": [
+            {"metric": "Revenue per Customer", "value": 946, "confidence": "MEDIUM", "derivation": "revenue / customers"}
+        ],
+        "additional_context": [
+            {"metric": "Total Assets", "value": 6670000000, "confidence": "HIGH", "source": "Annual Report 2024"}
+        ],
+        "data_gaps": [
+            {"data_needed": "Operating Costs", "priority": "HIGH", "impact": "Required for C/I ratio", "where_to_obtain": "CFO"}
+        ]
+    },
+    "assumptions_register": [
+        {"id": "A-001", "assumption": "Total customers", "value": "180,000", "confidence": "HIGH", "source": "Client data", "validation_owner": "Head of Retail", "sensitivity": "HIGH — affects all per-customer calculations"}
     ],
-    "servicing": [
-        {"task": "Portfolio Review", "volume": 15700, "time": 0.75, "rate": 25, "impact": 0.3}
-    ],
-    "assumptions": [...]
+    "data_gaps_for_validation": [
+        {"id": "DG-001", "data_needed": "Operating Costs", "priority": "HIGH", "source": "CFO — management accounts", "impact": "Required for C/I ratio validation"}
+    ]
 }
 
 generator = ROIModelGenerator(config)
 generator.generate("outputs/roi_model.xlsx")
 ```
+
+> **IMPORTANT — Config field names:** The Excel generator reads `assumptions_register` and `data_gaps_for_validation` as the canonical top-level keys. The generator also accepts `assumptions` and `data_gaps` as fallbacks, but always prefer the canonical names for new configs.
+
+### Bank Profile Section (REQUIRED in config)
+
+The `bank_profile` section in the config JSON populates the **Bank Profile** sheet in the Excel model. This sheet provides executives with a single-page view of the bank's identity, key financial metrics, and data confidence.
+
+**Population order of priority:**
+1. **`market_context_validated.md`** (if available) — use published annual report metrics as highest-confidence anchors
+2. **`bank_profile_roi_inputs.json`** (if bank profiler was run) — pre-populated financial data
+3. **Client-provided data** — from engagement intake, questionnaires, workshop notes
+4. **Estimates/benchmarks** — as last resort, clearly tagged LOW confidence
+
+**Required fields:**
+- `bank_name`, `country`, `currency` — from engagement intake
+- `stock_ticker` — if publicly listed (enables annual report research)
+- `report_year`, `report_source` — what data was used
+- `market_context_status` — one of: `VALIDATED` (market context researcher ran and was approved), `NOT_RUN` (not executed), `SKIPPED` (consultant explicitly skipped)
+- `key_metrics` — array of {metric, value, confidence, source} for core financial data
+- `derived_metrics` — array of {metric, value, confidence, derivation} for calculated values
+- `additional_context` — array of {metric, value, confidence, source} for annual report data (empty if market context not available)
+- `data_gaps` — array of {data_needed, priority, impact, where_to_obtain}
+
+**When `market_context_validated.md` IS available:**
+- Extract all Module 1 financial metrics (C/I ratio, ROE, NII, total assets, etc.) into `additional_context`
+- Tag each with `[Annual Report YYYY]` source
+- Use these as validation anchors — if any assumption in `key_metrics` differs >20% from published data, flag the discrepancy in the metric's source field
+
+**When market context is NOT available:**
+- Set `market_context_status` to `NOT_RUN` or `SKIPPED`
+- Leave `additional_context` empty or minimal
+- Add "Annual Report Financial Data" as a data gap with HIGH priority
 
 ### Lever-by-Lever Breakdown (REQUIRED)
 
@@ -148,24 +423,82 @@ Each benefit lever must follow the HNB/Seabank structure:
 | Type | revenue_uplift or cost_avoidance | revenue_uplift |
 | Baseline Calculation | Current state formula | Volume × Revenue per customer |
 | Backbase Impact | Improvement percentage | 20% uplift |
+| Backbase Enablers | Specific Backbase products/capabilities that deliver this impact — **validated via MCP Infobank** | Digital Onboarding (pre-populated KYC), Digital Engage (NBA engine) |
+| Capability Gap Addressed | Link to Capability Assessment gap(s) this lever resolves | CAP-ACQ-003: Manual account opening |
 | Year-by-Year Values | 5-year benefit projection | [18000, 147000, 288000, 510000, 600000] |
 | Evidence Links | Supporting evidence IDs | E1, E3, E5 |
 | Assumptions | Key assumptions for this lever | A1: 250 customers/year |
 
+**Backbase Enablers rule:** For each lever, query the MCP Infobank (`mcp__backbase-infobank__ask_assistant` or `mcp__backbase-infobank__search_documents`) to confirm the named Backbase capability exists and supports the claimed impact mechanism. Start from the domain `roi_levers.md` enabler suggestions, then validate against MCP. If MCP is unavailable, use the domain lever file enablers with the caveat: "Enabler mapping based on domain knowledge file — verify with latest product release."
+
 ### Servicing Analysis Structure (REQUIRED)
 
-For cost avoidance from servicing improvements, provide detailed task-level analysis:
+For cost avoidance from servicing improvements, provide detailed task-level analysis with **two dimensions**:
 
-| Servicing Task | Role | Yearly Volume | Time/Interaction (hrs) | FTE Cost/Hour | Baseline Cost | Backbase Impact | Cost Avoided |
-|---------------|------|---------------|----------------------|---------------|---------------|-----------------|--------------|
-| Portfolio Review | RM | 15,700 | 0.75 | $25 | $294,375 | 30% | $88,313 |
-| Customer Queries | RM | 28,423 | 0.25 | $25 | $177,644 | 60% | $106,586 |
-| Transaction Support | RM | 28,423 | 0.25 | $25 | $177,644 | 60% | $106,586 |
-| TOTAL | | | | | $649,663 | | $301,485 |
+1. **Volume Deflection** — percentage of interactions eliminated entirely via self-service (customers handle it themselves, staff never involved)
+2. **Time Reduction** — percentage reduction in handling time for remaining interactions (staff still involved but faster due to better tools/workflows)
 
-### Implementation & Effectiveness Curves (REQUIRED)
+**Current-state savings (point-in-time):**
 
-Every ROI model must include ramp-up curves:
+| Servicing Task | Role | Yearly Volume | Time (hrs) | Rate | Baseline | Vol Deflection | Time Reduction | Vol Saving | Time Saving | Total Saved |
+|---------------|------|---------------|------------|------|----------|---------------|---------------|------------|------------|-------------|
+| Portfolio Review | RM | 15,700 | 0.75 | $25 | $294,375 | 20% | 15% | $58,875 | $35,325 | $94,200 |
+| Customer Queries | RM | 28,423 | 0.25 | $25 | $177,644 | 50% | 20% | $88,822 | $17,764 | $106,586 |
+| Transaction Support | RM | 28,423 | 0.25 | $25 | $177,644 | 50% | 20% | $88,822 | $17,764 | $106,586 |
+| TOTAL | | | | | $649,663 | | | $236,519 | $70,853 | $307,372 |
+
+Formulas:
+- `Baseline = Volume × Time × Rate`
+- `Vol Saving = Baseline × Vol Deflection Rate` (interactions moved entirely to self-service)
+- `Time Saving = Volume × (1 - Vol Deflection) × Time × Time Reduction × Rate` (faster resolution on remaining)
+- `Total Saved = Vol Saving + Time Saving`
+- Combined effective impact = `1 - (1 - Vol Deflection) × (1 - Time Reduction)`
+
+**Setting Volume Deflection vs Time Reduction rates:**
+- **High VDR, low TRR** — routine tasks easily handled by self-service (balance enquiry, password reset, transfers): VDR 60-80%, TRR 20-30%
+- **Low VDR, moderate TRR** — complex tasks requiring human judgment but aided by better tools (disputes, fraud, complaints): VDR 10-20%, TRR 15-25%
+- **Moderate VDR, moderate TRR** — mixed tasks with partial self-service (account changes, payment support): VDR 30-50%, TRR 20-30%
+
+**Growth-adjusted cost avoidance (REQUIRED for growing banks):**
+
+When a YoY growth rate is specified (e.g., 8%), the servicing model must also project the future cost avoidance from NOT hiring additional staff to handle volume growth:
+
+| Year | Base Volume | Growth Volume | Total Volume | Digital Handles | Would Require Staff | FTEs Avoided |
+|------|------------|---------------|-------------|----------------|--------------------|----|
+| Y1 | 72,546 | 5,804 | 78,350 | 2,031 | 7.1 FTE | 1.1 |
+| Y2 | 72,546 | 12,020 | 84,566 | 8,414 | 29.4 FTE | 5.9 |
+| Y3 | 72,546 | 18,678 | 91,224 | 16,810 | 58.7 FTE | 11.7 |
+| Y4 | 72,546 | 25,812 | 98,358 | 25,812 | 90.1 FTE | 18.0 |
+| Y5 | 72,546 | 33,458 | 106,004 | 33,458 | 116.8 FTE | 23.4 |
+
+Formulas:
+- `Growth Volume = Base Volume × ((1 + Growth Rate)^Year - 1)`
+- `Digital Handles = Growth Volume × Combined Impact × Implementation Curve` (where Combined Impact = 1 - (1 - Vol Deflection) × (1 - Time Reduction))
+- `FTEs Avoided = Digital Handles × Avg Time per Task / Annual Available Hours per FTE (1,800 hrs)`
+- `Cost Avoided = FTEs Avoided × Loaded Annual FTE Cost`
+
+**FTE equivalence for executive communication:** Always translate abstract cost savings into headcount: "Digital self-service avoids the need to hire approximately X additional [role] over the 5-year period." CFOs think in headcount, not abstract cost savings.
+
+Include these fields in the config JSON when growth-adjusted servicing is applicable:
+```json
+"yoy_growth_rate": 0.08,
+"annual_hours_per_fte": 1800,
+"loaded_annual_fte_cost": 55000
+```
+
+### Implementation & Effectiveness Curves (REQUIRED — Domain-Derived)
+
+**Do NOT use static curves.** Derive curves from the engagement context using `knowledge/standards/ramp_up_models.md`:
+
+1. **Estimate implementation timeline** based on domain vertical, journey count, integration complexity, and organizational readiness
+2. **Look up the implementation curve** from the timeline-based table in ramp_up_models.md
+3. **Apply domain-specific adoption discount** for effectiveness (e.g., wealth advisors adopt slower than retail self-service)
+4. **Apply scenario variation** (Conservative = -10% Y1-Y3, Aggressive = +10% Y1-Y3)
+
+**State the timeline assumption explicitly in the report:**
+> "Implementation timeline: [X] months based on [domain], [N] journeys, [integration type]. Validate with implementation team."
+
+The table below is a **fallback only** — use ramp_up_models.md to derive engagement-specific curves:
 
 | Scenario | Metric | Year 1 | Year 2 | Year 3 | Year 4 | Year 5 |
 |----------|--------|--------|--------|--------|--------|--------|
@@ -227,7 +560,37 @@ Identify the 3-5 variables that most impact the business case. Show:
 - Breakeven thresholds
 - Which assumptions would flip the decision
 
-### 6. "What Would Change the Decision?" Section
+### 6. ROI Calibration Check (MANDATORY — before finalizing)
+
+After computing all scenarios, compare results against domain benchmarks from `knowledge/domains/roi_examples.md`:
+
+| Segment | Expected ROI | Expected Payback | Benefit/Cost Ratio |
+|---------|-------------|------------------|--------------------|
+| Retail | 60–150% | 1.5–2.5 years | >1.5x |
+| Wealth | 120–200% | 1.5–2.0 years | >2.0x |
+| Commercial | 80–140% | 2.0–3.0 years | >1.5x |
+
+**If results fall below benchmarks, STOP and present to consultant:**
+
+> "## ROI Calibration Alert
+>
+> The current model shows:
+> - ROI: [X]% (benchmark for [domain]: [range])
+> - Payback: [X] years (benchmark: [range])
+> - NPV: [positive/negative] in [which scenarios]
+>
+> **Potential actions:**
+> a) **Broaden scope** — [list value levers from evidence register not yet modeled]
+> b) **Validate conservative assumptions** — [list assumptions with room for tightening via client data]
+> c) **Adjust timeline** — extending analysis period captures more steady-state benefits
+> d) **Present as-is** — the case is still positive, position as Conditional Go with upside potential
+> e) **Recommend No Go** — if the case genuinely doesn't support the investment
+>
+> Which direction should we take?"
+
+**Only proceed to final output after consultant confirms direction.** A senior consultant would never deliver a weak business case without discussing options first.
+
+### 7. "What Would Change the Decision?" Section
 
 Explicitly state:
 - Conditions that would make this a No Go
@@ -235,7 +598,7 @@ Explicitly state:
 - External factors that could derail benefits
 - Minimum thresholds for Go decision
 
-### 7. Handoff Package
+### 8. Handoff Package
 
 For Assembly Agent and Orchestrator:
 - Top 5 ROI levers (ranked by impact)
@@ -303,6 +666,8 @@ Before finalizing any ROI report, verify:
 - [ ] All assumptions documented with confidence and owner
 - [ ] Three scenarios presented with clear differentiation
 - [ ] Sensitivity analysis covers top impact variables
+- [ ] ROI Calibration Check completed — results compared against domain benchmarks
+- [ ] If below benchmarks: consultant was consulted on next steps before proceeding
 - [ ] "What would change the decision" section completed
 - [ ] All numbers have units and currency
 - [ ] Regional benchmark rules followed

@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value Consulting Agents — Issues #3–#10 Change Summary</title>
+    <style>
+        :root {
+            --bb-blue: #1A1F71;
+            --bb-light-blue: #4A90D9;
+            --bb-accent: #00C8FF;
+            --bb-green: #00B67A;
+            --bb-orange: #FF8C00;
+            --bb-red: #E74C3C;
+            --bb-purple: #7C3AED;
+            --bb-grey-100: #F7F8FA;
+            --bb-grey-200: #E8ECF1;
+            --bb-grey-300: #C5CDD8;
+            --bb-grey-700: #4A5568;
+            --bb-grey-900: #1A202C;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bb-grey-100);
+            color: var(--bb-grey-900);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--bb-blue) 0%, #2D3494 100%);
+            color: white;
+            padding: 48px 40px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .header .meta {
+            display: flex;
+            gap: 24px;
+            margin-top: 20px;
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        .header .meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 40px 60px;
+        }
+
+        .summary-bar {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .summary-card .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--bb-blue);
+        }
+
+        .summary-card .label {
+            font-size: 12px;
+            color: var(--bb-grey-700);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        /* Issue grouping */
+        .issue-group {
+            margin-bottom: 48px;
+        }
+
+        .issue-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--bb-blue);
+        }
+
+        .issue-number {
+            background: var(--bb-blue);
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        .issue-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--bb-blue);
+        }
+
+        .issue-priority {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        .issue-priority.critical { background: #FDE8E8; color: var(--bb-red); }
+        .issue-priority.high { background: #FFF3E0; color: var(--bb-orange); }
+        .issue-priority.medium { background: #E3F2FD; color: var(--bb-light-blue); }
+        .issue-priority.low { background: #F3E8FF; color: var(--bb-purple); }
+
+        .issue-summary {
+            font-size: 14px;
+            color: var(--bb-grey-700);
+            margin-bottom: 16px;
+            padding: 0 0 0 4px;
+        }
+
+        /* RC cards */
+        .rc-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            overflow: hidden;
+            border-left: 4px solid var(--bb-green);
+        }
+
+        .rc-card.skipped {
+            border-left-color: var(--bb-grey-300);
+        }
+
+        .rc-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .rc-badge {
+            background: var(--bb-blue);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .rc-title {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 600;
+            min-width: 200px;
+        }
+
+        .rc-file-tag {
+            font-size: 11px;
+            background: var(--bb-grey-200);
+            color: var(--bb-grey-700);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        .rc-status {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .rc-status.implemented {
+            background: #E6F9F1;
+            color: var(--bb-green);
+        }
+
+        .rc-status.covered {
+            background: #FFF3E0;
+            color: var(--bb-orange);
+        }
+
+        .rc-body {
+            padding: 0 20px 20px;
+            border-top: 1px solid var(--bb-grey-200);
+        }
+
+        .rc-section {
+            margin-top: 14px;
+        }
+
+        .rc-section h4 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--bb-grey-700);
+            margin-bottom: 6px;
+        }
+
+        .rc-section p, .rc-section li {
+            font-size: 13px;
+            color: var(--bb-grey-900);
+        }
+
+        .rc-section ul {
+            padding-left: 18px;
+        }
+
+        .rc-section li {
+            margin-bottom: 4px;
+        }
+
+        .fix-box {
+            background: #E6F9F1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 6px;
+        }
+
+        .fix-box p {
+            font-size: 13px;
+            color: #1B5E20;
+        }
+
+        .alternatives-box {
+            background: var(--bb-grey-100);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 6px;
+        }
+
+        .alternatives-box p {
+            font-size: 12px;
+            color: var(--bb-grey-700);
+        }
+
+        .option-tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            background: var(--bb-grey-200);
+            color: var(--bb-grey-700);
+            padding: 2px 7px;
+            border-radius: 4px;
+            margin-right: 4px;
+        }
+
+        .option-tag.chosen {
+            background: var(--bb-blue);
+            color: white;
+        }
+
+        /* Files table */
+        .files-changed {
+            margin-top: 48px;
+        }
+
+        .files-changed h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--bb-blue);
+        }
+
+        .file-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .file-table th {
+            background: var(--bb-blue);
+            color: white;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 14px;
+            text-align: left;
+        }
+
+        .file-table td {
+            padding: 10px 14px;
+            font-size: 12px;
+            border-bottom: 1px solid var(--bb-grey-200);
+            vertical-align: top;
+        }
+
+        .file-table tr:last-child td { border-bottom: none; }
+
+        .file-table .filepath {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 11px;
+            color: var(--bb-light-blue);
+        }
+
+        .file-table .change-type {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .file-table .change-type.modified { background: #FFF3E0; color: var(--bb-orange); }
+        .file-table .change-type.created { background: #E6F9F1; color: var(--bb-green); }
+        .file-table .change-type.copied { background: #E3F2FD; color: var(--bb-light-blue); }
+        .file-table .change-type.rewritten { background: #FDE8E8; color: var(--bb-red); }
+
+        .issue-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .issue-tag {
+            font-size: 10px;
+            font-weight: 600;
+            background: var(--bb-grey-200);
+            color: var(--bb-grey-700);
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 24px;
+            font-size: 12px;
+            color: var(--bb-grey-300);
+        }
+
+        code {
+            background: var(--bb-grey-200);
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 1px solid var(--bb-grey-200);
+            margin: 48px 0 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Value Consulting Agents — Change Summary</h1>
+    <div class="subtitle">Issues #3–#10: 8 issues, 28 root causes identified, all resolved</div>
+    <div class="meta">
+        <span>Repo: mayur294-lgtm/value-consulting-agents</span>
+        <span>Date: 13 Feb 2026</span>
+        <span>Status: All local, uncommitted</span>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="summary-bar">
+        <div class="summary-card">
+            <div class="number">8</div>
+            <div class="label">Issues Resolved</div>
+        </div>
+        <div class="summary-card">
+            <div class="number">28</div>
+            <div class="label">Root Causes</div>
+        </div>
+        <div class="summary-card">
+            <div class="number">6</div>
+            <div class="label">Files Modified</div>
+        </div>
+        <div class="summary-card">
+            <div class="number">5</div>
+            <div class="label">Files Created</div>
+        </div>
+        <div class="summary-card">
+            <div class="number">+1,952</div>
+            <div class="label">Lines Changed</div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- ISSUE #3 -->
+    <!-- ============================== -->
+    <div class="issue-group">
+        <div class="issue-header">
+            <span class="issue-number">#3</span>
+            <span class="issue-title">ROI Agent Hardcoded to Onboarding/Servicing</span>
+            <span class="issue-priority critical">Critical</span>
+        </div>
+        <p class="issue-summary">7 reinforcing root causes locked the ROI agent into always producing onboarding + servicing levers regardless of engagement context. Fixes introduce an 8-category value lever menu, evidence-driven lever selection, lifecycle coverage checks, and Ignite ingestion for hybrid engagements.</p>
+
+        <!-- RC1 -->
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC1</span>
+                <span class="rc-title">Hardcoded example biases toward onboarding + servicing</span>
+                <span class="rc-file-tag">roi-business-case-builder.md</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Problem</h4>
+                    <p>The embedded JSON config example showed exactly two lever types. The "Servicing Analysis Structure" was a REQUIRED section with no equivalent for retention, revenue growth, or cross-sell.</p>
+                </div>
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p><span class="option-tag chosen">B+C</span> Added a <strong>Value Lever Reference Menu</strong> (8-category table covering Acquire/Activate/Expand/Retain) and <strong>Knowledge References</strong> section pointing to 5 mandatory reference files. Replaced the hardcoded 2-lever JSON example with a lifecycle-complete config.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Expand the existing example</strong> &mdash; add more lever types to the existing JSON snippet. Rejected: doesn't provide the categorical reference structure consultants need.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RC2 -->
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC2</span>
+                <span class="rc-title">All ROI examples are onboarding + servicing heavy</span>
+                <span class="rc-file-tag">roi_examples.md</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Problem</h4>
+                    <p>Three worked examples (Seabank, HNB, Goodbody) all led with onboarding. Categories 4 (Loyalty &amp; Retention) and 5 (IT Cost Savings) had zero templates.</p>
+                </div>
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p><span class="option-tag chosen">A+B</span> Added Example 4: MSB Vietnam (retention $1.69M, cross-sell $4.77M, CC origination $3.60M). Added Example 5: Wealth composite (RM productivity $24.6M dominant, onboarding $186K minor). Expanded Category 4 &amp; 5 templates.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">C</span> <strong>Rebalance existing examples</strong> &mdash; restructure Seabank/HNB/Goodbody to lead with non-onboarding levers. Rejected: changing historical examples would reduce credibility; better to add new ones.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RC3 -->
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC3</span>
+                <span class="rc-title">JSON config schema enforces two journeys</span>
+                <span class="rc-file-tag">roi_config.json (retail + wealth)</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Problem</h4>
+                    <p>Config had a hardcoded <code>journeys</code> object with exactly <code>customer_onboarding</code> + <code>customer_servicing</code>.</p>
+                </div>
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p><span class="option-tag chosen">C3</span> Renamed <code>journeys</code> &rarr; <code>value_lever_groups</code> with <code>category</code> and <code>lifecycle_stage</code> tags. Created wealth config with 5 lever groups where RM productivity dominates (73%).</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Make journeys a dynamic array</strong> &mdash; replace the named object with an array of journey objects. Rejected: loses the semantic naming that makes configs readable.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>Add a <code>value_levers</code> flat array</strong> &mdash; alongside journeys. Rejected: duplicates structure, creates sync issues.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">C1</span> <strong>Simple rename only</strong> &mdash; rename journeys without adding category/lifecycle tags. Rejected: misses the opportunity to embed lifecycle semantics.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">C2</span> <strong>Rename + flatten inner structure</strong> &mdash; simplify the per-group schema. Rejected: loses the rich input/evidence structure that makes configs auditable.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RC4 -->
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC4</span>
+                <span class="rc-title">No "Value Lever Brainstorm" step in the ROI workflow</span>
+                <span class="rc-file-tag">roi-business-case-builder.md</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Problem</h4>
+                    <p>Agent went straight from "read inputs" &rarr; "build model" with no intermediate step to inventory evidence, map lifecycle coverage, or validate lever selection with the consultant.</p>
+                </div>
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p><span class="option-tag chosen">B</span> Expanded the Consultant Checkpoint into a 4-step evidence-driven process: (1) Evidence Scan, (2) Lever Candidate Mapping, (3) Coverage Check, (4) Present to Consultant with proposed/excluded levers and assumptions.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Separate "Value Lever Discovery" phase</strong> &mdash; add a new section before the checkpoint. Rejected: creates two sections doing related work; better to merge into one enriched checkpoint.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">C</span> <strong>Two-stage checkpoint pattern</strong> &mdash; split into Checkpoint 1 (scope) and Checkpoint 2 (numbers). Rejected: too heavyweight; most engagements don't need two full stops.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RC5 -->
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC5</span>
+                <span class="rc-title">Orchestrator doesn't pass lifecycle context to ROI agent</span>
+                <span class="rc-file-tag">value-consulting-orchestrator.md</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Problem</h4>
+                    <p>ROI handoff was 3 lines: "Input: Pain points, capability gaps, benchmark data." No lifecycle tags, value themes, or Ignite priorities.</p>
+                </div>
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p><span class="option-tag chosen">C</span> Enriched ROI handoff with lifecycle distribution, value themes, Ignite priorities, domain guidance, scope exclusions, and 4-step checkpoint instruction. Updated Disk-Based Handoff diagram.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Enrich handoff entry only</strong> &mdash; expand the 3-line handoff without updating the data flow diagram. Rejected: the diagram would be out of sync with the handoff spec.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>Add a "Handoff Brief" template</strong> &mdash; define a structured brief the orchestrator must prepare. Rejected: adds orchestrator complexity without proportional benefit; the enriched handoff entry is sufficient.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RC6 -->
+        <div class="rc-card skipped">
+            <div class="rc-header">
+                <span class="rc-badge">RC6</span>
+                <span class="rc-title">Discovery Agent tags lifecycle but ROI Agent ignores them</span>
+                <span class="rc-file-tag">&mdash;</span>
+                <span class="rc-status covered">Covered by RC4+RC5</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Resolution</h4>
+                    <div class="fix-box">
+                        <p>Already addressed. RC4's Steps 1-3 scan lifecycle tags and check coverage. RC5's orchestrator handoff passes lifecycle distribution.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Add lifecycle distribution summary to Discovery Agent output</strong> &mdash; compute aggregate distribution after extraction. Not needed: ROI agent now computes this itself in Step 1.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>Add distribution to Discovery Consultant Checkpoint</strong> &mdash; show lifecycle balance during validation. Not needed: the ROI agent's own checkpoint handles this downstream.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RC7 -->
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC7</span>
+                <span class="rc-title">No Ignite context ingestion path for hybrid engagements</span>
+                <span class="rc-file-tag">roi-business-case-builder.md</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Problem</h4>
+                    <p>Required Inputs listed evidence register, capability assessment, financial data, region, scope &mdash; but NOT Ignite workshop outputs.</p>
+                </div>
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p><span class="option-tag chosen">C</span> Added Ignite Workshop Synthesis as optional input #7. Added conditional fork in Step 2: if Ignite present, start from priorities; if not, derive purely from evidence.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Add as optional input only</strong> &mdash; list Ignite in Required Inputs without workflow changes. Rejected: the agent wouldn't know how to prioritize Ignite vs evidence-derived levers.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>Add Ignite instructions to Consultant Checkpoint</strong> &mdash; expand Step 2 with Ignite-specific guidance. Rejected: less clear than a conditional fork that separates the two paths.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- ISSUE #4 -->
+    <!-- ============================== -->
+    <div class="issue-group">
+        <div class="issue-header">
+            <span class="issue-number">#4</span>
+            <span class="issue-title">Excel ROI Model — Full Formula Rewrite</span>
+            <span class="issue-priority critical">Critical</span>
+        </div>
+        <p class="issue-summary">The Excel generated by <code>roi_excel_generator.py</code> wrote hardcoded static values into every cell. No formulas, no cross-sheet references, no named ranges. Changing an input recalculated nothing. Complete rewrite to a formula-based architecture with scenario switching.</p>
+
+        <!-- RC1 -->
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC1</span>
+                <span class="rc-title">Python computes everything, Excel stores static numbers</span>
+                <span class="rc-file-tag">roi_excel_generator.py</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p>Full rewrite (~1,300 lines). All lever benefits, servicing savings, cashflow totals, NPV, IRR, and payback period are now <strong>Excel formulas</strong>. Python only writes the structural config values to input cells; all downstream cells are <code>=references</code>.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Partial formula &mdash; only Cashflows/Dashboard</strong> &mdash; keep lever calculations in Python, only make rollup sheets formula-based. Rejected: inconsistent model; changing a lever input still wouldn't recalculate the lever sheet itself.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>VBA macros for recalculation</strong> &mdash; add VBA that recalculates on input change. Rejected: VBA introduces security warnings, macro-enabled format (.xlsm), and compatibility issues across Excel/Numbers/Sheets.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RC2 -->
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC2</span>
+                <span class="rc-title">No cell reference architecture</span>
+                <span class="rc-file-tag">roi_excel_generator.py</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p>Introduced <code>self.cell_map</code> dict tracking dynamic cell positions across sheets. Named ranges for global inputs: <code>ScenarioIndex</code>, <code>DiscountRate</code>, <code>License_Y1..Y5</code>, <code>Impl_Y1..Y5</code>. Cross-sheet references use the cell_map for dynamic formula construction.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Hardcoded row numbers</strong> &mdash; use fixed row/column constants for cross-sheet references. Rejected: breaks when lever groups vary in size between engagements; cell_map adapts dynamically.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>Named ranges for everything</strong> &mdash; create named ranges for every single cell reference. Rejected: would produce hundreds of named ranges making the workbook hard to debug; cell_map + named ranges for globals is the right balance.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RC3 -->
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC3</span>
+                <span class="rc-title">No Input &rarr; Calculation &rarr; Output sheet architecture</span>
+                <span class="rc-file-tag">roi_excel_generator.py</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p>New sheet architecture: <strong>Scenario Data</strong> (3-column reference) &rarr; <strong>Model Inputs</strong> (dropdown + INDEX formulas) &rarr; <strong>Lever Sheets</strong> (one per group) &rarr; <strong>Cashflows</strong> (cross-sheet formulas, <code>=NPV()</code>, <code>=IRR()</code>) &rarr; <strong>Results Dashboard</strong> (all references). Scenario switching via DataValidation dropdown (1/2/3) &mdash; no VBA.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Flat sheet structure</strong> &mdash; keep all calculations on one sheet with inputs at top. Rejected: unmanageable for engagements with 5+ lever groups; per-sheet architecture scales and isolates concerns.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>Multiple workbook files</strong> &mdash; separate input workbook from calculation workbook. Rejected: cross-workbook references are fragile and break when files are moved or emailed.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent prompt update -->
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">Prompt</span>
+                <span class="rc-title">ROI agent prompt updated for formula-based model</span>
+                <span class="rc-file-tag">roi-business-case-builder.md</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p>Updated "Excel Model Structure" section with data flow diagram, sheet descriptions, scenario switching mechanics, named ranges, and <code>value_lever_groups</code> config format with full JSON example.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bugs fixed during testing -->
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">Bugs</span>
+                <span class="rc-title">3 bugs found and fixed during testing</span>
+                <span class="rc-file-tag">roi_excel_generator.py</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fixes Applied</h4>
+                    <div class="fix-box">
+                        <ul>
+                            <li><strong>Double spaces in sheet names:</strong> <code>_safe_sheet_name</code> stripped em-dashes but left double spaces. Fixed with <code>re.sub(r'\s+', ' ', clean)</code>.</li>
+                            <li><strong>No grand total in Servicing Detail:</strong> Channel subtotals existed but no overall total. Added <code>channel_subtotal_cells</code> tracking and grand total row.</li>
+                            <li><strong>Servicing total hardcoded on lever sheet:</strong> Changed from static value to <code>='Servicing Detail'!{grand_total_ref}</code>. Required reordering sheet creation (Servicing Detail before lever sheets).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- ISSUE #5 -->
+    <!-- ============================== -->
+    <div class="issue-group">
+        <div class="issue-header">
+            <span class="issue-number">#5</span>
+            <span class="issue-title">Market Context &rarr; ROI + Peer Bank Validation</span>
+            <span class="issue-priority high">High</span>
+        </div>
+        <p class="issue-summary">Market Context Researcher outputs weren't consumed by the ROI agent, and there was no peer bank selection validation checkpoint. Fixes wire market context as an ROI input and add a confirmation step before research.</p>
+
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC1+RC2</span>
+                <span class="rc-title">Market context not consumed by ROI agent</span>
+                <span class="rc-file-tag">roi-business-case-builder.md</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p>Added Market Context Brief as input #6. Added "Market Context Anchoring" step: extract published financials, validate assumptions against published data, flag discrepancies &gt;20%. Updated orchestrator handoff to include <code>market_context_validated.md</code>.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Make market context a mandatory input</strong> &mdash; block ROI model if market context isn't available. Rejected: not all engagements run the Market Context Researcher; making it mandatory would break standalone ROI workflows.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>Embed market research into ROI agent</strong> &mdash; have the ROI agent do its own market research. Rejected: violates single-responsibility; the Market Context Researcher is a specialized agent for this purpose.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC3</span>
+                <span class="rc-title">No peer bank confirmation before research</span>
+                <span class="rc-file-tag">market-context-researcher.md</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p>Added Step 3b: peer bank confirmation checkpoint. Agent presents proposed peer banks to consultant and waits for approval before researching.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Auto-validate against a static peer list</strong> &mdash; maintain a curated list of peer banks per region/segment. Rejected: static lists go stale and can't account for engagement-specific competitive context.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>Skip validation, review after research</strong> &mdash; let the agent research all proposed peers, then have the consultant review. Rejected: wastes time researching irrelevant peers; cheaper to confirm upfront.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- ISSUE #6 -->
+    <!-- ============================== -->
+    <div class="issue-group">
+        <div class="issue-header">
+            <span class="issue-number">#6</span>
+            <span class="issue-title">ROI Calibration Against Benchmarks</span>
+            <span class="issue-priority high">High</span>
+        </div>
+        <p class="issue-summary">The ROI agent blindly executed when results fell short of domain benchmarks. No calibration check, no suggestion of expansion levers or parameter adjustment.</p>
+
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC1</span>
+                <span class="rc-title">No benchmark comparison step</span>
+                <span class="rc-file-tag">roi-business-case-builder.md</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p>Added Section 6 "ROI Calibration Check (MANDATORY)" with domain benchmark table (Retail 60-150%, Wealth 120-200%, Commercial 80-140%). Agent compares computed ROI against benchmarks and presents 4 options to consultant: proceed, add levers, adjust parameters, or flag as realistic. Updated quality checklist with calibration items. Renumbered subsequent sections.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Auto-calibrate</strong> &mdash; if ROI falls below benchmark, automatically add expansion levers or adjust parameters upward. Rejected: artificially inflating ROI to hit a target undermines model credibility; the consultant must decide how to respond.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>Warning-only</strong> &mdash; just flag the shortfall in the report without presenting options. Rejected: flagging without actionable options leaves the consultant without a path forward; the 4-option decision prompt is more useful.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- ISSUE #7 -->
+    <!-- ============================== -->
+    <div class="issue-group">
+        <div class="issue-header">
+            <span class="issue-number">#7</span>
+            <span class="issue-title">Domain-Aware Ramp-Up Curves</span>
+            <span class="issue-priority high">High</span>
+        </div>
+        <p class="issue-summary">Implementation/adoption curves were static &mdash; same curve for a 6-month retail deployment and a 24-month wealth transformation. Curves should derive from domain, timeline, and complexity.</p>
+
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC1</span>
+                <span class="rc-title">Static curves &mdash; no domain/timeline/complexity awareness</span>
+                <span class="rc-file-tag">ramp_up_models.md (new)</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p>Created <code>knowledge/standards/ramp_up_models.md</code> with 4-step derivation: (1) Estimate timeline from domain/journeys/integration/org readiness, (2) Look up implementation curve from timeline table (6mo to 24mo), (3) Apply domain-specific adoption multiplier (retail self-service 0.85x, wealth 0.50x Y1, commercial 0.45x Y1), (4) Apply scenario variation. Includes complexity multipliers (multi-country +6mo, regulatory +3-6mo, core migration +6-12mo). Updated ROI agent to reference this file instead of static table.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Embed curves directly in ROI agent prompt</strong> &mdash; inline the full derivation tables into the agent markdown. Rejected: would add ~80 lines to an already long prompt; a separate knowledge file is cleaner and reusable by other agents.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>Code-based curve generator in Python</strong> &mdash; build a <code>tools/curve_generator.py</code> that computes curves programmatically. Rejected: over-engineered for a prompt-based agent system; the agent reads a table and interpolates, no code needed.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- ISSUE #8 -->
+    <!-- ============================== -->
+    <div class="issue-group">
+        <div class="issue-header">
+            <span class="issue-number">#8</span>
+            <span class="issue-title">Growth-Adjusted Servicing + FTE Avoidance</span>
+            <span class="issue-priority medium">Medium</span>
+        </div>
+        <p class="issue-summary">Servicing lever only captured point-in-time savings, ignoring the growing cost of NOT automating. For a bank growing 8% YoY, the cost of manual handling compounds &mdash; digital avoids hiring additional staff.</p>
+
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC1</span>
+                <span class="rc-title">No future cost avoidance from headcount growth</span>
+                <span class="rc-file-tag">roi-business-case-builder.md + roi_excel_generator.py</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p><strong>Agent prompt:</strong> Added growth-adjusted cost avoidance template with formulas: <code>Growth Volume = Base &times; ((1+rate)^year - 1)</code>, <code>FTEs Avoided = Digital Handles &times; Avg Time / 1,800 hrs</code>. Added FTE equivalence guidance for executive communication.</p>
+                        <p style="margin-top: 8px;"><strong>Excel generator:</strong> Added ~80 lines for growth-adjusted section in Servicing Detail (YoY volume growth, digital handling, FTEs avoided, cost avoided &mdash; all as Excel formulas). Wired growth avoidance into Cashflows as additional inflow row. Fixed column alignment bug (<code>col = 4 + yr</code> &rarr; <code>col = 3 + yr</code>). Handles both <code>yoy_growth</code> array and <code>yoy_growth_rate</code> scalar config formats.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Prompt-only (no Excel change)</strong> &mdash; describe growth adjustment in the agent prompt template and let the agent compute values before writing to Excel. Rejected: defeats the Issue #4 formula-based architecture; growth projections must be live Excel formulas so consultants can adjust the growth rate.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>Separate "Growth Analysis" sheet</strong> &mdash; create a dedicated sheet for growth projections. Rejected: over-fragments the model; growth avoidance is a sub-section of servicing, not a separate concern. Keeping it in Servicing Detail maintains the logical grouping.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- ISSUE #9 -->
+    <!-- ============================== -->
+    <div class="issue-group">
+        <div class="issue-header">
+            <span class="issue-number">#9</span>
+            <span class="issue-title">Domain Benchmark/Lever File Wiring</span>
+            <span class="issue-priority medium">Medium</span>
+        </div>
+        <p class="issue-summary">ROI agent didn't reference domain-specific benchmark or value lever files. Calculations missed available data from prior engagements.</p>
+
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC1</span>
+                <span class="rc-title">Domain benchmarks/levers not wired to ROI agent</span>
+                <span class="rc-file-tag">roi-business-case-builder.md + orchestrator</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p>Added inputs #8-9 (domain benchmarks + domain ROI levers) to ROI agent Required Inputs. Added "Domain Knowledge Loading" step with benchmark evolution confidence tiers (<code>[Client-Validated]</code> &rarr; High, <code>[Industry]</code> &rarr; Medium, <code>[Proxy]</code> &rarr; 20% haircut, <code>[Estimated]</code> &rarr; directional only). Updated orchestrator handoff to specify file paths.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Inline domain benchmarks in ROI agent prompt</strong> &mdash; embed benchmark tables directly in the agent markdown. Rejected: not scalable across domains; adding a new domain would require editing the agent prompt. Separate files per domain are cleaner.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>MCP-only approach</strong> &mdash; query Infobank for domain benchmarks at runtime instead of static files. Rejected: MCP may be unavailable (auth expiry); static files provide a reliable offline fallback. Both can coexist.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC2</span>
+                <span class="rc-title">No domain ROI lever files existed</span>
+                <span class="rc-file-tag">retail/roi_levers.md + wealth/roi_levers.md (new)</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p><strong>Retail:</strong> Created <code>knowledge/domains/retail/roi_levers.md</code> &mdash; 7 value levers with calculation templates, typical ranges, confidence tiers, and Backbase Enablers per lever. Sourced from 15+ bank engagements (BECU, WSFS, Banesco Bolivia, CIH, etc.). Includes ROI Model Assembly Guide, ramp schedule, regional adjustments.</p>
+                        <p style="margin-top: 8px;"><strong>Wealth:</strong> Created <code>knowledge/domains/wealth/roi_levers.md</code> &mdash; 7 wealth levers (RM productivity, AUM retention, cross-sell, etc.) with calculation templates, ranges, confidence tiers, and Backbase Enablers. Sourced from Goodbody, HNB, Tangerine engagement data. Client profile matrix and 5-year value ranges by firm size.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Single combined file for all domains</strong> &mdash; one <code>roi_levers.md</code> covering retail, wealth, commercial, etc. Rejected: would become unwieldy as domains are added; per-domain files keep each file focused and independently maintainable.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">B</span> <strong>Structured JSON instead of markdown</strong> &mdash; define levers as JSON schema for programmatic consumption. Rejected: agents read markdown natively; JSON would require parsing logic and is less readable for human consultants reviewing the knowledge base.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- ISSUE #10 -->
+    <!-- ============================== -->
+    <div class="issue-group">
+        <div class="issue-header">
+            <span class="issue-number">#10</span>
+            <span class="issue-title">Backbase Product Capabilities &rarr; Value Levers Mapping</span>
+            <span class="issue-priority low">Low</span>
+        </div>
+        <p class="issue-summary">ROI model calculated financial impact but never explicitly connected which Backbase products enable which value levers. Consultants couldn't trace: Lever &rarr; Backbase Capability &rarr; Financial Impact. Fix adds MCP Infobank validation and capability assessment inheritance.</p>
+
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC1</span>
+                <span class="rc-title">Lever template has no "Backbase Enablers" field</span>
+                <span class="rc-file-tag">roi-business-case-builder.md</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p><span class="option-tag chosen">B</span> Added <strong>Backbase Enablers</strong> and <strong>Capability Gap Addressed</strong> fields to the lever-by-lever breakdown template. Added rule requiring MCP Infobank validation of enablers (with domain lever file fallback when MCP unavailable).</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Template + domain lever reference only</strong> &mdash; add the Enablers field but rely solely on domain <code>roi_levers.md</code> files without MCP validation. Rejected: domain files may be outdated; live MCP validation confirms capabilities exist in the current platform release.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rc-card skipped">
+            <div class="rc-header">
+                <span class="rc-badge">RC2</span>
+                <span class="rc-title">Product Directory CSV not consumed by ROI agent</span>
+                <span class="rc-file-tag">&mdash;</span>
+                <span class="rc-status covered">Superseded by MCP</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Resolution</h4>
+                    <div class="fix-box">
+                        <p>The static Product Directory CSV (3,117 features) is superseded by the live <strong>MCP Infobank</strong> which the ROI agent already has access to. No need to wire the CSV separately &mdash; MCP provides current product capabilities. The capability-gap-analyzer already uses both CSV + MCP with a decision tree.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rc-card skipped">
+            <div class="rc-header">
+                <span class="rc-badge">RC3</span>
+                <span class="rc-title">Backbase Enablers pattern only in investing domain</span>
+                <span class="rc-file-tag">&mdash;</span>
+                <span class="rc-status covered">Fixed in Issue #9</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Resolution</h4>
+                    <div class="fix-box">
+                        <p>Already resolved. Issue #9 created <code>retail/roi_levers.md</code> and <code>wealth/roi_levers.md</code> with Backbase Enablers sections for every lever.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rc-card">
+            <div class="rc-header">
+                <span class="rc-badge">RC4</span>
+                <span class="rc-title">Capability Assessment product mappings not inherited by ROI</span>
+                <span class="rc-file-tag">roi-business-case-builder.md</span>
+                <span class="rc-status implemented">Implemented</span>
+            </div>
+            <div class="rc-body">
+                <div class="rc-section">
+                    <h4>Fix Applied</h4>
+                    <div class="fix-box">
+                        <p><span class="option-tag chosen">B</span> Added <strong>Step 2b: Capability-to-Lever Mapping (MANDATORY)</strong>. Agent extracts gap&rarr;product mappings from the Capability Assessment (already input #2), maps gaps to lever candidates, then validates each enabler via MCP Infobank. Creates full traceability: <strong>Capability Gap &rarr; Backbase Product (MCP-validated) &rarr; Value Lever &rarr; Financial Impact</strong>. Updated Step 4 presentation to include new columns.</p>
+                    </div>
+                </div>
+                <div class="rc-section">
+                    <h4>Options Not Chosen</h4>
+                    <div class="alternatives-box">
+                        <p><span class="option-tag">A</span> <strong>Skip capability inheritance</strong> &mdash; rely only on domain lever files for enabler mappings, don't extract from capability assessment. Rejected: misses the engagement-specific gap&rarr;product mappings that the capability assessment already produced; generic enablers are less credible than engagement-grounded ones.</p>
+                        <p style="margin-top: 6px;"><span class="option-tag">C</span> <strong>Full: Option B + Excel "Capability &rarr; Value Bridge" sheet</strong> &mdash; add a new sheet to <code>roi_excel_generator.py</code> mapping Lever &rarr; Backbase Product &rarr; Capability Gap &rarr; Annual Impact. Rejected: nice visual artifact but significant implementation effort (~80+ lines in Excel generator) for a low-priority issue; the financial model works without it and the traceability exists in the agent's markdown report.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- FILES CHANGED -->
+    <!-- ============================== -->
+    <hr class="section-divider">
+    <div class="files-changed">
+        <h3>Consolidated File Changes (pending push)</h3>
+        <table class="file-table">
+            <thead>
+                <tr>
+                    <th>File</th>
+                    <th>Status</th>
+                    <th>Issues</th>
+                    <th>Key Changes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Modified files (tracked) -->
+                <tr>
+                    <td class="filepath">.claude/agents/roi-business-case-builder.md</td>
+                    <td><span class="change-type modified">Modified</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#3</span>
+                            <span class="issue-tag">#4</span>
+                            <span class="issue-tag">#5</span>
+                            <span class="issue-tag">#6</span>
+                            <span class="issue-tag">#7</span>
+                            <span class="issue-tag">#8</span>
+                            <span class="issue-tag">#9</span>
+                            <span class="issue-tag">#10</span>
+                        </div>
+                    </td>
+                    <td>Value Lever Reference Menu, 4-step Consultant Checkpoint, Ignite fork, formula-based Excel model docs, Market Context Anchoring, ROI Calibration Check, ramp_up_models.md reference, growth-adjusted servicing, domain knowledge loading, Backbase Enablers field, Step 2b capability-to-lever mapping (+344 lines)</td>
+                </tr>
+                <tr>
+                    <td class="filepath">tools/roi_excel_generator.py</td>
+                    <td><span class="change-type rewritten">Rewritten</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#4</span>
+                            <span class="issue-tag">#8</span>
+                        </div>
+                    </td>
+                    <td>Full formula rewrite (~1,800 lines). Scenario Data, Model Inputs (dropdown+INDEX), per-lever sheets, Servicing Detail (with growth-adjusted FTE avoidance), Cashflows (NPV/IRR/payback as formulas), Results Dashboard. Named ranges, cell_map architecture, DataValidation. Config normalization for both <code>journeys</code> and <code>value_lever_groups</code> formats.</td>
+                </tr>
+                <tr>
+                    <td class="filepath">.claude/agents/value-consulting-orchestrator.md</td>
+                    <td><span class="change-type modified">Modified</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#3</span>
+                            <span class="issue-tag">#5</span>
+                            <span class="issue-tag">#9</span>
+                        </div>
+                    </td>
+                    <td>Enriched ROI handoff with lifecycle context, market context, domain file paths. Updated Disk-Based Handoff diagram. (+18 lines)</td>
+                </tr>
+                <tr>
+                    <td class="filepath">.claude/agents/market-context-researcher.md</td>
+                    <td><span class="change-type modified">Modified</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#5</span>
+                        </div>
+                    </td>
+                    <td>Added Step 3b: peer bank confirmation checkpoint before research. (+18 lines)</td>
+                </tr>
+                <tr>
+                    <td class="filepath">knowledge/domains/roi_examples.md</td>
+                    <td><span class="change-type modified">Modified</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#3</span>
+                        </div>
+                    </td>
+                    <td>MSB Vietnam example (retention/cross-sell/CC), Wealth composite example (RM productivity dominant), expanded Category 4 &amp; 5 templates. (+310 lines)</td>
+                </tr>
+                <tr>
+                    <td class="filepath">examples/test_runs/retail_test/outputs_v2/roi_config.json</td>
+                    <td><span class="change-type modified">Modified</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#3</span>
+                        </div>
+                    </td>
+                    <td>Renamed <code>journeys</code> &rarr; <code>value_lever_groups</code>, added category/lifecycle tags, per-category curves. (+67 lines)</td>
+                </tr>
+
+                <!-- New files (untracked) -->
+                <tr>
+                    <td class="filepath">knowledge/standards/ramp_up_models.md</td>
+                    <td><span class="change-type created">Created</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#7</span>
+                        </div>
+                    </td>
+                    <td>4-step ramp-up derivation: timeline estimation, curve lookup (6-24mo), domain adoption multipliers (retail 0.85x, wealth 0.50x, commercial 0.45x), scenario variation, complexity multipliers.</td>
+                </tr>
+                <tr>
+                    <td class="filepath">knowledge/domains/retail/roi_levers.md</td>
+                    <td><span class="change-type created">Created</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#9</span>
+                        </div>
+                    </td>
+                    <td>7 retail value levers with calculation templates, ranges, confidence tiers, Backbase Enablers. Sourced from 15+ bank engagements. Includes assembly guide and regional adjustments.</td>
+                </tr>
+                <tr>
+                    <td class="filepath">knowledge/domains/wealth/roi_levers.md</td>
+                    <td><span class="change-type created">Created</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#9</span>
+                        </div>
+                    </td>
+                    <td>7 wealth value levers (RM productivity, AUM retention, cross-sell, etc.) with calculation templates, Backbase Enablers. Sourced from Goodbody, HNB, Tangerine. Client profile matrix by firm size.</td>
+                </tr>
+                <tr>
+                    <td class="filepath">examples/test_runs/wealth_test/outputs_v2/roi_config.json</td>
+                    <td><span class="change-type created">Created</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#3</span>
+                        </div>
+                    </td>
+                    <td>Wealth config: 5 lever groups, RM productivity dominant (73% of total), onboarding minor ($62.5K of $12.9M).</td>
+                </tr>
+                <tr>
+                    <td class="filepath">knowledge/Business Case Builder_ ROI Calculator (Final).xlsx</td>
+                    <td><span class="change-type copied">Copied</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#3</span>
+                        </div>
+                    </td>
+                    <td>Reference file for Value Lever Reference Menu and canonical ROI template.</td>
+                </tr>
+                <tr>
+                    <td class="filepath">knowledge/MSB - RB ROI Assessment.xlsx</td>
+                    <td><span class="change-type copied">Copied</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#3</span>
+                        </div>
+                    </td>
+                    <td>Real engagement example (Vietnam retail bank) for MSB worked example and calculation methodology.</td>
+                </tr>
+                <tr>
+                    <td class="filepath">docs/issue_3_rc_summary.html</td>
+                    <td><span class="change-type modified">Modified</span></td>
+                    <td>
+                        <div class="issue-tags">
+                            <span class="issue-tag">#3-#10</span>
+                        </div>
+                    </td>
+                    <td>This file &mdash; expanded from Issue #3 only to consolidated Issues #3-#10 change summary.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<div class="footer">
+    Issues #3&ndash;#10 &middot; value-consulting-agents &middot; All changes local, uncommitted &middot; 13 Feb 2026
+</div>
+
+</body>
+</html>

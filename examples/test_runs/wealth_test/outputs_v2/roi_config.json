@@ -1,0 +1,561 @@
+{
+  "client_name": "Wealth Management Firm - South Asia",
+  "date": "2026-02-13",
+  "currency": "USD",
+  "industry": "Wealth Management",
+  "analysis_years": 5,
+  "discount_rate": 0.12,
+  "selected_scenario": "Moderate",
+
+  "basic_information": {
+    "total_customers": 12000,
+    "total_customers_source": "TRANSCRIPT - 'We manage roughly 12,000 wealth clients' - Head of Wealth (E1)",
+    "total_aum": 5000000000,
+    "total_aum_source": "TRANSCRIPT - 'Just over $5 billion in AUM' - Head of Wealth (E1)",
+    "rm_headcount": 100,
+    "rm_headcount_source": "TRANSCRIPT - 'About 100 RMs across the region' - COO (E3)",
+    "rm_fully_loaded_cost_annual": 350000,
+    "rm_cost_source": "ESTIMATE - South Asia senior RM fully loaded cost. REQUIRES VALIDATION.",
+    "fee_on_aum": 0.01,
+    "fee_source": "TRANSCRIPT - 'Blended fee is around 1%' - CFO (E5)",
+    "annual_onboardings": 250,
+    "onboardings_source": "TRANSCRIPT - '200-300 new clients per year' - Head of Wealth (E1)",
+    "mass_affluent_eligible": 10000,
+    "mass_affluent_source": "ESTIMATE - Banking customers eligible for wealth upgrade. REQUIRES VALIDATION.",
+    "current_churn_rate": 0.08,
+    "churn_source": "TRANSCRIPT - 'We lose about 8% of clients annually' - Head of Wealth (E2)"
+  },
+
+  "backbase_loading": {
+    "_note": "Per-category curves defined in each scenario. Defaults here are moderate.",
+    "curves": {
+      "rm_productivity": {"implementation": [0.20, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.15, 0.35, 0.60, 0.85, 1.00]},
+      "retention":       {"implementation": [0.00, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.00, 0.20, 0.35, 0.55, 0.70]},
+      "penetration":     {"implementation": [0.00, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.00, 0.15, 0.30, 0.45, 0.60]},
+      "onboarding":      {"implementation": [0.20, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.15, 0.35, 0.60, 0.85, 1.00]}
+    },
+    "yoy_growth": [0.05, 0.05, 0.05, 0.05, 0.05]
+  },
+
+  "scenarios": {
+    "conservative": {
+      "description": "Pessimistic but plausible - slower RM adoption, modest AUM consolidation",
+      "curves": {
+        "rm_productivity": {"implementation": [0.15, 0.60, 0.75, 0.90, 1.00], "effectiveness": [0.10, 0.25, 0.45, 0.70, 0.85]},
+        "retention":       {"implementation": [0.00, 0.60, 0.75, 0.90, 1.00], "effectiveness": [0.00, 0.15, 0.25, 0.40, 0.55]},
+        "penetration":     {"implementation": [0.00, 0.60, 0.75, 0.90, 1.00], "effectiveness": [0.00, 0.10, 0.20, 0.35, 0.45]},
+        "onboarding":      {"implementation": [0.15, 0.60, 0.75, 0.90, 1.00], "effectiveness": [0.10, 0.25, 0.45, 0.70, 0.85]}
+      },
+      "backbase_impacts": {
+        "rm_admin_time_reduction": 0.30,
+        "aum_consolidation": 0.03,
+        "churn_reduction": 0.05,
+        "mass_affluent_conversion_uplift": 0.02,
+        "onboarding_time_reduction": 0.30
+      }
+    },
+    "moderate": {
+      "description": "Most likely outcome - standard RM adoption, typical AUM consolidation",
+      "curves": {
+        "rm_productivity": {"implementation": [0.20, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.15, 0.35, 0.60, 0.85, 1.00]},
+        "retention":       {"implementation": [0.00, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.00, 0.20, 0.35, 0.55, 0.70]},
+        "penetration":     {"implementation": [0.00, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.00, 0.15, 0.30, 0.45, 0.60]},
+        "onboarding":      {"implementation": [0.20, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.15, 0.35, 0.60, 0.85, 1.00]}
+      },
+      "backbase_impacts": {
+        "rm_admin_time_reduction": 0.40,
+        "aum_consolidation": 0.05,
+        "churn_reduction": 0.10,
+        "mass_affluent_conversion_uplift": 0.03,
+        "onboarding_time_reduction": 0.40
+      }
+    },
+    "aggressive": {
+      "description": "Optimistic but achievable - high RM adoption, strong AUM consolidation",
+      "curves": {
+        "rm_productivity": {"implementation": [0.30, 0.80, 0.90, 1.00, 1.00], "effectiveness": [0.20, 0.45, 0.70, 0.90, 1.00]},
+        "retention":       {"implementation": [0.00, 0.80, 0.90, 1.00, 1.00], "effectiveness": [0.00, 0.30, 0.50, 0.70, 0.85]},
+        "penetration":     {"implementation": [0.00, 0.80, 0.90, 1.00, 1.00], "effectiveness": [0.00, 0.25, 0.45, 0.60, 0.75]},
+        "onboarding":      {"implementation": [0.30, 0.80, 0.90, 1.00, 1.00], "effectiveness": [0.20, 0.45, 0.70, 0.90, 1.00]}
+      },
+      "backbase_impacts": {
+        "rm_admin_time_reduction": 0.50,
+        "aum_consolidation": 0.08,
+        "churn_reduction": 0.15,
+        "mass_affluent_conversion_uplift": 0.05,
+        "onboarding_time_reduction": 0.50
+      }
+    }
+  },
+
+  "value_lever_groups": {
+    "rm_productivity": {
+      "category": "rm_productivity",
+      "lifecycle_stage": "retain",
+      "group_name": "RM Productivity — Admin Time Freed",
+      "evidence_ids": ["E3", "E4", "E6", "E9"],
+      "transcript_quotes": [
+        "RMs spend more than half their day on admin tasks - COO (E3)",
+        "Portfolio review prep takes hours because data is spread across systems - Senior RM (E4)",
+        "If we could free up 2 hours a day per RM, that's enormous - COO (E6)",
+        "Manual compliance documentation is a huge time sink - Head of Operations (E9)"
+      ],
+
+      "cost_drivers": {
+        "rm_admin_time_reduction": {
+          "name": "RM Admin Time Cost Avoidance",
+          "description": "Backbase unified platform reduces time on portfolio prep, compliance docs, cross-system lookups, and report generation",
+          "inputs": {
+            "rm_headcount": {
+              "value": 100,
+              "unit": "RMs",
+              "source": "TRANSCRIPT - 'About 100 RMs' (E3)",
+              "confidence": "HIGH",
+              "validation_owner": "COO"
+            },
+            "admin_hours_per_day": {
+              "value": 5.4,
+              "unit": "hours/day",
+              "source": "TRANSCRIPT - 'More than half their day' (E3). 5.4 of 8 hours assumed.",
+              "confidence": "MEDIUM",
+              "validation_owner": "COO"
+            },
+            "working_days_per_year": {
+              "value": 250,
+              "unit": "days",
+              "source": "STANDARD",
+              "confidence": "HIGH",
+              "validation_owner": "HR"
+            },
+            "rm_hourly_cost": {
+              "value": 175,
+              "unit": "USD/hour",
+              "source": "DERIVED - $350K fully loaded / 2000 hours",
+              "confidence": "MEDIUM",
+              "validation_owner": "Finance"
+            },
+            "backbase_impact": {
+              "value": 0.40,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - 40% admin time reduction with unified advisor desktop.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            }
+          },
+          "calculation": "rm_headcount * admin_hours * working_days * rm_hourly_cost * backbase_impact",
+          "baseline_annual": 23625000,
+          "potential_annual_benefit": 9450000
+        }
+      },
+
+      "revenue_drivers": {},
+
+      "totals": {
+        "revenue_generation_total": 0,
+        "cost_reduction_total": 9450000,
+        "group_total": 9450000
+      }
+    },
+
+    "share_of_wallet": {
+      "category": "product_penetration",
+      "lifecycle_stage": "expand",
+      "group_name": "Share of Wallet — AUM Consolidation",
+      "evidence_ids": ["E7", "E8"],
+      "transcript_quotes": [
+        "Most clients have assets with at least 2-3 other custodians - Head of Wealth (E7)",
+        "We don't have tools to show clients a consolidated view - Senior RM (E8)"
+      ],
+
+      "revenue_drivers": {
+        "aum_consolidation": {
+          "name": "AUM Consolidation via Digital Portfolio View",
+          "description": "Digital self-service portfolio overview + ACAT transfer tools encourage clients to consolidate assets",
+          "inputs": {
+            "total_aum": {
+              "value": 5000000000,
+              "unit": "USD",
+              "source": "TRANSCRIPT - 'Just over $5 billion' (E1)",
+              "confidence": "HIGH",
+              "validation_owner": "CFO"
+            },
+            "fee_on_aum": {
+              "value": 0.01,
+              "unit": "ratio",
+              "source": "TRANSCRIPT - 'Blended fee around 1%' (E5)",
+              "confidence": "HIGH",
+              "validation_owner": "CFO"
+            },
+            "backbase_impact": {
+              "value": 0.05,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - 5% AUM consolidation is conservative; mature digital platforms see 8-12%.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            }
+          },
+          "calculation": "total_aum * backbase_impact * fee_on_aum",
+          "baseline_annual": 50000000,
+          "potential_annual_benefit": 2500000
+        }
+      },
+
+      "cost_drivers": {},
+
+      "totals": {
+        "revenue_generation_total": 2500000,
+        "cost_reduction_total": 0,
+        "group_total": 2500000
+      }
+    },
+
+    "loyalty_retention": {
+      "category": "loyalty_retention",
+      "lifecycle_stage": "retain",
+      "group_name": "Client Retention — Churn Prevention",
+      "evidence_ids": ["E2", "E10"],
+      "transcript_quotes": [
+        "We lose about 8% of clients annually - Head of Wealth (E2)",
+        "Clients leave when they feel neglected or can't get information quickly - Senior RM (E10)"
+      ],
+
+      "revenue_drivers": {
+        "churn_reduction": {
+          "name": "Client Churn Reduction via Digital Engagement",
+          "description": "Proactive alerts, self-service reporting, and digital touchpoints reduce client attrition",
+          "inputs": {
+            "total_clients": {
+              "value": 12000,
+              "unit": "clients",
+              "source": "TRANSCRIPT - '12,000 wealth clients' (E1)",
+              "confidence": "HIGH",
+              "validation_owner": "Head of Wealth"
+            },
+            "current_churn_rate": {
+              "value": 0.08,
+              "unit": "ratio",
+              "source": "TRANSCRIPT - 'About 8%' (E2)",
+              "confidence": "HIGH",
+              "validation_owner": "Head of Wealth"
+            },
+            "avg_revenue_per_client": {
+              "value": 4167,
+              "unit": "USD/year",
+              "source": "DERIVED - $50M fee revenue / 12,000 clients",
+              "confidence": "MEDIUM",
+              "validation_owner": "CFO"
+            },
+            "backbase_impact": {
+              "value": 0.10,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - 10% churn reduction from improved digital engagement.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            }
+          },
+          "calculation": "total_clients * churn_rate * backbase_impact * avg_revenue_per_client",
+          "baseline_annual": 4000320,
+          "potential_annual_benefit": 400032
+        }
+      },
+
+      "cost_drivers": {},
+
+      "totals": {
+        "revenue_generation_total": 400032,
+        "cost_reduction_total": 0,
+        "group_total": 400032
+      }
+    },
+
+    "product_penetration": {
+      "category": "product_penetration",
+      "lifecycle_stage": "expand",
+      "group_name": "Banking-to-Investing Cross-sell",
+      "evidence_ids": ["E11", "E12"],
+      "transcript_quotes": [
+        "We have a large mass affluent base in retail that we barely cross-sell to - Head of Wealth (E11)",
+        "The referral process from retail to wealth is manual and slow - COO (E12)"
+      ],
+
+      "revenue_drivers": {
+        "mass_affluent_conversion": {
+          "name": "Mass Affluent to Wealth Conversion",
+          "description": "Digital targeting and seamless upgrade path increases conversion from banking to wealth",
+          "inputs": {
+            "eligible_mass_affluent": {
+              "value": 10000,
+              "unit": "customers",
+              "source": "ESTIMATE - Banking customers meeting wealth threshold. REQUIRES VALIDATION.",
+              "confidence": "LOW",
+              "validation_owner": "Head of Retail"
+            },
+            "current_conversion_rate": {
+              "value": 0.02,
+              "unit": "ratio",
+              "source": "ESTIMATE - 2% annual conversion is typical for manual referral. REQUIRES VALIDATION.",
+              "confidence": "LOW",
+              "validation_owner": "Head of Wealth"
+            },
+            "backbase_impact": {
+              "value": 0.03,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - +3% uplift with digital targeting and seamless onboarding.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            },
+            "avg_nna_per_client": {
+              "value": 150000,
+              "unit": "USD",
+              "source": "ESTIMATE - Average net new assets from converted client.",
+              "confidence": "LOW",
+              "validation_owner": "Head of Wealth"
+            },
+            "fee_on_nna": {
+              "value": 0.01,
+              "unit": "ratio",
+              "source": "ALIGNED - Same blended fee (E5)",
+              "confidence": "HIGH",
+              "validation_owner": "CFO"
+            }
+          },
+          "calculation": "eligible * conversion_uplift * avg_nna * fee",
+          "baseline_annual": 300000,
+          "potential_annual_benefit": 450000
+        }
+      },
+
+      "cost_drivers": {},
+
+      "totals": {
+        "revenue_generation_total": 450000,
+        "cost_reduction_total": 0,
+        "group_total": 450000
+      }
+    },
+
+    "client_onboarding": {
+      "category": "customer_onboarding",
+      "lifecycle_stage": "acquire",
+      "group_name": "Client Onboarding Efficiency",
+      "evidence_ids": ["E13"],
+      "transcript_quotes": [
+        "Onboarding a new wealth client takes 5+ hours across RM, assistant, and back office - Head of Operations (E13)"
+      ],
+
+      "revenue_drivers": {},
+
+      "cost_drivers": {
+        "onboarding_time_reduction": {
+          "name": "Reduce Client Onboarding Processing Time",
+          "description": "Digital document handling and KYC automation reduce manual onboarding effort",
+          "inputs": {
+            "annual_onboardings": {
+              "value": 250,
+              "unit": "clients/year",
+              "source": "TRANSCRIPT - '200-300 per year' (E1). Midpoint used.",
+              "confidence": "HIGH",
+              "validation_owner": "Head of Wealth"
+            },
+            "hours_per_onboarding": {
+              "value": 5,
+              "unit": "hours",
+              "source": "TRANSCRIPT - '5+ hours' (E13). RM (3h) + Assistant (1h) + Back Office (1h).",
+              "confidence": "MEDIUM",
+              "validation_owner": "Head of Operations"
+            },
+            "blended_hourly_rate": {
+              "value": 125,
+              "unit": "USD/hour",
+              "source": "ESTIMATE - Blended RM + assistant + back office rate.",
+              "confidence": "LOW",
+              "validation_owner": "Finance"
+            },
+            "backbase_impact": {
+              "value": 0.40,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - 40% reduction with digital document handling.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            }
+          },
+          "calculation": "onboardings * hours * rate * backbase_impact",
+          "baseline_annual": 156250,
+          "potential_annual_benefit": 62500
+        }
+      },
+
+      "totals": {
+        "revenue_generation_total": 0,
+        "cost_reduction_total": 62500,
+        "group_total": 62500
+      }
+    }
+  },
+
+  "investment": {
+    "license": {
+      "year_1": 800000,
+      "year_2": 1000000,
+      "year_3": 1000000,
+      "year_4": 1000000,
+      "year_5": 1000000,
+      "total": 4800000,
+      "source": "ESTIMATE - Typical Backbase wealth management license. REQUIRES COMMERCIAL VALIDATION."
+    },
+    "implementation": {
+      "year_1": 2000000,
+      "year_2": 500000,
+      "year_3": 250000,
+      "year_4": 250000,
+      "year_5": 250000,
+      "total": 3250000,
+      "source": "ESTIMATE - Based on scope (advisor desktop + digital client portal + onboarding). REQUIRES SCOPING."
+    },
+    "total": 8050000
+  },
+
+  "summary": {
+    "lever_group_benefits": [
+      {
+        "group": "RM Productivity",
+        "category": "rm_productivity",
+        "lifecycle_stage": "retain",
+        "revenue_generation": 0,
+        "cost_reduction": 9450000,
+        "total": 9450000
+      },
+      {
+        "group": "AUM Consolidation",
+        "category": "product_penetration",
+        "lifecycle_stage": "expand",
+        "revenue_generation": 2500000,
+        "cost_reduction": 0,
+        "total": 2500000
+      },
+      {
+        "group": "Client Retention",
+        "category": "loyalty_retention",
+        "lifecycle_stage": "retain",
+        "revenue_generation": 400032,
+        "cost_reduction": 0,
+        "total": 400032
+      },
+      {
+        "group": "Banking-to-Investing Cross-sell",
+        "category": "product_penetration",
+        "lifecycle_stage": "expand",
+        "revenue_generation": 450000,
+        "cost_reduction": 0,
+        "total": 450000
+      },
+      {
+        "group": "Client Onboarding Efficiency",
+        "category": "customer_onboarding",
+        "lifecycle_stage": "acquire",
+        "revenue_generation": 0,
+        "cost_reduction": 62500,
+        "total": 62500
+      }
+    ],
+    "total_annual_benefit_steady_state": 12862532,
+    "lifecycle_coverage": ["acquire", "expand", "retain"],
+    "dominant_lever": "RM Productivity (73% of total benefit)",
+    "notes": "Onboarding is a minor lever ($62.5K of $12.9M). The ROI is driven by RM productivity, AUM growth, and retention — NOT onboarding. This is typical for wealth engagements."
+  },
+
+  "assumptions_register": [
+    {
+      "id": "A1",
+      "assumption": "RM Admin Time per Day",
+      "value": "5.4 hours",
+      "confidence": "MEDIUM",
+      "source": "TRANSCRIPT - 'More than half their day' (E3). Estimated 5.4 of 8 hours.",
+      "validation_owner": "COO",
+      "sensitivity": "CRITICAL - Primary driver of largest lever"
+    },
+    {
+      "id": "A2",
+      "assumption": "RM Fully Loaded Cost",
+      "value": "$350,000/year ($175/hour)",
+      "confidence": "MEDIUM",
+      "source": "ESTIMATE - South Asia senior RM cost.",
+      "validation_owner": "Finance/HR",
+      "sensitivity": "HIGH - Directly scales RM productivity lever"
+    },
+    {
+      "id": "A3",
+      "assumption": "AUM Consolidation Rate",
+      "value": "5%",
+      "confidence": "MEDIUM",
+      "source": "BACKBASE BENCHMARK - Conservative; mature platforms see 8-12%.",
+      "validation_owner": "Value Consulting",
+      "sensitivity": "HIGH - Second largest lever"
+    },
+    {
+      "id": "A4",
+      "assumption": "Client Churn Rate",
+      "value": "8%",
+      "confidence": "HIGH",
+      "source": "TRANSCRIPT - Direct quote (E2)",
+      "validation_owner": "Head of Wealth",
+      "sensitivity": "MEDIUM - Moderate lever"
+    },
+    {
+      "id": "A5",
+      "assumption": "Mass Affluent Eligible Base",
+      "value": "10,000",
+      "confidence": "LOW",
+      "source": "ESTIMATE - Not provided. Requires retail banking data.",
+      "validation_owner": "Head of Retail",
+      "sensitivity": "MEDIUM - Affects cross-sell lever"
+    },
+    {
+      "id": "A6",
+      "assumption": "Blended Fee on AUM",
+      "value": "1.0%",
+      "confidence": "HIGH",
+      "source": "TRANSCRIPT - Direct quote (E5)",
+      "validation_owner": "CFO",
+      "sensitivity": "HIGH - Scales both AUM and retention levers"
+    }
+  ],
+
+  "data_gaps_for_validation": [
+    {
+      "id": "DG1",
+      "data_needed": "Actual RM time study (hours per day on admin vs client-facing)",
+      "priority": "CRITICAL",
+      "source": "Time study / RM survey",
+      "impact": "Core input for RM productivity lever ($9.45M at stake)"
+    },
+    {
+      "id": "DG2",
+      "data_needed": "AUM distribution across custodians per client",
+      "priority": "HIGH",
+      "source": "Client records / RM knowledge",
+      "impact": "Validates AUM consolidation opportunity"
+    },
+    {
+      "id": "DG3",
+      "data_needed": "Client churn reasons and exit survey data",
+      "priority": "HIGH",
+      "source": "Client analytics / exit interviews",
+      "impact": "Validates that digital engagement can address churn drivers"
+    },
+    {
+      "id": "DG4",
+      "data_needed": "Mass affluent customer base size and segmentation",
+      "priority": "MEDIUM",
+      "source": "Retail banking analytics",
+      "impact": "Sizes cross-sell opportunity"
+    },
+    {
+      "id": "DG5",
+      "data_needed": "Current onboarding time breakdown by role",
+      "priority": "LOW",
+      "source": "Operations / process timing",
+      "impact": "Minor lever — low priority"
+    }
+  ]
+}

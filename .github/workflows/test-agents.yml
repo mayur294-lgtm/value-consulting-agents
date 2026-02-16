@@ -34,7 +34,7 @@ jobs:
       - name: Get changed files
         id: changed
         run: |
-          FILES=$(git diff --name-only origin/main...HEAD | tr '\n' ' ')
+          FILES=$(git diff --name-only origin/main...HEAD | grep '\.md$' | tr '\n' ' ')
           echo "files=$FILES" >> $GITHUB_OUTPUT
 
       - name: Run quality checks

@@ -21,54 +21,77 @@
   },
 
   "backbase_loading": {
-    "implementation_curve": [0.30, 0.70, 0.80, 1.00, 1.00],
-    "effectiveness_curve": [0.15, 0.35, 0.60, 0.85, 1.00],
+    "_note": "Per-category curves are defined in each scenario. This section provides the default (moderate) curves for reference.",
+    "curves": {
+      "acquisition": {"implementation": [0.30, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.15, 0.35, 0.60, 0.85, 1.00]},
+      "servicing":   {"implementation": [0.30, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.15, 0.50, 0.65, 0.80, 0.90]}
+    },
     "yoy_growth": [0.08, 0.08, 0.08, 0.08, 0.08],
-    "notes": "Standard Backbase adoption curve. Conservative ramp."
+    "notes": "Per-category curves. Acquisition and servicing are the active categories for this engagement."
   },
 
   "scenarios": {
     "conservative": {
       "description": "Pessimistic but plausible - lower adoption, smaller impact",
-      "implementation_curve": [0.20, 0.60, 0.80, 0.90, 1.00],
-      "effectiveness_curve": [0.10, 0.25, 0.45, 0.70, 0.85],
+      "curves": {
+        "acquisition": {"implementation": [0.20, 0.60, 0.80, 0.90, 1.00], "effectiveness": [0.10, 0.25, 0.45, 0.70, 0.85]},
+        "retention":   {"implementation": [0.00, 0.60, 0.75, 0.90, 1.00], "effectiveness": [0.00, 0.15, 0.25, 0.40, 0.55]},
+        "penetration": {"implementation": [0.00, 0.60, 0.75, 0.90, 1.00], "effectiveness": [0.00, 0.15, 0.25, 0.35, 0.45]},
+        "servicing":   {"implementation": [0.20, 0.60, 0.80, 0.90, 1.00], "effectiveness": [0.10, 0.40, 0.55, 0.65, 0.75]}
+      },
       "backbase_impacts": {
         "onboarding_conversion_website": 0.05,
         "onboarding_conversion_branch": 0.05,
         "onboarding_cost_reduction": 0.20,
         "servicing_channel_shift": 0.20,
-        "servicing_efficiency": 0.25
+        "servicing_efficiency": 0.25,
+        "churn_reduction": 0.05,
+        "product_penetration": 0.03
       }
     },
     "moderate": {
       "description": "Most likely outcome - standard adoption, typical impact",
-      "implementation_curve": [0.30, 0.70, 0.80, 1.00, 1.00],
-      "effectiveness_curve": [0.15, 0.35, 0.60, 0.85, 1.00],
+      "curves": {
+        "acquisition": {"implementation": [0.30, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.15, 0.35, 0.60, 0.85, 1.00]},
+        "retention":   {"implementation": [0.00, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.00, 0.20, 0.35, 0.55, 0.70]},
+        "penetration": {"implementation": [0.00, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.00, 0.20, 0.35, 0.50, 0.60]},
+        "servicing":   {"implementation": [0.30, 0.70, 0.80, 1.00, 1.00], "effectiveness": [0.15, 0.50, 0.65, 0.80, 0.90]}
+      },
       "backbase_impacts": {
         "onboarding_conversion_website": 0.075,
         "onboarding_conversion_branch": 0.075,
         "onboarding_cost_reduction": 0.30,
         "servicing_channel_shift": 0.30,
-        "servicing_efficiency": 0.35
+        "servicing_efficiency": 0.35,
+        "churn_reduction": 0.10,
+        "product_penetration": 0.05
       }
     },
     "aggressive": {
       "description": "Optimistic but achievable - high adoption, full impact",
-      "implementation_curve": [0.40, 0.80, 0.90, 1.00, 1.00],
-      "effectiveness_curve": [0.20, 0.45, 0.70, 0.90, 1.00],
+      "curves": {
+        "acquisition": {"implementation": [0.40, 0.80, 0.90, 1.00, 1.00], "effectiveness": [0.20, 0.45, 0.70, 0.90, 1.00]},
+        "retention":   {"implementation": [0.00, 0.80, 0.90, 1.00, 1.00], "effectiveness": [0.00, 0.30, 0.50, 0.70, 0.85]},
+        "penetration": {"implementation": [0.00, 0.80, 0.90, 1.00, 1.00], "effectiveness": [0.00, 0.30, 0.50, 0.65, 0.75]},
+        "servicing":   {"implementation": [0.40, 0.80, 0.90, 1.00, 1.00], "effectiveness": [0.20, 0.55, 0.75, 0.90, 1.00]}
+      },
       "backbase_impacts": {
         "onboarding_conversion_website": 0.10,
         "onboarding_conversion_branch": 0.10,
         "onboarding_cost_reduction": 0.40,
         "servicing_channel_shift": 0.40,
-        "servicing_efficiency": 0.45
+        "servicing_efficiency": 0.45,
+        "churn_reduction": 0.15,
+        "product_penetration": 0.08
       }
     }
   },
 
-  "journeys": {
+  "value_lever_groups": {
     "customer_onboarding": {
-      "journey_name": "Customer Onboarding (CASA)",
+      "category": "customer_onboarding",
+      "lifecycle_stage": "acquire",
+      "group_name": "Customer Onboarding (CASA)",
       "evidence_ids": ["E1", "E2", "E3", "E7", "E8"],
       "transcript_quotes": [
         "Our onboarding completion rate is low - Head of Retail (E1)",
@@ -203,7 +226,9 @@
     },
 
     "customer_servicing": {
-      "journey_name": "Customer Servicing",
+      "category": "servicing",
+      "lifecycle_stage": "retain",
+      "group_name": "Customer Servicing",
       "evidence_ids": ["E4", "E5", "E6"],
       "transcript_quotes": [
         "Servicing is expensive - Operations Lead (E4)",
@@ -443,22 +468,26 @@
   },
 
   "summary": {
-    "journey_benefits": [
+    "lever_group_benefits": [
       {
-        "journey": "Customer Onboarding",
+        "group": "Customer Onboarding",
+        "category": "customer_onboarding",
+        "lifecycle_stage": "acquire",
         "revenue_generation": 936000,
         "cost_reduction": 360000,
         "total": 1296000
       },
       {
-        "journey": "Customer Servicing",
+        "group": "Customer Servicing",
+        "category": "servicing",
+        "lifecycle_stage": "retain",
         "revenue_generation": 0,
         "cost_reduction": 2093125,
         "total": 2093125
       }
     ],
     "total_annual_benefit_steady_state": 3389125,
-    "notes": "Benefits shown at 100% implementation and effectiveness. Year-by-year values apply curves."
+    "notes": "Benefits shown at 100% implementation and effectiveness. Year-by-year values apply per-category curves. This engagement covers Acquire + Retain stages. Additional lever groups (loyalty_retention, product_penetration, it_cost_savings) can be added when evidence supports them."
   },
 
   "assumptions_register": [

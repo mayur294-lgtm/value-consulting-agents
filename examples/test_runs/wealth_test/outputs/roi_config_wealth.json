@@ -1,0 +1,718 @@
+{
+  "client_name": "EMEA Wealth Management Firm",
+  "date": "2026-02-06",
+  "currency": "USD",
+  "industry": "Wealth Management",
+  "analysis_years": 5,
+  "discount_rate": 0.08,
+  "selected_scenario": "Moderate",
+
+  "basic_information": {
+    "total_customers": 8000,
+    "total_customers_source": "PROVIDED - 8,000 HNW clients confirmed by client.",
+    "annual_revenue": 120000000,
+    "annual_revenue_source": "DERIVED - 8,000 clients x $15,000 revenue/client = $120M.",
+    "cost_to_income_ratio": 0.70,
+    "cost_to_income_source": "ESTIMATE - Typical EMEA wealth management CTI 65-75%. Using 70%.",
+    "operating_costs": 84000000,
+    "operating_costs_source": "DERIVED - $120M revenue x 70% CTI = $84M operating costs.",
+    "total_fte": 200,
+    "total_fte_source": "ESTIMATE - 50 RMs + ~150 support/ops/compliance/tech staff.",
+    "average_fte_rate_hour": 60,
+    "average_fte_rate_source": "DERIVED - RM cost $120K/year / 2,000 working hours = $60/hr. Used as primary rate since RM admin reduction is core value driver.",
+    "average_revenue_per_customer": 15000,
+    "average_revenue_per_customer_source": "PROVIDED - Client confirmed $15,000 revenue per HNW client."
+  },
+
+  "backbase_loading": {
+    "implementation_curve": [0.25, 0.60, 0.85, 1.00, 1.00],
+    "effectiveness_curve": [0.10, 0.35, 0.60, 0.80, 1.00],
+    "yoy_growth": [0.05, 0.05, 0.05, 0.05, 0.05],
+    "notes": "Wealth management adoption curve. Slower ramp than retail due to HNW client sensitivity and RM change management."
+  },
+
+  "scenarios": {
+    "conservative": {
+      "description": "Slower adoption, cautious RM change management, minimal cross-sell uplift",
+      "implementation_curve": [0.15, 0.45, 0.70, 0.90, 1.00],
+      "effectiveness_curve": [0.05, 0.20, 0.40, 0.65, 0.80],
+      "backbase_impacts": {
+        "onboarding_time_reduction": 0.50,
+        "prospect_recovery_rate": 0.15,
+        "retention_improvement": 0.008,
+        "cross_sell_uplift": 0.02,
+        "reporting_automation": 0.40,
+        "comms_automation": 0.30,
+        "compliance_automation": 0.25
+      }
+    },
+    "moderate": {
+      "description": "Standard adoption with structured RM enablement program",
+      "implementation_curve": [0.25, 0.60, 0.85, 1.00, 1.00],
+      "effectiveness_curve": [0.10, 0.35, 0.60, 0.80, 1.00],
+      "backbase_impacts": {
+        "onboarding_time_reduction": 0.67,
+        "prospect_recovery_rate": 0.30,
+        "retention_improvement": 0.015,
+        "cross_sell_uplift": 0.05,
+        "reporting_automation": 0.55,
+        "comms_automation": 0.50,
+        "compliance_automation": 0.40
+      }
+    },
+    "aggressive": {
+      "description": "Fast adoption with strong executive sponsorship and RM incentive alignment",
+      "implementation_curve": [0.35, 0.75, 0.95, 1.00, 1.00],
+      "effectiveness_curve": [0.20, 0.50, 0.75, 0.90, 1.00],
+      "backbase_impacts": {
+        "onboarding_time_reduction": 0.80,
+        "prospect_recovery_rate": 0.45,
+        "retention_improvement": 0.020,
+        "cross_sell_uplift": 0.08,
+        "reporting_automation": 0.70,
+        "comms_automation": 0.65,
+        "compliance_automation": 0.55
+      }
+    }
+  },
+
+  "journeys": {
+    "client_onboarding": {
+      "journey_name": "HNW Client Onboarding",
+      "current_state": "3-week onboarding cycle (KYC, AML, suitability, account setup, portfolio transfer)",
+      "target_state": "1-week digital-first onboarding with e-KYC and automated suitability",
+      "evidence_ids": ["W1", "W2"],
+      "transcript_quotes": [
+        "Current onboarding takes 3 weeks end-to-end — Client Input (W1)",
+        "We lose prospects during the lengthy process — Client Input (W2)"
+      ],
+
+      "revenue_drivers": {
+        "time_to_revenue_acceleration": {
+          "name": "Accelerate Time-to-Revenue for New Clients",
+          "description": "Reducing onboarding from 3 weeks to 1 week gets new client AUM invested 2 weeks sooner",
+          "inputs": {
+            "new_clients_per_year": {
+              "value": 800,
+              "unit": "annual",
+              "source": "ESTIMATE - 10% annual growth on 8,000 client base.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Head of Client Acquisition"
+            },
+            "average_client_aum": {
+              "value": 1500000,
+              "unit": "USD",
+              "source": "DERIVED - $12B AUM / 8,000 clients = $1.5M average.",
+              "confidence": "HIGH",
+              "validation_owner": "Finance"
+            },
+            "annual_fee_rate": {
+              "value": 0.01,
+              "unit": "ratio",
+              "source": "DERIVED - $15,000 revenue / $1.5M AUM = 1.0% blended fee rate.",
+              "confidence": "HIGH",
+              "validation_owner": "Finance"
+            },
+            "weeks_saved": {
+              "value": 2,
+              "unit": "weeks",
+              "source": "TARGET - From 3 weeks to 1 week onboarding.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Operations"
+            }
+          },
+          "calculation": "new_clients * avg_aum * fee_rate * (weeks_saved / 52)",
+          "baseline_annual": 12000000,
+          "potential_annual_benefit": 461538
+        },
+        "prospect_recovery": {
+          "name": "Recover Abandoning Prospects",
+          "description": "Faster, digital onboarding reduces prospect drop-off during lengthy KYC process",
+          "inputs": {
+            "annual_prospects": {
+              "value": 920,
+              "unit": "annual",
+              "source": "ESTIMATE - 800 net new clients implies ~920 initial prospects (15% abandonment).",
+              "confidence": "LOW",
+              "validation_owner": "Head of Client Acquisition"
+            },
+            "current_abandonment_rate": {
+              "value": 0.15,
+              "unit": "ratio",
+              "source": "ESTIMATE - 15% drop-off during 3-week onboarding for HNW segment.",
+              "confidence": "LOW",
+              "validation_owner": "Head of Client Acquisition"
+            },
+            "backbase_recovery_rate": {
+              "value": 0.30,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - Digital onboarding recovers 25-35% of abandoning prospects.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            },
+            "revenue_per_client": {
+              "value": 15000,
+              "unit": "USD/year",
+              "source": "PROVIDED - $15,000 annual revenue per HNW client.",
+              "confidence": "HIGH",
+              "validation_owner": "Finance"
+            }
+          },
+          "calculation": "prospects * abandonment_rate * recovery_rate * revenue_per_client",
+          "baseline_annual": 2070000,
+          "potential_annual_benefit": 621000
+        }
+      },
+
+      "cost_drivers": {
+        "reduce_onboarding_processing": {
+          "name": "Reduce Onboarding Processing Cost",
+          "description": "Digital KYC, e-signatures, and automated suitability checks reduce manual processing from 20 to 8 hours per client",
+          "inputs": {
+            "annual_new_clients": {
+              "value": 800,
+              "unit": "annual",
+              "source": "Same as revenue driver.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Operations"
+            },
+            "current_processing_hours": {
+              "value": 20,
+              "unit": "hours",
+              "source": "ESTIMATE - 3-week process: KYC checks (6h), document collection (4h), suitability review (3h), account setup (4h), portfolio transfer (3h).",
+              "confidence": "LOW",
+              "validation_owner": "Operations Lead"
+            },
+            "target_processing_hours": {
+              "value": 8,
+              "unit": "hours",
+              "source": "ESTIMATE - Digital-first: e-KYC (2h), digital doc upload (1h), automated suitability (1h), system setup (2h), portfolio transfer (2h).",
+              "confidence": "LOW",
+              "validation_owner": "Operations Lead"
+            },
+            "fte_cost_per_hour": {
+              "value": 60,
+              "unit": "USD",
+              "source": "DERIVED - RM cost $120K/year / 2,000 hours = $60/hr.",
+              "confidence": "HIGH",
+              "validation_owner": "Finance/HR"
+            }
+          },
+          "calculation": "new_clients * (current_hours - target_hours) * hourly_rate",
+          "baseline_annual": 960000,
+          "potential_annual_benefit": 576000
+        }
+      },
+
+      "totals": {
+        "revenue_generation_total": 1082538,
+        "cost_reduction_total": 576000,
+        "journey_total": 1658538
+      }
+    },
+
+    "digital_engagement": {
+      "journey_name": "Digital Client Engagement",
+      "current_state": "Poor digital experience — clients rely on RM calls/meetings for portfolio updates, reporting, and routine requests",
+      "target_state": "Self-service wealth portal with real-time portfolio views, digital reporting, and secure messaging",
+      "evidence_ids": ["W3", "W4"],
+      "transcript_quotes": [
+        "Our digital offering is poor — clients call RMs for basic portfolio questions — Client Input (W3)",
+        "We need to improve digital engagement to retain next-gen wealth clients — Client Input (W4)"
+      ],
+
+      "revenue_drivers": {
+        "client_retention": {
+          "name": "Improved Client Retention Through Digital Engagement",
+          "description": "Better digital experience reduces HNW client attrition from 5% to 3.5%",
+          "inputs": {
+            "total_clients": {
+              "value": 8000,
+              "unit": "clients",
+              "source": "PROVIDED - 8,000 HNW clients.",
+              "confidence": "HIGH",
+              "validation_owner": "Client"
+            },
+            "current_annual_churn": {
+              "value": 0.05,
+              "unit": "ratio",
+              "source": "ESTIMATE - 5% annual attrition is typical for HNW segment without strong digital offering.",
+              "confidence": "LOW",
+              "validation_owner": "Head of Client Services"
+            },
+            "churn_reduction": {
+              "value": 0.015,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - Digital engagement reduces churn by 1-2 percentage points.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            },
+            "revenue_per_client": {
+              "value": 15000,
+              "unit": "USD/year",
+              "source": "PROVIDED - $15,000 revenue per client.",
+              "confidence": "HIGH",
+              "validation_owner": "Finance"
+            }
+          },
+          "calculation": "total_clients * churn_reduction * revenue_per_client",
+          "baseline_annual": 6000000,
+          "potential_annual_benefit": 1800000
+        },
+        "digital_cross_sell": {
+          "name": "Digital Cross-Sell and Share of Wallet",
+          "description": "Wealth portal surfaces investment opportunities and nudges, driving incremental product adoption",
+          "inputs": {
+            "total_clients": {
+              "value": 8000,
+              "unit": "clients",
+              "source": "PROVIDED - 8,000 HNW clients.",
+              "confidence": "HIGH",
+              "validation_owner": "Client"
+            },
+            "cross_sell_success_rate": {
+              "value": 0.05,
+              "unit": "ratio",
+              "source": "ESTIMATE - 5% of clients adopt additional product via digital channel annually.",
+              "confidence": "LOW",
+              "validation_owner": "Head of Products"
+            },
+            "incremental_revenue_per_success": {
+              "value": 3000,
+              "unit": "USD",
+              "source": "ESTIMATE - Incremental fee from additional product (advisory mandate, insurance, structured product).",
+              "confidence": "LOW",
+              "validation_owner": "Head of Products"
+            }
+          },
+          "calculation": "clients * cross_sell_rate * incremental_revenue",
+          "baseline_annual": 0,
+          "potential_annual_benefit": 1200000
+        }
+      },
+
+      "cost_drivers": {},
+
+      "totals": {
+        "revenue_generation_total": 3000000,
+        "cost_reduction_total": 0,
+        "journey_total": 3000000
+      }
+    },
+
+    "rm_servicing": {
+      "journey_name": "RM Productivity & Client Servicing",
+      "current_state": "RMs spend 60% of time on admin tasks (reporting, compliance, data entry, meeting prep)",
+      "target_state": "Reduce admin to 30% of RM time through automation, freeing capacity for client-facing activities",
+      "evidence_ids": ["W5", "W6"],
+      "transcript_quotes": [
+        "Our RMs spend 60% of their time on admin, target is 30% — Client Input (W5)",
+        "Manual reporting is a huge time sink for the team — Client Input (W6)"
+      ],
+
+      "servicing_analysis": {
+        "portfolio_reporting": {
+          "channel_name": "Portfolio Reporting",
+          "tasks": [
+            {
+              "task": "Client Performance Reports",
+              "yearly_volume": 32000,
+              "volume_source": "DERIVED - 8,000 clients x 4 quarterly reports = 32,000 reports/year.",
+              "time_spent_hours": 0.75,
+              "time_source": "ESTIMATE - 45 min per manual report (data pull, formatting, review).",
+              "fte_rate": 60,
+              "baseline_cost": 1440000,
+              "backbase_impact": 0.60,
+              "impact_source": "BACKBASE BENCHMARK - Automated portfolio reporting engine generates 60% of reports.",
+              "cost_saved": 864000
+            },
+            {
+              "task": "Ad-Hoc Client Reports",
+              "yearly_volume": 5000,
+              "volume_source": "ESTIMATE - ~625 RMs requests per year across 50 RMs.",
+              "time_spent_hours": 0.50,
+              "time_source": "ESTIMATE - 30 min for custom data extraction and formatting.",
+              "fte_rate": 60,
+              "baseline_cost": 150000,
+              "backbase_impact": 0.50,
+              "impact_source": "BACKBASE BENCHMARK - Self-service dashboards handle 50% of ad-hoc requests.",
+              "cost_saved": 75000
+            },
+            {
+              "task": "Investment Analysis & Proposals",
+              "yearly_volume": 2500,
+              "volume_source": "ESTIMATE - ~50 per RM per year.",
+              "time_spent_hours": 1.50,
+              "time_source": "ESTIMATE - 90 min for analysis, model run, proposal document.",
+              "fte_rate": 60,
+              "baseline_cost": 225000,
+              "backbase_impact": 0.30,
+              "impact_source": "BACKBASE BENCHMARK - Template-driven proposals with pre-populated data save 30%.",
+              "cost_saved": 67500
+            }
+          ],
+          "channel_total": {
+            "yearly_volume": 39500,
+            "baseline_cost": 1815000,
+            "cost_saved": 1006500
+          }
+        },
+        "client_communications": {
+          "channel_name": "Client Communications",
+          "tasks": [
+            {
+              "task": "Portfolio Inquiries (calls/emails)",
+              "yearly_volume": 18000,
+              "volume_source": "ESTIMATE - Avg 2.25 inquiries per client per year.",
+              "time_spent_hours": 0.25,
+              "time_source": "ESTIMATE - 15 min per inquiry (check portfolio, compose response).",
+              "fte_rate": 60,
+              "baseline_cost": 270000,
+              "backbase_impact": 0.70,
+              "impact_source": "BACKBASE BENCHMARK - Self-service portal with real-time portfolio views deflects 70%.",
+              "cost_saved": 189000
+            },
+            {
+              "task": "Transaction & Trade Requests",
+              "yearly_volume": 14000,
+              "volume_source": "ESTIMATE - ~1.75 trade-related requests per client per year.",
+              "time_spent_hours": 0.33,
+              "time_source": "ESTIMATE - 20 min per request (verify, execute, confirm).",
+              "fte_rate": 60,
+              "baseline_cost": 277200,
+              "backbase_impact": 0.40,
+              "impact_source": "BACKBASE BENCHMARK - Digital trade initiation handles 40% of routine requests.",
+              "cost_saved": 110880
+            },
+            {
+              "task": "Document Requests & Sharing",
+              "yearly_volume": 8000,
+              "volume_source": "ESTIMATE - 1 document request per client per year.",
+              "time_spent_hours": 0.17,
+              "time_source": "ESTIMATE - 10 min to retrieve and send documents.",
+              "fte_rate": 60,
+              "baseline_cost": 81600,
+              "backbase_impact": 0.80,
+              "impact_source": "BACKBASE BENCHMARK - Document vault with self-service access eliminates 80%.",
+              "cost_saved": 65280
+            },
+            {
+              "task": "Meeting Preparation & Follow-Up",
+              "yearly_volume": 8000,
+              "volume_source": "ESTIMATE - 1 annual review meeting per client.",
+              "time_spent_hours": 0.50,
+              "time_source": "ESTIMATE - 30 min prep (agenda, portfolio summary, talking points).",
+              "fte_rate": 60,
+              "baseline_cost": 240000,
+              "backbase_impact": 0.35,
+              "impact_source": "BACKBASE BENCHMARK - Auto-generated meeting packs with portfolio analytics save 35%.",
+              "cost_saved": 84000
+            }
+          ],
+          "channel_total": {
+            "yearly_volume": 48000,
+            "baseline_cost": 868800,
+            "cost_saved": 449160
+          }
+        },
+        "operations_compliance": {
+          "channel_name": "Operations & Compliance",
+          "tasks": [
+            {
+              "task": "Periodic KYC/AML Reviews",
+              "yearly_volume": 4000,
+              "volume_source": "ESTIMATE - 50% of clients reviewed annually (risk-based).",
+              "time_spent_hours": 1.50,
+              "time_source": "ESTIMATE - 90 min per review (screening, document check, risk assessment).",
+              "fte_rate": 60,
+              "baseline_cost": 360000,
+              "backbase_impact": 0.40,
+              "impact_source": "BACKBASE BENCHMARK - Automated screening and digital document verification reduce effort by 40%.",
+              "cost_saved": 144000
+            },
+            {
+              "task": "Account Maintenance & Updates",
+              "yearly_volume": 4000,
+              "volume_source": "ESTIMATE - Address changes, beneficiary updates, mandate changes.",
+              "time_spent_hours": 0.50,
+              "time_source": "ESTIMATE - 30 min manual processing.",
+              "fte_rate": 60,
+              "baseline_cost": 120000,
+              "backbase_impact": 0.50,
+              "impact_source": "BACKBASE BENCHMARK - Client self-service for routine updates.",
+              "cost_saved": 60000
+            },
+            {
+              "task": "Regulatory & Compliance Documentation",
+              "yearly_volume": 3000,
+              "volume_source": "ESTIMATE - Suitability reports, best-execution records, MiFID compliance.",
+              "time_spent_hours": 1.00,
+              "time_source": "ESTIMATE - 60 min per compliance record.",
+              "fte_rate": 60,
+              "baseline_cost": 180000,
+              "backbase_impact": 0.35,
+              "impact_source": "BACKBASE BENCHMARK - Automated suitability and compliance record generation.",
+              "cost_saved": 63000
+            },
+            {
+              "task": "Data Entry & Reconciliation",
+              "yearly_volume": 6000,
+              "volume_source": "ESTIMATE - CRM updates, portfolio system entries, manual reconciliations.",
+              "time_spent_hours": 0.75,
+              "time_source": "ESTIMATE - 45 min per batch of manual entries.",
+              "fte_rate": 60,
+              "baseline_cost": 270000,
+              "backbase_impact": 0.55,
+              "impact_source": "BACKBASE BENCHMARK - API integrations and auto-sync eliminate 55% of manual data work.",
+              "cost_saved": 148500
+            }
+          ],
+          "channel_total": {
+            "yearly_volume": 17000,
+            "baseline_cost": 930000,
+            "cost_saved": 415500
+          }
+        }
+      },
+
+      "totals": {
+        "total_servicing_volume": 104500,
+        "total_baseline_cost": 3613800,
+        "total_cost_saved": 1871160
+      }
+    }
+  },
+
+  "investment": {
+    "license": {
+      "year_1": 1500000,
+      "year_2": 2000000,
+      "year_3": 2000000,
+      "year_4": 2000000,
+      "year_5": 2000000,
+      "total": 9500000,
+      "source": "ESTIMATE - Backbase Wealth Management platform license for 8,000 HNW clients + 50 RM workstations. REQUIRES COMMERCIAL VALIDATION."
+    },
+    "implementation": {
+      "year_1": 3500000,
+      "year_2": 1500000,
+      "year_3": 500000,
+      "year_4": 250000,
+      "year_5": 250000,
+      "total": 6000000,
+      "source": "ESTIMATE - Wealth portal + RM workbench + client onboarding + reporting engine + integrations. REQUIRES SCOPING VALIDATION."
+    },
+    "total": 15500000
+  },
+
+  "summary": {
+    "journey_benefits": [
+      {
+        "journey": "HNW Client Onboarding",
+        "revenue_generation": 1082538,
+        "cost_reduction": 576000,
+        "total": 1658538
+      },
+      {
+        "journey": "Digital Client Engagement",
+        "revenue_generation": 3000000,
+        "cost_reduction": 0,
+        "total": 3000000
+      },
+      {
+        "journey": "RM Productivity & Client Servicing",
+        "revenue_generation": 0,
+        "cost_reduction": 1871160,
+        "total": 1871160
+      }
+    ],
+    "total_annual_benefit_steady_state": 6529698,
+    "notes": "Benefits shown at 100% implementation and effectiveness. Year-by-year values apply adoption curves. Additional upside not modeled: freed RM capacity enables higher client-to-RM ratio (160 → 200+) and revenue growth from deeper client relationships."
+  },
+
+  "assumptions_register": [
+    {
+      "id": "W-A1",
+      "assumption": "HNW Client Base",
+      "value": "8,000 clients",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client confirmed.",
+      "validation_owner": "Client",
+      "sensitivity": "HIGH - Affects all per-client calculations"
+    },
+    {
+      "id": "W-A2",
+      "assumption": "Assets Under Management",
+      "value": "$12,000,000,000",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client confirmed $12B AUM.",
+      "validation_owner": "Client",
+      "sensitivity": "HIGH - Determines average AUM per client and fee income"
+    },
+    {
+      "id": "W-A3",
+      "assumption": "Revenue per Client",
+      "value": "$15,000/year",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client confirmed.",
+      "validation_owner": "Finance",
+      "sensitivity": "HIGH - Core financial metric for retention and cross-sell benefits"
+    },
+    {
+      "id": "W-A4",
+      "assumption": "Number of Relationship Managers",
+      "value": "50 RMs",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client confirmed.",
+      "validation_owner": "Client",
+      "sensitivity": "HIGH - Defines total admin hours available for reduction"
+    },
+    {
+      "id": "W-A5",
+      "assumption": "RM Fully Loaded Cost",
+      "value": "$120,000/year ($60/hr)",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client confirmed $120K/year per RM.",
+      "validation_owner": "Finance/HR",
+      "sensitivity": "HIGH - Affects all servicing cost calculations"
+    },
+    {
+      "id": "W-A6",
+      "assumption": "Current Admin Time Ratio",
+      "value": "60% of RM time",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client confirmed RMs spend 60% on admin.",
+      "validation_owner": "Client",
+      "sensitivity": "HIGH - Defines baseline for admin reduction"
+    },
+    {
+      "id": "W-A7",
+      "assumption": "Target Admin Time Ratio",
+      "value": "30% of RM time",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client target.",
+      "validation_owner": "Client",
+      "sensitivity": "HIGH - Defines benefit ceiling for admin reduction"
+    },
+    {
+      "id": "W-A8",
+      "assumption": "Current Onboarding Cycle",
+      "value": "3 weeks",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client confirmed 3-week onboarding.",
+      "validation_owner": "Operations",
+      "sensitivity": "HIGH - Core driver of onboarding time-to-revenue benefit"
+    },
+    {
+      "id": "W-A9",
+      "assumption": "Annual Client Churn Rate",
+      "value": "5%",
+      "confidence": "LOW",
+      "source": "ESTIMATE - Typical HNW churn without strong digital offering. REQUIRES VALIDATION.",
+      "validation_owner": "Head of Client Services",
+      "sensitivity": "HIGH - Core driver of retention benefit"
+    },
+    {
+      "id": "W-A10",
+      "assumption": "New Client Acquisition Rate",
+      "value": "800/year (10% growth)",
+      "confidence": "LOW",
+      "source": "ESTIMATE - Based on typical HNW growth rates.",
+      "validation_owner": "Head of Client Acquisition",
+      "sensitivity": "MEDIUM - Affects onboarding benefit sizing"
+    },
+    {
+      "id": "W-A11",
+      "assumption": "Blended Fee Rate on AUM",
+      "value": "1.0%",
+      "confidence": "HIGH",
+      "source": "DERIVED - $15,000 revenue / $1.5M average AUM.",
+      "validation_owner": "Finance",
+      "sensitivity": "MEDIUM - Affects time-to-revenue calculation"
+    },
+    {
+      "id": "W-A12",
+      "assumption": "Cross-Sell Success Rate",
+      "value": "5% of clients annually",
+      "confidence": "LOW",
+      "source": "ESTIMATE - Conservative assumption for digital cross-sell. REQUIRES VALIDATION.",
+      "validation_owner": "Head of Products",
+      "sensitivity": "MEDIUM - Defines cross-sell revenue uplift"
+    },
+    {
+      "id": "W-A13",
+      "assumption": "Implementation Timeline",
+      "value": "25-60-85-100-100%",
+      "confidence": "MEDIUM",
+      "source": "BACKBASE BENCHMARK - Wealth management adoption curve, slower than retail.",
+      "validation_owner": "Value Consulting",
+      "sensitivity": "MEDIUM - Affects timing of benefit realization"
+    }
+  ],
+
+  "data_gaps_for_validation": [
+    {
+      "id": "WDG1",
+      "data_needed": "Actual client attrition rate and reasons",
+      "priority": "CRITICAL",
+      "source": "CRM / Client Services reporting",
+      "impact": "Core input for retention benefit — currently estimated at 5%"
+    },
+    {
+      "id": "WDG2",
+      "data_needed": "RM time allocation breakdown by activity",
+      "priority": "CRITICAL",
+      "source": "RM time study or CRM activity logs",
+      "impact": "Validates the 60% admin baseline and sizes each servicing task correctly"
+    },
+    {
+      "id": "WDG3",
+      "data_needed": "Client onboarding funnel data (prospects, drop-offs, completion rate)",
+      "priority": "HIGH",
+      "source": "CRM / onboarding system",
+      "impact": "Sizes the prospect recovery benefit — abandonment rate currently estimated"
+    },
+    {
+      "id": "WDG4",
+      "data_needed": "Actual onboarding processing hours per client",
+      "priority": "HIGH",
+      "source": "Operations team / process timing study",
+      "impact": "Sizes onboarding cost reduction — currently estimated at 20 hours"
+    },
+    {
+      "id": "WDG5",
+      "data_needed": "Report generation volume and time per report by type",
+      "priority": "HIGH",
+      "source": "Portfolio management team / reporting system logs",
+      "impact": "Core input for portfolio reporting automation benefit"
+    },
+    {
+      "id": "WDG6",
+      "data_needed": "Client inquiry volume by channel (calls, emails, portal)",
+      "priority": "HIGH",
+      "source": "CRM / telephony system",
+      "impact": "Validates client communications servicing volumes"
+    },
+    {
+      "id": "WDG7",
+      "data_needed": "Current digital adoption rate among HNW clients",
+      "priority": "MEDIUM",
+      "source": "Digital analytics / client portal usage data",
+      "impact": "Defines baseline for digital engagement improvement"
+    },
+    {
+      "id": "WDG8",
+      "data_needed": "Cross-sell success rate and incremental revenue per product",
+      "priority": "MEDIUM",
+      "source": "Product management / CRM",
+      "impact": "Validates cross-sell benefit — currently estimated"
+    },
+    {
+      "id": "WDG9",
+      "data_needed": "Compliance and KYC review frequency and effort per client",
+      "priority": "MEDIUM",
+      "source": "Compliance team",
+      "impact": "Validates operations & compliance servicing volumes"
+    }
+  ]
+}
