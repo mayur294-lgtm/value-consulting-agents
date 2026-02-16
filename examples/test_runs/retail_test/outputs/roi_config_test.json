@@ -1,0 +1,750 @@
+{
+  "client_name": "SeABank Vietnam",
+  "date": "2026-02-06",
+  "currency": "USD",
+  "industry": "Retail Banking",
+  "analysis_years": 5,
+  "discount_rate": 0.10,
+  "selected_scenario": "Moderate",
+
+  "bank_profile": {
+    "bank_identity": {
+      "name": "Southeast Asia Commercial Joint Stock Bank (SeABank)",
+      "country": "Vietnam",
+      "currency": "VND",
+      "ticker": "SSB (Ho Chi Minh Stock Exchange / HoSE)",
+      "report_year": 2024,
+      "report_source": "Annual Report 2024 + FY2024 Results Press Release"
+    },
+    "basic_information": {
+      "total_customers": {
+        "value": 3000000,
+        "source": "SeABank Best Workplace 2024 — '3M+ customers'",
+        "confidence": "HIGH"
+      },
+      "annual_revenue": {
+        "value": 490000000,
+        "source": "FY2024 Results — TOI VND 12,409B (~US$490M)",
+        "confidence": "HIGH"
+      },
+      "operating_costs": {
+        "value": 163000000,
+        "source": "DERIVED: TOI $490M x CIR 33.28% = ~$163M",
+        "confidence": "MEDIUM"
+      },
+      "cost_to_income_ratio": {
+        "value": 0.3328,
+        "source": "FY2024 Results — CIR 33.28%",
+        "confidence": "HIGH"
+      },
+      "total_fte": {
+        "value": 5500,
+        "source": "SeABank Best Workplace 2024 — 'over 5,500 official employees'",
+        "confidence": "HIGH"
+      },
+      "staff_costs": {
+        "value": 97800000,
+        "source": "ESTIMATED: OpEx $163M x 60% staff ratio = ~$97.8M (typical for VN banks)",
+        "confidence": "LOW"
+      },
+      "average_fte_rate_hour": {
+        "value": 8.89,
+        "source": "DERIVED: Staff costs $97.8M / 5,500 FTE / 2,000 hrs = $8.89/hr",
+        "confidence": "LOW",
+        "derivation": "staff_costs / total_fte / 2000"
+      },
+      "average_revenue_per_customer": {
+        "value": 163,
+        "source": "DERIVED: Revenue $490M / 3M customers = $163/customer",
+        "confidence": "MEDIUM",
+        "derivation": "annual_revenue / total_customers"
+      }
+    },
+    "additional_context": {
+      "total_assets": {
+        "value": 12850000000,
+        "source": "FY2024 Results — VND 325,699B (~US$12.85B), +22% YoY"
+      },
+      "total_loans": {
+        "value": 8260000000,
+        "source": "FY2024 Results — Credit outstanding VND 209,355B (~US$8.26B)"
+      },
+      "total_deposits": {
+        "value": 8520000000,
+        "source": "FY2024 Results — Total mobilization VND 215,984B (~US$8.52B)"
+      },
+      "num_branches": {
+        "value": 181,
+        "source": "SeABank Best Workplace 2024 — 181 transaction points nationwide"
+      },
+      "digital_active_users": {
+        "value": 4000000,
+        "source": "FY2024 Results — Nearly 4M digital users"
+      },
+      "digital_transactions": {
+        "value": 52600000,
+        "source": "FY2024 Results — 52.6M digital transactions, +160% YoY"
+      },
+      "npl_ratio": {
+        "value": 0.0189,
+        "source": "FY2024 Results — NPL ratio 1.89%"
+      },
+      "roe": {
+        "value": 0.1475,
+        "source": "FY2024 Results — ROE 14.75%"
+      },
+      "roa": {
+        "value": 0.0163,
+        "source": "FY2024 Results — ROA 1.63%"
+      },
+      "casa_balance": {
+        "value": 1290000000,
+        "source": "FY2024 Results — CASA VND 32,658B (~US$1.29B), +96% YoY"
+      },
+      "charter_capital": {
+        "value": 1120000000,
+        "source": "FY2024 Results — Charter capital VND 28,350B (~US$1.12B)"
+      }
+    },
+    "data_gaps": [
+      {
+        "metric": "Staff Costs (exact)",
+        "priority": "HIGH",
+        "impact": "Required to derive accurate FTE hourly rate — core input for servicing analysis",
+        "note": "Not separately disclosed in press releases. Available in AR PDF income statement.",
+        "where_to_obtain": "Annual Report PDF — Income Statement or Notes to Accounts"
+      },
+      {
+        "metric": "Net Interest Income",
+        "priority": "MEDIUM",
+        "impact": "Revenue composition context — needed for fee income vs interest income split",
+        "where_to_obtain": "Annual Report PDF — Income Statement"
+      },
+      {
+        "metric": "Onboarding Cycle Time",
+        "priority": "HIGH",
+        "impact": "Core input for onboarding benefit sizing — not in public reports",
+        "where_to_obtain": "Client interview — Operations Lead"
+      },
+      {
+        "metric": "Call Center Volume",
+        "priority": "HIGH",
+        "impact": "Core input for servicing cost avoidance — not in public reports",
+        "where_to_obtain": "Client interview — Call Center Manager"
+      },
+      {
+        "metric": "Loan Processing Time",
+        "priority": "HIGH",
+        "impact": "Core input for loan origination benefits — not in public reports",
+        "where_to_obtain": "Client interview — Credit Operations"
+      }
+    ]
+  },
+
+  "basic_information": {
+    "total_customers": 500000,
+    "total_customers_source": "PROVIDED - Client confirmed 500,000 retail customers.",
+    "annual_revenue": 200000000,
+    "annual_revenue_source": "PROVIDED - Client confirmed $200M annual revenue.",
+    "cost_to_income_ratio": 0.65,
+    "cost_to_income_source": "PROVIDED - Client confirmed 65% cost-to-income ratio.",
+    "operating_costs": 130000000,
+    "operating_costs_source": "DERIVED - $200M revenue * 65% CTI = $130M operating costs.",
+    "total_fte": 2000,
+    "total_fte_source": "ESTIMATE - Based on typical retail bank staffing ratios for SEA region.",
+    "average_fte_rate_hour": 20,
+    "average_fte_rate_source": "ESTIMATE - SEA regional loaded cost. REQUIRES VALIDATION with Finance.",
+    "average_revenue_per_customer": 400,
+    "average_revenue_per_customer_source": "DERIVED - $200M revenue / 500K customers = $400/customer."
+  },
+
+  "backbase_loading": {
+    "implementation_curve": [0.30, 0.70, 0.90, 1.00, 1.00],
+    "effectiveness_curve": [0.15, 0.40, 0.65, 0.85, 1.00],
+    "yoy_growth": [0.08, 0.08, 0.08, 0.08, 0.08],
+    "notes": "Standard Backbase adoption curve. Accelerated due to same-day onboarding target."
+  },
+
+  "scenarios": {
+    "conservative": {
+      "description": "Pessimistic but plausible - lower adoption, smaller impact",
+      "implementation_curve": [0.20, 0.60, 0.80, 0.90, 1.00],
+      "effectiveness_curve": [0.10, 0.25, 0.45, 0.70, 0.85],
+      "backbase_impacts": {
+        "onboarding_conversion_digital": 0.05,
+        "onboarding_time_reduction": 0.60,
+        "loan_origination_improvement": 0.15,
+        "loan_processing_cost_reduction": 0.20,
+        "servicing_channel_shift": 0.20,
+        "servicing_efficiency": 0.25
+      }
+    },
+    "moderate": {
+      "description": "Most likely outcome - standard adoption, typical impact",
+      "implementation_curve": [0.30, 0.70, 0.90, 1.00, 1.00],
+      "effectiveness_curve": [0.15, 0.40, 0.65, 0.85, 1.00],
+      "backbase_impacts": {
+        "onboarding_conversion_digital": 0.10,
+        "onboarding_time_reduction": 0.80,
+        "loan_origination_improvement": 0.20,
+        "loan_processing_cost_reduction": 0.30,
+        "servicing_channel_shift": 0.30,
+        "servicing_efficiency": 0.35
+      }
+    },
+    "aggressive": {
+      "description": "Optimistic but achievable - high adoption, full impact",
+      "implementation_curve": [0.40, 0.80, 0.95, 1.00, 1.00],
+      "effectiveness_curve": [0.25, 0.50, 0.75, 0.90, 1.00],
+      "backbase_impacts": {
+        "onboarding_conversion_digital": 0.15,
+        "onboarding_time_reduction": 0.90,
+        "loan_origination_improvement": 0.25,
+        "loan_processing_cost_reduction": 0.40,
+        "servicing_channel_shift": 0.40,
+        "servicing_efficiency": 0.45
+      }
+    }
+  },
+
+  "journeys": {
+    "digital_onboarding": {
+      "journey_name": "Digital Customer Onboarding (CASA)",
+      "current_state": "5 days onboarding cycle",
+      "target_state": "Same-day onboarding",
+      "evidence_ids": ["E1", "E2"],
+      "transcript_quotes": [
+        "Current onboarding takes 5 days - Client Input (E1)",
+        "Target is same-day digital onboarding - Client Input (E2)"
+      ],
+
+      "revenue_drivers": {
+        "increase_digital_conversion": {
+          "name": "Increase Customer Conversion - Digital Channel",
+          "description": "Faster onboarding reduces abandonment and increases completed applications",
+          "inputs": {
+            "monthly_digital_applications": {
+              "value": 15000,
+              "unit": "monthly",
+              "source": "ESTIMATE - Based on 500K customers, 3.6% annual growth implies ~180K new customers/year, 80% start digitally.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Digital Lead"
+            },
+            "current_abandonment_rate": {
+              "value": 0.55,
+              "unit": "ratio",
+              "source": "ESTIMATE - 5-day process typically sees 50-60% abandonment. Using 55%.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Digital Lead"
+            },
+            "average_first_year_revenue": {
+              "value": 400,
+              "unit": "USD/year",
+              "source": "DERIVED - $200M revenue / 500K customers = $400/customer.",
+              "confidence": "HIGH",
+              "validation_owner": "Finance"
+            },
+            "backbase_impact": {
+              "value": 0.10,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - Same-day onboarding typically improves conversion by 8-12%.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            }
+          },
+          "calculation": "monthly_apps * 12 * abandonment_rate * avg_revenue * backbase_impact",
+          "baseline_annual": 39600000,
+          "potential_annual_benefit": 3960000
+        }
+      },
+
+      "cost_drivers": {
+        "reduce_onboarding_processing": {
+          "name": "Reduce Onboarding Processing Cost",
+          "description": "Digital STP reduces manual processing from 5 days to same-day",
+          "inputs": {
+            "annual_applications": {
+              "value": 180000,
+              "unit": "annual",
+              "source": "ESTIMATE - 15K monthly applications * 12 months.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Operations Lead"
+            },
+            "current_processing_hours": {
+              "value": 4.0,
+              "unit": "hours",
+              "source": "ESTIMATE - 5-day process implies significant manual work. 4 hours of FTE time per application.",
+              "confidence": "LOW",
+              "validation_owner": "Operations Lead"
+            },
+            "target_processing_hours": {
+              "value": 0.5,
+              "unit": "hours",
+              "source": "ESTIMATE - Same-day digital reduces to 30 min review/approval.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Operations Lead"
+            },
+            "fte_cost_per_hour": {
+              "value": 20,
+              "unit": "USD",
+              "source": "ESTIMATE - SEA regional loaded cost.",
+              "confidence": "LOW",
+              "validation_owner": "Finance/HR"
+            }
+          },
+          "calculation": "applications * (current_hours - target_hours) * hourly_rate",
+          "baseline_annual": 14400000,
+          "potential_annual_benefit": 12600000
+        }
+      },
+
+      "totals": {
+        "revenue_generation_total": 3960000,
+        "cost_reduction_total": 12600000,
+        "journey_total": 16560000
+      }
+    },
+
+    "loan_origination": {
+      "journey_name": "Loan Origination (Personal & SME)",
+      "evidence_ids": ["E3", "E4"],
+      "transcript_quotes": [
+        "Want to improve loan origination process - Client Input (E3)",
+        "Loans tied to digital experience improvements - Client Input (E4)"
+      ],
+
+      "revenue_drivers": {
+        "increase_loan_conversion": {
+          "name": "Increase Loan Application Conversion",
+          "description": "Digital loan origination increases approval rate and reduces drop-off",
+          "inputs": {
+            "annual_loan_applications": {
+              "value": 75000,
+              "unit": "annual",
+              "source": "ESTIMATE - Based on 500K customers, ~15% apply for loans annually.",
+              "confidence": "LOW",
+              "validation_owner": "Lending Head"
+            },
+            "current_conversion_rate": {
+              "value": 0.40,
+              "unit": "ratio",
+              "source": "ESTIMATE - Industry average for traditional loan processes is 35-45%.",
+              "confidence": "LOW",
+              "validation_owner": "Lending Head"
+            },
+            "average_loan_revenue": {
+              "value": 800,
+              "unit": "USD/loan",
+              "source": "ESTIMATE - Average interest income + fees per approved loan (Year 1).",
+              "confidence": "LOW",
+              "validation_owner": "Finance"
+            },
+            "backbase_impact": {
+              "value": 0.20,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - Digital loan origination improves conversion by 15-25%.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            }
+          },
+          "calculation": "applications * current_leakage * avg_revenue * backbase_impact",
+          "baseline_annual": 24000000,
+          "potential_annual_benefit": 7200000
+        }
+      },
+
+      "cost_drivers": {
+        "reduce_loan_processing": {
+          "name": "Reduce Loan Processing Cost",
+          "description": "Digital origination with automated decisioning reduces manual underwriting",
+          "inputs": {
+            "annual_loan_applications": {
+              "value": 75000,
+              "unit": "annual",
+              "source": "ESTIMATE - Same as revenue driver.",
+              "confidence": "LOW",
+              "validation_owner": "Lending Head"
+            },
+            "current_processing_hours": {
+              "value": 6.0,
+              "unit": "hours",
+              "source": "ESTIMATE - Traditional loan requires credit check, verification, underwriting.",
+              "confidence": "LOW",
+              "validation_owner": "Credit Operations"
+            },
+            "fte_cost_per_hour": {
+              "value": 20,
+              "unit": "USD",
+              "source": "ESTIMATE - SEA regional loaded cost.",
+              "confidence": "LOW",
+              "validation_owner": "Finance/HR"
+            },
+            "backbase_impact": {
+              "value": 0.30,
+              "unit": "ratio",
+              "source": "BACKBASE BENCHMARK - 30% reduction with automated decisioning and digital docs.",
+              "confidence": "MEDIUM",
+              "validation_owner": "Value Consulting"
+            }
+          },
+          "calculation": "applications * processing_hours * hourly_rate * backbase_impact",
+          "baseline_annual": 9000000,
+          "potential_annual_benefit": 2700000
+        }
+      },
+
+      "totals": {
+        "revenue_generation_total": 7200000,
+        "cost_reduction_total": 2700000,
+        "journey_total": 9900000
+      }
+    },
+
+    "customer_servicing": {
+      "journey_name": "Customer Servicing",
+      "evidence_ids": ["E5"],
+      "transcript_quotes": [
+        "Servicing tied to digital transformation - Client Input (E5)"
+      ],
+
+      "servicing_analysis": {
+        "branch": {
+          "channel_name": "Branch",
+          "tasks": [
+            {
+              "task": "Balance & Account Inquiry",
+              "yearly_volume": 150000,
+              "volume_source": "ESTIMATE - 30% of customers visit branch annually.",
+              "time_spent_hours": 0.10,
+              "time_source": "ESTIMATE - 6 min interaction.",
+              "fte_rate": 20,
+              "baseline_cost": 300000,
+              "backbase_impact": 0.70,
+              "impact_source": "BACKBASE BENCHMARK - 70% shift to digital self-service.",
+              "cost_saved": 210000
+            },
+            {
+              "task": "Statement & Document Requests",
+              "yearly_volume": 100000,
+              "volume_source": "ESTIMATE - 20% of customers request statements in branch.",
+              "time_spent_hours": 0.17,
+              "time_source": "ESTIMATE - 10 min including printing.",
+              "fte_rate": 20,
+              "baseline_cost": 340000,
+              "backbase_impact": 0.80,
+              "impact_source": "BACKBASE BENCHMARK - Statements easily digitized.",
+              "cost_saved": 272000
+            },
+            {
+              "task": "Card Services",
+              "yearly_volume": 50000,
+              "volume_source": "ESTIMATE - Card-related branch visits.",
+              "time_spent_hours": 0.17,
+              "time_source": "ESTIMATE - 10 min for card management.",
+              "fte_rate": 20,
+              "baseline_cost": 170000,
+              "backbase_impact": 0.85,
+              "impact_source": "BACKBASE BENCHMARK - Card control highly automatable.",
+              "cost_saved": 144500
+            }
+          ],
+          "channel_total": {
+            "yearly_volume": 300000,
+            "baseline_cost": 810000,
+            "cost_saved": 626500
+          }
+        },
+        "call_center": {
+          "channel_name": "Call Center",
+          "tasks": [
+            {
+              "task": "Balance & Account Inquiry",
+              "yearly_volume": 400000,
+              "volume_source": "ESTIMATE - High call volume for simple inquiries.",
+              "time_spent_hours": 0.08,
+              "time_source": "ESTIMATE - 5 min call.",
+              "fte_rate": 20,
+              "baseline_cost": 640000,
+              "backbase_impact": 0.70,
+              "impact_source": "BACKBASE BENCHMARK - IVR and app can handle.",
+              "cost_saved": 448000
+            },
+            {
+              "task": "Statement Requests",
+              "yearly_volume": 200000,
+              "volume_source": "ESTIMATE - Frequent call reason.",
+              "time_spent_hours": 0.10,
+              "time_source": "ESTIMATE - 6 min call.",
+              "fte_rate": 20,
+              "baseline_cost": 400000,
+              "backbase_impact": 0.85,
+              "impact_source": "BACKBASE BENCHMARK - Digital statements available.",
+              "cost_saved": 340000
+            },
+            {
+              "task": "Card Services",
+              "yearly_volume": 150000,
+              "volume_source": "ESTIMATE - Emergency and routine card calls.",
+              "time_spent_hours": 0.12,
+              "time_source": "ESTIMATE - 7 min call.",
+              "fte_rate": 20,
+              "baseline_cost": 360000,
+              "backbase_impact": 0.90,
+              "impact_source": "BACKBASE BENCHMARK - App card controls.",
+              "cost_saved": 324000
+            },
+            {
+              "task": "Transaction Inquiries",
+              "yearly_volume": 300000,
+              "volume_source": "ESTIMATE - Common call reason.",
+              "time_spent_hours": 0.15,
+              "time_source": "ESTIMATE - 9 min call.",
+              "fte_rate": 20,
+              "baseline_cost": 900000,
+              "backbase_impact": 0.55,
+              "impact_source": "BACKBASE BENCHMARK - Better search in app.",
+              "cost_saved": 495000
+            }
+          ],
+          "channel_total": {
+            "yearly_volume": 1050000,
+            "baseline_cost": 2300000,
+            "cost_saved": 1607000
+          }
+        },
+        "back_office": {
+          "channel_name": "Back Office",
+          "tasks": [
+            {
+              "task": "Document Processing",
+              "yearly_volume": 80000,
+              "volume_source": "ESTIMATE - Follow-up document handling.",
+              "time_spent_hours": 0.50,
+              "time_source": "ESTIMATE - Manual processing.",
+              "fte_rate": 20,
+              "baseline_cost": 800000,
+              "backbase_impact": 0.50,
+              "impact_source": "BACKBASE BENCHMARK - OCR and auto-verification.",
+              "cost_saved": 400000
+            },
+            {
+              "task": "Account Maintenance",
+              "yearly_volume": 60000,
+              "volume_source": "ESTIMATE - Changes requiring back office.",
+              "time_spent_hours": 0.33,
+              "time_source": "ESTIMATE - 20 min processing.",
+              "fte_rate": 20,
+              "baseline_cost": 396000,
+              "backbase_impact": 0.40,
+              "impact_source": "BACKBASE BENCHMARK - Partial automation.",
+              "cost_saved": 158400
+            }
+          ],
+          "channel_total": {
+            "yearly_volume": 140000,
+            "baseline_cost": 1196000,
+            "cost_saved": 558400
+          }
+        }
+      },
+
+      "totals": {
+        "total_servicing_volume": 1490000,
+        "total_baseline_cost": 4306000,
+        "total_cost_saved": 2791900
+      }
+    }
+  },
+
+  "investment": {
+    "license": {
+      "year_1": 1200000,
+      "year_2": 1500000,
+      "year_3": 1500000,
+      "year_4": 1500000,
+      "year_5": 1500000,
+      "total": 7200000,
+      "source": "ESTIMATE - Backbase retail + lending license for 500K customers. REQUIRES COMMERCIAL VALIDATION."
+    },
+    "implementation": {
+      "year_1": 4000000,
+      "year_2": 1500000,
+      "year_3": 500000,
+      "year_4": 500000,
+      "year_5": 500000,
+      "total": 7000000,
+      "source": "ESTIMATE - Digital onboarding + loan origination + servicing scope. REQUIRES SCOPING VALIDATION."
+    },
+    "total": 14200000
+  },
+
+  "summary": {
+    "journey_benefits": [
+      {
+        "journey": "Digital Customer Onboarding",
+        "revenue_generation": 3960000,
+        "cost_reduction": 12600000,
+        "total": 16560000
+      },
+      {
+        "journey": "Loan Origination",
+        "revenue_generation": 7200000,
+        "cost_reduction": 2700000,
+        "total": 9900000
+      },
+      {
+        "journey": "Customer Servicing",
+        "revenue_generation": 0,
+        "cost_reduction": 2791900,
+        "total": 2791900
+      }
+    ],
+    "total_annual_benefit_steady_state": 29251900,
+    "notes": "Benefits shown at 100% implementation and effectiveness. Year-by-year values apply curves."
+  },
+
+  "assumptions_register": [
+    {
+      "id": "A1",
+      "assumption": "Total Customer Base",
+      "value": "500,000",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client confirmed.",
+      "validation_owner": "Client",
+      "sensitivity": "HIGH - Affects all per-customer calculations"
+    },
+    {
+      "id": "A2",
+      "assumption": "Annual Revenue",
+      "value": "$200,000,000",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client confirmed.",
+      "validation_owner": "Client",
+      "sensitivity": "HIGH - Core financial metric"
+    },
+    {
+      "id": "A3",
+      "assumption": "Cost-to-Income Ratio",
+      "value": "65%",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client confirmed.",
+      "validation_owner": "Client",
+      "sensitivity": "MEDIUM - Defines cost structure"
+    },
+    {
+      "id": "A4",
+      "assumption": "Current Onboarding Time",
+      "value": "5 days",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client confirmed.",
+      "validation_owner": "Client",
+      "sensitivity": "HIGH - Core improvement driver"
+    },
+    {
+      "id": "A5",
+      "assumption": "Target Onboarding Time",
+      "value": "Same day",
+      "confidence": "HIGH",
+      "source": "PROVIDED - Client confirmed target.",
+      "validation_owner": "Client",
+      "sensitivity": "HIGH - Defines benefit potential"
+    },
+    {
+      "id": "A6",
+      "assumption": "Monthly Digital Applications",
+      "value": "15,000",
+      "confidence": "MEDIUM",
+      "source": "ESTIMATE - Based on customer base and typical growth rates.",
+      "validation_owner": "Digital Lead",
+      "sensitivity": "HIGH - Core driver of onboarding benefits"
+    },
+    {
+      "id": "A7",
+      "assumption": "Digital Abandonment Rate",
+      "value": "55%",
+      "confidence": "MEDIUM",
+      "source": "ESTIMATE - 5-day process typically sees 50-60% abandonment.",
+      "validation_owner": "Digital Lead",
+      "sensitivity": "HIGH - Defines improvement headroom"
+    },
+    {
+      "id": "A8",
+      "assumption": "Loaded FTE Cost per Hour",
+      "value": "$20",
+      "confidence": "LOW",
+      "source": "ESTIMATE - SEA regional average.",
+      "validation_owner": "Finance/HR",
+      "sensitivity": "HIGH - Affects all cost calculations"
+    },
+    {
+      "id": "A9",
+      "assumption": "Annual Loan Applications",
+      "value": "75,000",
+      "confidence": "LOW",
+      "source": "ESTIMATE - 15% of customers apply for loans annually.",
+      "validation_owner": "Lending Head",
+      "sensitivity": "HIGH - Core driver of loan origination benefits"
+    },
+    {
+      "id": "A10",
+      "assumption": "Implementation Timeline",
+      "value": "30-70-90-100-100%",
+      "confidence": "MEDIUM",
+      "source": "BACKBASE BENCHMARK - Accelerated curve for same-day target.",
+      "validation_owner": "Value Consulting",
+      "sensitivity": "MEDIUM - Affects timing of benefits"
+    }
+  ],
+
+  "data_gaps_for_validation": [
+    {
+      "id": "DG1",
+      "data_needed": "Actual digital application volume by channel",
+      "priority": "CRITICAL",
+      "source": "Digital analytics / core banking",
+      "impact": "Core input for onboarding benefit sizing"
+    },
+    {
+      "id": "DG2",
+      "data_needed": "Current onboarding completion/abandonment rate",
+      "priority": "CRITICAL",
+      "source": "Journey analytics / funnel data",
+      "impact": "Defines improvement headroom"
+    },
+    {
+      "id": "DG3",
+      "data_needed": "Loan application volume and conversion rates",
+      "priority": "CRITICAL",
+      "source": "Lending system / credit operations",
+      "impact": "Core input for loan origination benefits"
+    },
+    {
+      "id": "DG4",
+      "data_needed": "Processing time per onboarding application",
+      "priority": "HIGH",
+      "source": "Operations / process timing",
+      "impact": "Sizes processing cost reduction"
+    },
+    {
+      "id": "DG5",
+      "data_needed": "Call center volume by request type",
+      "priority": "HIGH",
+      "source": "Call center reporting system",
+      "impact": "Core input for servicing cost avoidance"
+    },
+    {
+      "id": "DG6",
+      "data_needed": "Loaded FTE costs by role",
+      "priority": "HIGH",
+      "source": "HR / Finance",
+      "impact": "Affects all labor cost calculations"
+    },
+    {
+      "id": "DG7",
+      "data_needed": "Current digital adoption rate",
+      "priority": "MEDIUM",
+      "source": "Digital analytics",
+      "impact": "Defines baseline for channel shift"
+    }
+  ]
+}
