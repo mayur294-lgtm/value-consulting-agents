@@ -109,7 +109,16 @@ Related Capabilities: [CAP-IDs from taxonomy]
 4. **Assessment Mode Confirmation** — Workshop Assessment vs. Transcript Inference, and confidence level for the evidence base
 5. **Questions** — Any ambiguous evidence, conflicting signals, or areas where you need the consultant's judgment
 
-**Format:** Present as structured markdown with a `## DECISION REQUIRED` section. List each unconsidered need with a "Keep / Remove / Modify" choice.
+**Format:** Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## DECISION REQUIRED` heading. List each unconsidered need with a "Keep / Remove / Modify" choice.
+
+Example structure:
+```
+<checkpoint>
+## DECISION REQUIRED: Problem Map & Assessment Scope
+
+[Your considered needs, unconsidered needs candidates, proposed scope, assessment mode, and questions here]
+</checkpoint>
+```
 
 **Rules:**
 - NEVER begin Phase 2 scoring before this checkpoint

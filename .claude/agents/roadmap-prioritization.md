@@ -44,7 +44,16 @@ Before creating a roadmap, you must have or request:
 6. **Questions** — Client-specific timing constraints, political considerations, or executive preferences that should influence sequencing
 
 ### Format:
-Present as structured markdown with a `## DECISION REQUIRED` section. Show 2-3 phasing options with pros/cons for each.
+Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## DECISION REQUIRED` heading. Show 2-3 phasing options with pros/cons for each.
+
+Example structure:
+```
+<checkpoint>
+## DECISION REQUIRED: Roadmap Phasing & Sequencing
+
+[Your proposed phasing model, initiative grouping, Phase 1 candidates, sequencing trade-offs, capacity assumptions, and questions here]
+</checkpoint>
+```
 
 ### Rules:
 - NEVER produce the final roadmap before this checkpoint

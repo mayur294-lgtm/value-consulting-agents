@@ -101,7 +101,16 @@ When you encounter a benchmark with field observations:
 4. **Gaps** — Benchmarks requested but not found. The consultant may have access to proprietary data or analyst reports.
 5. **Questions** — Any judgment calls (e.g., "Should we use the APAC wealth benchmark or the global one?")
 
-**Format:** Present as structured markdown with a `## VALIDATION REQUIRED` section.
+**Format:** Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## VALIDATION REQUIRED` heading.
+
+Example structure:
+```
+<checkpoint>
+## VALIDATION REQUIRED: Benchmark Selection
+
+[Your proposed benchmark shortlist, field observations, regional match quality, gaps, and questions here]
+</checkpoint>
+```
 
 **Rules:**
 - NEVER finalize the benchmark shortlist without this checkpoint

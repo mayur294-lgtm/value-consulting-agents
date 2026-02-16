@@ -60,7 +60,16 @@ If any required input is missing, explicitly request it before proceeding.
 6. **Questions** — Any data gaps, ambiguous evidence, or judgment calls that need consultant input
 
 ### Format:
-Present as structured markdown with a clear `## DECISION REQUIRED` section. Include a table of proposed levers and a table of key assumptions, each with a column for "Your Input."
+Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## DECISION REQUIRED` heading. Include a table of proposed levers and a table of key assumptions, each with a column for "Your Input."
+
+Example structure:
+```
+<checkpoint>
+## DECISION REQUIRED: ROI Lever Selection & Assumptions
+
+[Your proposed levers table, excluded levers, key assumptions, scenario parameters, and questions here]
+</checkpoint>
+```
 
 ### Rules:
 - NEVER build the Excel model or write the report before this checkpoint

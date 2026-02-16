@@ -420,7 +420,16 @@ Before writing, establish these four settings:
 5. **Key Numbers** — The headline financial metrics that will anchor the executive summary (investment, return, payback). The consultant sanity-checks these.
 6. **Proposed External Examples** — The "what good looks like" examples you plan to reference in Act 4. The consultant can flag any that are politically sensitive or irrelevant.
 
-**Format:** Present as structured markdown with a `## APPROVAL REQUIRED` section.
+**Format:** Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## APPROVAL REQUIRED` heading.
+
+Example structure:
+```
+<checkpoint>
+## APPROVAL REQUIRED: Assembly Plan & Narrative Arc
+
+[Your transformation arc, tone calibration, Act 1 structure, persona candidates, key numbers, and external examples here]
+</checkpoint>
+```
 
 **Rules:**
 - NEVER begin writing the 7-act report before this checkpoint

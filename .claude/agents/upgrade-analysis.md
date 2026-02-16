@@ -93,7 +93,16 @@ The Migration Co-Pilot (or consultant) provides:
 6. **Questions** — Any account-specific context you're missing
 
 ### Format:
-Present as structured markdown with a `## APPROVAL REQUIRED` section.
+Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## APPROVAL REQUIRED` heading.
+
+Example structure:
+```
+<checkpoint>
+## APPROVAL REQUIRED: Upgrade Analysis Approach
+
+[Your account assessment, play recommendation, positioning strategy, peer selection, ROI napkin parameters, and questions here]
+</checkpoint>
+```
 
 ### Rules:
 - NEVER produce deliverables before this checkpoint

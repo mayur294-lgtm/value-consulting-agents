@@ -60,7 +60,16 @@ When validating capabilities against the Product Directory, **cross-reference wi
 5. **Questions** — Which use cases the consultant feels strongest about, any client-specific priorities, use cases the consultant wants added or removed
 
 ### Format:
-Present as structured markdown with a clear `## DECISION REQUIRED` section. Include a priority matrix and ask the consultant to confirm or modify the P1/P2/P3 assignments.
+Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## DECISION REQUIRED` heading. Include a priority matrix and ask the consultant to confirm or modify the P1/P2/P3 assignments.
+
+Example structure:
+```
+<checkpoint>
+## DECISION REQUIRED: Use Case Portfolio Selection
+
+[Your proposed candidates table, P1 shortlist, architecture considerations, business line grouping, and questions here]
+</checkpoint>
+```
 
 ### Rules:
 - NEVER produce full 10-section use case documents before this checkpoint

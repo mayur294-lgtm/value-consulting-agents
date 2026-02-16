@@ -70,9 +70,10 @@ Both files follow the schema defined in `templates/outputs/journey_maps.md`. Rea
    - Count pain points linked to each journey
    - Count metrics available for quantification
 4. **Rank journeys** by evidence density (most evidence = highest rank)
-5. **Present to consultant:**
+5. **Present to consultant** — Wrap the entire checkpoint in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp:
 
-```markdown
+```
+<checkpoint>
 ## CHECKPOINT #1 — Journey Selection
 
 Based on discovery evidence, here are the available journeys ranked by evidence strength:
@@ -86,6 +87,7 @@ Based on discovery evidence, here are the available journeys ranked by evidence 
 
 **Recommended:** Map journeys 1-3 (strongest evidence base).
 **Your choice:** Select 2-6 journeys to map. More journeys = broader coverage but thinner per-journey depth.
+</checkpoint>
 ```
 
 **Rules:**

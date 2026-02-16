@@ -274,7 +274,16 @@ Ensure your registers are:
 6. **What You DIDN'T Hear** — Topics you expected to come up based on the domain but didn't. The consultant can explain why (e.g., "they discussed that off-record" or "it's not relevant for this client").
 
 ### Format:
-Present as structured markdown with a `## VALIDATION REQUIRED` section. Each finding should have a "Confirm / Modify / Remove" option.
+Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## VALIDATION REQUIRED` heading. Each finding should have a "Confirm / Modify / Remove" option.
+
+Example structure:
+```
+<checkpoint>
+## VALIDATION REQUIRED: Discovery Findings
+
+[Your key findings, pain point rankings, domain detection, stakeholder highlights, data gaps, and "what you didn't hear" here]
+</checkpoint>
+```
 
 ### Rules:
 - NEVER finalize the evidence registers without this checkpoint
