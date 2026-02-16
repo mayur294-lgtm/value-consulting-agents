@@ -3,18 +3,18 @@
 This registry tracks all knowledge extracted from past engagements into the agent system.
 
 ## Last Updated
-2026-02-06
+2026-02-16
 
 ## Extraction Statistics
 
 | Metric | Count |
 |--------|-------|
 | Engagements Scanned | 100+ |
-| Engagements Extracted | 15 |
-| Benchmark Files | 3 |
+| Engagements Extracted | 16 |
+| Benchmark Files | 4 |
 | Journey Map Files | 0 |
-| ROI Pattern Files | 4 |
-| Capability Framework Files | 0 |
+| ROI Pattern Files | 5 |
+| Capability Framework Files | 1 |
 | Competitor Analysis Files | 0 |
 | Engagement Pattern Files | 1 |
 
@@ -125,6 +125,7 @@ _No proposal patterns extracted yet._
 
 | Engagement ID | Domain | Region | Harvest Date | Entries Written (A:B:C:D) | Method |
 |---------------|--------|--------|--------------|---------------------------|--------|
+| mystate-2026-02-retail | Retail | APAC (Australia) | 2026-02-16 | 6:5:15:6 | auto |
 | *(auto-populated)* | | | | | auto |
 
 **Legend:** A = Benchmarks, B = Pain Points, C = Capability Maturity, D = ROI Patterns
