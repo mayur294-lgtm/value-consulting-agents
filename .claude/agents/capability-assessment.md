@@ -109,7 +109,11 @@ Related Capabilities: [CAP-IDs from taxonomy]
 4. **Assessment Mode Confirmation** — Workshop Assessment vs. Transcript Inference, and confidence level for the evidence base
 5. **Questions** — Any ambiguous evidence, conflicting signals, or areas where you need the consultant's judgment
 
-**Format:** Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## DECISION REQUIRED` heading. List each unconsidered need with a "Keep / Remove / Modify" choice.
+**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
+
+In Claude Code: Display the checkpoint content directly with a clear `## DECISION REQUIRED` heading. List each unconsidered need with a "Keep / Remove / Modify" choice. Then say "Please review and respond before I continue." Stop generating and wait.
+
+Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
 
 Example structure:
 ```
@@ -119,6 +123,8 @@ Example structure:
 [Your considered needs, unconsidered needs candidates, proposed scope, assessment mode, and questions here]
 </checkpoint>
 ```
+
+**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step.**
 
 **Rules:**
 - NEVER begin Phase 2 scoring before this checkpoint

@@ -60,7 +60,12 @@ When validating capabilities against the Product Directory, **cross-reference wi
 5. **Questions** — Which use cases the consultant feels strongest about, any client-specific priorities, use cases the consultant wants added or removed
 
 ### Format:
-Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## DECISION REQUIRED` heading. Include a priority matrix and ask the consultant to confirm or modify the P1/P2/P3 assignments.
+
+**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
+
+In Claude Code: Display the checkpoint content directly with a clear `## DECISION REQUIRED` heading. Include a priority matrix and ask the consultant to confirm or modify the P1/P2/P3 assignments. Then say "Please review and respond before I continue." Stop generating and wait.
+
+Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
 
 Example structure:
 ```
@@ -70,6 +75,8 @@ Example structure:
 [Your proposed candidates table, P1 shortlist, architecture considerations, business line grouping, and questions here]
 </checkpoint>
 ```
+
+**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step.**
 
 ### Rules:
 - NEVER produce full 10-section use case documents before this checkpoint

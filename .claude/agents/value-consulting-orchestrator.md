@@ -186,6 +186,31 @@ Every full engagement produces:
 
 For partial engagements (e.g., ROI_only), produce only the relevant subset.
 
+## Consultant Checkpoint Protocol
+
+Multiple agents include mandatory consultant checkpoints (marked as "APPROVAL REQUIRED", "VALIDATION REQUIRED", or "DECISION REQUIRED"). These checkpoints are critical quality gates — they prevent the agent from making unilateral decisions.
+
+**How checkpoints work in Claude Code (interactive terminal):**
+
+When an agent reaches a checkpoint:
+1. Present the checkpoint content with a clear heading (e.g., "## APPROVAL REQUIRED: Assembly Plan & Narrative Arc")
+2. List the specific items requiring consultant review
+3. End with: **"Please review the above and respond with your approval, modifications, or questions. I will not proceed until you respond."**
+4. **STOP GENERATING.** Do not continue to the next step. Wait for the consultant's response in the next message.
+5. After receiving the response, incorporate any modifications and proceed.
+
+**How checkpoints work via Donna/WhatsApp:**
+
+When running through the Donna webhook, wrap checkpoint content in `<checkpoint>` tags for WhatsApp routing. The webhook handles pause/resume automatically.
+
+**Rules:**
+- NEVER skip a checkpoint. If an agent has a mandatory checkpoint, you MUST pause.
+- NEVER continue past a checkpoint without consultant input — even if the checkpoint content "looks fine." The consultant's domain knowledge is irreplaceable.
+- If a consultant says "proceed" or "looks good" — log their approval and continue.
+- If a consultant modifies anything — incorporate changes before proceeding.
+
+---
+
 ## Orchestration Workflow
 
 ### Step 1: Classification and Client Context
@@ -339,7 +364,7 @@ Route work to specialized agents based on engagement type:
 - Input: Domain, region, metric type
 - Output: Curated benchmarks with confidence ratings and sources
 
-**Executive Narrative Assembler:**
+**Narrative Assembler:**
 - Input: All outputs from engagement
 - Output: Final deliverable suite with consistent narrative
 
@@ -362,7 +387,7 @@ Before finalizing, verify:
 
 #### 6b. Interactive HTML Dashboard Gate (MANDATORY for Detailed Assessment / Ignite Assess)
 
-After the Executive Narrative Assembler completes, verify that the consolidated interactive HTML dashboard exists and was produced by the `/generate-assessment-html` skill:
+After the Narrative Assembler completes, verify that the consolidated interactive HTML dashboard exists and was produced by the `/generate-assessment-html` skill:
 
 - [ ] File `{engagement_code}_Consolidated_Assessment_Interactive.html` exists in the outputs directory
 - [ ] File size is >200KB (the `/generate-assessment-html` skill produces 250-400KB files; anything under 100KB means the wrong tool was used)
@@ -376,7 +401,7 @@ If ANY check fails: the HTML was NOT produced by `/generate-assessment-html`. Re
 
 ### Step 7: Post-Assembly Cross-Deliverable Review
 
-After the Executive Narrative Assembler completes, perform this final review before declaring the engagement complete. This review is **non-delegable** — the orchestrator performs it directly.
+After the Narrative Assembler completes, perform this final review before declaring the engagement complete. This review is **non-delegable** — the orchestrator performs it directly.
 
 #### 7a. Cross-Deliverable Numerical Consistency
 Verify that numbers match across ALL output documents:
@@ -687,7 +712,7 @@ Each agent uses the most cost-effective model for its task complexity. Do NOT do
 | **Reasoning** | Opus | dev-agent, review-agent | Code generation and code review require deep architectural reasoning |
 | **Consulting** | Sonnet | All 10 consulting agents | Best quality-to-cost ratio for analysis, writing, and synthesis |
 | **Mechanical** | Haiku | release-agent | Tag, changelog, email — no judgment needed |
-| **Visual Design** | Opus (recommended) | /presentation, /presentation-v2, /prototype skills | HTML/CSS visual output is noticeably better with Opus |
+| **Visual Design** | Opus (recommended) | /presentation, /prototype skills | HTML/CSS visual output is noticeably better with Opus |
 
 **Cost per engagement: ~$3-5 total** (at Sonnet rates: $3/M input, $15/M output).
 

@@ -89,7 +89,7 @@ agents:
         pattern: "\\[.*\\]|—.*[A-Z]"
         min_matches: 3
 
-  executive-narrative-assembler:
+  narrative-assembler:
     structural:
       - name: "Has 7 acts"
         pattern: "Act [1-7]|## Act"
@@ -165,7 +165,7 @@ consulting_agent_definitions:
     - capability-assessment
     - roadmap-prioritization
     - discovery-transcript-interpreter
-    - executive-narrative-assembler
+    - narrative-assembler
     - benchmark-librarian
     - upgrade-analysis
     - market-context-researcher

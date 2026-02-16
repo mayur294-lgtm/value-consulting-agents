@@ -48,20 +48,88 @@ You read ONLY processed outputs from upstream agents. **Never read raw transcrip
 
 ## Output Contract
 
-You produce TWO files:
+You produce TWO files containing BOTH layers:
 
 | File | Format | Consumer | Purpose |
 |------|--------|----------|---------|
-| `journey_maps.json` | JSON | `/generate-assessment-html` skill | Interactive swimlane visualization, friction callouts, value waterfall, before/after toggle |
-| `journey_maps_summary.md` | Markdown | Assembly Agent (Act 4) | Human-readable journey maps for the assessment report narrative |
+| `journey_maps.json` | JSON | `/generate-assessment-html` skill | **Layer 1:** Journey experience map (SVG emotion curve, headline insights, stage narratives, pain points). **Layer 2:** Per-journey swimlanes, friction callouts, value waterfall, before/after toggle |
+| `journey_maps_summary.md` | Markdown | Assembly Agent (Act 4) | Human-readable: holistic journey experience overview + per-journey maps |
+
+The JSON file contains:
+- `journey_experience` section (Layer 1 — holistic emotion curve map)
+- `journeys[]` array (Layer 2 — individual per-journey swimlanes)
 
 Both files follow the schema defined in `templates/outputs/journey_maps.md`. Read that template before producing any output.
 
 ## Methodology
 
+### Phase 0: End-to-End Journey Experience Map (Layer 1)
+
+**Before selecting individual journeys, build the holistic journey experience overview.** This is the "emotion curve" that shows the member's experience across ALL lifecycle stages at a glance. It is the most powerful single visual in the assessment — it tells the entire story in one SVG.
+
+#### Step 0a: Identify Journey Stages
+
+Scan evidence register, pain points, and domain knowledge to identify 4-10 stages that span the member's full lifecycle. These are NOT individual journeys — they are broad experience phases. Examples:
+- Investing domain: Discovery → Account Opening → Funding → Trading → Communications → Support → Advisor → Servicing
+- Retail domain: Awareness → Onboarding → First Transaction → Daily Banking → Cross-sell → Issue Resolution → Renewal
+
+For each stage:
+1. **Name**: Short, clear label (e.g., "Account Opening")
+2. **Subtitle**: Optional sub-label (e.g., "& Entry")
+3. **Evocative title**: Storytelling name (e.g., "Funding — The Cliff Edge")
+4. **Evocative subtitle**: What this stage means in plain language
+5. **Lifecycle stage**: Acquire / Activate / Expand / Retain
+
+#### Step 0b: Score Each Stage (1-10)
+
+For each stage, assign an experience score based on evidence:
+- **8-10 (Green):** Smooth, functional, minimal friction
+- **5-7 (Amber):** Functional but with notable gaps
+- **3-4 (Orange/Red):** Significant friction, measurable value loss
+- **1-2 (Red):** Broken, critical value destruction
+
+Scores MUST be justified by evidence. If no evidence exists for a stage, mark it `"status": "pending"` with a dashed outline in the SVG.
+
+#### Step 0c: Write Stage Narratives
+
+For each stage, write a **3-5 sentence storytelling paragraph** that makes the reader FEEL the experience. This is NOT a list of bullet points. Rules:
+- Use the client's own language (from evidence quotes)
+- **Bold** the most important phrases
+- End each narrative with the emotional impact or consequence
+- Weave the transformation arc throughout (reference it by name)
+
+**Good:** "The member just opened their account. A smooth experience. But then the flow simply... **ends.** There's no 'Fund your account' button. No prompt. No redirect. **Half of all members never make it.**"
+
+**Bad:** "Funding step is disconnected from account opening. 50% drop-off rate. No CTA present."
+
+#### Step 0d: Map Pain Points and Transformation Gaps
+
+For each stage:
+- Map 1-5 pain points with severity (critical / high / medium)
+- For each pain point, link to evidence IDs and capability IDs
+- Identify transformation arc gaps (how this stage fails the overarching vision)
+- Select one compelling evidence quote with attribution
+
+#### Step 0e: Define Headline Insights
+
+Select exactly 3 headline insights that tell the story at a glance:
+1. **Red (Critical):** The single most damaging finding (e.g., "50% Never Fund")
+2. **Amber (High):** The second most impactful pattern (e.g., "3 Emails, Then Silence")
+3. **Blue (Strategic):** A systemic/architectural insight (e.g., "6-7 Systems, Zero Integration")
+
+Each insight needs: severity color, icon emoji, stat headline (short/punchy), and 1-2 sentence description.
+
+#### Step 0f: Define Transformation Arc
+
+Write the "From X to Y" transformation narrative that threads through all stages. This becomes the spine of the assessment. Reference it in every stage narrative where relevant.
+
+**After completing Phase 0, include the `journey_experience` section in your output. This data powers the SVG emotion curve map and clickable stage panels in the HTML dashboard.**
+
+---
+
 ### Phase 1: Journey Selection (Checkpoint #1)
 
-**Before building anything, present the consultant with journey options.**
+**Before building individual per-journey swimlanes, present the consultant with journey options.**
 
 1. **Load domain journey templates** from `knowledge/domains/<domain>/journey_maps.md`
 2. **Scan evidence register** for journey-related entries — group by lifecycle stage and journey step
@@ -70,13 +138,28 @@ Both files follow the schema defined in `templates/outputs/journey_maps.md`. Rea
    - Count pain points linked to each journey
    - Count metrics available for quantification
 4. **Rank journeys** by evidence density (most evidence = highest rank)
-5. **Present to consultant** — Wrap the entire checkpoint in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp:
+5. **Present to consultant and STOP.** Do not proceed until the consultant responds.
+
+**CHECKPOINT ENFORCEMENT — CRITICAL:**
+
+This is a MANDATORY consultant checkpoint. You MUST present it and STOP. Do NOT continue to Phase 2 without a response.
+
+**How to present the checkpoint:**
+- In Claude Code: Display the checkpoint content directly with the heading below. Then say **"Please review and respond before I continue."** and **STOP generating immediately.** Do not produce any more output after the checkpoint. Wait for the consultant's next message.
+- Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
+- When triggered by the orchestrator: The orchestrator MUST relay this checkpoint to the consultant. If the orchestrator cannot relay it, the journey builder MUST pause and log "BLOCKED: Awaiting consultant response to Checkpoint #1" in the journal.
+
+**If you skip this checkpoint, the engagement is invalid. This is NON-NEGOTIABLE.**
 
 ```
 <checkpoint>
 ## CHECKPOINT #1 — Journey Selection
 
-Based on discovery evidence, here are the available journeys ranked by evidence strength:
+**Journey Experience Overview (Phase 0 complete):**
+I've mapped [N] lifecycle stages with experience scores. Transformation arc: "[From X to Y]"
+Top insight: [Headline insight #1]
+
+**Available journeys ranked by evidence strength:**
 
 | Rank | Journey | Lifecycle | Evidence Items | Pain Points | Metrics | Recommendation |
 |------|---------|-----------|---------------|-------------|---------|----------------|
@@ -87,13 +170,18 @@ Based on discovery evidence, here are the available journeys ranked by evidence 
 
 **Recommended:** Map journeys 1-3 (strongest evidence base).
 **Your choice:** Select 2-6 journeys to map. More journeys = broader coverage but thinner per-journey depth.
+
+Please review and respond before I continue.
 </checkpoint>
 ```
+
+**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step. Do NOT generate any more output.**
 
 **Rules:**
 - NEVER skip this checkpoint. The consultant decides which journeys to map.
 - If the consultant says "your recommendation" or "go ahead", use the top 3-5 by evidence density.
 - Log the selection in the engagement journal.
+- If running in a pipeline and no consultant response is possible, log "WARNING: Checkpoint #1 auto-approved — consultant was not available" and use recommendations.
 
 ### Phase 2: Journey Construction (per selected journey)
 
@@ -216,11 +304,20 @@ For each step in the Backbase-enabled future journey:
 - [ ] Flag any missing steps or actors
 ```
 
+**CHECKPOINT ENFORCEMENT — CRITICAL:**
+
+This is a MANDATORY consultant checkpoint. You MUST present it and STOP. Do NOT proceed to output generation without a response.
+
+**How to present:** Same as Checkpoint #1. Display and STOP generating. Wait for the consultant's next message.
+
+**If you skip this checkpoint, the engagement is invalid. This is NON-NEGOTIABLE.**
+
 **Rules:**
 - Present ALL journeys together so the consultant sees the full picture
 - If the consultant adjusts numbers, apply changes and recalculate downstream
 - Log validation outcome in engagement journal
 - Set `metadata.consultant_validated: true` only after this checkpoint passes
+- If running in a pipeline and no consultant response is possible, log "WARNING: Checkpoint #2 auto-approved — consultant was not available" and set `consultant_validated: false`
 
 ### Phase 4: Output Generation
 
@@ -288,6 +385,16 @@ Append to `ENGAGEMENT_JOURNAL.md`:
 
 ## Quality Checklist (Before Declaring Done)
 
+**Layer 1 — Journey Experience Map:**
+- [ ] `journey_experience` section present in JSON output
+- [ ] At least 4 stages with experience scores (1-10)
+- [ ] Every stage has a 3+ sentence narrative in storytelling voice (NOT bullets)
+- [ ] Every stage has at least 1 pain point and 1 evidence quote
+- [ ] Exactly 3 headline insights defined (red, amber, blue)
+- [ ] Transformation arc defined and referenced in stage narratives
+- [ ] Pending stages (if any) are clearly marked with `"status": "pending"`
+
+**Layer 2 — Per-Journey Swimlanes:**
 - [ ] At least 2 journeys mapped (unless consultant explicitly selected fewer)
 - [ ] Each journey has 5+ as-is steps with actor assignments
 - [ ] Each journey has 3+ friction callout cards with $ impact
@@ -298,8 +405,10 @@ Append to `ENGAGEMENT_JOURNAL.md`:
 - [ ] Aggregate summary totals are mathematically consistent
 - [ ] `journey_maps.json` validates against schema in `templates/outputs/journey_maps.md`
 - [ ] `journey_maps_summary.md` follows the markdown template exactly
-- [ ] Consultant Checkpoint #1 (selection) completed and logged
-- [ ] Consultant Checkpoint #2 (validation) completed and logged
+**Checkpoints:**
+- [ ] Consultant Checkpoint #1 (selection) completed and logged — **NOT SKIPPED**
+- [ ] Consultant Checkpoint #2 (validation) completed and logged — **NOT SKIPPED**
+- [ ] If any checkpoint was auto-approved, WARNING is logged in journal
 - [ ] Journal entry appended to ENGAGEMENT_JOURNAL.md
 
 ## Anti-Patterns
@@ -307,10 +416,13 @@ Append to `ENGAGEMENT_JOURNAL.md`:
 1. **Shallow journeys:** 3 vague steps with no time or system data. Each step needs actor, action, time, and systems.
 2. **Unquantified friction:** "There is friction here" without dollar impact. Every friction needs a number.
 3. **Generic future-state:** "Backbase makes it better" without naming products or showing how steps change.
-4. **Skipping checkpoints:** Building all journeys without consultant selection or validation.
+4. **Skipping checkpoints:** Building all journeys without consultant selection or validation. **This invalidates the engagement.**
 5. **Invented metrics:** Making up volumes or drop-off rates without labeling as benchmark proxy.
 6. **Missing waterfall:** Showing total leakage without the step-by-step accumulation that makes it compelling.
 7. **Disconnected traceability:** Friction points that don't link to capability IDs or evidence IDs.
+8. **Missing journey experience map:** Jumping straight to per-journey swimlanes without first building the holistic emotion curve. Layer 1 (experience map) MUST exist before Layer 2 (individual journeys).
+9. **Bullet-point narratives:** Writing journey experience narratives as lists instead of storytelling paragraphs. The narratives must make the reader FEEL the experience, not just catalog problems.
+10. **Silent checkpoint skip:** Proceeding past a checkpoint without presenting it to the consultant. Even if auto-approved, it MUST be logged as a warning.
 
 ## Telemetry Protocol (MANDATORY)
 

@@ -76,7 +76,7 @@ AGENTS=(
     "capability-assessment"
     "roi-business-case-builder"
     "discovery-transcript-interpreter"
-    "executive-narrative-assembler"
+    "narrative-assembler"
     "roadmap-prioritization"
     "benchmark-librarian"
     "market-context-researcher"

@@ -101,7 +101,11 @@ When you encounter a benchmark with field observations:
 4. **Gaps** — Benchmarks requested but not found. The consultant may have access to proprietary data or analyst reports.
 5. **Questions** — Any judgment calls (e.g., "Should we use the APAC wealth benchmark or the global one?")
 
-**Format:** Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## VALIDATION REQUIRED` heading.
+**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
+
+In Claude Code: Display the checkpoint content directly with a clear `## VALIDATION REQUIRED` heading. Then say "Please review and respond before I continue." Stop generating and wait.
+
+Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
 
 Example structure:
 ```
@@ -111,6 +115,8 @@ Example structure:
 [Your proposed benchmark shortlist, field observations, regional match quality, gaps, and questions here]
 </checkpoint>
 ```
+
+**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step.**
 
 **Rules:**
 - NEVER finalize the benchmark shortlist without this checkpoint

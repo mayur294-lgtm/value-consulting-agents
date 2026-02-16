@@ -2,7 +2,16 @@
 
 Generate a premium interactive HTML dashboard from the engagement's markdown deliverables and upstream JSON artifacts. This skill produces a single self-contained HTML file with a Future UI-inspired design — dark sidebar navigation, bento grids, dark feature sections, phone-frame prototypes, journey visualizations, scroll-reveal animations, and business line differentiation.
 
-**Do NOT use this skill for general presentations.** For slide decks, Innovation Day pitches, or any non-assessment deliverable, use `/presentation-v2` instead. This skill is exclusively for Detailed Assessment / Ignite Assess engagements that follow the 7-act narrative structure.
+**Do NOT use this skill for general presentations.** For slide decks, Innovation Day pitches, or any non-assessment deliverable, use `/presentation` instead. This skill is exclusively for Detailed Assessment / Ignite Assess engagements that follow the 7-act narrative structure.
+
+**CRITICAL DESIGN RULE:** This dashboard uses a **LIGHT base theme** (`#F8FAFC` background). The body background is NEVER dark. Dark colors are used ONLY for:
+- The sidebar (`#1A1F36`)
+- Dark feature accent sections (`.dark-feature` with `#0B0F1A`)
+- Metric cards (`.metric-card` with `#0F172A`)
+- Journey swimlanes (`.journey-swimlane` with `#0F172A`)
+- Waterfall containers (`.waterfall-container` with `#0F172A`)
+
+If you find yourself setting `body { background: #0a1628 }` or any dark color as the page background — **STOP. You are not following the design system.**
 
 ## When to Invoke
 
@@ -30,607 +39,41 @@ A single self-contained HTML file: `{engagement_code}_Consolidated_Assessment_In
 
 ---
 
-## CSS Design System
+## CSS, JS & HTML Template
 
-The complete CSS below is extracted from the proven NFIS reference design and generalized for reuse. Copy it verbatim into the `<style>` tag of the output HTML.
+The complete CSS, JavaScript, and HTML skeleton are in the template file. **Do NOT write CSS or JS yourself.**
 
-```css
-/* ══════════════════════════ CSS CUSTOM PROPERTIES ══════════════════════════ */
-:root {
-  --bg: #F8FAFC; --card: #FFFFFF; --border: #E2E8F0; --text: #0F172A; --muted: #64748B; --dim: #94A3B8;
-  --L0: #DC2626; --L1: #EA580C; --L2: #0891B2; --L3: #059669; --L4: #2563EB;
-  --accent: #2563EB; --accent-light: #DBEAFE;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04); --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
-  --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
-  --radius: 12px; --radius-lg: 16px;
-  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+### Step 0: Read the Template File (MANDATORY FIRST STEP)
 
-/* ══════════════════════════ RESET & BASE ══════════════════════════ */
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 15px; }
-.wrap { max-width: 1360px; margin: 0 auto; padding: 0 48px 100px; margin-left: 260px; }
-h2 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
-h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.2px; }
-h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+Before doing ANYTHING else, read the template file using the Read tool:
 
-/* ══════════════════════════ LEFT SIDEBAR NAV ══════════════════════════ */
-.sidebar { position: fixed; top: 0; left: 0; width: 250px; height: 100vh; background: #1A1F36; z-index: 200; display: flex; flex-direction: column; overflow-y: auto; box-shadow: 4px 0 24px rgba(0,0,0,0.12); }
-.sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); background: linear-gradient(180deg, rgba(26,86,255,0.08) 0%, transparent 100%); }
-.sidebar-brand-logo { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
-.sidebar-brand-title { font-size: 1.1rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.3px; line-height: 1.3; }
-.sidebar-brand-sub { font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-top: 4px; }
-.sidebar-nav { flex: 1; padding: 16px 0; }
-.tab-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 24px; font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.55); cursor: pointer; border: none; background: none; white-space: nowrap; transition: all 0.25s ease; font-family: inherit; text-align: left; position: relative; border-left: 3px solid transparent; }
-.tab-btn:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.04); border-left-color: rgba(26,86,255,0.3); }
-.tab-btn.active { color: #FFFFFF; background: rgba(26,86,255,0.12); border-left-color: #1A56FF; }
-.tab-btn .tab-num { display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); font-size: 0.6rem; font-weight: 800; width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0; transition: all 0.25s ease; }
-.tab-btn:hover .tab-num { background: rgba(26,86,255,0.2); color: rgba(255,255,255,0.7); }
-.tab-btn.active .tab-num { background: #1A56FF; color: #fff; box-shadow: 0 0 12px rgba(26,86,255,0.4); }
-.tab-btn .tab-label { line-height: 1.3; }
-.tab-btn.active::after { content: ''; position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 20px; background: #1A56FF; border-radius: 3px 0 0 3px; box-shadow: 0 0 8px rgba(26,86,255,0.5); }
-.sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.06); }
-.sidebar-footer-text { font-size: 0.62rem; color: rgba(255,255,255,0.2); line-height: 1.4; }
-.sidebar-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 8px 20px; }
+**File:** `templates/presentations/assessment-dashboard-template.html`
 
-/* ══════════════════════════ PANELS ══════════════════════════ */
-.panel { display: none; opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; padding-top: 48px; }
-.panel.active { display: block; opacity: 1; transform: translateY(0); }
-.section-header { margin-bottom: 48px; padding-bottom: 28px; border-bottom: 1px solid var(--border); position: relative; }
-.section-header::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100px; height: 3px; background: linear-gradient(90deg, #1A56FF, #7B2FFF); border-radius: 2px; }
-.section-header h2 { font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; line-height: 1.1; }
-.section-header .overline { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: var(--accent); margin-bottom: 10px; background: linear-gradient(90deg, #1A56FF, #7B2FFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.section-header p { max-width: 640px; font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
+This file is your complete HTML starting point. It contains:
+- **~400 lines of CSS** — the full Future UI design system (sidebar, hero, bento, dark-feature, cards, metric-cards, personas, expandables, heatmap, timeline, phone-frames, journey-rail, swimlanes, friction-callouts, waterfall, ROI, scenario-toggle, confidence badges, traceability, scrollbar, animations, responsive breakpoints, print support)
+- **~130 lines of JavaScript** — switchTab, expandable sections, scroll reveal, renderHeatmap, selectCell, traceability engine, journey swimlane toggle, floating particles
+- **HTML skeleton** — sidebar with 10 tab buttons, hero section, and 10 panel containers with `{{PLACEHOLDER}}` markers
 
-/* ══════════════════════════ HERO — FUTURE UI STYLE ══════════════════════════ */
-.hero { margin-left: 250px; position: relative; overflow: hidden; }
-.hero-dark { background: #FAFAF8; padding: 0; position: relative; overflow: hidden; min-height: 90vh; display: flex; flex-direction: column; }
-.hero-dark::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: var(--border); z-index: 2; }
-.hero-dark-inner { max-width: 1360px; margin: 0 auto; padding: 80px 48px 0; display: grid; grid-template-columns: 1fr 520px; gap: 32px; align-items: start; flex: 1; position: relative; z-index: 3; }
-.hero-overline { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: var(--muted); margin-bottom: 28px; }
-.hero-content h1 { font-size: 5.5rem; font-weight: 900; letter-spacing: -4px; line-height: 0.92; margin-bottom: 0; color: #0F172A; }
-.hero-content h1 span { display: block; letter-spacing: -3px; color: #0F172A; }
-.hero-sub { color: var(--muted); font-size: 0.92rem; margin: 28px 0 32px; line-height: 1.7; max-width: 420px; }
-.hero-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 36px; }
-.hero-tag { display: inline-block; padding: 8px 18px; border-radius: 24px; font-size: 0.68rem; font-weight: 600; border: 1px solid #D1D5DB; color: #6B7280; background: transparent; transition: all 0.25s ease; letter-spacing: 0.3px; }
-.hero-tag:hover { border-color: #1A56FF; color: #1A56FF; }
-.hero-alert { padding: 18px 22px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 16px; font-size: 0.84rem; color: #6B7280; line-height: 1.7; }
-.hero-alert strong { color: #DC2626; }
-.hero-visual { position: relative; overflow: hidden; border-radius: 24px 24px 0 0; height: 100%; min-height: 520px; }
-.hero-visual-img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; display: block; border-radius: 24px 24px 0 0; }
-.hero-float { position: absolute; z-index: 3; background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.6); border-radius: 14px; padding: 12px 18px; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-.hero-float:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
-.hero-float-val { font-size: 1.2rem; font-weight: 800; color: #0F172A; line-height: 1.2; }
-.hero-float-lbl { font-size: 0.56rem; color: #6B7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-top: 3px; }
-.hero-stats-strip { background: #FFFFFF; border-bottom: 1px solid var(--border); padding: 0; }
-.hero-stats-inner { max-width: 1360px; margin: 0 auto; padding: 0 48px; display: grid; grid-template-columns: repeat(5, 1fr); }
-.hero-stat { text-align: center; padding: 32px 16px; position: relative; transition: background 0.2s ease; }
-.hero-stat:hover { background: #F8FAFC; }
-.hero-stat:not(:last-child)::after { content: ''; position: absolute; right: 0; top: 20%; height: 60%; width: 1px; background: var(--border); }
-.hero-stat-val { font-size: 2rem; font-weight: 900; line-height: 1.1; transition: transform 0.3s ease; letter-spacing: -1px; }
-.hero-stat:hover .hero-stat-val { transform: scale(1.08); }
-.hero-stat-lbl { font-size: 0.58rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 6px; font-weight: 600; }
+**Clone this file's content as your output HTML.** Then replace the `{{PLACEHOLDER}}` markers with engagement-specific content built using the Component Registry below.
 
-/* ── Bento Grid System ── */
-.bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 180px; gap: 16px; margin-bottom: 48px; }
-.bento-item { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; overflow: hidden; position: relative; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); }
-.bento-item:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
-.bento-2x1 { grid-column: span 2; } .bento-1x2 { grid-row: span 2; }
-.bento-2x2 { grid-column: span 2; grid-row: span 2; }
-.bento-stat { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-.bento-stat-val { font-size: 3rem; font-weight: 900; letter-spacing: -2px; line-height: 1; }
-.bento-stat-lbl { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; font-weight: 600; }
-.bento-dark { background: #0F172A; border-color: #1E293B; color: #FFFFFF; }
-.bento-dark .bento-stat-lbl { color: rgba(255,255,255,0.4); }
-.bento-accent { background: linear-gradient(135deg, #1A56FF, #3B82F6); border: none; color: #FFFFFF; }
-.bento-accent .bento-stat-lbl { color: rgba(255,255,255,0.6); }
-
-/* ── Dark Feature Section (Future UI style) ── */
-.dark-feature { background: #0B0F1A; border-radius: 28px; padding: 72px 56px; margin: 56px 0; position: relative; overflow: hidden; }
-.dark-feature::before { content: ''; position: absolute; top: -120px; right: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(26,86,255,0.12) 0%, transparent 70%); pointer-events: none; }
-.dark-feature::after { content: ''; position: absolute; bottom: -100px; left: -60px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(123,47,255,0.08) 0%, transparent 70%); pointer-events: none; }
-.dark-feature-overline { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: #1A56FF; margin-bottom: 16px; }
-.dark-feature h3 { font-size: 2.8rem; font-weight: 900; letter-spacing: -2px; line-height: 1.05; color: #FFFFFF; margin-bottom: 12px; }
-.dark-feature h3 span { background: linear-gradient(135deg, #1A56FF, #7B61FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.dark-feature-sub { color: rgba(255,255,255,0.4); font-size: 0.9rem; max-width: 520px; line-height: 1.7; margin-bottom: 48px; }
-.dark-feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.dark-feature-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 32px 28px; transition: all 0.35s ease; position: relative; overflow: hidden; }
-.dark-feature-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(26,86,255,0.25); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
-.dark-feature-card h4 { font-size: 1rem; font-weight: 700; color: #FFFFFF; margin-bottom: 8px; letter-spacing: -0.3px; }
-.dark-feature-card p { font-size: 0.78rem; color: rgba(255,255,255,0.4); line-height: 1.6; }
-
-/* ── Cards ── */
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; box-shadow: var(--shadow-sm); transition: all 0.35s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; }
-.card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); transform: translateY(-3px); }
-.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #1A56FF, #7B2FFF, #1A56FF); transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease; opacity: 0.7; }
-.card:hover::before { transform: scaleX(1); }
-.card-grid { display: grid; gap: 16px; }
-.card-grid-2 { grid-template-columns: repeat(2, 1fr); }
-.card-grid-3 { grid-template-columns: repeat(3, 1fr); }
-.card-grid-4 { grid-template-columns: repeat(4, 1fr); }
-
-/* ── Metric Cards (dark) ── */
-.metric-card { background: #0F172A; border: 1px solid #1E293B; border-radius: 20px; padding: 28px 20px; text-align: center; transition: all 0.35s ease; position: relative; overflow: hidden; }
-.metric-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(26,86,255,0.08); border-color: rgba(26,86,255,0.15); }
-.metric-val { font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 6px; letter-spacing: -1px; color: #FFFFFF; transition: transform 0.3s ease; }
-.metric-card:hover .metric-val { transform: scale(1.05); }
-.metric-lbl { font-size: 0.65rem; color: rgba(255,255,255,0.35); line-height: 1.4; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
-
-/* ── Persona Cards ── */
-.persona-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; cursor: pointer; transition: all 0.35s ease; }
-.persona-card:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.08); transform: translateY(-4px); }
-.persona-header { padding: 24px 28px; display: flex; align-items: center; gap: 18px; transition: background 0.3s ease; }
-.persona-card:hover .persona-header { background: rgba(26,86,255,0.02); }
-.persona-avatar { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; color: #fff; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: box-shadow 0.3s ease, transform 0.3s ease; }
-.persona-card:hover .persona-avatar { box-shadow: 0 6px 20px rgba(0,0,0,0.25); transform: scale(1.08); }
-.persona-name { font-weight: 800; font-size: 1rem; letter-spacing: -0.2px; }
-.persona-role { font-size: 0.75rem; color: var(--muted); font-weight: 600; }
-.persona-body { padding: 0 28px 24px; display: none; }
-.persona-card.open .persona-body { display: block; }
-.expand-hint { font-size: 0.68rem; color: var(--accent); font-weight: 700; padding: 0 28px 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-.persona-card.open .expand-hint { display: none; }
-
-/* ── Expandable Sections ── */
-.expandable { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 12px; background: var(--card); transition: all 0.35s ease; }
-.expandable:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.05); border-color: rgba(26,86,255,0.15); }
-.expand-header { padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.25s ease; font-weight: 700; font-size: 0.9rem; }
-.expand-header:hover { background: #F8FAFC; }
-.expand-arrow { transition: transform 0.3s; font-size: 0.8rem; color: var(--muted); }
-.expandable.open .expand-arrow { transform: rotate(180deg); }
-.expandable.open { border-color: rgba(26,86,255,0.2); box-shadow: 0 4px 16px rgba(26,86,255,0.06); }
-.expand-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s ease; }
-.expandable.open .expand-body { max-height: 2000px; }
-.expand-content { padding: 0 24px 24px; }
-.expand-content p, .expand-content li { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
-
-/* ── Score Badges ── */
-.score-badge { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; color: #fff; transition: transform 0.2s ease, box-shadow 0.2s ease; }
-.score-badge:hover { transform: scale(1.15); }
-.score-badge.s0 { background: var(--L0); } .score-badge.s1 { background: var(--L1); }
-.score-badge.s2 { background: var(--L2); } .score-badge.s3 { background: var(--L3); }
-.score-badge.s4 { background: var(--L4); }
-.score-bar { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; }
-.score-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
-
-/* ── Heatmap Grid (Capability Map) ── */
-.heatmap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-.hm-cell { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
-.hm-cell:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.08); }
-.hm-cell.selected { outline: 2px solid var(--accent); outline-offset: -1px; box-shadow: 0 0 0 4px rgba(26,86,255,0.1); }
-.hm-cell .hm-score { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-weight: 900; font-size: 0.95rem; color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: transform 0.3s ease; }
-.hm-cell:hover .hm-score { transform: scale(1.15); }
-.hm-cell .hm-id { font-size: 0.62rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-.hm-cell .hm-name { font-size: 0.72rem; font-weight: 700; color: var(--text); margin-top: 4px; line-height: 1.3; }
-.hm-detail-panel { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin-top: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); display: none; }
-.hm-detail-panel.visible { display: block; }
-
-/* ── Timeline (Roadmap) ── */
-.timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; position: relative; }
-.timeline::before { content: ''; position: absolute; top: 40px; left: 5%; right: 5%; height: 3px; background: linear-gradient(90deg, var(--L1), var(--L2), var(--L3), var(--L4)); border-radius: 2px; z-index: 0; }
-.timeline-phase { position: relative; z-index: 1; }
-.phase-dot { width: 28px; height: 28px; border-radius: 50%; border: 3px solid; margin: 0 auto 16px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: box-shadow 0.3s ease, transform 0.3s ease; }
-.timeline-phase:hover .phase-dot { transform: scale(1.3); }
-.phase-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.35s ease; overflow: hidden; position: relative; }
-.phase-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-3px); }
-.phase-card h4 { font-size: 0.92rem; margin-bottom: 4px; font-weight: 800; letter-spacing: -0.2px; }
-.phase-card .phase-time { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
-.phase-card .phase-cost { font-size: 0.88rem; font-weight: 800; color: var(--accent); margin-top: 8px; }
-.phase-items { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
-.phase-card.open .phase-items { display: block; }
-.phase-items li { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; padding-left: 16px; position: relative; line-height: 1.5; }
-.phase-items li::before { content: ''; position: absolute; left: 0; top: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-
-/* ── Phone Frame Prototypes ── */
-.proto-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
-.phone-frame { width: 280px; height: 580px; margin: 0 auto; background: #0D1117; border-radius: 36px; padding: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05); position: relative; overflow: hidden; }
-.phone-frame::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 28px; background: #0D1117; border-radius: 0 0 16px 16px; z-index: 10; }
-.phone-screen { width: 100%; height: 100%; background: #FFFFFF; border-radius: 26px; overflow: hidden; position: relative; }
-
-/* ── Journey Rail ── */
-.journey-hero { background: linear-gradient(160deg, #0B0F1A 0%, #111827 50%, #0F172A 100%); border-radius: 28px; padding: 72px 56px; margin-bottom: 56px; position: relative; overflow: hidden; }
-.journey-hero::before { content: ''; position: absolute; top: -50%; right: -20%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(26,86,255,0.15) 0%, transparent 60%); pointer-events: none; }
-.journey-rail { position: relative; padding-left: 72px; }
-.journey-rail::before { content: ''; position: absolute; left: 29px; top: 0; bottom: 0; width: 3px; background: linear-gradient(to bottom, #1A56FF 0%, #059669 35%, #7B2FFF 70%, #EA580C 100%); border-radius: 2px; }
-.journey-stage { position: relative; margin-bottom: 0; padding-bottom: 48px; }
-.journey-stage:last-child { padding-bottom: 0; }
-.journey-node { position: absolute; left: -72px; top: 0; width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 900; color: #fff; z-index: 2; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
-.journey-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; transition: all 0.35s ease; }
-.journey-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
-
-/* ── Backbase Layer Tags ── */
-.bb-layer { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 6px 6px 0; }
-.bb-layer-engagement { background: rgba(26,86,255,0.08); color: #1A56FF; border: 1px solid rgba(26,86,255,0.15); }
-.bb-layer-orchestration { background: rgba(5,150,105,0.08); color: #059669; border: 1px solid rgba(5,150,105,0.15); }
-.bb-layer-intelligence { background: rgba(123,47,255,0.08); color: #7B2FFF; border: 1px solid rgba(123,47,255,0.15); }
-.bb-layer-ai { background: rgba(234,88,12,0.08); color: #EA580C; border: 1px solid rgba(234,88,12,0.15); }
-.bb-layer-integration { background: rgba(100,116,139,0.08); color: #64748B; border: 1px solid rgba(100,116,139,0.15); }
-
-/* ── Use Case Cards ── */
-.uc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-.uc-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; cursor: pointer; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); position: relative; }
-.uc-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #1A56FF, #3B82F6); opacity: 0; transition: opacity 0.3s ease; }
-.uc-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
-.uc-card:hover::before { opacity: 1; }
-
-/* ── ROI Dashboard ── */
-.roi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px; }
-.roi-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; transition: all 0.3s ease; }
-.roi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(26,86,255,0.08); }
-.roi-card-val { font-size: 1.8rem; font-weight: 800; color: var(--accent); transition: transform 0.3s ease; }
-.roi-card:hover .roi-card-val { transform: scale(1.06); }
-.roi-card-lbl { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
-
-/* ── Scenario Toggle ── */
-.scenario-toggle { display: inline-flex; background: #F1F5F9; border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 24px; }
-.scenario-btn { padding: 8px 20px; border-radius: 8px; border: none; font-size: 0.82rem; font-weight: 700; cursor: pointer; background: none; color: var(--muted); transition: var(--transition); font-family: inherit; }
-.scenario-btn.active { background: #fff; color: var(--accent); box-shadow: var(--shadow-sm); }
-
-/* ── Confidence Badges ── */
-.conf-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; }
-.conf-high { background: #D1FAE5; color: #059669; }
-.conf-medium { background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #B45309; }
-.conf-low { background: #FEF2F2; color: #DC2626; }
-
-/* ── Scroll Reveal ── */
-.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
-.reveal.visible { opacity: 1; transform: translateY(0); }
-
-/* ── Traceability Highlight ── */
-[data-trace-id] { cursor: pointer; transition: outline 0.2s ease, box-shadow 0.2s ease; }
-.trace-highlight { outline: 2px solid #1A56FF !important; outline-offset: 2px; box-shadow: 0 0 12px rgba(26,86,255,0.2) !important; }
-
-/* ── Custom Scrollbar ── */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(26,86,255,0.15); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(26,86,255,0.3); }
-.sidebar::-webkit-scrollbar { width: 4px; }
-.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-::selection { background: rgba(26,86,255,0.12); color: inherit; }
-
-/* ══════════════════════════ JOURNEY SWIMLANE ══════════════════════════ */
-.journey-swimlane { background: #0F172A; border-radius: 20px; padding: 32px; margin: 24px 0; overflow-x: auto; }
-.journey-swimlane-title { font-size: 1.1rem; font-weight: 800; color: #FFFFFF; margin-bottom: 4px; letter-spacing: -0.3px; }
-.journey-swimlane-sub { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-bottom: 24px; }
-.swimlane-grid { display: grid; gap: 1px; background: rgba(255,255,255,0.06); border-radius: 12px; overflow: hidden; }
-.swimlane-header { background: rgba(255,255,255,0.08); padding: 10px 14px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.55); text-align: center; }
-.swimlane-actor { background: rgba(26,86,255,0.1); padding: 12px 14px; font-size: 0.72rem; font-weight: 700; color: #60A5FA; display: flex; align-items: center; }
-.swimlane-cell { background: rgba(255,255,255,0.03); padding: 12px 14px; font-size: 0.78rem; color: rgba(255,255,255,0.75); line-height: 1.5; min-height: 60px; transition: background 0.2s ease; }
-.swimlane-cell:hover { background: rgba(255,255,255,0.06); }
-.swimlane-cell.friction-critical { border-top: 3px solid #DC2626; }
-.swimlane-cell.friction-high { border-top: 3px solid #EA580C; }
-.swimlane-cell.friction-moderate { border-top: 3px solid #F59E0B; }
-.swimlane-cell.friction-minor { border-top: 3px solid #34D399; }
-.swimlane-time { font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
-.swimlane-systems { font-size: 0.6rem; color: rgba(255,255,255,0.3); font-style: italic; margin-top: 2px; }
-.swimlane-value-lost { font-size: 0.72rem; font-weight: 800; color: #DC2626; margin-top: 6px; }
-.swimlane-toggle-group { display: inline-flex; background: rgba(255,255,255,0.06); border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 20px; }
-.swimlane-toggle-btn { padding: 8px 20px; border-radius: 8px; border: none; font-size: 0.78rem; font-weight: 700; cursor: pointer; background: none; color: rgba(255,255,255,0.5); transition: all 0.25s ease; font-family: inherit; }
-.swimlane-toggle-btn.active-current { background: rgba(220,38,38,0.15); color: #DC2626; }
-.swimlane-toggle-btn.active-future { background: rgba(52,211,153,0.15); color: #34D399; }
-.swimlane-panel { display: none; }
-.swimlane-panel.active { display: block; }
-
-/* ══════════════════════════ FRICTION CALLOUT CARDS ══════════════════════════ */
-.friction-callout { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin-bottom: 16px; position: relative; overflow: hidden; transition: all 0.35s ease; }
-.friction-callout:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); transform: translateY(-3px); }
-.friction-callout.severity-critical::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #DC2626, #EF4444); }
-.friction-callout.severity-high::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #EA580C, #FB923C); }
-.friction-callout.severity-moderate::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #F59E0B, #FBBF24); }
-.friction-callout-rank { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 6px; }
-.friction-callout-title { font-size: 1.05rem; font-weight: 800; color: var(--text); margin-bottom: 8px; letter-spacing: -0.3px; }
-.friction-callout-impact { font-size: 1.8rem; font-weight: 900; color: #DC2626; line-height: 1.1; margin-bottom: 12px; letter-spacing: -1px; }
-.friction-callout-quote { font-size: 0.85rem; font-style: italic; color: var(--muted); line-height: 1.7; padding: 12px 16px; border-left: 3px solid var(--border); margin-bottom: 14px; background: #F8FAFC; border-radius: 0 8px 8px 0; }
-.friction-callout-fix { font-size: 0.82rem; color: #059669; font-weight: 600; line-height: 1.6; }
-.friction-callout-fix strong { color: #047857; }
-.friction-callout-meta { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
-.friction-callout-tag { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 6px; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(26,86,255,0.06); color: var(--accent); border: 1px solid rgba(26,86,255,0.12); }
-
-/* ══════════════════════════ VALUE LEAKAGE WATERFALL ══════════════════════════ */
-.waterfall-container { background: #0F172A; border-radius: 20px; padding: 32px; margin: 24px 0; }
-.waterfall-title { font-size: 1.1rem; font-weight: 800; color: #FFFFFF; margin-bottom: 4px; letter-spacing: -0.3px; }
-.waterfall-sub { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-bottom: 24px; }
-.waterfall-bar-row { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
-.waterfall-label { min-width: 140px; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); text-align: right; }
-.waterfall-bar-track { flex: 1; height: 28px; background: rgba(255,255,255,0.04); border-radius: 6px; overflow: hidden; display: flex; position: relative; }
-.waterfall-bar-remaining { background: linear-gradient(90deg, #1A56FF, #3B82F6); height: 100%; transition: width 0.8s ease; border-radius: 6px 0 0 6px; }
-.waterfall-bar-leaked { background: linear-gradient(90deg, #DC2626, #EF4444); height: 100%; transition: width 0.8s ease; }
-.waterfall-value { min-width: 90px; font-size: 0.72rem; font-weight: 700; color: #DC2626; }
-.waterfall-cumulative { font-size: 0.82rem; font-weight: 800; color: #DC2626; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); text-align: right; }
-.waterfall-cumulative span { color: rgba(255,255,255,0.55); font-weight: 600; }
-
-/* ── Animations ── */
-@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes floatParticle { 0%,100% { transform: translateY(0) translateX(0); } 25% { transform: translateY(-20px) translateX(10px); } 50% { transform: translateY(-10px) translateX(-5px); } 75% { transform: translateY(-30px) translateX(15px); } }
-.bg-particle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; opacity: 0.04; animation: floatParticle 20s ease-in-out infinite; }
-
-/* ── Print Support ── */
-@media print {
-  .sidebar { display: none; }
-  .hero { margin-left: 0; }
-  .wrap { margin-left: 0; }
-  .panel { display: block !important; opacity: 1 !important; transform: none !important; page-break-inside: avoid; }
-  .expand-body { max-height: none !important; }
-  body { font-size: 11px; }
-}
-
-/* ── Responsive ── */
-@media (max-width: 1100px) {
-  .sidebar { width: 200px; }
-  .wrap { margin-left: 210px; }
-  .hero { margin-left: 200px; }
-  .hero-dark-inner { grid-template-columns: 1fr 360px; gap: 24px; padding: 60px 32px 0; }
-  .hero-content h1 { font-size: 3.8rem; letter-spacing: -3px; }
-  .bento { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 900px) {
-  .sidebar { width: 60px; overflow: hidden; }
-  .sidebar-brand-title, .sidebar-brand-sub, .sidebar-brand-logo, .tab-btn .tab-label, .sidebar-footer, .sidebar-divider { display: none; }
-  .tab-btn { padding: 14px 0; justify-content: center; gap: 0; border-left: none; }
-  .tab-btn .tab-num { width: 32px; height: 32px; font-size: 0.7rem; border-radius: 8px; }
-  .wrap { margin-left: 70px; }
-  .hero { margin-left: 60px; }
-  .hero-dark-inner { grid-template-columns: 1fr; padding: 40px 24px 0; }
-  .hero-content h1 { font-size: 3rem; }
-  .bento { grid-template-columns: repeat(2, 1fr); }
-  .card-grid-3, .card-grid-4 { grid-template-columns: 1fr 1fr; }
-  .timeline { grid-template-columns: repeat(2, 1fr); }
-  .roi-grid { grid-template-columns: repeat(2, 1fr); }
-  .uc-grid { grid-template-columns: 1fr; }
-  .proto-grid { grid-template-columns: 1fr; }
-  .dark-feature-grid { grid-template-columns: 1fr 1fr; }
-  .dark-feature { padding: 48px 32px; }
-}
-@media (max-width: 600px) {
-  .sidebar { display: none; }
-  .wrap { margin-left: 0; padding: 0 16px 60px; }
-  .hero { margin-left: 0; }
-  .hero-content h1 { font-size: 1.8rem; letter-spacing: -1px; }
-  .hero-float { display: none; }
-  .card-grid-2, .card-grid-3, .card-grid-4 { grid-template-columns: 1fr; }
-  .bento { grid-template-columns: 1fr; grid-auto-rows: auto; }
-  .timeline { grid-template-columns: 1fr; }
-  .roi-grid { grid-template-columns: 1fr 1fr; }
-  .dark-feature-grid { grid-template-columns: 1fr; }
-  .dark-feature { padding: 36px 24px; margin: 32px 0; border-radius: 20px; }
-}
-```
+**Rules:**
+- **Do NOT modify the CSS.** Use the classes exactly as defined in the template.
+- **Do NOT write your own CSS.** Do NOT add `<style>` blocks. Do NOT add inline styles that override the design system.
+- **Do NOT add new colors.** The color palette is defined in `:root` CSS custom properties.
+- **Do NOT modify the JavaScript functions.** You MAY add inline `<script>` blocks after the main `<script>` to populate heatmap data arrays and call `renderHeatmap()`.
+- **Do NOT change the page background.** It MUST remain `var(--bg)` which is `#F8FAFC` (light).
 
 ---
 
-## HTML Structure Template
+<!--
+  REMOVED: The CSS, HTML Structure, and JavaScript sections that were previously here
+  have been moved to the template file (templates/presentations/assessment-dashboard-template.html).
+  This prevents the model from paraphrasing CSS and ensures exact reproduction.
 
-Use this parameterized skeleton. Replace all `{{PLACEHOLDER}}` markers with engagement-specific content.
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{CLIENT_NAME}} 7-Act Consolidated Assessment — Interactive Report</title>
-<style>
-/* [Insert full CSS from the CSS Design System section above] */
-</style>
-</head>
-<body>
-
-<!-- LEFT SIDEBAR NAVIGATION -->
-<nav class="sidebar">
-  <div class="sidebar-brand">
-    <div class="sidebar-brand-logo">Backbase</div>
-    <div class="sidebar-brand-title">{{CLIENT_NAME}} Assessment</div>
-    <div class="sidebar-brand-sub">{{REPORT_SUBTITLE}}</div>
-  </div>
-  <div class="sidebar-nav">
-    <button class="tab-btn active" data-tab="exec" onclick="switchTab('exec')">
-      <span class="tab-num" style="background:rgba(255,255,255,0.15);">&#9670;</span>
-      <span class="tab-label">Executive Summary</span>
-    </button>
-    <div class="sidebar-divider"></div>
-    <button class="tab-btn" data-tab="act1" onclick="switchTab('act1')"><span class="tab-num">1</span><span class="tab-label">Strategic Alignment</span></button>
-    <button class="tab-btn" data-tab="act2" onclick="switchTab('act2')"><span class="tab-num">2</span><span class="tab-label">The Vision</span></button>
-    <button class="tab-btn" data-tab="act3" onclick="switchTab('act3')"><span class="tab-num">3</span><span class="tab-label">The Lighthouse</span></button>
-    <button class="tab-btn" data-tab="act4" onclick="switchTab('act4')"><span class="tab-num">4</span><span class="tab-label">Deep-Dive</span></button>
-    <button class="tab-btn" data-tab="act5" onclick="switchTab('act5')"><span class="tab-num">5</span><span class="tab-label">Capability Map</span></button>
-    <button class="tab-btn" data-tab="act6" onclick="switchTab('act6')"><span class="tab-num">6</span><span class="tab-label">Roadmap</span></button>
-    <button class="tab-btn" data-tab="act7" onclick="switchTab('act7')"><span class="tab-num">7</span><span class="tab-label">Benefits Case</span></button>
-    <div class="sidebar-divider"></div>
-    <button class="tab-btn" data-tab="journey" onclick="switchTab('journey')"><span class="tab-num" style="background:rgba(5,150,105,0.15);color:rgba(52,211,153,0.8);">&#10140;</span><span class="tab-label">Future Journey</span></button>
-    <button class="tab-btn" data-tab="usecases" onclick="switchTab('usecases')"><span class="tab-num" style="background:rgba(123,47,255,0.15);color:rgba(167,139,250,0.8);">&#9733;</span><span class="tab-label">Use Cases</span></button>
-  </div>
-  <div class="sidebar-footer">
-    <div class="sidebar-footer-text">Prepared by Backbase Value Consulting<br>{{ASSESSMENT_DATE}} | Confidential</div>
-  </div>
-</nav>
-
-<!-- HERO SECTION -->
-<section class="hero">
-  <div class="hero-dark">
-    <div class="hero-dark-inner">
-      <div class="hero-content">
-        <div class="hero-overline">Value Consulting Assessment &bull; {{ASSESSMENT_DATE}}</div>
-        <h1>{{HERO_H1}}</h1>
-        <p class="hero-sub">{{HERO_SUBTITLE}}</p>
-        <div class="hero-tags">{{HERO_TAGS}}</div>
-        <div class="hero-alert">{{HERO_ALERT}}</div>
-      </div>
-      <div class="hero-visual">
-        <img class="hero-visual-img" src="{{HERO_IMAGE_URL}}" alt="Assessment Visual" loading="eager">
-        {{HERO_FLOATS}}
-      </div>
-    </div>
-  </div>
-  <div class="hero-stats-strip">
-    <div class="hero-stats-inner">{{HERO_STATS}}</div>
-  </div>
-</section>
-
-<!-- MAIN CONTENT -->
-<div class="wrap">
-  <div class="panel active" id="panel-exec">{{EXEC_CONTENT}}</div>
-  <div class="panel" id="panel-act1">{{ACT_1_CONTENT}}</div>
-  <div class="panel" id="panel-act2">{{ACT_2_CONTENT}}</div>
-  <div class="panel" id="panel-act3">{{ACT_3_CONTENT}}</div>
-  <div class="panel" id="panel-act4">{{ACT_4_CONTENT}}</div>
-  <div class="panel" id="panel-act5">{{ACT_5_CONTENT}}</div>
-  <div class="panel" id="panel-act6">{{ACT_6_CONTENT}}</div>
-  <div class="panel" id="panel-act7">{{ACT_7_CONTENT}}</div>
-  <div class="panel" id="panel-journey">{{JOURNEY_CONTENT}}</div>
-  <div class="panel" id="panel-usecases">{{USECASES_CONTENT}}</div>
-</div>
-
-<script>
-/* [Insert full JavaScript from the JavaScript section below] */
-</script>
-</body>
-</html>
-```
-
----
-
-## JavaScript
-
-Include this JavaScript verbatim in the `<script>` tag.
-
-```javascript
-/* ── TAB SWITCHING ── */
-function switchTab(id) {
-  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
-  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
-  document.querySelector('[data-tab="'+id+'"]').classList.add('active');
-  var panel = document.getElementById('panel-'+id);
-  panel.classList.add('active');
-  document.querySelectorAll('.section-divider').forEach(function(d){ d.style.display = 'none'; });
-  window.scrollTo({top: 0, behavior:'smooth'});
-  setTimeout(function(){
-    panel.querySelectorAll('.reveal').forEach(function(el){ el.classList.remove('visible'); });
-    setTimeout(function(){
-      panel.querySelectorAll('.reveal').forEach(function(el){
-        var rect = el.getBoundingClientRect();
-        if(rect.top < window.innerHeight) el.classList.add('visible');
-      });
-    }, 100);
-  }, 50);
-}
-
-/* ── EXPANDABLE SECTIONS ── */
-document.addEventListener('click', function(e) {
-  var header = e.target.closest('.expand-header');
-  if (header) { header.closest('.expandable').classList.toggle('open'); }
-  var persona = e.target.closest('.persona-card');
-  if (persona && !e.target.closest('a')) { persona.classList.toggle('open'); }
-  var phaseCard = e.target.closest('.phase-card');
-  if (phaseCard) { phaseCard.classList.toggle('open'); }
-  var ucCard = e.target.closest('.uc-card');
-  if (ucCard && !e.target.closest('a')) { ucCard.classList.toggle('open'); }
-});
-
-/* ── SCROLL REVEAL (IntersectionObserver) ── */
-(function initReveal(){
-  var els = document.querySelectorAll('.reveal, .card, .metric-card, .persona-card, .pillar-card, .expandable, .hm-cell, .uc-card, .uc-stat-card, .proto-wrap');
-  if(!('IntersectionObserver' in window)){ els.forEach(function(e){e.classList.add('visible');}); return; }
-  var io = new IntersectionObserver(function(entries){
-    entries.forEach(function(entry){
-      if(entry.isIntersecting){
-        entry.target.classList.add('visible');
-        entry.target.style.opacity='1';
-        entry.target.style.transform='translateY(0)';
-      }
-    });
-  }, {threshold: 0.05, rootMargin: '0px 0px -30px 0px'});
-  els.forEach(function(el){
-    if(!el.closest('.hero')){ el.style.opacity='0'; el.style.transform='translateY(30px)'; el.style.transition='opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1)'; io.observe(el); }
-  });
-})();
-
-/* ── CAPABILITY HEATMAP ENGINE ── */
-var scoreColors = ['#DC2626','#EA580C','#0891B2','#059669','#2563EB'];
-var scoreLabels = ['L0: Non-Existent','L1: Ad-Hoc','L2: Developing','L3: Defined','L4: Optimized'];
-
-function renderHeatmap(containerId, caps) {
-  var container = document.getElementById(containerId);
-  if (!container || !caps) return;
-  var html = '';
-  caps.forEach(function(c, i) {
-    html += '<div class="hm-cell" data-idx="'+i+'" onclick="selectCell(this,\''+containerId+'\','+i+')">';
-    html += '<div class="hm-score" style="background:'+scoreColors[c.score]+';">'+c.score+'</div>';
-    html += '<div class="hm-id">'+c.id+'</div>';
-    html += '<div class="hm-name">'+c.name+'</div>';
-    html += '</div>';
-  });
-  container.innerHTML = html;
-}
-
-function selectCell(el, src, idx) {
-  document.querySelectorAll('.hm-cell').forEach(function(c){ c.classList.remove('selected'); });
-  el.classList.add('selected');
-  var allCaps = window['caps_'+src] || [];
-  var cap = allCaps[idx];
-  if (!cap) return;
-  var panel = document.getElementById('hm-detail');
-  var content = document.getElementById('hm-detail-content');
-  content.innerHTML = '<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">'+
-    '<div class="score-badge s'+cap.score+'">'+cap.score+'</div>'+
-    '<div><strong style="font-size:1.05rem;">'+cap.id+': '+cap.name+'</strong>'+
-    '<div style="font-size:0.8rem;color:var(--muted);">Domain: '+cap.domain+' | Score: '+scoreLabels[cap.score]+'</div></div></div>'+
-    '<div style="margin-top:8px;"><div class="score-bar" style="width:100%;max-width:300px;"><div class="score-bar-fill" style="width:'+(cap.score/4*100)+'%;background:'+scoreColors[cap.score]+';"></div></div></div>';
-  panel.classList.add('visible');
-  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
-}
-
-/* ── TRACEABILITY ENGINE ── */
-document.addEventListener('mouseover', function(e) {
-  var traced = e.target.closest('[data-trace-id]');
-  if (traced) {
-    var traceId = traced.getAttribute('data-trace-id');
-    document.querySelectorAll('[data-trace-id="'+traceId+'"]').forEach(function(el){
-      el.classList.add('trace-highlight');
-    });
-  }
-});
-document.addEventListener('mouseout', function(e) {
-  var traced = e.target.closest('[data-trace-id]');
-  if (traced) {
-    document.querySelectorAll('.trace-highlight').forEach(function(el){
-      el.classList.remove('trace-highlight');
-    });
-  }
-});
-
-/* ── JOURNEY SWIMLANE TOGGLE (Before/After) ── */
-function toggleJourney(journeyId, state, btn) {
-  var container = document.getElementById('journey-' + journeyId);
-  if (!container) return;
-  container.querySelectorAll('.swimlane-panel').forEach(function(p) { p.classList.remove('active'); });
-  container.querySelector('.swimlane-panel[data-state="' + state + '"]').classList.add('active');
-  container.querySelectorAll('.swimlane-toggle-btn').forEach(function(b) {
-    b.classList.remove('active-current', 'active-future');
-  });
-  btn.classList.add(state === 'current' ? 'active-current' : 'active-future');
-}
-
-/* ── FLOATING BACKGROUND PARTICLES ── */
-(function initParticles(){
-  var colors = ['rgba(26,86,255,0.08)','rgba(123,47,255,0.06)','rgba(5,150,105,0.05)'];
-  for(var i=0;i<6;i++){
-    var p = document.createElement('div');
-    p.className = 'bg-particle';
-    p.style.width = (6+Math.random()*12)+'px';
-    p.style.height = p.style.width;
-    p.style.left = (10+Math.random()*80)+'%';
-    p.style.top = (10+Math.random()*80)+'%';
-    p.style.background = colors[i%3];
-    p.style.animationDelay = (Math.random()*10)+'s';
-    p.style.animationDuration = (15+Math.random()*15)+'s';
-    document.body.appendChild(p);
-  }
-})();
-```
-
----
+  The template file is the SINGLE SOURCE OF TRUTH for design.
+  The skill file below contains the COMPONENT REGISTRY (how to build panel content)
+  and the GENERATION PROCESS (step-by-step instructions).
+-->
 
 ## Component Registry
 
@@ -865,6 +308,119 @@ renderHeatmap('hm-{{BL}}', caps_hm_{{BL}});
 </div>
 ```
 
+### 5.15 Journey Experience Map (Act 4 — holistic emotion curve from `journey_maps.json`)
+
+This component renders the holistic journey experience map: headline insight cards, an SVG emotion curve with clickable stage markers, and expandable detail panels per stage. It is the visual centerpiece of Act 4 — the first thing the viewer sees before drilling into individual journey swimlanes.
+
+**When to render:** If `journey_maps.json` contains a `journey_experience` section, render this component at the TOP of Act 4, before any per-journey swimlane content.
+
+```html
+<div class="jx reveal">
+  <!-- Headline Insights (exactly 3) -->
+  <div class="jx-headlines">
+    <div class="jx-hl {{SEVERITY}}">
+      <div class="jx-hl-icon" style="background:{{ICON_BG}};color:{{ICON_COLOR}};">{{ICON}}</div>
+      <div>
+        <div class="jx-hl-stat" style="color:{{STAT_COLOR}};">{{STAT}}</div>
+        <div class="jx-hl-text">{{DESCRIPTION}}</div>
+      </div>
+    </div>
+    <!-- Repeat for all 3 insights -->
+  </div>
+
+  <!-- SVG Emotion Curve Map -->
+  <div class="jx-map">
+    <svg viewBox="0 0 {{VIEWBOX_WIDTH}} {{VIEWBOX_HEIGHT}}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="emoGrad" x1="0" y1="0" x2="1" y2="0">
+          <!-- Gradient stops derived from stage scores: green(high) → red(low) → purple(pending) -->
+          <stop offset="{{OFFSET}}%" stop-color="{{COLOR}}"/>
+        </linearGradient>
+        <linearGradient id="areaFill" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="{{OFFSET}}%" stop-color="{{COLOR}}" stop-opacity="{{OPACITY}}"/>
+        </linearGradient>
+        <filter id="glw"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+
+      <!-- Zone boundary (if stages span multiple zones) -->
+      <line x1="{{ZONE_X}}" y1="24" x2="{{ZONE_X}}" y2="170" stroke="rgba(0,0,0,0.06)" stroke-width="1" stroke-dasharray="3,4"/>
+      <text x="{{ZONE_1_CENTER}}" y="18" text-anchor="middle" fill="rgba(37,99,235,0.25)" font-size="8" font-weight="700" letter-spacing="2.5">{{ZONE_1_LABEL}}</text>
+      <text x="{{ZONE_2_CENTER}}" y="18" text-anchor="middle" fill="rgba(190,24,93,0.25)" font-size="8" font-weight="700" letter-spacing="2.5">{{ZONE_2_LABEL}}</text>
+
+      <!-- Subtle grid lines -->
+      <line x1="60" y1="55" x2="960" y2="55" stroke="rgba(0,0,0,0.025)" stroke-width="1"/>
+      <line x1="60" y1="100" x2="960" y2="100" stroke="rgba(0,0,0,0.025)" stroke-width="1"/>
+      <line x1="60" y1="145" x2="960" y2="145" stroke="rgba(0,0,0,0.025)" stroke-width="1"/>
+      <text x="28" y="38" fill="rgba(0,0,0,0.12)" font-size="7.5" font-weight="600">Great</text>
+      <text x="30" y="168" fill="rgba(0,0,0,0.12)" font-size="7.5" font-weight="600">Poor</text>
+
+      <!-- Area fill under curve -->
+      <path d="{{AREA_PATH}}" fill="url(#areaFill)"/>
+      <!-- Glow layer -->
+      <path d="{{CURVE_PATH}}" fill="none" stroke="url(#emoGrad)" stroke-width="10" stroke-linecap="round" opacity="0.08"/>
+      <!-- Main emotion curve -->
+      <path d="{{CURVE_PATH}}" fill="none" stroke="url(#emoGrad)" stroke-width="3" stroke-linecap="round" filter="url(#glw)"/>
+      <!-- Pending dashed extension (if pending stages exist) -->
+      <path d="{{PENDING_PATH}}" fill="none" stroke="rgba(124,58,237,0.25)" stroke-width="2" stroke-dasharray="6,4" stroke-linecap="round"/>
+
+      <!-- Stage markers (one per stage) -->
+      <g class="jx-marker {{ACTIVE_IF_FIRST}}" data-stage="{{STAGE_ID}}" onclick="showStage({{STAGE_ID}})">
+        <rect x="{{HIT_X}}" y="24" width="60" height="195" fill="transparent"/>
+        <circle class="halo" cx="{{CX}}" cy="{{CY}}" r="18" fill="{{HALO_COLOR}}"/>
+        <!-- Mapped stages: solid dot r=5. Pending stages: dashed outline r=4 -->
+        <circle class="dot" cx="{{CX}}" cy="{{CY}}" r="{{DOT_R}}" fill="{{DOT_FILL}}" {{PENDING_STROKE}}/>
+        <text class="stage-label" x="{{CX}}" y="195" text-anchor="middle" fill="{{LABEL_COLOR}}" font-size="10" font-weight="700">{{STAGE_NAME}}</text>
+        <text x="{{CX}}" y="208" text-anchor="middle" fill="#94A3B8" font-size="7.5" font-weight="500">{{STAGE_SUBTITLE}}</text>
+      </g>
+
+      <!-- Score labels near dots (faint, unobtrusive) -->
+      <text x="{{CX}}" y="{{SCORE_Y}}" text-anchor="middle" fill="{{SCORE_COLOR}}" font-size="8" font-weight="700">{{SCORE}}</text>
+    </svg>
+  </div>
+
+  <!-- Detail Panels (one per stage, first is active) -->
+  <div class="jx-panel {{ACTIVE_IF_FIRST}}" id="jxp-{{STAGE_ID}}">
+    <div class="jx-panel-head">
+      <div style="height:4px;background:{{STAGE_GRADIENT}};position:absolute;top:0;left:0;right:0;"></div>
+      <div class="jx-panel-num" style="background:{{STAGE_GRADIENT}};">{{STAGE_ID}}</div>
+      <div class="jx-panel-meta"><h3>{{EVOCATIVE_TITLE}}</h3><p class="sub">{{EVOCATIVE_SUBTITLE}}</p></div>
+      <div class="jx-panel-score"><div class="sv" style="color:{{SCORE_COLOR}};">{{SCORE}}/10</div><div class="sl">Experience Score</div></div>
+    </div>
+    <div class="jx-narrative">{{NARRATIVE}}</div>
+    <div class="jx-pains">
+      <!-- Pain point cards -->
+      <div class="jx-pain {{SEVERITY}}" data-trace-id="{{PAIN_POINT_ID}}">
+        <span class="jx-sev {{SEVERITY}}">{{SEVERITY_ICON}} {{SEVERITY_LABEL}}</span>
+        <h5>{{PAIN_TITLE}}</h5>
+        <p>{{PAIN_DESCRIPTION}}</p>
+        <div class="jx-impact">{{IMPACT}}</div>
+      </div>
+      <!-- UF / transformation arc gap cards -->
+      <div class="jx-pain uf">
+        <span class="jx-sev uf">{{ARC_ICON}} {{TRANSFORMATION_ARC_NAME}}</span>
+        <h5>{{GAP_TITLE}}</h5>
+        <p>{{GAP_DESCRIPTION}}</p>
+        <div class="jx-impact">{{GAP_IMPACT}}</div>
+      </div>
+    </div>
+    <div class="jx-quote">
+      <p>"{{EVIDENCE_QUOTE}}"</p>
+      <div class="src">— {{ATTRIBUTION}}</div>
+    </div>
+  </div>
+  <!-- Repeat for each stage -->
+</div>
+```
+
+**SVG Generation Rules:**
+1. **Y-axis mapping:** Score 10 → y=35 (top), Score 1 → y=165 (bottom). Formula: `y = 200 - (score × 16.5)`
+2. **X-axis spacing:** Distribute stages evenly across the viewbox width (1000). First stage at x=80, last mapped stage at x=720. Pending stages continue to x=950.
+3. **Curve:** Use cubic bezier curves (C command) connecting the score points. The curve should feel organic, not angular.
+4. **Area fill:** Close the curve path downward to y=172 to create the area fill polygon.
+5. **Colors:** Map score to color — 8+: `#059669`, 5-7: `#7B2FFF`/`#D97706`, 3-4: `#EA580C`, 1-2: `#DC2626`. Pending: `#7C3AED`.
+6. **Dot sizes:** Normal stages r=5. Critical stages (lowest score) r=6. Pending stages r=4 with dashed stroke, no fill.
+7. **Score labels:** Faint numbers floating near dots. Use the score color at 40-55% opacity. Font size 8, weight 700.
+
 ### 5.14 Value Leakage Waterfall (Act 4 — per journey)
 ```html
 <div class="waterfall-container reveal">
@@ -892,7 +448,7 @@ renderHeatmap('hm-{{BL}}', caps_hm_{{BL}});
 | Act 1 — Strategic Alignment | Dark Feature, Expandable | Metric Cards (pain point counts) |
 | Act 2 — The Vision | Dark Feature, Cards | Bento Grid (vision stats) |
 | Act 3 — The Lighthouse | Persona Cards, Cards | Expandable (persona details) |
-| Act 4 — Deep-Dive | Journey Swimlane, Friction Callouts, Value Waterfall, Expandable, Persona Cards | Before/After Toggle, Metric Cards (deep-dive findings) |
+| Act 4 — Deep-Dive | **Journey Experience Map (5.15)**, Journey Swimlane, Friction Callouts, Value Waterfall, Expandable, Persona Cards | Before/After Toggle, Metric Cards (deep-dive findings) |
 | Act 5 — Capability Map | Heatmap, Score Badges | Expandable (gap details) |
 | Act 6 — Roadmap | Timeline, Cards | Metric Cards (investment summary) |
 | Act 7 — Benefits Case | ROI Levers, ROI Grid | Scenario Toggle, Bento Grid |
@@ -1030,16 +586,27 @@ Extract scores from assessment JSON. Generate JavaScript arrays per business lin
 ### Step 6: Build ROI Dashboard
 Extract lever data from ROI model. Generate 3 scenario datasets. Wire up scenario toggle.
 
-### Step 7: Build Journey Visualization
-If `journey_maps.json` exists: parse journey data and build per-journey swimlane components (5.12), friction callout cards (5.13), and value leakage waterfalls (5.14) for Act 4. Wire up the `toggleJourney()` function for before/after switching. Each journey gets its own swimlane container with a unique ID.
+### Step 7: Build Journey Visualization (Two Layers)
 
-If `journey_maps.json` does NOT exist: fall back to the existing Journey Rail (5.10) for future-state journey visualization with 5-7 stages, before/after, Backbase layers, metrics.
+**Layer 1 — Journey Experience Map (holistic):**
+If `journey_maps.json` contains a `journey_experience` section: render the Journey Experience Map (5.15) at the TOP of Act 4, before any per-journey content. This is the visual centerpiece — the SVG emotion curve with headline insights and clickable stage detail panels. Generate the SVG using the stage scores and the generation rules in Component 5.15.
+
+**Layer 2 — Per-Journey Swimlanes (individual):**
+If `journey_maps.json` contains a `journeys[]` array: parse journey data and build per-journey swimlane components (5.12), friction callout cards (5.13), and value leakage waterfalls (5.14) for Act 4. Wire up the `toggleJourney()` function for before/after switching. Each journey gets its own swimlane container with a unique ID. Place these BELOW the Journey Experience Map.
+
+**Layout within Act 4:**
+1. Section header (5.1)
+2. Journey Experience Map (5.15) — holistic emotion curve + stage panels
+3. Section divider
+4. Per-journey swimlanes (5.12) with friction callouts (5.13) and waterfalls (5.14)
+
+**Fallback:** If `journey_maps.json` does NOT exist: fall back to the existing Journey Rail (5.10) for future-state journey visualization with 5-7 stages, before/after, Backbase layers, metrics.
 
 ### Step 8: Build Phone Prototypes
 Top 3 use cases: phone-frame mockups with key screens.
 
 ### Step 9: Assemble
-Combine into HTML template. Replace all `{{PLACEHOLDER}}` markers. Save as `{engagement_code}_Consolidated_Assessment_Interactive.html`.
+Using the template file read in Step 0, replace all `{{PLACEHOLDER}}` markers with the content built in Steps 1-8. Do NOT rewrite the CSS or JS — use the template's CSS and JS exactly as-is. Save as `{engagement_code}_Consolidated_Assessment_Interactive.html`.
 
 ### Step 10: Validate
 Run through the Quality Checklist below.
@@ -1058,6 +625,10 @@ Run through the Quality Checklist below.
 - [ ] At least 3 phone-frame prototypes exist
 - [ ] Journey rail has all stages with before/after
 - [ ] Traceability: hover on pain point highlights linked capabilities
+- [ ] Journey Experience Map (5.15) renders at top of Act 4 with SVG emotion curve, 3 headline insights, and clickable stage panels (if `journey_experience` section exists in `journey_maps.json`)
+- [ ] SVG emotion curve has correct score-to-Y mapping, gradient stroke, area fill, and glow layer
+- [ ] All stage markers are clickable and reveal detail panels with narratives, pain points, and evidence quotes
+- [ ] Pending stages (if any) have dashed outlines and "?" score labels
 - [ ] Journey swimlanes render with all actors and friction color indicators (if `journey_maps.json` exists)
 - [ ] Value leakage waterfall shows running cumulative total per journey (if `journey_maps.json` exists)
 - [ ] Before/After toggle switches between current-state and future-state swimlane panels (if `journey_maps.json` exists)

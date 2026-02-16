@@ -93,7 +93,12 @@ The Migration Co-Pilot (or consultant) provides:
 6. **Questions** — Any account-specific context you're missing
 
 ### Format:
-Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## APPROVAL REQUIRED` heading.
+
+**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
+
+In Claude Code: Display the checkpoint content directly with a clear `## APPROVAL REQUIRED` heading. Then say "Please review and respond before I continue." Stop generating and wait.
+
+Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
 
 Example structure:
 ```
@@ -103,6 +108,8 @@ Example structure:
 [Your account assessment, play recommendation, positioning strategy, peer selection, ROI napkin parameters, and questions here]
 </checkpoint>
 ```
+
+**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step.**
 
 ### Rules:
 - NEVER produce deliverables before this checkpoint

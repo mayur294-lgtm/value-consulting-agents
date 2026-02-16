@@ -44,7 +44,12 @@ Before creating a roadmap, you must have or request:
 6. **Questions** — Client-specific timing constraints, political considerations, or executive preferences that should influence sequencing
 
 ### Format:
-Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## DECISION REQUIRED` heading. Show 2-3 phasing options with pros/cons for each.
+
+**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
+
+In Claude Code: Display the checkpoint content directly with a clear `## DECISION REQUIRED` heading. Show 2-3 phasing options with pros/cons for each. Then say "Please review and respond before I continue." Stop generating and wait.
+
+Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
 
 Example structure:
 ```
@@ -54,6 +59,8 @@ Example structure:
 [Your proposed phasing model, initiative grouping, Phase 1 candidates, sequencing trade-offs, capacity assumptions, and questions here]
 </checkpoint>
 ```
+
+**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step.**
 
 ### Rules:
 - NEVER produce the final roadmap before this checkpoint

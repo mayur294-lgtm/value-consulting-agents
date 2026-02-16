@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cortex Launch Day | Backbase Value Consulting</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bb-navy: #1A1F71;
+    --bb-dark: #0B0E2C;
+    --bb-cyan: #00D2FF;
+    --bb-orange: #FF6B35;
+    --bb-blue: #60A5FA;
+    --bb-green: #34D399;
+    --bb-red: #EF4444;
+    --bb-purple: #A78BFA;
+    --bb-white: #FFFFFF;
+    --bb-gray: #94A3B8;
+    --bb-card: rgba(255,255,255,0.06);
+    --bb-card-border: rgba(255,255,255,0.08);
+    --bb-glow-cyan: rgba(0, 210, 255, 0.3);
+    --bb-glow-orange: rgba(255, 107, 53, 0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bb-dark);
+    color: var(--bb-white);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* ===== BACKGROUND EFFECTS ===== */
+.bg-grid {
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.15;
+    z-index: 0;
+    pointer-events: none;
+    transition: all 2s ease;
+}
+.orb-1 { width: 600px; height: 600px; background: var(--bb-cyan); top: -200px; right: -200px; }
+.orb-2 { width: 500px; height: 500px; background: var(--bb-orange); bottom: -200px; left: -200px; }
+.orb-3 { width: 400px; height: 400px; background: var(--bb-navy); top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+/* ===== NAVIGATION ===== */
+.nav-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 260px;
+    background: rgba(11, 14, 44, 0.95);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--bb-card-border);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+}
+.nav-sidebar.open { transform: translateX(0); }
+.nav-sidebar::-webkit-scrollbar { width: 4px; }
+.nav-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.nav-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--bb-card-border);
+}
+.nav-logo {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--bb-cyan);
+}
+
+.nav-items { padding: 12px 0; flex: 1; }
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+.nav-item:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.03); }
+.nav-item.active {
+    color: var(--bb-cyan);
+    background: rgba(0, 210, 255, 0.05);
+    border-left-color: var(--bb-cyan);
+}
+.nav-item .nav-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.25);
+    min-width: 20px;
+}
+.nav-item.active .nav-num { color: var(--bb-cyan); }
+
+.nav-section-label {
+    padding: 16px 20px 6px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--bb-orange);
+}
+
+/* ===== TOP BAR ===== */
+.top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 90;
+    background: rgba(11, 14, 44, 0.6);
+    backdrop-filter: blur(12px);
+}
+.menu-btn {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.3s;
+    background: transparent;
+    border: none;
+    color: white;
+}
+.menu-btn:hover { background: rgba(255,255,255,0.08); }
+.menu-btn svg { width: 22px; height: 22px; }
+
+.top-brand {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+}
+
+.progress-track {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.05);
+    z-index: 90;
+}
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--bb-cyan), var(--bb-orange));
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0 2px 2px 0;
+}
+
+/* ===== SCENE CONTAINER ===== */
+.scene-container {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+}
+
+.scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    padding: 80px 60px 40px;
+}
+.scene.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+.scene-content {
+    max-width: 1200px;
+    width: 100%;
+    text-align: center;
+}
+
+/* ===== TYPOGRAPHY ===== */
+.section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--bb-cyan);
+    margin-bottom: 20px;
+}
+.section-label.orange { color: var(--bb-orange); }
+
+.mega-title {
+    font-size: clamp(42px, 8vw, 96px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 24px;
+}
+.mega-title .cyan { color: var(--bb-cyan); }
+.mega-title .orange { color: var(--bb-orange); }
+.mega-title .green { color: var(--bb-green); }
+.mega-title .white { color: var(--bb-white); }
+.mega-title .blue { color: var(--bb-blue); }
+
+.subtitle {
+    font-size: clamp(16px, 2vw, 22px);
+    font-weight: 400;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.6;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+h2 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800;
+    margin-bottom: 40px;
+    line-height: 1.15;
+}
+
+h3 {
+    font-size: clamp(20px, 3vw, 32px);
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+/* ===== ANIMATE ITEMS ===== */
+.animate-item {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.scene.active .animate-item { opacity: 1; transform: translateY(0); }
+.scene.active .animate-item:nth-child(1) { transition-delay: 0.1s; }
+.scene.active .animate-item:nth-child(2) { transition-delay: 0.25s; }
+.scene.active .animate-item:nth-child(3) { transition-delay: 0.4s; }
+.scene.active .animate-item:nth-child(4) { transition-delay: 0.55s; }
+.scene.active .animate-item:nth-child(5) { transition-delay: 0.7s; }
+.scene.active .animate-item:nth-child(6) { transition-delay: 0.85s; }
+.scene.active .animate-item:nth-child(7) { transition-delay: 1.0s; }
+.scene.active .animate-item:nth-child(8) { transition-delay: 1.15s; }
+
+/* ===== CARDS ===== */
+.card {
+    background: var(--bb-card);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 16px;
+    padding: 28px;
+    text-align: left;
+    transition: all 0.4s;
+}
+.card:hover {
+    background: rgba(255,255,255,0.09);
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.15);
+}
+
+/* ===== STATS GRID ===== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+.stat-card {
+    background: var(--bb-card);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 16px;
+    padding: 28px 20px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.scene.active .stat-card { opacity: 1; transform: translateY(0) scale(1); }
+.scene.active .stat-card:nth-child(1) { transition-delay: 0.2s; }
+.scene.active .stat-card:nth-child(2) { transition-delay: 0.35s; }
+.scene.active .stat-card:nth-child(3) { transition-delay: 0.5s; }
+.scene.active .stat-card:nth-child(4) { transition-delay: 0.65s; }
+
+.stat-card .stat-icon { font-size: 32px; margin-bottom: 12px; }
+.stat-card .stat-value {
+    font-size: 40px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--bb-cyan), var(--bb-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+}
+.stat-card .stat-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ===== PAIN CARDS ===== */
+.pain-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.pain-card {
+    background: var(--bb-card);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 16px;
+    padding: 28px;
+    text-align: left;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.scene.active .pain-card { opacity: 1; transform: translateY(0); }
+.scene.active .pain-card:nth-child(1) { transition-delay: 0.2s; }
+.scene.active .pain-card:nth-child(2) { transition-delay: 0.4s; }
+.scene.active .pain-card:nth-child(3) { transition-delay: 0.6s; }
+.scene.active .pain-card:nth-child(4) { transition-delay: 0.8s; }
+
+.pain-card .pain-week {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--bb-orange);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding-top: 2px;
+}
+.pain-card .pain-icon { font-size: 28px; flex-shrink: 0; }
+.pain-card .pain-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.4;
+}
+.pain-card .pain-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 4px;
+    font-style: italic;
+}
+
+/* ===== PROMISE / BIG NUMBER ===== */
+.big-number-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    margin: 40px 0;
+}
+.big-number {
+    font-size: clamp(72px, 14vw, 160px);
+    font-weight: 900;
+    line-height: 1;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.scene.active .big-number { opacity: 1; transform: scale(1); }
+.big-number.old {
+    color: rgba(255,255,255,0.15);
+    text-decoration: line-through;
+    transition-delay: 0.3s;
+}
+.big-number.new {
+    background: linear-gradient(135deg, var(--bb-cyan), var(--bb-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition-delay: 0.6s;
+}
+.big-arrow {
+    font-size: 60px;
+    color: var(--bb-orange);
+    opacity: 0;
+    transition: all 0.6s;
+    transition-delay: 0.5s;
+}
+.scene.active .big-arrow { opacity: 1; }
+
+/* ===== HUB & SPOKE (Agent Architecture) ===== */
+.hub-spoke {
+    position: relative;
+    width: 500px;
+    height: 500px;
+    margin: 0 auto;
+}
+.hub-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--bb-cyan), var(--bb-navy));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    box-shadow: 0 0 60px var(--bb-glow-cyan);
+    z-index: 5;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+    transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.scene.active .hub-center { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+.spoke-node {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--bb-card);
+    border: 2px solid var(--bb-card-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 3;
+}
+.spoke-node .spoke-icon { font-size: 24px; margin-bottom: 4px; }
+.scene.active .spoke-node { opacity: 1; transform: scale(1); }
+.scene.active .spoke-node:nth-child(2) { transition-delay: 0.3s; }
+.scene.active .spoke-node:nth-child(3) { transition-delay: 0.4s; }
+.scene.active .spoke-node:nth-child(4) { transition-delay: 0.5s; }
+.scene.active .spoke-node:nth-child(5) { transition-delay: 0.6s; }
+.scene.active .spoke-node:nth-child(6) { transition-delay: 0.7s; }
+.scene.active .spoke-node:nth-child(7) { transition-delay: 0.8s; }
+.scene.active .spoke-node:nth-child(8) { transition-delay: 0.9s; }
+
+.spoke-line {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--bb-cyan), transparent);
+    transform-origin: left center;
+    opacity: 0;
+    transition: opacity 0.6s;
+    z-index: 1;
+}
+.scene.active .spoke-line { opacity: 0.3; transition-delay: 1s; }
+
+/* ===== DELIVERABLE CARDS ===== */
+.deliverable-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+.deliverable-card {
+    background: var(--bb-card);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 14px;
+    padding: 22px;
+    text-align: left;
+    opacity: 0;
+    transform: translateY(25px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.scene.active .deliverable-card { opacity: 1; transform: translateY(0); }
+.scene.active .deliverable-card:nth-child(1) { transition-delay: 0.15s; }
+.scene.active .deliverable-card:nth-child(2) { transition-delay: 0.25s; }
+.scene.active .deliverable-card:nth-child(3) { transition-delay: 0.35s; }
+.scene.active .deliverable-card:nth-child(4) { transition-delay: 0.45s; }
+.scene.active .deliverable-card:nth-child(5) { transition-delay: 0.55s; }
+.scene.active .deliverable-card:nth-child(6) { transition-delay: 0.65s; }
+.scene.active .deliverable-card:nth-child(7) { transition-delay: 0.75s; }
+
+.deliverable-card .del-icon { font-size: 28px; margin-bottom: 10px; }
+.deliverable-card .del-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--bb-white);
+    margin-bottom: 6px;
+}
+.deliverable-card .del-desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.4;
+}
+.deliverable-card.spotlight {
+    border-color: var(--bb-cyan);
+    box-shadow: 0 0 30px rgba(0, 210, 255, 0.15);
+    grid-column: span 3;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(0, 210, 255, 0.08), rgba(26, 31, 113, 0.3));
+}
+.deliverable-card.spotlight .del-title { font-size: 18px; color: var(--bb-cyan); }
+.deliverable-card.spotlight .del-desc { font-size: 14px; }
+
+/* ===== SECRET SAUCE ===== */
+.sauce-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.sauce-card {
+    background: var(--bb-card);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(25px);
+    transition: all 0.5s;
+}
+.scene.active .sauce-card { opacity: 1; transform: translateY(0); }
+.scene.active .sauce-card:nth-child(1) { transition-delay: 0.2s; }
+.scene.active .sauce-card:nth-child(2) { transition-delay: 0.35s; }
+.scene.active .sauce-card:nth-child(3) { transition-delay: 0.5s; }
+.scene.active .sauce-card:nth-child(4) { transition-delay: 0.65s; }
+.scene.active .sauce-card:nth-child(5) { transition-delay: 0.8s; }
+
+.sauce-card .sauce-icon { font-size: 32px; margin-bottom: 12px; }
+.sauce-card .sauce-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.sauce-card .sauce-desc { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.4; }
+
+/* ===== PIPELINE (Demo) ===== */
+.pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 30px 0;
+}
+.pipe-step {
+    background: var(--bb-card);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.5s;
+    min-width: 100px;
+}
+.pipe-step .pipe-icon { font-size: 28px; }
+.pipe-step .pipe-label { font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
+.scene.active .pipe-step { opacity: 1; transform: translateX(0); }
+.scene.active .pipe-step:nth-child(1) { transition-delay: 0.1s; }
+.scene.active .pipe-step:nth-child(2) { transition-delay: 0.3s; }
+.scene.active .pipe-step:nth-child(3) { transition-delay: 0.5s; }
+.scene.active .pipe-step:nth-child(4) { transition-delay: 0.7s; }
+.scene.active .pipe-step:nth-child(5) { transition-delay: 0.9s; }
+.scene.active .pipe-step:nth-child(6) { transition-delay: 1.1s; }
+.scene.active .pipe-step:nth-child(7) { transition-delay: 1.3s; }
+.scene.active .pipe-step:nth-child(8) { transition-delay: 1.5s; }
+.scene.active .pipe-step:nth-child(9) { transition-delay: 1.7s; }
+
+.pipe-arrow {
+    font-size: 20px;
+    color: var(--bb-cyan);
+    opacity: 0;
+    transition: all 0.4s;
+}
+.scene.active .pipe-arrow { opacity: 0.5; }
+.scene.active .pipe-arrow:nth-child(2) { transition-delay: 0.2s; }
+.scene.active .pipe-arrow:nth-child(4) { transition-delay: 0.4s; }
+.scene.active .pipe-arrow:nth-child(6) { transition-delay: 0.6s; }
+.scene.active .pipe-arrow:nth-child(8) { transition-delay: 0.8s; }
+.scene.active .pipe-arrow:nth-child(10) { transition-delay: 1.0s; }
+
+.parallel-box {
+    background: rgba(0, 210, 255, 0.05);
+    border: 1px dashed rgba(0, 210, 255, 0.3);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: all 0.6s;
+    transition-delay: 0.5s;
+}
+.scene.active .parallel-box { opacity: 1; }
+.parallel-label {
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background: var(--bb-dark);
+    padding: 0 8px;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--bb-cyan);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+/* ===== BEFORE/AFTER ===== */
+.compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    max-width: 950px;
+    margin: 0 auto;
+}
+.compare-col {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.7s;
+}
+.scene.active .compare-col:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0.2s; }
+.scene.active .compare-col:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 0.5s; }
+
+.compare-header {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid;
+}
+.compare-header.before { color: var(--bb-red); border-color: var(--bb-red); }
+.compare-header.after { color: var(--bb-green); border-color: var(--bb-green); }
+
+.compare-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.compare-item .ci-icon { font-size: 18px; flex-shrink: 0; }
+.compare-item.bad { text-decoration: line-through; opacity: 0.5; }
+
+/* ===== SETUP STEPS ===== */
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+.step-card {
+    background: var(--bb-card);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 16px;
+    padding: 28px 20px;
+    text-align: center;
+    position: relative;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s;
+}
+.scene.active .step-card { opacity: 1; transform: translateY(0); }
+.scene.active .step-card:nth-child(1) { transition-delay: 0.2s; }
+.scene.active .step-card:nth-child(2) { transition-delay: 0.4s; }
+.scene.active .step-card:nth-child(3) { transition-delay: 0.6s; }
+.scene.active .step-card:nth-child(4) { transition-delay: 0.8s; }
+
+.step-num {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--bb-cyan), var(--bb-navy));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+}
+.step-card .step-icon { font-size: 36px; margin: 12px 0; }
+.step-card .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.step-card .step-desc { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.4; }
+.step-card.done {
+    border-color: var(--bb-green);
+    box-shadow: 0 0 20px rgba(52, 211, 153, 0.1);
+}
+
+/* ===== FOLDER TREE ===== */
+.folder-tree {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 16px;
+    padding: 28px 36px;
+    text-align: left;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 2;
+    max-width: 600px;
+    margin: 24px auto;
+    color: rgba(255,255,255,0.7);
+}
+.folder-tree .folder { color: var(--bb-cyan); font-weight: 600; }
+.folder-tree .file { color: rgba(255,255,255,0.5); }
+.folder-tree .comment { color: var(--bb-orange); font-style: italic; font-family: 'Inter', sans-serif; font-size: 12px; }
+
+/* ===== COMMAND CARDS ===== */
+.cmd-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.cmd-card {
+    background: var(--bb-card);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: left;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s;
+}
+.scene.active .cmd-card { opacity: 1; transform: translateY(0); }
+.scene.active .cmd-card:nth-child(1) { transition-delay: 0.15s; }
+.scene.active .cmd-card:nth-child(2) { transition-delay: 0.3s; }
+.scene.active .cmd-card:nth-child(3) { transition-delay: 0.45s; }
+.scene.active .cmd-card:nth-child(4) { transition-delay: 0.6s; }
+.scene.active .cmd-card:nth-child(5) { transition-delay: 0.75s; }
+
+.cmd-card .cmd-icon { font-size: 24px; flex-shrink: 0; padding-top: 2px; }
+.cmd-card .cmd-text { font-family: 'SF Mono', monospace; font-size: 13px; color: var(--bb-cyan); font-weight: 600; margin-bottom: 4px; }
+.cmd-card .cmd-desc { font-size: 12px; color: rgba(255,255,255,0.45); }
+.cmd-card.primary {
+    grid-column: span 2;
+    border-color: var(--bb-cyan);
+    background: linear-gradient(135deg, rgba(0, 210, 255, 0.08), rgba(26, 31, 113, 0.2));
+}
+
+/* ===== TIP CARDS ===== */
+.tip-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.tip-card {
+    background: var(--bb-card);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: left;
+    display: flex;
+    gap: 14px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s;
+}
+.scene.active .tip-card { opacity: 1; transform: translateY(0); }
+.scene.active .tip-card:nth-child(1) { transition-delay: 0.15s; }
+.scene.active .tip-card:nth-child(2) { transition-delay: 0.3s; }
+.scene.active .tip-card:nth-child(3) { transition-delay: 0.45s; }
+.scene.active .tip-card:nth-child(4) { transition-delay: 0.6s; }
+.scene.active .tip-card:nth-child(5) { transition-delay: 0.75s; }
+
+.tip-card .tip-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--bb-orange), #FF8F5E);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+.tip-card .tip-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.tip-card .tip-desc { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.4; }
+
+/* ===== FAQ CARDS ===== */
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.faq-card {
+    background: var(--bb-card);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 14px;
+    padding: 18px;
+    text-align: left;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s;
+}
+.scene.active .faq-card { opacity: 1; transform: translateY(0); }
+.scene.active .faq-card:nth-child(1) { transition-delay: 0.15s; }
+.scene.active .faq-card:nth-child(2) { transition-delay: 0.3s; }
+.scene.active .faq-card:nth-child(3) { transition-delay: 0.45s; }
+.scene.active .faq-card:nth-child(4) { transition-delay: 0.6s; }
+.scene.active .faq-card:nth-child(5) { transition-delay: 0.75s; }
+
+.faq-q { font-size: 13px; font-weight: 700; color: var(--bb-orange); margin-bottom: 6px; font-style: italic; }
+.faq-a { font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.4; }
+.faq-a strong { color: var(--bb-cyan); font-weight: 700; }
+
+/* ===== ROADMAP TIMELINE ===== */
+.roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
+}
+.roadmap-grid::before {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 10%;
+    right: 10%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--bb-cyan), var(--bb-orange), var(--bb-purple));
+    border-radius: 2px;
+    z-index: 0;
+}
+.roadmap-card {
+    background: var(--bb-card);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 16px;
+    padding: 24px 20px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s;
+}
+.scene.active .roadmap-card { opacity: 1; transform: translateY(0); }
+.scene.active .roadmap-card:nth-child(1) { transition-delay: 0.2s; }
+.scene.active .roadmap-card:nth-child(2) { transition-delay: 0.5s; }
+.scene.active .roadmap-card:nth-child(3) { transition-delay: 0.8s; }
+
+.roadmap-card .rm-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+}
+.roadmap-card .rm-phase {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.roadmap-card .rm-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+.roadmap-card .rm-items {
+    text-align: left;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.8;
+}
+.roadmap-card .rm-items span { display: block; }
+.roadmap-card.now { border-color: var(--bb-cyan); box-shadow: 0 0 25px rgba(0, 210, 255, 0.12); }
+.roadmap-card.now .rm-dot { background: var(--bb-cyan); box-shadow: 0 0 12px var(--bb-glow-cyan); }
+.roadmap-card.now .rm-phase { color: var(--bb-cyan); }
+.roadmap-card.next .rm-dot { background: var(--bb-orange); }
+.roadmap-card.next .rm-phase { color: var(--bb-orange); }
+.roadmap-card.future .rm-dot { background: var(--bb-purple); }
+.roadmap-card.future .rm-phase { color: var(--bb-purple); }
+
+/* ===== LIVE SESSION ===== */
+.live-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: left;
+}
+.live-step {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--bb-card);
+    border: 1px solid var(--bb-card-border);
+    border-radius: 14px;
+    padding: 18px 24px;
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: all 0.5s;
+}
+.scene.active .live-step { opacity: 1; transform: translateX(0); }
+.scene.active .live-step:nth-child(1) { transition-delay: 0.2s; }
+.scene.active .live-step:nth-child(2) { transition-delay: 0.4s; }
+.scene.active .live-step:nth-child(3) { transition-delay: 0.6s; }
+.scene.active .live-step:nth-child(4) { transition-delay: 0.8s; }
+
+.live-step .ls-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--bb-orange), #FF8F5E);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+.live-step .ls-text { font-size: 15px; font-weight: 600; }
+.live-step .ls-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+/* ===== FLYWHEEL BANNER ===== */
+.flywheel-banner {
+    background: linear-gradient(135deg, rgba(0, 210, 255, 0.1), rgba(255, 107, 53, 0.1));
+    border: 1px solid rgba(0, 210, 255, 0.2);
+    border-radius: 14px;
+    padding: 18px 28px;
+    margin-top: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s;
+    transition-delay: 1s;
+}
+.scene.active .flywheel-banner { opacity: 1; transform: translateY(0); }
+.flywheel-banner .fb-icon { font-size: 20px; margin-right: 8px; }
+
+/* ===== CTA FINAL ===== */
+.cta-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--bb-cyan), var(--bb-navy));
+    padding: 12px 32px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 28px;
+    letter-spacing: 0.5px;
+    animation: ctaPulse 2.5s ease-in-out infinite;
+}
+@keyframes ctaPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(0, 210, 255, 0.6); }
+}
+
+/* ===== CONFETTI ===== */
+.confetti-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    overflow: hidden;
+}
+.confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: -20px;
+    opacity: 0;
+}
+.confetti-piece.active {
+    opacity: 1;
+    animation: confettiFall 3s ease-in forwards;
+}
+@keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ===== KEYBOARD HINT ===== */
+.key-hint {
+    position: fixed;
+    bottom: 20px;
+    right: 24px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    z-index: 90;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.key-hint kbd {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+}
+
+/* ===== SCENE COUNTER ===== */
+.scene-counter {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: rgba(255,255,255,0.2);
+    z-index: 90;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .scene { padding: 70px 20px 30px; }
+    .mega-title { font-size: clamp(32px, 10vw, 60px) !important; letter-spacing: -1px; }
+    .stats-grid, .steps-grid { grid-template-columns: repeat(2, 1fr); }
+    .pain-grid, .compare-grid, .deliverable-grid, .sauce-grid, .cmd-grid, .tip-grid, .faq-grid { grid-template-columns: 1fr; }
+    .roadmap-grid { grid-template-columns: 1fr; }
+    .roadmap-grid::before { display: none; }
+    .hub-spoke { transform: scale(0.6); }
+    .big-number { font-size: 72px !important; }
+    .big-number-container { flex-direction: column; gap: 20px; }
+    .nav-sidebar { width: 100%; }
+    .key-hint { display: none; }
+    .deliverable-card.spotlight { grid-column: span 1; }
+    .cmd-card.primary { grid-column: span 1; }
+    .pipeline { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- Background Effects -->
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Confetti Container -->
+<div class="confetti-container" id="confetti"></div>
+
+<!-- Top Bar -->
+<div class="top-bar">
+    <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="top-brand">Backbase Value Consulting</div>
+    <div style="width:40px"></div>
+</div>
+
+<!-- Navigation Sidebar -->
+<nav class="nav-sidebar" id="navSidebar">
+    <div class="nav-header">
+        <div class="nav-logo">Cortex Launch</div>
+    </div>
+    <div class="nav-items">
+        <div class="nav-section-label">Part 1 &mdash; The What & Why</div>
+        <div class="nav-item" data-scene="0"><span class="nav-num">01</span> Launch Day</div>
+        <div class="nav-item" data-scene="1"><span class="nav-num">02</span> Let's Be Honest...</div>
+        <div class="nav-item" data-scene="2"><span class="nav-num">03</span> What If I Told You</div>
+        <div class="nav-item" data-scene="3"><span class="nav-num">04</span> Meet Cortex</div>
+        <div class="nav-item" data-scene="4"><span class="nav-num">05</span> What It Produces</div>
+        <div class="nav-item" data-scene="5"><span class="nav-num">06</span> The Secret Sauce</div>
+        <div class="nav-item" data-scene="6"><span class="nav-num">07</span> The Flow</div>
+        <div class="nav-item" data-scene="7" style="border-left-color: var(--bb-orange);"><span class="nav-num" style="color: var(--bb-orange);">08</span> <strong>Live Demo &mdash; Mariam</strong></div>
+        <div class="nav-item" data-scene="8"><span class="nav-num">09</span> Before vs After</div>
+        <div class="nav-item" data-scene="9" style="border-left-color: var(--bb-orange);"><span class="nav-num" style="color: var(--bb-orange);">10</span> <strong>You Own Every Output</strong></div>
+        <div class="nav-section-label">Part 2 &mdash; The How-To</div>
+        <div class="nav-item" data-scene="10"><span class="nav-num">11</span> Setup in 5 Minutes</div>
+        <div class="nav-item" data-scene="11"><span class="nav-num">12</span> First Engagement</div>
+        <div class="nav-item" data-scene="12"><span class="nav-num">13</span> Key Commands</div>
+        <div class="nav-item" data-scene="13"><span class="nav-num">14</span> Pro Tips</div>
+        <div class="nav-item" data-scene="14"><span class="nav-num">15</span> Let's Do It Live</div>
+        <div class="nav-item" data-scene="15"><span class="nav-num">16</span> FAQ & Troubleshooting</div>
+        <div class="nav-section-label">Part 3 &mdash; Wrap Up</div>
+        <div class="nav-item" data-scene="16"><span class="nav-num">17</span> Roadmap</div>
+        <div class="nav-item" data-scene="17"><span class="nav-num">18</span> One More Thing...</div>
+        <div class="nav-item" data-scene="18"><span class="nav-num">19</span> Thank You & Q&A</div>
+    </div>
+</nav>
+
+<!-- Progress Bar -->
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- Scene Counter -->
+<div class="scene-counter" id="sceneCounter">01 / 17</div>
+
+<!-- Keyboard Hint -->
+<div class="key-hint">
+    <kbd>&larr;</kbd> <kbd>&rarr;</kbd> Navigate &nbsp;&nbsp; <kbd>M</kbd> Menu
+</div>
+
+<!-- ===================== SCENES ===================== -->
+<div class="scene-container">
+
+    <!-- SCENE 1: Title -->
+    <div class="scene active" data-title="Launch Day">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label">February 2026 &bull; Backbase Value Consulting</div>
+            </div>
+            <div class="animate-item">
+                <h1 class="mega-title" style="margin-bottom: 16px;">
+                    <span class="white">CORTEX</span><br>
+                    <span class="cyan">LAUNCH DAY</span>
+                </h1>
+            </div>
+            <div class="animate-item">
+                <p class="subtitle" style="font-size: 24px; color: rgba(255,255,255,0.7); font-weight: 500;">
+                    Your AI-Powered Consulting Co-Pilot is Here
+                </p>
+            </div>
+            <div class="animate-item">
+                <p style="margin-top: 40px; font-size: 14px; color: rgba(255,255,255,0.3); letter-spacing: 2px;">
+                    BUCKLE UP. THINGS ARE ABOUT TO GET INTERESTING.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 2: The Pain -->
+    <div class="scene" data-title="Let's Be Honest...">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label orange">The Current Reality</div>
+                <h2>Let's Be Honest...</h2>
+            </div>
+            <div class="pain-grid">
+                <div class="pain-card">
+                    <div class="pain-icon">&#x1F4DA;</div>
+                    <div>
+                        <div class="pain-week">Day 1-2</div>
+                        <div class="pain-text">Read transcripts until your eyes bleed</div>
+                        <div class="pain-sub">"Wait, did they say 40% or 14%?"</div>
+                    </div>
+                </div>
+                <div class="pain-card">
+                    <div class="pain-icon">&#x1F4C9;</div>
+                    <div>
+                        <div class="pain-week">Day 3-4</div>
+                        <div class="pain-text">Build ROI models in Excel hell</div>
+                        <div class="pain-sub">"Which cell broke the formula this time?"</div>
+                    </div>
+                </div>
+                <div class="pain-card">
+                    <div class="pain-icon">&#x1F4DD;</div>
+                    <div>
+                        <div class="pain-week">Day 5</div>
+                        <div class="pain-text">Write the assessment, pray the numbers match</div>
+                        <div class="pain-sub">"The exec summary says $4M but slide 17 says $3.2M..."</div>
+                    </div>
+                </div>
+                <div class="pain-card">
+                    <div class="pain-icon">&#x1F914;</div>
+                    <div>
+                        <div class="pain-week">Somewhere</div>
+                        <div class="pain-text">Actually think strategically</div>
+                        <div class="pain-sub">"You know... the part we're actually good at"</div>
+                    </div>
+                </div>
+            </div>
+            <div class="animate-item" style="margin-top: 30px;">
+                <p style="font-size: 16px; color: rgba(255,255,255,0.4); font-style: italic;">
+                    A full week of your life. Every. Single. Engagement.<br>
+                    <span style="font-size: 13px;">Sound familiar? Yeah. We thought so.</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 3: The Promise -->
+    <div class="scene" data-title="What If I Told You...">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label">The Promise</div>
+                <h2 style="font-size: 28px; color: rgba(255,255,255,0.5);">What if I told you...</h2>
+            </div>
+            <div class="big-number-container">
+                <div class="big-number old">1 Week</div>
+                <div class="big-arrow">&#x2192;</div>
+                <div class="big-number new">3 Hours</div>
+            </div>
+            <div class="animate-item">
+                <p style="font-size: 18px; color: rgba(255,255,255,0.6); max-width: 750px; margin: 0 auto; line-height: 1.7;">
+                    Not a documentation tool. Not a chatbot.<br>
+                    An <strong style="color: var(--bb-cyan);">AI operating system</strong> that <em>generates</em>
+                    senior-consultant-grade deliverables.
+                </p>
+            </div>
+            <div class="animate-item" style="margin-top: 28px;">
+                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; max-width: 750px; margin: 0 auto;">
+                    <div style="background: rgba(0, 210, 255, 0.08); border: 1px solid rgba(0, 210, 255, 0.2); border-radius: 12px; padding: 16px 24px; flex: 1; min-width: 220px; text-align: center;">
+                        <div style="font-size: 28px; font-weight: 900; color: var(--bb-cyan);">15-30 min</div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px;">First raw report generated</div>
+                    </div>
+                    <div style="background: rgba(255, 107, 53, 0.08); border: 1px solid rgba(255, 107, 53, 0.2); border-radius: 12px; padding: 16px 24px; flex: 1; min-width: 220px; text-align: center;">
+                        <div style="font-size: 28px; font-weight: 900; color: var(--bb-orange);">+ 2.5 hours</div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px;">YOU validate, own, and make it yours</div>
+                    </div>
+                </div>
+                <p style="font-size: 14px; color: rgba(255,255,255,0.35); margin-top: 16px; font-style: italic;">
+                    Because if you can't explain it to the client, it shouldn't be in the deck.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 4: Meet Cortex (Hub & Spoke) -->
+    <div class="scene" data-title="Meet Cortex">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label">The Architecture</div>
+                <h2>Meet <span style="color: var(--bb-cyan);">Cortex</span></h2>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;">
+                <div class="hub-spoke">
+                    <div class="hub-center">CORTEX<br><span style="font-size: 9px; opacity: 0.6;">Orchestrator</span></div>
+                    <!-- Spoke nodes positioned around the hub -->
+                    <div class="spoke-node" style="top: 10px; left: 50%; transform: translateX(-50%);">
+                        <div class="spoke-icon">&#x1F50D;</div>
+                        Discovery
+                    </div>
+                    <div class="spoke-node" style="top: 70px; right: 20px;">
+                        <div class="spoke-icon">&#x1F5FA;&#xFE0F;</div>
+                        Journey<br>Builder
+                    </div>
+                    <div class="spoke-node" style="top: 200px; right: -10px;">
+                        <div class="spoke-icon">&#x1F310;</div>
+                        Market<br>Research
+                    </div>
+                    <div class="spoke-node" style="bottom: 70px; right: 20px;">
+                        <div class="spoke-icon">&#x1F4CA;</div>
+                        Capability<br>Analyzer
+                    </div>
+                    <div class="spoke-node" style="bottom: 10px; left: 50%; transform: translateX(-50%);">
+                        <div class="spoke-icon">&#x1F4B0;</div>
+                        ROI Builder
+                    </div>
+                    <div class="spoke-node" style="bottom: 70px; left: 20px; position: relative;">
+                        <div style="position: absolute; top: -6px; right: -6px; background: var(--bb-orange); color: white; font-size: 7px; font-weight: 800; padding: 2px 5px; border-radius: 3px; letter-spacing: 0.5px; z-index: 10;">BETA</div>
+                        <div class="spoke-icon">&#x1F3AF;</div>
+                        Roadmap<br>Planner
+                    </div>
+                    <div class="spoke-node" style="top: 200px; left: -10px;">
+                        <div class="spoke-icon">&#x1F4D1;</div>
+                        Executive<br>Assembler
+                    </div>
+                </div>
+                <div style="text-align: left;">
+                    <div class="stat-card" style="margin-bottom: 14px; opacity: 0; transform: translateX(20px); transition: all 0.6s 0.4s;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div class="stat-value" style="font-size: 36px;">18</div>
+                            <div>
+                                <div class="stat-label" style="text-align: left; margin-top: 0;">Specialized Agents</div>
+                                <div style="font-size: 12px; color: rgba(255,255,255,0.4); text-align: left;">Not one generic AI &mdash; a full consulting team</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="margin-bottom: 14px; opacity: 0; transform: translateX(20px); transition: all 0.6s 0.6s;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div class="stat-value" style="font-size: 36px;">23</div>
+                            <div>
+                                <div class="stat-label" style="text-align: left; margin-top: 0;">Skills & Commands</div>
+                                <div style="font-size: 12px; color: rgba(255,255,255,0.4); text-align: left;">From ROI models to journey maps to HTML dashboards</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="margin-bottom: 14px; opacity: 0; transform: translateX(20px); transition: all 0.6s 0.8s;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div class="stat-value" style="font-size: 36px;">6</div>
+                            <div>
+                                <div class="stat-label" style="text-align: left; margin-top: 0;">Banking Domain Packs</div>
+                                <div style="font-size: 12px; color: rgba(255,255,255,0.4); text-align: left;">Retail, SME, Commercial, Wealth, Corporate, Investing</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="opacity: 0; transform: translateX(20px); transition: all 0.6s 1.0s;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div class="stat-value" style="font-size: 36px; background: linear-gradient(135deg, var(--bb-orange), #FF8F5E); -webkit-background-clip: text;">&#x267E;</div>
+                            <div>
+                                <div class="stat-label" style="text-align: left; margin-top: 0;">Self-Improving Flywheel</div>
+                                <div style="font-size: 12px; color: rgba(255,255,255,0.4); text-align: left;">Gets smarter with every engagement you run</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 5: Deliverables -->
+    <div class="scene" data-title="What It Produces">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label">The Output</div>
+                <h2>What It Actually <span style="color: var(--bb-cyan);">Produces</span></h2>
+            </div>
+            <div class="deliverable-grid">
+                <div class="deliverable-card">
+                    <div class="del-icon">&#x1F50D;</div>
+                    <div class="del-title">Evidence Register</div>
+                    <div class="del-desc">Every claim traceable to a specific transcript line. E-001, E-002...</div>
+                </div>
+                <div class="deliverable-card" style="border-color: rgba(0,210,255,0.3); background: linear-gradient(135deg, rgba(0, 210, 255, 0.05), var(--bb-card));">
+                    <div class="del-icon">&#x1F5FA;&#xFE0F;</div>
+                    <div class="del-title" style="color: var(--bb-cyan);">Journey Maps <span style="font-size: 9px; background: var(--bb-cyan); color: var(--bb-dark); padding: 2px 6px; border-radius: 3px; vertical-align: middle; font-weight: 800; letter-spacing: 0.5px;">NEW</span></div>
+                    <div class="del-desc">End-to-end swimlanes with friction callouts, $ value leakage per step, and before/after Backbase-enabled states</div>
+                </div>
+                <div class="deliverable-card">
+                    <div class="del-icon">&#x1F3AF;</div>
+                    <div class="del-title">Capability Assessment</div>
+                    <div class="del-desc">Maturity scoring with interactive heatmaps and gap analysis</div>
+                </div>
+                <div class="deliverable-card">
+                    <div class="del-icon">&#x1F4B0;</div>
+                    <div class="del-title">ROI Business Case</div>
+                    <div class="del-desc">3 scenarios: conservative, base, aspirational &mdash; with sensitivity analysis</div>
+                </div>
+                <div class="deliverable-card">
+                    <div class="del-icon">&#x1F4C5;</div>
+                    <div class="del-title">Implementation Roadmap</div>
+                    <div class="del-desc">Phased, dependency-mapped, value-sequenced initiative plan</div>
+                </div>
+                <div class="deliverable-card">
+                    <div class="del-icon">&#x1F4CB;</div>
+                    <div class="del-title">Executive Summary</div>
+                    <div class="del-desc">C-suite decision document. Situation, findings, recommendation, risks.</div>
+                </div>
+                <div class="deliverable-card spotlight">
+                    <div class="del-icon">&#x2728;</div>
+                    <div class="del-title">Interactive HTML Dashboard</div>
+                    <div class="del-desc">250-400KB self-contained file. Heatmaps, ROI toggles, journey swimlanes, phone prototypes. One file. Zero dependencies. Stunning.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 6: Secret Sauce -->
+    <div class="scene" data-title="The Secret Sauce">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label orange">What Makes It Different</div>
+                <h2>The <span style="color: var(--bb-orange);">Secret Sauce</span></h2>
+                <p style="font-size: 15px; color: rgba(255,255,255,0.4); margin-bottom: 30px;">
+                    Why Cortex isn't "just another ChatGPT wrapper"
+                </p>
+            </div>
+            <div class="sauce-grid">
+                <div class="sauce-card">
+                    <div class="sauce-icon">&#x1F3F7;&#xFE0F;</div>
+                    <div class="sauce-title">Evidence IDs</div>
+                    <div class="sauce-desc">Every finding links back to E-001, E-002... traceable to exact transcript lines</div>
+                </div>
+                <div class="sauce-card">
+                    <div class="sauce-icon">&#x1F6E1;&#xFE0F;</div>
+                    <div class="sauce-title">Conservative by Default</div>
+                    <div class="sauce-desc">Financial models always show the downside. No fairy-tale ROI numbers.</div>
+                </div>
+                <div class="sauce-card">
+                    <div class="sauce-icon">&#x1F517;</div>
+                    <div class="sauce-title">Cross-Deliverable Checks</div>
+                    <div class="sauce-desc">The ROI report, exec summary, and roadmap all use the SAME numbers. Always.</div>
+                </div>
+                <div class="sauce-card">
+                    <div class="sauce-icon">&#x1F4A1;</div>
+                    <div class="sauce-title">Explicit Assumptions</div>
+                    <div class="sauce-desc">Every assumption has a confidence level. Nothing hidden. Full transparency.</div>
+                </div>
+                <div class="sauce-card">
+                    <div class="sauce-icon">&#x26A0;&#xFE0F;</div>
+                    <div class="sauce-title">"What Would Change It"</div>
+                    <div class="sauce-desc">Every recommendation includes what would change the decision. Built-in honesty.</div>
+                </div>
+                <div class="sauce-card" style="border-color: var(--bb-cyan); background: linear-gradient(135deg, rgba(0, 210, 255, 0.06), rgba(26, 31, 113, 0.12)); grid-column: span 3; display: flex; gap: 24px; align-items: center; text-align: left;">
+                    <div class="sauce-icon" style="font-size: 40px; flex-shrink: 0;">&#x1F6D1;</div>
+                    <div style="flex: 1;">
+                        <div class="sauce-title" style="font-size: 16px; color: var(--bb-cyan);">Dual Consultant Checkpoints</div>
+                        <div class="sauce-desc" style="font-size: 13px; color: rgba(255,255,255,0.55);">Agents STOP and ask you before making critical decisions. Checkpoint 1: "Which journeys should I map?" Checkpoint 2: "Here's what I found &mdash; does this look right?" No unilateral AI decisions. You steer. Always.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="animate-item" style="margin-top: 28px;">
+                <p style="font-size: 16px; color: rgba(255,255,255,0.5); font-style: italic;">
+                    This is why clients trust it. This is why <strong style="color: var(--bb-white);">you</strong> can trust it.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 7: The Flow (Visual Pipeline) -->
+    <div class="scene" data-title="The Flow">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label" style="color: var(--bb-cyan); font-size: 13px;">How It Works</div>
+                <h2 style="font-size: clamp(28px, 4vw, 44px);">
+                    The Cortex <span style="color: var(--bb-cyan);">Pipeline</span>
+                </h2>
+            </div>
+            <div class="pipeline" style="margin: 40px 0; position: relative;">
+                <div class="pipe-step" style="border-color: var(--bb-orange);">
+                    <div class="pipe-icon">&#x1F4C4;</div>
+                    <div>Transcripts</div>
+                    <div class="pipe-label">Input</div>
+                </div>
+                <div class="pipe-arrow">&#x25B6;</div>
+                <div class="pipe-step" style="border-color: var(--bb-cyan);">
+                    <div class="pipe-icon">&#x1F50D;</div>
+                    <div>Discovery</div>
+                    <div class="pipe-label">Extract</div>
+                </div>
+                <div class="pipe-arrow">&#x25B6;</div>
+                <div style="background: rgba(0, 210, 255, 0.05); border: 1px dashed rgba(0, 210, 255, 0.3); border-radius: 16px; padding: 12px; display: flex; gap: 8px; position: relative;">
+                    <div style="position: absolute; top: -10px; left: 16px; background: var(--bb-dark); padding: 0 8px; font-size: 9px; font-weight: 700; color: var(--bb-cyan); letter-spacing: 1.5px; text-transform: uppercase;">Parallel</div>
+                    <div class="pipe-step" style="border: none; padding: 12px; min-width: 80px;">
+                        <div class="pipe-icon">&#x1F5FA;&#xFE0F;</div>
+                        <div style="font-size: 10px;">Journey</div>
+                    </div>
+                    <div class="pipe-step" style="border: none; padding: 12px; min-width: 80px;">
+                        <div class="pipe-icon">&#x1F310;</div>
+                        <div style="font-size: 10px;">Market</div>
+                    </div>
+                    <div class="pipe-step" style="border: none; padding: 12px; min-width: 80px;">
+                        <div class="pipe-icon">&#x1F4CA;</div>
+                        <div style="font-size: 10px;">Capability</div>
+                    </div>
+                    <div class="pipe-step" style="border: none; padding: 12px; min-width: 80px;">
+                        <div class="pipe-icon">&#x1F4B0;</div>
+                        <div style="font-size: 10px;">ROI</div>
+                    </div>
+                </div>
+                <div class="pipe-arrow">&#x25B6;</div>
+                <div class="pipe-step" style="border-color: var(--bb-green); position: relative;">
+                    <div style="position: absolute; top: -8px; right: -8px; background: var(--bb-orange); color: white; font-size: 8px; font-weight: 800; padding: 2px 6px; border-radius: 4px; letter-spacing: 1px;">BETA</div>
+                    <div class="pipe-icon">&#x1F3AF;</div>
+                    <div>Roadmap</div>
+                    <div class="pipe-label">Sequence</div>
+                </div>
+                <div class="pipe-arrow">&#x25B6;</div>
+                <div class="pipe-step" style="border-color: var(--bb-orange); box-shadow: 0 0 20px var(--bb-glow-orange);">
+                    <div class="pipe-icon">&#x2728;</div>
+                    <div>Assembly</div>
+                    <div class="pipe-label">Output</div>
+                </div>
+            </div>
+            <div class="animate-item" style="margin-top: 16px;">
+                <p style="font-size: 14px; color: rgba(255,255,255,0.4);">
+                    Transcripts go in. 18 agents coordinate. Executive-ready deliverables come out.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 8: LIVE DEMO — Mariam -->
+    <div class="scene" data-title="Live Demo">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label" style="color: var(--bb-orange); font-size: 14px; letter-spacing: 4px;">&#x1F3AC; LIVE DEMO</div>
+            </div>
+            <div class="animate-item">
+                <h1 class="mega-title" style="font-size: clamp(36px, 7vw, 80px); margin-bottom: 20px;">
+                    <span class="white">Enough Slides.</span><br>
+                    <span class="cyan">Let's See It Live.</span>
+                </h1>
+            </div>
+            <div class="animate-item">
+                <div style="background: linear-gradient(135deg, rgba(0, 210, 255, 0.08), rgba(26, 31, 113, 0.3)); border: 1px solid rgba(0, 210, 255, 0.2); border-radius: 20px; padding: 36px; max-width: 600px; margin: 0 auto; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">&#x1F469;&#x200D;&#x1F4BB;</div>
+                    <div style="font-size: 24px; font-weight: 800; color: var(--bb-white); margin-bottom: 6px;">Mariam Takes the Wheel</div>
+                    <div style="font-size: 15px; color: rgba(255,255,255,0.5); line-height: 1.6;">
+                        Full end-to-end Cortex engagement<br>
+                        From raw transcripts to finished assessment<br>
+                        <span style="color: var(--bb-cyan); font-weight: 600;">Live. Right here. Right now.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="animate-item" style="margin-top: 28px;">
+                <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                    <div style="background: var(--bb-card); border: 1px solid var(--bb-card-border); border-radius: 50px; padding: 10px 22px; font-size: 13px; color: rgba(255,255,255,0.5);">
+                        &#x1F4C4; Drop transcripts
+                    </div>
+                    <div style="color: rgba(255,255,255,0.2);">&#x2192;</div>
+                    <div style="background: var(--bb-card); border: 1px solid var(--bb-card-border); border-radius: 50px; padding: 10px 22px; font-size: 13px; color: rgba(255,255,255,0.5);">
+                        &#x1F680; Run Cortex
+                    </div>
+                    <div style="color: rgba(255,255,255,0.2);">&#x2192;</div>
+                    <div style="background: var(--bb-card); border: 1px solid var(--bb-card-border); border-radius: 50px; padding: 10px 22px; font-size: 13px; color: rgba(255,255,255,0.5);">
+                        &#x1F50D; Review outputs
+                    </div>
+                    <div style="color: rgba(255,255,255,0.2);">&#x2192;</div>
+                    <div style="background: linear-gradient(135deg, var(--bb-cyan), var(--bb-navy)); border-radius: 50px; padding: 10px 22px; font-size: 13px; font-weight: 600;">
+                        &#x2728; HTML Dashboard
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 8: Before vs After -->
+    <div class="scene" data-title="Before vs After">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label">The Impact</div>
+                <h2>Before vs <span style="color: var(--bb-green);">After</span></h2>
+            </div>
+            <div class="compare-grid">
+                <div class="compare-col">
+                    <div class="compare-header before">Before Cortex</div>
+                    <div class="compare-item bad"><span class="ci-icon">&#x23F0;</span> 1 full week per assessment</div>
+                    <div class="compare-item bad"><span class="ci-icon">&#x1F4CA;</span> Manual Excel ROI models</div>
+                    <div class="compare-item bad"><span class="ci-icon">&#x1F4CB;</span> Copy-paste from old decks</div>
+                    <div class="compare-item bad"><span class="ci-icon">&#x1F937;</span> "I think the number was..."</div>
+                    <div class="compare-item bad"><span class="ci-icon">&#x1F3B2;</span> Inconsistent quality across consultants</div>
+                </div>
+                <div class="compare-col">
+                    <div class="compare-header after">After Cortex</div>
+                    <div class="compare-item"><span class="ci-icon">&#x26A1;</span> First draft in <strong>15-30 min</strong>, fully validated in <strong>3 hours</strong></div>
+                    <div class="compare-item"><span class="ci-icon">&#x1F4B0;</span> Auto-generated financial models with sensitivity analysis</div>
+                    <div class="compare-item"><span class="ci-icon">&#x2728;</span> Fresh, evidence-based deliverables every time</div>
+                    <div class="compare-item"><span class="ci-icon">&#x1F4CD;</span> "Evidence E-042 from transcript line 287"</div>
+                    <div class="compare-item"><span class="ci-icon">&#x1F9D1;&#x200D;&#x1F4BC;</span> <strong>You own it.</strong> Every output reviewed, validated, and yours to defend.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 9: YOU OWN IT (Ownership Manifesto) -->
+    <div class="scene" data-title="You Own Every Output">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label" style="color: var(--bb-orange); font-size: 13px; letter-spacing: 4px;">THE GOLDEN RULE</div>
+            </div>
+            <div class="animate-item">
+                <h1 class="mega-title" style="font-size: clamp(40px, 7vw, 88px); margin-bottom: 32px;">
+                    <span class="orange">YOU</span> <span class="white">OWN</span><br>
+                    <span class="white">EVERY OUTPUT.</span>
+                </h1>
+            </div>
+            <div class="animate-item">
+                <div style="max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                    <div style="background: rgba(255, 107, 53, 0.08); border: 1px solid rgba(255, 107, 53, 0.25); border-radius: 16px; padding: 24px; text-align: center;">
+                        <div style="font-size: 36px; margin-bottom: 10px;">&#x1F50D;</div>
+                        <div style="font-size: 15px; font-weight: 700; color: var(--bb-orange); margin-bottom: 6px;">Validate It</div>
+                        <div style="font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5;">Read every deliverable.<br>Check every number.<br>Question every assumption.</div>
+                    </div>
+                    <div style="background: rgba(255, 107, 53, 0.08); border: 1px solid rgba(255, 107, 53, 0.25); border-radius: 16px; padding: 24px; text-align: center;">
+                        <div style="font-size: 36px; margin-bottom: 10px;">&#x1F4AA;</div>
+                        <div style="font-size: 15px; font-weight: 700; color: var(--bb-orange); margin-bottom: 6px;">Own It</div>
+                        <div style="font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5;">Your name is on the deck.<br>Your reputation is on the line.<br>Make it yours.</div>
+                    </div>
+                    <div style="background: rgba(255, 107, 53, 0.08); border: 1px solid rgba(255, 107, 53, 0.25); border-radius: 16px; padding: 24px; text-align: center;">
+                        <div style="font-size: 36px; margin-bottom: 10px;">&#x1F3A4;</div>
+                        <div style="font-size: 15px; font-weight: 700; color: var(--bb-orange); margin-bottom: 6px;">Defend It</div>
+                        <div style="font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5;">If a client asks "why?"<br>you must have the answer.<br>Not "the AI said so."</div>
+                    </div>
+                </div>
+            </div>
+            <div class="animate-item" style="margin-top: 36px;">
+                <div style="background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(11, 14, 44, 0.5)); border: 1px solid rgba(255, 107, 53, 0.2); border-radius: 14px; padding: 20px 32px; max-width: 700px; margin: 0 auto; text-align: center;">
+                    <p style="font-size: 17px; color: rgba(255,255,255,0.7); line-height: 1.6;">
+                        Cortex is your <strong style="color: var(--bb-cyan);">analyst</strong>. It does the heavy lifting in 15-30 minutes.<br>
+                        The next 2-3 hours? That's <strong style="color: var(--bb-orange);">you</strong> &mdash; reviewing, refining, making it bulletproof.<br>
+                        <span style="font-size: 14px; color: rgba(255,255,255,0.4); display: inline-block; margin-top: 8px;">This is what separates a consultant from a prompt engineer.</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 10: Setup in 5 Minutes -->
+    <div class="scene" data-title="Setup in 5 Minutes">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label orange">Part 2 &mdash; The How-To</div>
+                <h2>Your Setup in <span style="color: var(--bb-cyan);">5 Minutes</span></h2>
+                <p style="font-size: 15px; color: rgba(255,255,255,0.4); margin-bottom: 20px;">Not scary. We promise.</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">1</div>
+                    <div class="step-icon">&#x1F4BB;</div>
+                    <div class="step-title">Open VS Code</div>
+                    <div class="step-desc">You already have it! Just open it up.</div>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">2</div>
+                    <div class="step-icon">&#x1F50C;</div>
+                    <div class="step-title">Install Claude Code</div>
+                    <div class="step-desc">One click in the VS Code Extensions marketplace. Search "Claude Code".</div>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">3</div>
+                    <div class="step-icon">&#x1F4E5;</div>
+                    <div class="step-title">Clone Cortex</div>
+                    <div class="step-desc">Copy-paste one command. We'll do it together right here in this room.</div>
+                </div>
+                <div class="step-card done">
+                    <div class="step-num">&#x2713;</div>
+                    <div class="step-icon">&#x1F389;</div>
+                    <div class="step-title">You're Done</div>
+                    <div class="step-desc">Seriously. That's it. No git wizardry. No terminal magic. You're good.</div>
+                </div>
+            </div>
+            <div class="animate-item" style="margin-top: 30px;">
+                <p style="font-size: 15px; color: rgba(255,255,255,0.5); font-style: italic; background: var(--bb-card); display: inline-block; padding: 12px 24px; border-radius: 50px; border: 1px solid var(--bb-card-border);">
+                    If you can copy-paste, you can do this. &#x1F44D;
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 10: First Engagement -->
+    <div class="scene" data-title="First Engagement">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label">Getting Started</div>
+                <h2>Starting Your <span style="color: var(--bb-cyan);">First Engagement</span></h2>
+            </div>
+            <div class="animate-item">
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--bb-card-border); border-radius: 12px; padding: 16px 24px; max-width: 700px; margin: 0 auto 24px; text-align: left;">
+                    <div style="font-family: 'SF Mono', monospace; font-size: 14px;">
+                        <span style="color: var(--bb-cyan);">$</span> <span style="color: rgba(255,255,255,0.7);">./scripts/init_engagement.sh</span> <span style="color: var(--bb-green);">acme_bank</span> <span style="color: var(--bb-orange);">2026-02_retail_assessment</span>
+                    </div>
+                </div>
+            </div>
+            <div class="animate-item">
+                <p style="font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 20px;">This creates everything you need:</p>
+            </div>
+            <div class="animate-item">
+                <div class="folder-tree">
+                    <span class="folder">engagements/acme_bank/</span><br>
+                    &nbsp;&nbsp;<span class="folder">2026-02_retail_assessment/</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">inputs/</span> <span class="comment">&larr; Drop your transcripts here</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">outputs/</span> <span class="comment">&larr; Magic appears here</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">ENGAGEMENT_JOURNAL.md</span> <span class="comment">&larr; Your engagement memory</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">engagement_intake.md</span> <span class="comment">&larr; Fill in client context</span><br>
+                    &nbsp;&nbsp;<span class="file">CLIENT_PROFILE.md</span> <span class="comment">&larr; Persists across engagements!</span>
+                </div>
+            </div>
+            <div class="animate-item" style="margin-top: 20px;">
+                <p style="font-size: 14px; color: var(--bb-green); font-weight: 600;">
+                    That's it. Drop transcripts in inputs/ and tell Cortex to go.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 11: Key Commands -->
+    <div class="scene" data-title="Key Commands">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label">Your Toolkit</div>
+                <h2>The Commands You'll <span style="color: var(--bb-cyan);">Actually Use</span></h2>
+            </div>
+            <div class="cmd-grid">
+                <div class="cmd-card primary">
+                    <div class="cmd-icon">&#x1F680;</div>
+                    <div>
+                        <div class="cmd-text">"Run a full Value Assessment for [client]"</div>
+                        <div class="cmd-desc">That's it. That's the main one. Just tell Cortex what to do in plain English.</div>
+                    </div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-icon">&#x1F4DA;</div>
+                    <div>
+                        <div class="cmd-text">/domain-context retail</div>
+                        <div class="cmd-desc">Load domain knowledge before an engagement. Retail, SME, Wealth, etc.</div>
+                    </div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-icon">&#x2728;</div>
+                    <div>
+                        <div class="cmd-text">/generate-assessment-html</div>
+                        <div class="cmd-desc">Create that stunning interactive HTML dashboard.</div>
+                    </div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-icon">&#x1F4CA;</div>
+                    <div>
+                        <div class="cmd-text">/generate-roi-excel</div>
+                        <div class="cmd-desc">Export the ROI model as a professional Excel workbook.</div>
+                    </div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-icon">&#x1F5FA;&#xFE0F;</div>
+                    <div>
+                        <div class="cmd-text">/build-journey retail</div>
+                        <div class="cmd-desc">Map customer journeys with friction points, value leakage, and before/after states. Checkpoints built in.</div>
+                    </div>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-icon">&#x1F3AC;</div>
+                    <div>
+                        <div class="cmd-text">/presentation</div>
+                        <div class="cmd-desc">Turn any content into a presentation just like this one.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 12: Pro Tips -->
+    <div class="scene" data-title="Pro Tips">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label orange">Insider Knowledge</div>
+                <h2>Pro Tips from <span style="color: var(--bb-orange);">Day 1</span></h2>
+            </div>
+            <div class="tip-grid">
+                <div class="tip-card">
+                    <div class="tip-num">1</div>
+                    <div>
+                        <div class="tip-title">Always start from cortex/</div>
+                        <div class="tip-desc">This is critical. Agents only activate when you're in the Cortex directory. Weird behavior? Check this first.</div>
+                    </div>
+                </div>
+                <div class="tip-card">
+                    <div class="tip-num">2</div>
+                    <div>
+                        <div class="tip-title">Let Cortex ask YOU questions</div>
+                        <div class="tip-desc">Don't try to front-load everything. Start simple, and Cortex will ask for what it needs. It's a conversation.</div>
+                    </div>
+                </div>
+                <div class="tip-card">
+                    <div class="tip-num">3</div>
+                    <div>
+                        <div class="tip-title">YOU own every output</div>
+                        <div class="tip-desc">Cortex drafts, you validate and own. If you can't explain it to the client, it doesn't ship. Review every deliverable &mdash; that's why you're the consultant.</div>
+                    </div>
+                </div>
+                <div class="tip-card">
+                    <div class="tip-num">4</div>
+                    <div>
+                        <div class="tip-title">CLIENT_PROFILE.md is your memory</div>
+                        <div class="tip-desc">It persists across engagements. Second engagement with the same client? Cortex already knows them.</div>
+                    </div>
+                </div>
+                <div class="tip-card" style="grid-column: span 2;">
+                    <div class="tip-num">5</div>
+                    <div>
+                        <div class="tip-title">/domain-context is your secret weapon</div>
+                        <div class="tip-desc">Run this before ANY engagement. It loads benchmarks, pain points, journeys, and value props for the specific banking domain. Your deliverables will be 10x richer.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 13: Let's Do It Live -->
+    <div class="scene" data-title="Let's Do It Live">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label" style="color: var(--bb-green);">Hands-On Time</div>
+                <h2 style="font-size: clamp(32px, 5vw, 56px);">
+                    Let's Do It <span style="color: var(--bb-orange);">LIVE</span>
+                </h2>
+                <p style="font-size: 15px; color: rgba(255,255,255,0.4); margin-bottom: 30px;">
+                    Everyone follow along. Yes, right now. Open your laptops.
+                </p>
+            </div>
+            <div class="live-steps">
+                <div class="live-step">
+                    <div class="ls-num">1</div>
+                    <div>
+                        <div class="ls-text">Open VS Code</div>
+                        <div class="ls-sub">Already installed on your machines</div>
+                    </div>
+                </div>
+                <div class="live-step">
+                    <div class="ls-num">2</div>
+                    <div>
+                        <div class="ls-text">Clone Cortex together</div>
+                        <div class="ls-sub">Copy-paste the command from chat &mdash; one line, done</div>
+                    </div>
+                </div>
+                <div class="live-step">
+                    <div class="ls-num">3</div>
+                    <div>
+                        <div class="ls-text">Run init_engagement.sh</div>
+                        <div class="ls-sub">Bootstrap a practice engagement in 10 seconds</div>
+                    </div>
+                </div>
+                <div class="live-step">
+                    <div class="ls-num">4</div>
+                    <div>
+                        <div class="ls-text">Kick off a mini-engagement</div>
+                        <div class="ls-sub">Watch Cortex do its thing on a sample transcript</div>
+                    </div>
+                </div>
+            </div>
+            <div class="animate-item" style="margin-top: 36px;">
+                <div class="cta-badge">
+                    By the time you leave this room, Cortex is on YOUR laptop.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 14: FAQ -->
+    <div class="scene" data-title="FAQ & Troubleshooting">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label">Don't Panic</div>
+                <h2>When Things Go <span style="color: var(--bb-orange);">Wrong</span></h2>
+                <p style="font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 24px;">(They won't. But just in case.)</p>
+            </div>
+            <div class="faq-grid">
+                <div class="faq-card">
+                    <div class="faq-q">"It's not finding my agents!"</div>
+                    <div class="faq-a">Are you in the <strong>cortex/</strong> directory? <code style="background: rgba(0,210,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: var(--bb-cyan);">cd cortex</code> and try again. This is the #1 gotcha.</div>
+                </div>
+                <div class="faq-card">
+                    <div class="faq-q">"The output looks weird"</div>
+                    <div class="faq-a">Ask Cortex to <strong>"run the 7-step review checklist"</strong>. It'll self-correct inconsistencies between deliverables.</div>
+                </div>
+                <div class="faq-card">
+                    <div class="faq-q">"How do I update Cortex?"</div>
+                    <div class="faq-a"><code style="background: rgba(0,210,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: var(--bb-cyan);">git pull</code> &mdash; that's literally it. You'll get release notes by email too.</div>
+                </div>
+                <div class="faq-card">
+                    <div class="faq-q">"I want to customize an agent"</div>
+                    <div class="faq-a">Talk to your <strong>Cortex Champions</strong> first (Mariam, Anton, Shobhit, Mayur). Agents are calibrated to work together.</div>
+                </div>
+                <div class="faq-card" style="grid-column: span 2; border-color: var(--bb-cyan); background: linear-gradient(135deg, rgba(0, 210, 255, 0.06), rgba(26, 31, 113, 0.15));">
+                    <div class="faq-q" style="color: var(--bb-cyan);">Need help?</div>
+                    <div class="faq-a" style="font-size: 14px;">
+                        Drop a message in <strong>&#x1F512; backbase-value-consulting</strong> on Slack. We've got you. No question is too basic.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 15: Roadmap -->
+    <div class="scene" data-title="Roadmap">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label" style="color: var(--bb-purple);">Part 3 &mdash; What's Next</div>
+                <h2>The <span style="color: var(--bb-cyan);">Roadmap</span></h2>
+            </div>
+            <div class="roadmap-grid">
+                <div class="roadmap-card now">
+                    <div class="rm-dot"></div>
+                    <div class="rm-phase">Now &mdash; Feb 2026</div>
+                    <div class="rm-title">You Are Here</div>
+                    <div class="rm-items">
+                        <span>&#x2713; Ignite Assess: Assessment &amp; Solutioning</span>
+                        <span>&#x2713; Ignite Inspire: Workshop workflows</span>
+                        <span>&#x2713; 18 specialized agents</span>
+                        <span>&#x2713; Interactive HTML dashboards</span>
+                        <span>&#x2713; 6 banking domain packs</span>
+                        <span style="color: var(--bb-orange);">&#x1F6A7; Roadmap Agent &mdash; WIP, needs refinement</span>
+                        <span>&#x2713; Self-improving Flywheel</span>
+                    </div>
+                </div>
+                <div class="roadmap-card next">
+                    <div class="rm-dot"></div>
+                    <div class="rm-phase">Next &mdash; Q2 2026</div>
+                    <div class="rm-title">Secure &amp; Scale</div>
+                    <div class="rm-items">
+                        <span>&#x25CB; Roadmap Agent v2 &mdash; fully matured</span>
+                        <span>&#x25CB; Backbase Cloud hosting &mdash; always on, not laptop dependent</span>
+                        <span>&#x25CB; Secure git &amp; infrastructure on Backbase cloud</span>
+                        <span>&#x25CB; Salesforce CRM integration</span>
+                        <span>&#x25CB; Auto-proposal generation</span>
+                        <span>&#x25CB; Multi-language support</span>
+                    </div>
+                </div>
+                <div class="roadmap-card future">
+                    <div class="rm-dot"></div>
+                    <div class="rm-phase">Future &mdash; H2 2026</div>
+                    <div class="rm-title">Meet Donna</div>
+                    <div class="rm-items">
+                        <span>&#x25CB; &#x1F4AC; <strong>Donna</strong> &mdash; your WhatsApp AI assistant</span>
+                        <span>&#x25CB; Upload transcripts on the go via chat</span>
+                        <span>&#x25CB; Generate outputs from anywhere &mdash; no laptop needed</span>
+                        <span>&#x25CB; Always-on cloud pipeline</span>
+                        <span>&#x25CB; Cross-engagement pattern intelligence</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flywheel-banner">
+                <span class="fb-icon">&#x267E;&#xFE0F;</span>
+                <strong>The Flywheel:</strong> Every engagement YOU run makes Cortex smarter for everyone. Your work trains the next version.
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 16: One More Thing -->
+    <div class="scene" data-title="One More Thing...">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label" style="font-size: 13px;">One More Thing...</div>
+            </div>
+            <div class="animate-item">
+                <h1 class="mega-title" style="font-size: clamp(36px, 6vw, 72px); margin-bottom: 40px;">
+                    <span class="white">You're not being replaced.</span><br>
+                    <span class="cyan">You're being AMPLIFIED.</span>
+                </h1>
+            </div>
+            <div class="animate-item">
+                <p style="font-size: 20px; color: rgba(255,255,255,0.5); max-width: 650px; margin: 0 auto; line-height: 1.8;">
+                    The boring parts? <span style="color: var(--bb-green);">Automated.</span><br>
+                    The strategic thinking? <span style="color: var(--bb-orange);">That's still you.</span><br>
+                    The ownership? <span style="color: var(--bb-cyan);">100% yours.</span><br>
+                    <span style="font-size: 15px; color: rgba(255,255,255,0.35); margin-top: 8px; display: inline-block;">
+                        You validate it. You own it. You explain it to the client.
+                    </span>
+                </p>
+            </div>
+            <div class="animate-item" style="margin-top: 48px;">
+                <p style="font-size: 14px; color: rgba(255,255,255,0.3); letter-spacing: 3px; text-transform: uppercase;">
+                    Welcome to the future of Value Consulting.
+                </p>
+            </div>
+            <div class="animate-item" style="margin-top: 32px;">
+                <div class="cta-badge" style="font-size: 18px;">
+                    Start your first REAL engagement THIS WEEK
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENE 17: Thank You & Q&A -->
+    <div class="scene" data-title="Thank You & Q&A">
+        <div class="scene-content">
+            <div class="animate-item">
+                <div class="section-label">That's a Wrap</div>
+            </div>
+            <div class="animate-item">
+                <h1 class="mega-title" style="font-size: clamp(40px, 7vw, 80px); margin-bottom: 20px;">
+                    <span class="white">Thank You</span>
+                </h1>
+            </div>
+            <div class="animate-item">
+                <p style="font-size: 18px; color: rgba(255,255,255,0.5); margin-bottom: 40px;">
+                    Cortex &mdash; Built by Consultants, for Consultants
+                </p>
+            </div>
+            <div class="animate-item">
+                <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px;">
+                    <div class="card" style="text-align: center; min-width: 170px; padding: 22px 18px;">
+                        <div style="font-size: 28px; margin-bottom: 8px;">&#x1F4E2;</div>
+                        <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px;">&#x1F512; backbase-value-consulting</div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.4);">Private Slack channel</div>
+                    </div>
+                </div>
+            </div>
+            <div class="animate-item">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--bb-orange); margin-bottom: 16px;">Your Cortex Champions</div>
+                <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                    <div class="card" style="text-align: center; min-width: 150px; padding: 20px 16px;">
+                        <div style="font-size: 28px; margin-bottom: 6px;">&#x1F451;</div>
+                        <div style="font-size: 15px; font-weight: 700;">Mariam</div>
+                        <div style="font-size: 11px; color: var(--bb-cyan);">ROI Queen</div>
+                    </div>
+                    <div class="card" style="text-align: center; min-width: 150px; padding: 20px 16px;">
+                        <div style="font-size: 28px; margin-bottom: 6px;">&#x1F9EA;</div>
+                        <div style="font-size: 15px; font-weight: 700;">Anton</div>
+                        <div style="font-size: 11px; color: var(--bb-green);">The Guinea Pig</div>
+                    </div>
+                    <div class="card" style="text-align: center; min-width: 150px; padding: 20px 16px;">
+                        <div style="font-size: 28px; margin-bottom: 6px;">&#x1F451;</div>
+                        <div style="font-size: 15px; font-weight: 700;">Shobhit</div>
+                        <div style="font-size: 11px; color: var(--bb-cyan);">Ignite Inspire King</div>
+                    </div>
+                    <div class="card" style="text-align: center; min-width: 150px; padding: 20px 16px;">
+                        <div style="font-size: 28px; margin-bottom: 6px;">&#x1F52D;</div>
+                        <div style="font-size: 15px; font-weight: 700;">Mayur</div>
+                        <div style="font-size: 11px; color: var(--bb-orange);">The Visionary</div>
+                    </div>
+                </div>
+                <p style="font-size: 13px; color: rgba(255,255,255,0.35); margin-top: 16px; font-style: italic;">
+                    Stuck? Confused? Excited? Reach out to any of us. No question is too basic.
+                </p>
+            </div>
+            <div class="animate-item" style="margin-top: 48px;">
+                <p style="font-size: 12px; color: rgba(255,255,255,0.2); letter-spacing: 2px; text-transform: uppercase;">
+                    Backbase Value Consulting &bull; February 2026
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ===== PRESENTATION ENGINE =====
+const scenes = document.querySelectorAll('.scene');
+const navItems = document.querySelectorAll('.nav-item');
+const navSidebar = document.getElementById('navSidebar');
+const menuBtn = document.getElementById('menuBtn');
+const progressFill = document.getElementById('progressFill');
+const sceneCounter = document.getElementById('sceneCounter');
+const confettiEl = document.getElementById('confetti');
+let currentScene = 0;
+let isTransitioning = false;
+
+function goToScene(index) {
+    if (isTransitioning || index < 0 || index >= scenes.length || index === currentScene) return;
+    isTransitioning = true;
+
+    scenes[currentScene].classList.remove('active');
+    currentScene = index;
+    scenes[currentScene].classList.add('active');
+
+    // Update nav
+    navItems.forEach(n => n.classList.remove('active'));
+    navItems[currentScene]?.classList.add('active');
+
+    // Update progress
+    const pct = ((currentScene + 1) / scenes.length) * 100;
+    progressFill.style.width = pct + '%';
+
+    // Update counter
+    sceneCounter.textContent = String(currentScene + 1).padStart(2, '0') + ' / ' + String(scenes.length).padStart(2, '0');
+
+    // Animate ownership cards on scene 9
+    if (currentScene === 9) {
+        document.querySelectorAll('.scene:nth-child(10) div[style*="grid-template-columns: repeat(3"]  > div').forEach((card, i) => {
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                card.style.transform = 'scale(1.03)';
+                setTimeout(() => { card.style.transform = 'scale(1)'; }, 300);
+            }, 400 + i * 200);
+        });
+    }
+
+    // Animate inline stat-cards on scene 3 (Meet Cortex)
+    if (currentScene === 3) {
+        document.querySelectorAll('.scene:nth-child(4) .stat-card').forEach(card => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateX(0)';
+        });
+    }
+
+    // Confetti on "One More Thing" scene (scene index 17)
+    if (currentScene === 17) launchConfetti();
+
+    // Close sidebar
+    navSidebar.classList.remove('open');
+
+    setTimeout(() => { isTransitioning = false; }, 600);
+}
+
+function nextScene() { goToScene(currentScene + 1); }
+function prevScene() { goToScene(currentScene - 1); }
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextScene(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prevScene(); }
+    else if (e.key === 'm' || e.key === 'M' || e.key === 'Escape') {
+        navSidebar.classList.toggle('open');
+    }
+});
+
+// Touch
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 60) { diff > 0 ? nextScene() : prevScene(); }
+});
+
+// Click nav items
+navItems.forEach(item => {
+    item.addEventListener('click', () => {
+        const idx = parseInt(item.dataset.scene);
+        goToScene(idx);
+    });
+});
+
+// Menu button
+menuBtn.addEventListener('click', () => {
+    navSidebar.classList.toggle('open');
+});
+
+// Close sidebar on outside click
+document.addEventListener('click', (e) => {
+    if (navSidebar.classList.contains('open') && !navSidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+        navSidebar.classList.remove('open');
+    }
+});
+
+// Confetti
+function launchConfetti() {
+    const colors = ['#00D2FF', '#FF6B35', '#34D399', '#A78BFA', '#EF4444', '#FBBF24'];
+    for (let i = 0; i < 80; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.width = (Math.random() * 10 + 5) + 'px';
+        piece.style.height = (Math.random() * 10 + 5) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        piece.style.animationDelay = (Math.random() * 1.5) + 's';
+        confettiEl.appendChild(piece);
+        setTimeout(() => piece.classList.add('active'), 50);
+        setTimeout(() => piece.remove(), 5000);
+    }
+}
+
+// Initialize first scene
+navItems[0]?.classList.add('active');
+progressFill.style.width = ((1 / scenes.length) * 100) + '%';
+</script>
+</body>
+</html>

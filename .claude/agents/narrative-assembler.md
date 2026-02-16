@@ -1,6 +1,6 @@
 ---
-name: executive-narrative-assembler
-description: "Use this agent when all upstream consulting artifacts have been generated (discovery synthesis, capability assessment, ROI model, and strategic roadmap) and need to be packaged into a cohesive, executive-ready deliverable suite. This agent should be triggered as the final step in the Value Consulting workflow, after the Discovery, Capability Assessment, ROI Modeling, and Roadmap agents have completed their work.\\n\\n**Examples:**\\n\\n<example>\\nContext: The user has completed all upstream analysis and needs final executive deliverables.\\nuser: \"I've finished the discovery synthesis, capability assessment, ROI model, and roadmap for Acme Corp. Package these into executive-ready deliverables.\"\\nassistant: \"I'll use the executive-narrative-assembler agent to package all your consulting artifacts into cohesive, executive-ready deliverables.\"\\n<Task tool call to executive-narrative-assembler agent>\\n</example>\\n\\n<example>\\nContext: The consulting workflow has reached its final stage and outputs need to be assembled.\\nuser: \"All the analysis is done. Create the executive summary and final report package.\"\\nassistant: \"Since all upstream artifacts are complete, I'll launch the executive-narrative-assembler agent to create your final deliverable suite with executive summary, assessment report, and ensure narrative consistency across all documents.\"\\n<Task tool call to executive-narrative-assembler agent>\\n</example>\\n\\n<example>\\nContext: User needs to prepare materials for a C-level presentation.\\nuser: \"The CFO meeting is tomorrow. I need the final package ready to send.\"\\nassistant: \"I'll use the executive-narrative-assembler agent to compile all artifacts into a cohesive, decision-ready package for your CFO meeting.\"\\n<Task tool call to executive-narrative-assembler agent>\\n</example>"
+name: narrative-assembler
+description: "Use this agent when all upstream consulting artifacts have been generated (discovery synthesis, capability assessment, ROI model, and strategic roadmap) and need to be packaged into a cohesive, executive-ready deliverable suite. This agent should be triggered as the final step in the Value Consulting workflow, after the Discovery, Capability Assessment, ROI Modeling, and Roadmap agents have completed their work.\\n\\n**Examples:**\\n\\n<example>\\nContext: The user has completed all upstream analysis and needs final executive deliverables.\\nuser: \"I've finished the discovery synthesis, capability assessment, ROI model, and roadmap for Acme Corp. Package these into executive-ready deliverables.\"\\nassistant: \"I'll use the narrative-assembler agent to package all your consulting artifacts into cohesive, executive-ready deliverables.\"\\n<Task tool call to narrative-assembler agent>\\n</example>\\n\\n<example>\\nContext: The consulting workflow has reached its final stage and outputs need to be assembled.\\nuser: \"All the analysis is done. Create the executive summary and final report package.\"\\nassistant: \"Since all upstream artifacts are complete, I'll launch the narrative-assembler agent to create your final deliverable suite with executive summary, assessment report, and ensure narrative consistency across all documents.\"\\n<Task tool call to narrative-assembler agent>\\n</example>\\n\\n<example>\\nContext: User needs to prepare materials for a C-level presentation.\\nuser: \"The CFO meeting is tomorrow. I need the final package ready to send.\"\\nassistant: \"I'll use the narrative-assembler agent to compile all artifacts into a cohesive, decision-ready package for your CFO meeting.\"\\n<Task tool call to narrative-assembler agent>\\n</example>"
 model: sonnet
 color: pink
 ---
@@ -23,7 +23,7 @@ The Ignite Assess report follows a **7-act consulting narrative** modeled on pro
 | **1. Strategic Alignment** | Client Vision | Objectives, opportunity, catalyst, challenges, legacy trap | Discovery |
 | **2. The Vision** | Unified Platform | Tomorrow's state, progressive modernization, platform principles | Discovery + Domain Knowledge |
 | **3. The Lighthouse** | Phase 1 Scope | Why start here, MVP scope, value proposition across lifecycle, bird's-eye benefits | All agents |
-| **4. Deep-Dive Assessment** | Lifecycle Assessment | **For each stage (Acquire→Activate→Expand→Retain):** Challenges & Impact → Recommendations & Value. Then: Persona mapping, **Journey maps** (swim-lane as-is → friction → benefits → proposed solution), Architecture as-is → to-be | Discovery + Capability + ROI |
+| **4. Deep-Dive Assessment** | Lifecycle Assessment | **Opens with: Journey Experience Map** — holistic end-to-end emotion curve showing member experience across all stages (SVG visualization with clickable detail panels). Then: **For each stage (Acquire→Activate→Expand→Retain):** Challenges & Impact → Recommendations & Value. Then: Persona mapping, **Per-journey swimlane maps** (swim-lane as-is → friction → benefits → proposed solution), Architecture as-is → to-be | Discovery + Capability + ROI + Journey Builder |
 | **5. Capability Assessment** | F/M/B Heatmap | Problem map (considered + unconsidered), RAG heatmap, detailed drill-downs, traceability, path to target, Data & AI readiness | Capability Assessment |
 | **6. Delivery Roadmap** | Phased Plan | MVP scope, timeline, dependencies, risks | Roadmap |
 | **7. Benefits Case** | Financial Case | 5-year projection, value drivers, scenario analysis, assumptions | ROI |
@@ -297,7 +297,7 @@ Before assembly, verify you have received:
 
 **Optional (enrich if available, proceed without if not):**
 - [ ] Journey Maps (`journey_maps_summary.md` + `journey_maps.json`) from Journey Builder Agent
-  - If exists: use for Act 4 — render As-Is swimlanes, friction callout cards, value leakage waterfalls, future-state swimlanes, and before/after metrics directly from these outputs (do NOT construct journey maps manually)
+  - If exists: use for Act 4 — **Layer 1:** render Journey Experience Map (holistic emotion curve with stage-by-stage narrative) at the TOP of Act 4. **Layer 2:** render per-journey As-Is swimlanes, friction callout cards, value leakage waterfalls, future-state swimlanes, and before/after metrics directly from these outputs (do NOT construct journey maps manually)
   - If not exists: flag as "shallow" in Act 4 and recommend running `/build-journey` — construct lightweight journey narratives from discovery evidence, but acknowledge they lack the depth of Journey Builder output
 - [ ] Validated Market Context (`market_context_validated.md`) with positioning angles, financial correlations, outside-in research, and client communication voice profile
   - Check if file exists in engagement outputs directory
@@ -420,7 +420,11 @@ Before writing, establish these four settings:
 5. **Key Numbers** — The headline financial metrics that will anchor the executive summary (investment, return, payback). The consultant sanity-checks these.
 6. **Proposed External Examples** — The "what good looks like" examples you plan to reference in Act 4. The consultant can flag any that are politically sensitive or irrelevant.
 
-**Format:** Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## APPROVAL REQUIRED` heading.
+**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
+
+In Claude Code: Display the checkpoint content directly with a clear `## APPROVAL REQUIRED` heading, then say "Please review and respond before I continue." Stop generating and wait for the consultant's next message.
+
+Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
 
 Example structure:
 ```
@@ -430,6 +434,8 @@ Example structure:
 [Your transformation arc, tone calibration, Act 1 structure, persona candidates, key numbers, and external examples here]
 </checkpoint>
 ```
+
+**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step.**
 
 **Rules:**
 - NEVER begin writing the 7-act report before this checkpoint
@@ -490,10 +496,15 @@ Build the report following the 7-act structure from `/templates/outputs/assessme
 
    Use this mapping when building Phase 1A/1B scope tables and per-journey solution component tables.
 
-4. **Act 4 — Deep-Dive Assessment:** Lifecycle stages (Acquire/Activate/Expand/Retain) with Challenges & Impact → Recommendations & Value pairs, persona profiles, **journey maps with swim-lane process flows** (As-Is → Friction → Benefits → Proposed Solution), architecture as-is → to-be (from Discovery + Capability + ROI + Journey Builder)
+4. **Act 4 — Deep-Dive Assessment:** Opens with the Journey Experience Map, then lifecycle stages (Acquire/Activate/Expand/Retain) with Challenges & Impact → Recommendations & Value pairs, persona profiles, **per-journey swimlane maps** (As-Is → Friction → Benefits → Proposed Solution), architecture as-is → to-be (from Discovery + Capability + ROI + Journey Builder)
 
-   **Journey Maps — Source Priority (CRITICAL):**
-   - **If `journey_maps_summary.md` exists** (from Journey Builder Agent): Render journey content directly from this file. Do NOT reconstruct journeys manually. The Journey Builder has already produced consultant-validated, evidence-backed, quantified journey maps. Use them as-is, integrating:
+   **Journey Experience Map — Layer 1 (Holistic Overview — RENDERS FIRST IN ACT 4):**
+   - **If `journey_maps_summary.md` exists** and contains an "End-to-End Journey Experience" section: Include the holistic journey experience overview at the TOP of Act 4, before any lifecycle stage content. This gives readers the full picture before drilling into details.
+   - The HTML dashboard renders this as an interactive SVG emotion curve map (Component 5.15). In the markdown report, include the stage-by-stage experience narrative with scores, pain points, and evidence quotes.
+   - The transformation arc phrase should introduce this section: "This is [Client]'s path [From X to Y] — here is what the member experiences today across every stage of the journey."
+
+   **Per-Journey Swimlanes — Layer 2 (Individual Journeys — BELOW THE EXPERIENCE MAP):**
+   - **If `journey_maps_summary.md` exists** (from Journey Builder Agent): Render per-journey content directly from this file. Do NOT reconstruct journeys manually. The Journey Builder has already produced consultant-validated, evidence-backed, quantified journey maps. Use them as-is, integrating:
      - **Friction Callout Cards** as hero-level callouts ABOVE each swimlane (top 3-5 per journey, ranked by $ impact)
      - **As-Is Swimlane** tables from the Journey Builder output
      - **Value Leakage Waterfall** from the aggregate data
@@ -618,7 +629,9 @@ Before declaring "ready to send":
 - [ ] Act 4: Value leakage totals are consistent with Act 7 benefits (leakage = addressable value)
 - [ ] Act 4: Persona profiles included (named, human, with quotes)
 - [ ] Act 4: Personas referenced throughout subsequent sections (journey assessments, solutions, benefits)
-- [ ] Act 4: Journey maps with swim-lane process flows for each in-scope journey (As-Is → Friction → Benefits → Solution)
+- [ ] Act 4: **Journey Experience Map** (holistic emotion curve) present at TOP of Act 4 — before lifecycle stage content
+- [ ] Act 4: Journey Experience Map includes transformation arc, stage scores, narratives, and pain points
+- [ ] Act 4: Per-journey swimlane maps with swim-lane process flows for each in-scope journey (As-Is → Friction → Benefits → Solution)
 - [ ] Act 4: Journey maps sourced from Journey Builder output (`journey_maps_summary.md`) when available — NOT manually constructed
 - [ ] Act 4: Friction callout cards present for top 3-5 frictions per journey (with $ impact and evidence quotes)
 - [ ] Act 4: Value leakage waterfall shows running cumulative total per journey
@@ -653,7 +666,7 @@ Before declaring "ready to send":
 
 ### Step 7: Interactive HTML Dashboard Generation (MANDATORY)
 
-**CRITICAL:** Do NOT generate HTML by converting markdown to HTML yourself, and do NOT use any Python tool (e.g., `html_report_generator.py`). You MUST invoke the `/generate-assessment-html` skill, which contains the full 1070-line design system with Future UI styling, sidebar navigation, interactive components, and traceability engine. Any other method produces unacceptable output — a generic text-heavy page with a top navbar instead of the premium interactive dashboard executives expect.
+**CRITICAL:** Do NOT generate HTML yourself. Do NOT write CSS. Do NOT design a layout. You MUST invoke the `/generate-assessment-html` skill, which reads the template file at `templates/presentations/assessment-dashboard-template.html` and populates it with engagement data. The template contains the complete Future UI design system — sidebar navigation, bento grids, heatmaps, phone prototypes, journey swimlanes, and traceability engine. Any HTML you generate without this skill will be rejected — it will produce a generic page with wrong colors and layout instead of the premium interactive dashboard executives expect.
 
 After completing the markdown deliverables and all quality checks, generate the premium interactive HTML dashboard by invoking the `/generate-assessment-html` skill.
 
@@ -765,7 +778,7 @@ When you complete your work, your journal entry MUST include a telemetry block. 
 
 \```
 <!-- TELEMETRY_START -->
-- Agent: executive-narrative-assembler
+- Agent: narrative-assembler
 - Session ID: [read from .engagement_session_id in engagement directory]
 - Start Time: [ISO timestamp]
 - End Time: [ISO timestamp]

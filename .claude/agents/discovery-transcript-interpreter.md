@@ -274,7 +274,12 @@ Ensure your registers are:
 6. **What You DIDN'T Hear** — Topics you expected to come up based on the domain but didn't. The consultant can explain why (e.g., "they discussed that off-record" or "it's not relevant for this client").
 
 ### Format:
-Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## VALIDATION REQUIRED` heading. Each finding should have a "Confirm / Modify / Remove" option.
+
+**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
+
+In Claude Code: Display the checkpoint content directly with a clear `## VALIDATION REQUIRED` heading. Each finding should have a "Confirm / Modify / Remove" option. Then say "Please review and respond before I continue." Stop generating and wait.
+
+Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
 
 Example structure:
 ```
@@ -284,6 +289,8 @@ Example structure:
 [Your key findings, pain point rankings, domain detection, stakeholder highlights, data gaps, and "what you didn't hear" here]
 </checkpoint>
 ```
+
+**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step.**
 
 ### Rules:
 - NEVER finalize the evidence registers without this checkpoint

@@ -6,7 +6,7 @@ This document defines the output format for the Journey Builder Agent. The agent
 
 | File | Format | Consumer | Purpose |
 |------|--------|----------|---------|
-| `journey_maps.json` | JSON | `/generate-assessment-html` skill | Interactive swimlane visualization, friction callouts, value waterfall, before/after toggle |
+| `journey_maps.json` | JSON | `/generate-assessment-html` skill | Interactive swimlane visualization, friction callouts, value waterfall, before/after toggle, **journey experience map** |
 | `journey_maps_summary.md` | Markdown | Assembly Agent (Act 4) | Human-readable journey maps for the assessment report narrative |
 
 ---
@@ -15,7 +15,7 @@ This document defines the output format for the Journey Builder Agent. The agent
 
 ```json
 {
-  "$schema": "journey-maps-v1",
+  "$schema": "journey-maps-v2",
   "metadata": {
     "engagement_id": "string — engagement identifier",
     "client_name": "string — client organization name",
@@ -25,6 +25,63 @@ This document defines the output format for the Journey Builder Agent. The agent
     "consultant_validated": "boolean — true after Checkpoint #2",
     "journeys_selected_by": "consultant | auto-recommended"
   },
+
+  "journey_experience": {
+    "transformation_arc": "string — 'From X to Y' transformation narrative (e.g., 'From Disconnected Investor to Connected Wealth Member')",
+    "headline_insights": [
+      {
+        "severity": "red | amber | blue",
+        "icon": "string — single emoji representing the insight",
+        "stat": "string — short, punchy insight headline (e.g., '50% Never Fund')",
+        "description": "string — 1-2 sentence elaboration"
+      }
+    ],
+    "stages": [
+      {
+        "stage_id": "number — sequential (1, 2, 3...)",
+        "name": "string — stage name (e.g., 'Account Opening')",
+        "subtitle": "string — optional sub-label (e.g., '& Entry')",
+        "evocative_title": "string — storytelling title (e.g., 'Funding — The Cliff Edge')",
+        "evocative_subtitle": "string — what this stage means in plain language",
+        "lifecycle_stage": "Acquire | Activate | Expand | Retain",
+        "experience_score": "number — 1-10 member experience rating",
+        "score_color": "string — hex color for the score display",
+        "zone": "string — zone grouping (e.g., 'Digital Self-Service', 'Human Touch & Servicing')",
+        "status": "mapped | pending — pending stages have dashed outlines",
+        "narrative": "string — 3-5 sentence storytelling paragraph (NOT bullets). Use client language. Make the reader FEEL the experience.",
+        "pain_points": [
+          {
+            "severity": "critical | high | medium",
+            "title": "string — short, compelling name",
+            "description": "string — 2-3 sentence explanation",
+            "impact": "string — quantified impact statement (optional)",
+            "evidence_ids": ["E-XX"],
+            "pain_point_ids": ["PP-XXX-XX"]
+          }
+        ],
+        "uf_gaps": [
+          {
+            "title": "string — unified frontline / transformation arc gap",
+            "description": "string — how this stage fails the transformation vision",
+            "impact": "string — what this gap costs",
+            "capability_score": "string — e.g., 'Score: 0 (Absent)'"
+          }
+        ],
+        "evidence_quote": {
+          "text": "string — direct stakeholder quote",
+          "attribution": "string — who said it and when"
+        }
+      }
+    ],
+    "svg_curve": {
+      "description": "Coordinates for the emotion curve SVG. The skill generates the SVG from stage scores.",
+      "zone_boundary_x": "number — X coordinate where zones split (e.g., 640 for a 1000-wide viewbox)",
+      "zone_labels": ["string — zone label names"],
+      "viewbox_width": 1000,
+      "viewbox_height": 230
+    }
+  },
+
   "journeys": [
     {
       "journey_id": "J1 — sequential journey identifier",
@@ -165,6 +222,38 @@ The human-readable output follows this structure for each journey:
 
 **Domain:** [domain] | **Region:** [region] | **Date:** [date]
 **Consultant Validated:** Yes/No | **Journeys Selected By:** Consultant / Auto-recommended
+**Transformation Arc:** "[From X to Y]"
+
+---
+
+## End-to-End Journey Experience
+
+### Headline Insights
+
+| # | Severity | Insight | Detail |
+|---|----------|---------|--------|
+| 1 | Critical | [Punchy stat] | [1-2 sentence explanation] |
+| 2 | High | [Punchy stat] | [1-2 sentence explanation] |
+| 3 | Strategic | [Punchy stat] | [1-2 sentence explanation] |
+
+### Stage-by-Stage Experience
+
+#### Stage [N]: [Evocative Title] — [Score]/10
+
+**[Narrative — 3-5 storytelling sentences. NOT bullets. Make the reader feel the experience.]**
+
+**Pain Points:**
+- [Severity] **[Title]** — [Description]. [Impact if quantified]
+- ...
+
+**[Transformation Arc] Gaps:**
+- **[Gap Title]** — [Description] (Capability Score: [X])
+
+> "[Evidence quote]" — [Attribution]
+
+---
+
+[Repeat for each stage]
 
 ---
 
@@ -259,6 +348,10 @@ Cumulative leakage: $2,400,000/year
 4. **Product grounding:** Every future state step references specific Backbase products
 5. **Minimum depth:** Each journey has at least 5 as-is steps and 3 friction callouts
 6. **Consultant validation:** `metadata.consultant_validated` must be `true` before delivery
+7. **Journey experience completeness:** `journey_experience` section must have at least 4 stages with experience scores, narratives, and pain points
+8. **Journey experience insights:** `journey_experience.headline_insights` must have exactly 3 items (one red, one amber, one blue)
+9. **Journey experience narratives:** Every stage narrative must be 3+ sentences in storytelling voice (NOT bullet points)
+10. **Transformation arc:** `journey_experience.transformation_arc` must be defined and referenced in stage narratives
 
 ---
 
@@ -268,6 +361,7 @@ Journey map elements connect to other deliverables via trace IDs:
 
 | Element | Trace ID Pattern | Links To |
 |---------|-----------------|----------|
+| Journey experience stages | `JX-{STAGE_NUM}` | Journey experience map in Act 4, SVG emotion curve |
 | Friction points | `PP-{LIFECYCLE}-{NUM}` | Pain points in Act 1, Capability gaps in Act 5 |
 | Capabilities | `CAP-{LIFECYCLE}-{LAYER}-{NUM}` | Heatmap cells in Act 5, Initiatives in Act 6 |
 | Value recovered | `BEN-{NUM}` | ROI levers in Act 7 |
