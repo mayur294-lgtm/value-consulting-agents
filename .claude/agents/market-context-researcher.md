@@ -429,7 +429,7 @@ Strength: [Strong / Moderate / Weak — based on evidence quality]
 
 ---
 
-## Consultant Interaction Model
+## Consultant Checkpoint
 
 **You MUST present findings to the consultant before they flow to the Assembly Agent.**
 
