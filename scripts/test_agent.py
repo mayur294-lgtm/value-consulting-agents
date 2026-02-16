@@ -51,9 +51,11 @@ def get_changed_files(branch: str, base_branch: str) -> list:
 def check_file(filepath: str, checks: list) -> list:
     """Run quality checks against a file."""
     try:
-        content = Path(filepath).read_text()
+        content = Path(filepath).read_text(encoding='utf-8')
     except FileNotFoundError:
         return [{'name': 'File exists', 'passed': False, 'reason': f'File not found: {filepath}'}]
+    except (UnicodeDecodeError, ValueError):
+        return []  # Skip binary files (images, etc.)
 
     results = []
     for check in checks:
