@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- AGENT: Replace [CLIENT] with actual client name -->
+<title>[CLIENT] IT Architecture &amp; Operations Workshop | Backbase</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-dark: #091C35;
+    --primary-blue: #3366FF;
+    --cyan: #69FEFF;
+    --white: #FFFFFF;
+    --light-grey: #F3F6F9;
+    --light-blue: #E5EBFF;
+    --muted: #3A495D;
+    --green: #26BC71;
+    --amber: #FFAC09;
+    --red: #FF7262;
+    --text: #091C35;
+    --text-light: #5A6A7E;
+    --border: #E0E6ED;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px; line-height: 1.6; color: var(--text); background: var(--white);
+  }
+
+  /* === COVER (Dark background) === */
+  .cover {
+    background: var(--primary-dark); color: var(--white); min-height: 100vh;
+    padding: 60px 80px; display: flex; flex-direction: column; justify-content: center;
+    position: relative; page-break-after: always;
+  }
+  .cover .brand { font-size: 22px; font-weight: 600; color: var(--primary-blue); margin-bottom: 60px; letter-spacing: 1px; }
+  .cover h1 { font-size: 48px; font-weight: 900; line-height: 1.15; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 60px; }
+  .cover .meta { font-size: 16px; font-weight: 400; color: var(--cyan); }
+
+  /* === SECTION DIVIDER (Blue background) === */
+  .section-divider {
+    background: var(--primary-blue); color: var(--white); padding: 80px 80px;
+    min-height: 40vh; display: flex; flex-direction: column; justify-content: center;
+    position: relative; page-break-before: always; page-break-after: always;
+  }
+  .section-divider .brand { font-size: 18px; font-weight: 600; margin-bottom: 40px; letter-spacing: 1px; }
+  .section-divider .ghost-number {
+    position: absolute; right: 80px; top: 50%; transform: translateY(-50%);
+    font-size: 200px; font-weight: 900; color: rgba(255,255,255,0.08); line-height: 1;
+  }
+  .section-divider h2 { font-size: 42px; font-weight: 900; line-height: 1.2; margin-bottom: 8px; }
+  .section-divider .section-subtitle { font-size: 20px; font-weight: 300; color: rgba(255,255,255,0.7); }
+  .section-divider .cyan-accent { width: 60px; height: 4px; background: var(--cyan); margin-bottom: 24px; }
+
+  /* === CONTENT SECTION (White background) === */
+  .content-section {
+    background: var(--white); padding: 60px 80px; min-height: 80vh;
+    position: relative; page-break-after: always;
+  }
+  .content-section .page-footer {
+    position: absolute; bottom: 20px; right: 80px;
+    font-size: 11px; font-weight: 600; color: var(--text-light); letter-spacing: 1px;
+  }
+
+  /* === TITLE === */
+  .section-title { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+  .section-title .accent { width: 16px; height: 16px; background: var(--primary-blue); flex-shrink: 0; }
+  .section-title h2 { font-size: 24px; font-weight: 700; color: var(--text); }
+  .section-title .subtitle { font-size: 14px; font-weight: 400; color: var(--text-light); margin-left: auto; }
+
+  /* === OBJECTIVE STATEMENT === */
+  .objective-statement {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0;
+    padding: 24px 28px; font-size: 16px; line-height: 1.6; margin-bottom: 40px;
+  }
+
+  /* === METHOD GRID === */
+  .methodology-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+  .method-block {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 20px 16px; text-align: center;
+  }
+  .method-block .block-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; background: var(--primary-blue); color: #fff;
+    border-radius: 50%; font-size: 14px; font-weight: 700; margin-bottom: 10px;
+  }
+  .method-block h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .method-block p { font-size: 12px; color: var(--text-light); }
+
+  /* === STATS DASHBOARD === */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px; text-align: center;
+  }
+  .stat-card .stat-value { font-size: 36px; font-weight: 900; color: var(--primary-blue); }
+  .stat-card .stat-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+  /* === RECAP / CHALLENGE CARDS === */
+  .challenges-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .challenge-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .challenge-card .challenge-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--primary-blue); margin-bottom: 8px;
+  }
+  .challenge-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .challenge-card p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+
+  /* === GOAL CARDS (green left border) === */
+  .goal-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--green); border-radius: 0 12px 12px 0;
+    padding: 20px 24px; margin-bottom: 16px;
+  }
+  .goal-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .goal-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+  .goal-card .goal-tag {
+    display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; padding: 3px 10px; border-radius: 4px;
+    background: rgba(38,188,113,0.12); color: var(--green); margin-bottom: 8px;
+  }
+
+  /* === BLOCKER / CHALLENGE CARDS (red left border) === */
+  .blocker-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--red); border-radius: 0 12px 12px 0;
+    padding: 20px 24px; margin-bottom: 16px;
+  }
+  .blocker-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .blocker-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+  .blocker-card .blocker-tag {
+    display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; padding: 3px 10px; border-radius: 4px;
+    background: rgba(255,114,98,0.12); color: var(--red); margin-bottom: 8px;
+  }
+
+  /* === HYPOTHESIS CARDS === */
+  .hypothesis-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .hypothesis-card {
+    background: #FFFBF0; border: 1px solid var(--light-blue);
+    border-left: 3px solid var(--amber); border-radius: 12px; padding: 20px;
+  }
+  .hypothesis-card .h-label { font-size: 12px; font-weight: 700; color: var(--amber); margin-bottom: 8px; }
+  .hypothesis-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .hypothesis-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+  .hypothesis-card .h-source { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 8px; }
+  .hypothesis-card .h-question { font-size: 12px; color: var(--primary-blue); font-weight: 600; margin-top: 10px; }
+  .hypothesis-card .h-challenge-link { font-size: 11px; color: var(--red); font-weight: 600; margin-top: 6px; }
+
+  /* === ARCHITECTURE DIAGRAM === */
+  .arch-diagram { border: 1px solid var(--light-blue); border-radius: 16px; overflow: hidden; margin-bottom: 32px; }
+  .arch-layer { padding: 16px 24px; border-bottom: 1px solid var(--light-blue); }
+  .arch-layer:last-child { border-bottom: none; }
+  .arch-layer-header {
+    background: var(--light-grey); border-left: 3px solid var(--primary-blue);
+    padding: 8px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--muted); display: flex; align-items: center; justify-content: space-between;
+  }
+  .arch-layer-header .layer-count { font-size: 10px; font-weight: 600; color: var(--text-light); text-transform: none; letter-spacing: 0; }
+  .system-cards { display: flex; flex-wrap: wrap; gap: 12px; padding: 16px 0; }
+  .system-card {
+    background: var(--white); border: 1px solid var(--light-blue);
+    border-radius: 8px; padding: 12px 16px; min-width: 160px; flex: 1; max-width: 240px;
+    position: relative;
+  }
+  .system-card .sys-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .system-card .sys-vendor { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+  .system-card .sys-badge {
+    display: inline-block; font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 2px 8px; border-radius: 4px; margin-top: 6px;
+  }
+  /* AGENT: Apply health-based border-left colors for current state */
+  .system-card.health-green { border-left: 3px solid var(--green); }
+  .system-card.health-amber { border-left: 3px solid var(--amber); }
+  .system-card.health-red { border-left: 3px solid var(--red); }
+  /* AGENT: Apply target-state styling */
+  .system-card.backbase { background: rgba(51,102,255,0.06); border: 1px solid var(--primary-blue); border-left: 3px solid var(--primary-blue); }
+  .system-card.retained { border-left: 3px solid var(--green); }
+  .system-card.retired { opacity: 0.4; }
+  .system-card.retired .sys-name { text-decoration: line-through; }
+  /* Disposition badges */
+  .badge-replace { background: rgba(255,114,98,0.12); color: var(--red); }
+  .badge-retain { background: rgba(38,188,113,0.12); color: var(--green); }
+  .badge-retire { background: rgba(58,73,93,0.12); color: var(--muted); }
+  .badge-rationalize { background: rgba(255,172,9,0.12); color: var(--amber); }
+  .badge-backbase { background: rgba(51,102,255,0.12); color: var(--primary-blue); }
+  /* Pain callout */
+  .pain-callout {
+    position: absolute; top: -6px; right: -6px; width: 20px; height: 20px;
+    background: var(--red); color: #fff; border-radius: 50%; font-size: 10px;
+    font-weight: 900; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* === INTEGRATION STRIPS (between architecture layers) === */
+  .integration-strip {
+    background: rgba(255,114,98,0.04); border-left: 3px solid var(--red); border-right: 3px solid var(--red);
+    padding: 6px 24px; font-size: 11px; color: var(--red); font-weight: 600;
+    display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--light-blue);
+  }
+  .integration-strip.healthy {
+    background: rgba(38,188,113,0.04); border-left-color: var(--green); border-right-color: var(--green);
+    color: var(--green);
+  }
+  .integration-strip.backbase-int {
+    background: rgba(51,102,255,0.06); border-left-color: var(--primary-blue); border-right-color: var(--primary-blue);
+    color: var(--primary-blue);
+  }
+  .int-icon { font-size: 14px; }
+  .int-problem { font-size: 11px; color: var(--text-light); margin-left: auto; font-weight: 400; font-style: italic; }
+
+  /* === ARCH LEGEND === */
+  .arch-legend { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 24px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-light); }
+  .legend-swatch { width: 16px; height: 16px; border-radius: 3px; }
+  .legend-swatch.green { background: var(--green); }
+  .legend-swatch.amber { background: var(--amber); }
+  .legend-swatch.red { background: var(--red); }
+  .legend-swatch.blue { background: var(--primary-blue); }
+  .legend-swatch.grey { background: var(--muted); opacity: 0.4; }
+
+  /* === PROBLEM → SOLUTION → VALUE (fix-grid) === */
+  .fix-grid { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr; gap: 0; align-items: start; margin-bottom: 20px; }
+  .fix-card { padding: 20px; border-radius: 12px; }
+  .fix-card.problem { background: rgba(255,114,98,0.05); border: 1px solid rgba(255,114,98,0.15); border-left: 3px solid var(--red); }
+  .fix-card.solution { background: rgba(51,102,255,0.05); border: 1px solid var(--light-blue); border-left: 3px solid var(--primary-blue); }
+  .fix-card.value { background: rgba(38,188,113,0.05); border: 1px solid rgba(38,188,113,0.15); border-left: 3px solid var(--green); }
+  .fix-card .fix-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .fix-card.problem .fix-label { color: var(--red); }
+  .fix-card.solution .fix-label { color: var(--primary-blue); }
+  .fix-card.value .fix-label { color: var(--green); }
+  .fix-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .fix-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+  .fix-card .value-metric { font-size: 20px; font-weight: 900; margin-top: 8px; }
+  .fix-card.value .value-metric { color: var(--green); }
+  .fix-arrow { text-align: center; font-size: 20px; color: var(--border); padding-top: 20px; }
+
+  /* === TABLES === */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 16px; }
+  th {
+    background: var(--primary-blue); color: #fff; padding: 12px 16px; text-align: left;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;
+  }
+  th:first-child { border-radius: 8px 0 0 0; }
+  th:last-child { border-radius: 0 8px 0 0; }
+  td { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  tr:nth-child(even) td { background: var(--light-grey); }
+  .leader { color: var(--green); font-weight: 600; }
+  .gap { color: var(--red); font-weight: 600; }
+  .benchmark { color: var(--primary-blue); font-weight: 600; }
+  tr.total-row td { background: var(--primary-dark); color: var(--white); font-weight: 700; }
+
+  /* === HARVEY BALLS === */
+  .hb { font-size: 16px; margin-right: 5px; }
+  .hb.full { color: var(--green); }
+  .hb.partial { color: var(--amber); }
+  .hb.none { color: var(--red); }
+
+  /* === HEADLINE STAT === */
+  .headline-stat {
+    text-align: center; padding: 40px 0; margin-bottom: 32px;
+    background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 16px;
+  }
+  .headline-stat .big-number { font-size: 64px; font-weight: 900; color: var(--primary-blue); }
+  .headline-stat .big-label { font-size: 20px; font-weight: 400; color: var(--text); margin-top: 8px; }
+  .headline-stat .sub-stat { font-size: 14px; color: var(--text-light); margin-top: 4px; }
+
+  /* === BACKBASE PLATFORM DIAGRAM === */
+  .bb-platform { border: 2px solid var(--primary-blue); border-radius: 16px; overflow: hidden; margin-bottom: 32px; }
+  .bb-layer {
+    padding: 20px 24px; border-bottom: 1px solid var(--light-blue);
+    background: rgba(51,102,255,0.03);
+  }
+  .bb-layer:last-child { border-bottom: none; }
+  .bb-layer-header {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--primary-blue); margin-bottom: 10px;
+  }
+  .bb-capabilities { display: flex; flex-wrap: wrap; gap: 10px; }
+  .bb-cap {
+    background: rgba(51,102,255,0.08); border: 1px solid var(--light-blue);
+    border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600;
+    color: var(--primary-blue);
+  }
+  .bb-cap.core-system {
+    background: var(--light-grey); border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  /* Backbase Integration Hub highlight */
+  .bb-layer.integration-hub {
+    background: rgba(51,102,255,0.08); border-bottom: 2px solid var(--primary-blue);
+    border-top: 2px solid var(--primary-blue);
+  }
+  .bb-layer.integration-hub .bb-layer-header { font-size: 13px; color: var(--primary-blue); }
+  .integration-hub-desc { font-size: 13px; color: var(--text-light); margin-bottom: 12px; line-height: 1.5; }
+
+  /* === DISPOSITION TABLE === */
+  .disp-badge {
+    display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 3px 10px; border-radius: 4px;
+  }
+
+  /* === VENDOR RATIONALIZATION === */
+  .vendor-arrow { color: var(--primary-blue); font-weight: 900; font-size: 16px; }
+
+  /* === ROADMAP TIMELINE === */
+  .roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  .roadmap-phase {
+    border: 1px solid var(--light-blue); border-radius: 12px; overflow: hidden;
+  }
+  .roadmap-phase-header {
+    padding: 16px 20px; font-size: 14px; font-weight: 700; color: #fff;
+  }
+  .roadmap-phase-header.phase-1 { background: var(--primary-blue); }
+  .roadmap-phase-header.phase-2 { background: #5C85FF; }
+  .roadmap-phase-header.phase-3 { background: #7D9DFF; }
+  .roadmap-phase-header .phase-time { font-size: 11px; font-weight: 400; opacity: 0.8; display: block; margin-top: 2px; }
+  .roadmap-phase-body { padding: 16px 20px; }
+  .roadmap-item { font-size: 13px; color: var(--text-light); padding: 4px 0 4px 16px; position: relative; line-height: 1.5; }
+  .roadmap-item::before { content: ''; width: 5px; height: 5px; background: var(--primary-blue); border-radius: 50%; position: absolute; left: 0; top: 10px; }
+  .roadmap-section-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--primary-blue); margin-top: 12px; margin-bottom: 4px;
+  }
+  .roadmap-section-label:first-child { margin-top: 0; }
+  .roadmap-outcome {
+    margin-top: 12px; padding: 10px 14px; border-radius: 8px;
+    background: rgba(38,188,113,0.06); border: 1px solid rgba(38,188,113,0.15);
+    font-size: 12px; color: var(--green); font-weight: 600;
+  }
+
+  /* === INTEGRATION CARDS === */
+  .integration-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .integration-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 20px;
+  }
+  .integration-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .integration-card .int-vendor { font-size: 12px; color: var(--text-light); margin-bottom: 10px; }
+  .integration-card .int-detail { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-bottom: 1px solid var(--border); }
+  .integration-card .int-detail:last-child { border: none; }
+  .integration-card .int-label { color: var(--text-light); }
+  .integration-card .int-value { font-weight: 600; color: var(--text); }
+
+  /* === CO-CREATION / VALIDATION === */
+  .validation-box {
+    background: rgba(51,102,255,0.04); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 20px 24px; margin-top: 24px;
+  }
+  .validation-box h4 { font-size: 13px; font-weight: 700; color: var(--primary-blue); margin-bottom: 10px; }
+  .validation-box ul { list-style: none; padding: 0; }
+  .validation-box li { font-size: 13px; color: var(--text-light); padding: 5px 0; padding-left: 16px; position: relative; }
+  .validation-box li::before { content: '?'; position: absolute; left: 0; color: var(--primary-blue); font-weight: 700; }
+
+  /* === CADENCE === */
+  .cadence { display: flex; align-items: center; gap: 8px; margin-bottom: 32px; }
+  .cadence-step {
+    background: var(--light-grey); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px; text-align: center; flex: 1;
+  }
+  .cadence-step.completed { border-color: var(--green); background: rgba(38,188,113,0.06); }
+  .cadence-step.active { border-color: var(--primary-blue); background: var(--light-blue); }
+  .cadence-step h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; }
+  .cadence-step.completed h4 { color: var(--green); }
+  .cadence-step.active h4 { color: var(--primary-blue); }
+  .cadence-step p { font-size: 13px; font-weight: 600; }
+  .cadence-arrow { font-size: 18px; color: var(--border); }
+
+  /* === DEPLOYMENT === */
+  .deployment-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0;
+    padding: 20px 24px; margin-top: 24px;
+  }
+  .deployment-card h4 { font-size: 14px; font-weight: 700; color: var(--primary-blue); margin-bottom: 8px; }
+  .deployment-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+
+  /* === CLOSING === */
+  .closing {
+    background: var(--primary-dark); color: var(--white); min-height: 50vh;
+    padding: 60px 80px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; page-break-before: always;
+  }
+  .closing h2 { font-size: 48px; font-weight: 900; margin-bottom: 24px; }
+  .closing .brand { font-size: 20px; font-weight: 600; color: var(--primary-blue); letter-spacing: 1px; }
+
+  @media (max-width: 900px) {
+    .content-section, .cover, .section-divider { padding: 30px 24px; }
+    .challenges-grid, .hypothesis-grid, .integration-grid { grid-template-columns: 1fr; }
+    .methodology-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .roadmap { grid-template-columns: 1fr; }
+    .system-cards { flex-direction: column; }
+    .system-card { max-width: 100%; }
+    .fix-grid { grid-template-columns: 1fr; }
+    .fix-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===============================================================
+     SECTION 1: COVER (Dark background)
+     =============================================================== -->
+<div class="cover">
+  <div class="brand">Backbase</div>
+  <!-- AGENT: Replace with client name -->
+  <h1>IT Architecture &amp;<br>Operations Workshop</h1>
+  <!-- AGENT: Replace with client name -->
+  <div class="subtitle">[CLIENT]</div>
+  <!-- AGENT: Replace with date -->
+  <div class="meta">Backbase Ignite | [DATE]</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 2: OBJECTIVES & AGENDA
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">01</div>
+  <div class="cyan-accent"></div>
+  <h2>IT Architecture &amp; Operations</h2>
+  <div class="section-subtitle">Objectives &amp; Agenda</div>
+</div>
+
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Objectives &amp; Agenda</h2>
+  </div>
+  <!-- AGENT: Customize objective with client name and member/customer terminology -->
+  <div class="objective-statement">
+    Validate <strong>[CLIENT]</strong>'s IT goals and the challenges blocking them, understand the root causes in today's architecture, and co-design a target state with Backbase that solves those challenges &mdash; with a clear integration approach and phased roadmap.
+  </div>
+  <!-- AGENT: Customize agenda blocks to match workshop timing -->
+  <div class="methodology-grid">
+    <div class="method-block"><div class="block-num">1</div><h4>Goals &amp; Challenges</h4><p>What IT is trying to achieve and what's blocking it (15 min)</p></div>
+    <div class="method-block"><div class="block-num">2</div><h4>Current State</h4><p>Architecture diagram, integrations, pain points (25 min)</p></div>
+    <div class="method-block"><div class="block-num">3</div><h4>Target State</h4><p>Backbase architecture &amp; how it fixes the problems (25 min)</p></div>
+    <div class="method-block"><div class="block-num">4</div><h4>Roadmap</h4><p>Phased plan &amp; next steps (25 min)</p></div>
+  </div>
+  <div class="page-footer">Backbase | 2</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 3: STRATEGY, CX & EX RECAP
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Replace with member/customer terminology -->
+    <h2>What We Heard | Strategy, CX &amp; EX Context</h2>
+  </div>
+  <div class="challenges-grid">
+    <!-- AGENT: Replace with 3 recap cards from Agents 1, 2, and 3 findings -->
+    <div class="challenge-card">
+      <div class="challenge-label">Strategy (Workshop 1)</div>
+      <!-- AGENT: Replace with lead strategy theme from Agent 1 -->
+      <h3>[Lead Strategy Theme]</h3>
+      <p>[Description of the strategic priority and its architecture implications]</p>
+    </div>
+    <div class="challenge-card">
+      <!-- AGENT: Replace with member/customer terminology -->
+      <div class="challenge-label">[Customer/Member] Experience (Workshop 2)</div>
+      <!-- AGENT: Replace with key CX finding from Agent 2 -->
+      <h3>[Key CX Priority]</h3>
+      <p>[Description of the CX requirement that architecture must enable]</p>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">Employee Experience (Workshop 3)</div>
+      <!-- AGENT: Replace with EX finding from Agent 3, include switching tax -->
+      <h3>[Switching Tax Headline from Agent 3]</h3>
+      <p>[System switching tax and employee pain points that link to architecture]</p>
+    </div>
+  </div>
+  <!-- AGENT: Add bridging statement that connects prior workshops to today -->
+  <div class="objective-statement" style="margin-top: 24px;">
+    <strong>The question for today:</strong> What in your architecture is causing these problems &mdash; and how do we fix it?
+  </div>
+  <div class="page-footer">Backbase | 3</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 4: DIVIDER — "IT Goals & Challenges"
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">02</div>
+  <div class="cyan-accent"></div>
+  <h2>IT Goals &amp; Challenges</h2>
+  <div class="section-subtitle">What you're trying to achieve and what's blocking you</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 5: IT GOALS (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Replace with client name -->
+    <h2>[CLIENT] IT Goals</h2>
+    <div class="subtitle">Hypothesis &mdash; for validation</div>
+  </div>
+  <!-- AGENT: Customize intro statement with client name -->
+  <div class="objective-statement">
+    Based on our strategy and experience workshops, we believe these are the key IT goals driving <strong>[CLIENT]</strong>'s technology agenda. <strong>Are we right? What's missing?</strong>
+  </div>
+
+  <!-- AGENT: Generate 4-6 goal cards based on what was learned in Workshops 1-3 -->
+  <!-- AGENT: Each goal should be a clearly stated IT objective, not a Backbase feature -->
+  <div class="goal-card">
+    <div class="goal-tag">Goal 1</div>
+    <!-- AGENT: Replace with specific IT goal -->
+    <h3>[IT Goal Title]</h3>
+    <p>[Description of what this goal means for the organization and why it matters]</p>
+  </div>
+
+  <div class="goal-card">
+    <div class="goal-tag">Goal 2</div>
+    <!-- AGENT: Replace with specific IT goal -->
+    <h3>[IT Goal Title]</h3>
+    <p>[Description]</p>
+  </div>
+
+  <div class="goal-card">
+    <div class="goal-tag">Goal 3</div>
+    <!-- AGENT: Replace with specific IT goal -->
+    <h3>[IT Goal Title]</h3>
+    <p>[Description]</p>
+  </div>
+
+  <div class="goal-card">
+    <div class="goal-tag">Goal 4</div>
+    <!-- AGENT: Replace with specific IT goal -->
+    <h3>[IT Goal Title]</h3>
+    <p>[Description]</p>
+  </div>
+
+  <!-- AGENT: Add more goal cards if needed (5-6 max) -->
+
+  <!-- AGENT: Customize discussion questions for client context -->
+  <div class="validation-box">
+    <h4>Discussion</h4>
+    <ul>
+      <li>Do these goals reflect what your IT leadership is trying to achieve?</li>
+      <li>What is the #1 priority among these?</li>
+      <li>Are there IT goals we've missed (e.g., cloud migration, cost reduction, security)?</li>
+    </ul>
+  </div>
+  <div class="page-footer">Backbase | 4</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 6: IT CHALLENGES (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>IT Challenges Blocking These Goals</h2>
+    <div class="subtitle">Hypothesis &mdash; for validation</div>
+  </div>
+
+  <!-- AGENT: Generate 4-6 blocker cards, each LINKED to a goal -->
+  <!-- AGENT: Use "blocks Goal N" pattern in the blocker-tag -->
+  <div class="blocker-card">
+    <!-- AGENT: Link to the goal this challenge blocks -->
+    <div class="blocker-tag">Challenge 1 &mdash; blocks Goal [N]</div>
+    <!-- AGENT: Replace with specific IT challenge -->
+    <h3>[IT Challenge Title]</h3>
+    <p>[Description of the challenge, its symptoms, and why it blocks the linked goal]</p>
+  </div>
+
+  <div class="blocker-card">
+    <div class="blocker-tag">Challenge 2 &mdash; blocks Goal [N]</div>
+    <!-- AGENT: Replace with specific IT challenge -->
+    <h3>[IT Challenge Title]</h3>
+    <p>[Description]</p>
+  </div>
+
+  <div class="blocker-card">
+    <div class="blocker-tag">Challenge 3 &mdash; blocks Goal [N]</div>
+    <!-- AGENT: Replace with specific IT challenge -->
+    <h3>[IT Challenge Title]</h3>
+    <p>[Description]</p>
+  </div>
+
+  <div class="blocker-card">
+    <div class="blocker-tag">Challenge 4 &mdash; blocks Goal [N]</div>
+    <!-- AGENT: Replace with specific IT challenge -->
+    <h3>[IT Challenge Title]</h3>
+    <p>[Description]</p>
+  </div>
+
+  <!-- AGENT: Add more blocker cards if needed (5-6 max) -->
+
+  <!-- AGENT: Customize discussion questions -->
+  <div class="validation-box">
+    <h4>Discussion</h4>
+    <ul>
+      <li>Are these the right challenges? What would you add or change?</li>
+      <li>Which challenge causes the most operational pain today?</li>
+      <li>Are there budget, talent, or regulatory constraints we should know about?</li>
+    </ul>
+  </div>
+  <div class="page-footer">Backbase | 5</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 7: ROOT CAUSE HYPOTHESES (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Why These Challenges Exist | Root Cause Hypotheses</h2>
+  </div>
+  <!-- AGENT: Customize intro with client name -->
+  <div class="objective-statement">
+    Every challenge has a root cause in the architecture. Here are our hypotheses about <strong>why</strong> [CLIENT] faces these challenges. Let's validate together.
+  </div>
+  <!-- AGENT: Generate 6 hypothesis cards, each LINKED to a challenge -->
+  <div class="hypothesis-grid">
+    <div class="hypothesis-card">
+      <div class="h-label">H1 | [Root Cause Category]</div>
+      <!-- AGENT: Replace with hypothesis statement -->
+      <h4>[Hypothesis: what architecture pattern causes the problem]</h4>
+      <p>[Explanation of why this is likely true and what evidence suggests it]</p>
+      <!-- AGENT: Link to the challenge(s) this hypothesis explains -->
+      <div class="h-challenge-link">Root cause of: Challenge [N] ([Challenge Title])</div>
+      <!-- AGENT: Add validation question -->
+      <div class="h-question">Validation: [Specific question to validate this hypothesis]</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H2 | [Root Cause Category]</div>
+      <!-- AGENT: Replace with hypothesis -->
+      <h4>[Hypothesis statement]</h4>
+      <p>[Explanation]</p>
+      <div class="h-challenge-link">Root cause of: Challenge [N]</div>
+      <div class="h-question">Validation: [Question]</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H3 | [Root Cause Category]</div>
+      <!-- AGENT: Replace with hypothesis -->
+      <h4>[Hypothesis statement]</h4>
+      <p>[Explanation]</p>
+      <div class="h-challenge-link">Root cause of: Challenge [N]</div>
+      <div class="h-question">Validation: [Question]</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H4 | [Root Cause Category]</div>
+      <!-- AGENT: Replace with hypothesis -->
+      <h4>[Hypothesis statement]</h4>
+      <p>[Explanation]</p>
+      <div class="h-challenge-link">Root cause of: Challenge [N]</div>
+      <div class="h-question">Validation: [Question]</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H5 | [Root Cause Category]</div>
+      <!-- AGENT: Replace with hypothesis -->
+      <h4>[Hypothesis statement]</h4>
+      <p>[Explanation]</p>
+      <div class="h-challenge-link">Root cause of: Challenge [N]</div>
+      <div class="h-question">Validation: [Question]</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H6 | [Root Cause Category]</div>
+      <!-- AGENT: Replace with hypothesis -->
+      <h4>[Hypothesis statement]</h4>
+      <p>[Explanation]</p>
+      <div class="h-challenge-link">Root cause of: Challenge [N]</div>
+      <div class="h-question">Validation: [Question]</div>
+    </div>
+  </div>
+  <!-- AGENT: Customize discussion questions -->
+  <div class="validation-box">
+    <h4>Discussion</h4>
+    <ul>
+      <li>Do these root causes ring true? Which ones surprise you?</li>
+      <li>Are there other architectural root causes we should surface?</li>
+      <li>Has [CLIENT] attempted to solve any of these before? What happened?</li>
+    </ul>
+  </div>
+  <div class="page-footer">Backbase | 6</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 8: DIVIDER — "Current State Architecture"
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">03</div>
+  <div class="cyan-accent"></div>
+  <h2>Current State Architecture</h2>
+  <div class="section-subtitle">Your systems, integrations, and where it breaks</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 9: CURRENT STATE ARCHITECTURE & INTEGRATION MAP
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Current State | Architecture &amp; Integration Map</h2>
+    <div class="subtitle">Hypothesis &mdash; for validation</div>
+  </div>
+  <div class="arch-legend">
+    <div class="legend-item"><div class="legend-swatch green"></div> Healthy</div>
+    <div class="legend-item"><div class="legend-swatch amber"></div> Watch</div>
+    <div class="legend-item"><div class="legend-swatch red"></div> Critical</div>
+    <div class="legend-item" style="margin-left: 24px;"><span style="color: var(--red); font-size: 14px; margin-right: 4px;">&#9888;</span> Integration pain point</div>
+  </div>
+  <!-- AGENT: Build layered architecture diagram with INTEGRATION STRIPS between layers -->
+  <!-- AGENT: Use as many layers as appropriate for client (3-6 layers) -->
+  <!-- AGENT: Add integration-strip between every layer pair showing how data flows (and what breaks) -->
+  <div class="arch-diagram">
+    <!-- LAYER 1: Customer/Member-Facing Channels -->
+    <div class="arch-layer">
+      <!-- AGENT: Replace layer description and count -->
+      <div class="arch-layer-header">[Customer/Member]-Facing Channels <span class="layer-count">[N] systems &mdash; [key issue summary]</span></div>
+      <div class="system-cards">
+        <!-- AGENT: Generate system cards for each channel system -->
+        <!-- AGENT: Apply health-green, health-amber, or health-red class based on system health -->
+        <!-- AGENT: Add pain-callout div on critical systems -->
+        <div class="system-card health-red">
+          <div class="sys-name">[Web Banking]</div>
+          <div class="sys-vendor">[Vendor]</div>
+          <span class="sys-badge badge-replace">[Issue label]</span>
+          <div class="pain-callout">!</div>
+        </div>
+        <!-- AGENT: Repeat for all channel systems -->
+      </div>
+    </div>
+
+    <!-- AGENT: INTEGRATION STRIP — show how channels connect to next layer -->
+    <div class="integration-strip">
+      <span class="int-icon">&#9888;</span>
+      <!-- AGENT: Describe the integration problem between these layers -->
+      <strong>[Integration pattern description]</strong>
+      <span class="int-problem">[Specific pain point]</span>
+    </div>
+
+    <!-- LAYER 2: Employee-Facing Systems -->
+    <div class="arch-layer">
+      <!-- AGENT: Replace with employee systems layer -->
+      <div class="arch-layer-header">Employee-Facing Systems <span class="layer-count">[Key issue summary]</span></div>
+      <div class="system-cards">
+        <!-- AGENT: Generate system cards for employee systems -->
+        <div class="system-card health-amber">
+          <div class="sys-name">[Employee Tool]</div>
+          <div class="sys-vendor">[Vendor]</div>
+          <span class="sys-badge badge-replace">[Issue]</span>
+        </div>
+        <!-- AGENT: Repeat for all employee systems -->
+      </div>
+    </div>
+
+    <!-- AGENT: INTEGRATION STRIP — show journey orchestration gap -->
+    <div class="integration-strip">
+      <span class="int-icon">&#9888;</span>
+      <!-- AGENT: Describe the integration problem -->
+      <strong>[Journey orchestration issue]</strong>
+      <span class="int-problem">[Specific impact]</span>
+    </div>
+
+    <!-- LAYER 3: Process / Domain Systems -->
+    <div class="arch-layer">
+      <!-- AGENT: Replace with process/domain systems -->
+      <div class="arch-layer-header">Process &amp; Domain Systems <span class="layer-count">[Key issue summary]</span></div>
+      <div class="system-cards">
+        <!-- AGENT: Generate system cards for process systems -->
+        <div class="system-card health-red">
+          <div class="sys-name">[Lending/Financing System]</div>
+          <div class="sys-vendor">[Vendor]</div>
+          <span class="sys-badge badge-replace">[Issue]</span>
+          <div class="pain-callout">!</div>
+        </div>
+        <!-- AGENT: Repeat for all process systems -->
+      </div>
+    </div>
+
+    <!-- AGENT: INTEGRATION STRIP — show compliance/security gap -->
+    <div class="integration-strip">
+      <span class="int-icon">&#9888;</span>
+      <!-- AGENT: Describe compliance/security integration issue -->
+      <strong>[Compliance integration issue]</strong>
+      <span class="int-problem">[Specific impact]</span>
+    </div>
+
+    <!-- LAYER 4: Compliance, Identity & Security -->
+    <div class="arch-layer">
+      <!-- AGENT: Replace with compliance/identity/security systems -->
+      <div class="arch-layer-header">Compliance, Identity &amp; Security <span class="layer-count">[Key summary]</span></div>
+      <div class="system-cards">
+        <!-- AGENT: Generate system cards for compliance/security systems -->
+        <div class="system-card health-green">
+          <div class="sys-name">[AML/KYC]</div>
+          <div class="sys-vendor">[Vendor]</div>
+          <span class="sys-badge badge-retain">[Status]</span>
+        </div>
+        <!-- AGENT: Repeat for all compliance/security systems -->
+      </div>
+    </div>
+
+    <!-- AGENT: INTEGRATION STRIP — show core banking connection issues -->
+    <div class="integration-strip">
+      <span class="int-icon">&#9888;</span>
+      <!-- AGENT: Describe core banking integration issue (batch, direct DB, etc.) -->
+      <strong>[Core banking integration issue]</strong>
+      <span class="int-problem">[Specific impact — e.g., data staleness]</span>
+    </div>
+
+    <!-- LAYER 5: Core Banking, CRM & Cards -->
+    <div class="arch-layer">
+      <!-- AGENT: Replace with core systems -->
+      <div class="arch-layer-header">Core Banking, CRM &amp; Data <span class="layer-count">[Key summary]</span></div>
+      <div class="system-cards">
+        <!-- AGENT: Generate system cards for core systems -->
+        <div class="system-card health-green">
+          <div class="sys-name">[Core Banking]</div>
+          <div class="sys-vendor">[Vendor]</div>
+          <span class="sys-badge badge-retain">Core of Record</span>
+        </div>
+        <!-- AGENT: Repeat for all core/CRM/data systems -->
+      </div>
+    </div>
+  </div>
+
+  <!-- AGENT: Replace with actual stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">Total Systems</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">Vendors</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">[N]+</div>
+      <div class="stat-label">Point-to-Point Integrations</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--red);">0</div>
+      <!-- AGENT: Customize — "0" if no hub, or show actual integration pattern -->
+      <div class="stat-label">Integration Hub / API Gateway</div>
+    </div>
+  </div>
+
+  <!-- AGENT: Customize discussion questions -->
+  <div class="validation-box">
+    <h4>Discussion</h4>
+    <ul>
+      <li>Is this architecture map accurate? What systems or integrations are missing?</li>
+      <li>Where do things break most often?</li>
+      <li>Which integration pain point causes the most operational overhead?</li>
+    </ul>
+  </div>
+  <div class="page-footer">Backbase | 7</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 10: WHAT'S WRONG — CHALLENGES MAPPED TO ARCHITECTURE
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>What's Wrong | Architecture Issues &rarr; Business Impact</h2>
+  </div>
+  <!-- AGENT: Customize intro statement -->
+  <div class="objective-statement">
+    Every IT challenge maps to a specific architecture gap. Here's how your current architecture creates the problems your [customers/members] and employees experience daily.
+  </div>
+
+  <!-- AGENT: Generate table mapping each challenge to its architecture root cause, CX impact, EX impact, and business cost -->
+  <table>
+    <thead>
+      <tr>
+        <th>IT Challenge</th>
+        <th>Architecture Root Cause</th>
+        <!-- AGENT: Replace with member/customer terminology -->
+        <th>[Customer/Member] Impact</th>
+        <th>Employee Impact</th>
+        <th>Business Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- AGENT: Generate a row for each IT challenge from Section 6 -->
+      <tr>
+        <td><strong>[Challenge 1 title]</strong></td>
+        <td>[Architecture root cause from H1-H6]</td>
+        <td>[CX impact — from Agent 2 findings]</td>
+        <td>[EX impact — from Agent 3 findings]</td>
+        <td class="gap">[Quantified cost if available]</td>
+      </tr>
+      <!-- AGENT: Repeat for all challenges (4-6 rows) -->
+    </tbody>
+  </table>
+
+  <!-- AGENT: Customize discussion questions -->
+  <div class="validation-box">
+    <h4>Discussion</h4>
+    <ul>
+      <li>Are these cause-and-effect links accurate?</li>
+      <li>Which business impact is most painful today?</li>
+      <li>Are there other architecture-to-business impact chains we should surface?</li>
+    </ul>
+  </div>
+  <div class="page-footer">Backbase | 8</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 11: DIVIDER — "Target State with Backbase"
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">04</div>
+  <div class="cyan-accent"></div>
+  <h2>Target State with Backbase</h2>
+  <div class="section-subtitle">How the architecture changes and why it matters</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 12: BACKBASE PLATFORM — INTEGRATION HUB EMPHASIS
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Backbase Platform | The Architecture Fix</h2>
+  </div>
+  <!-- AGENT: Customize the integration hub explanation for client context -->
+  <div class="objective-statement">
+    Backbase sits <strong>between</strong> your core systems and your [customers/members]/employees. Instead of every channel connecting directly to every system, Backbase provides a <strong>central integration hub</strong> that orchestrates all connections, manages data flows, and delivers a unified experience layer.
+  </div>
+
+  <!-- AGENT: Customize Backbase platform diagram for client context -->
+  <div class="bb-platform">
+    <div class="bb-layer">
+      <!-- AGENT: Customize experience layer with client-specific channels -->
+      <div class="bb-layer-header">Experience Layer &mdash; One Platform, All Channels</div>
+      <div class="bb-capabilities">
+        <div class="bb-cap">Web App</div>
+        <div class="bb-cap">Mobile App (iOS + Android)</div>
+        <div class="bb-cap">Employee Portal</div>
+        <div class="bb-cap">Contact Center Desktop</div>
+        <!-- AGENT: Add language/locale variants if applicable (e.g., AR/EN) -->
+      </div>
+    </div>
+    <div class="bb-layer">
+      <!-- AGENT: Customize journey capabilities for client products -->
+      <div class="bb-layer-header">Journey Orchestration &mdash; Central Process Engine</div>
+      <div class="bb-capabilities">
+        <div class="bb-cap">Digital Onboarding</div>
+        <!-- AGENT: Replace with client-specific journey products -->
+        <div class="bb-cap">[Product Journey 1]</div>
+        <div class="bb-cap">Digital Engage</div>
+        <div class="bb-cap">Digital Assist (360&deg; View)</div>
+        <div class="bb-cap">Case Management</div>
+      </div>
+    </div>
+    <!-- AGENT: This is the KEY layer — the Integration Hub. Always use integration-hub class -->
+    <div class="bb-layer integration-hub">
+      <div class="bb-layer-header">&#9733; Backbase Integration Services &mdash; The Central Hub</div>
+      <div class="integration-hub-desc">
+        This is the key architectural change. Instead of [N]+ point-to-point integrations, <strong>every system connects through Backbase Integration Services</strong>. It provides API orchestration, data transformation, event routing, and caching &mdash; so channels always get real-time data without directly coupling to core systems.
+      </div>
+      <div class="bb-capabilities">
+        <div class="bb-cap">API Gateway</div>
+        <div class="bb-cap">Identity Services (SSO)</div>
+        <div class="bb-cap">Event Bus</div>
+        <div class="bb-cap">Data Caching Layer</div>
+        <div class="bb-cap">Document Services</div>
+        <!-- AGENT: Add client-specific integration capabilities (e.g., Compliance Orchestration) -->
+      </div>
+    </div>
+    <div class="bb-layer">
+      <!-- AGENT: Replace with client-specific retained core systems -->
+      <div class="bb-layer-header">[CLIENT]'s Core Systems &mdash; Retained &amp; Integrated via the Hub</div>
+      <div class="bb-capabilities">
+        <!-- AGENT: List all retained core systems as core-system class -->
+        <div class="bb-cap core-system">[Core Banking]</div>
+        <div class="bb-cap core-system">[Card Management]</div>
+        <div class="bb-cap core-system">[CRM]</div>
+        <!-- AGENT: Repeat for all retained systems -->
+      </div>
+    </div>
+  </div>
+
+  <!-- AGENT: Replace with actual before/after stats -->
+  <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--red);">[N]+ &rarr; 1</div>
+      <div class="stat-label">Integration Pattern (P2P &rarr; Hub)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--green);">[N] &rarr; 1</div>
+      <div class="stat-label">Channel Codebases</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--green);">[N] &rarr; 1</div>
+      <div class="stat-label">Employee Platforms</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 9</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 13: TARGET STATE ARCHITECTURE DIAGRAM
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Target State | Architecture &amp; Integration Map</h2>
+  </div>
+  <div class="arch-legend">
+    <div class="legend-item"><div class="legend-swatch blue"></div> Backbase (New)</div>
+    <div class="legend-item"><div class="legend-swatch green"></div> Retained &amp; Integrated</div>
+    <div class="legend-item"><div class="legend-swatch grey"></div> Retired</div>
+  </div>
+  <!-- AGENT: Build target-state diagram with Backbase integration strips (blue) -->
+  <!-- AGENT: Use .backbase class for Backbase systems, .retained for kept, .retired for decommissioned -->
+  <div class="arch-diagram">
+    <!-- LAYER 1: Unified Backbase Experience -->
+    <div class="arch-layer">
+      <div class="arch-layer-header">Unified Experience Layer <span class="layer-count">Backbase &mdash; one platform, all channels</span></div>
+      <div class="system-cards">
+        <!-- AGENT: Generate Backbase channel systems -->
+        <div class="system-card backbase">
+          <div class="sys-name">Backbase Web App</div>
+          <div class="sys-vendor">Shared component library</div>
+          <span class="sys-badge badge-backbase">New</span>
+        </div>
+        <div class="system-card backbase">
+          <div class="sys-name">Backbase Mobile App</div>
+          <div class="sys-vendor">Same codebase as web</div>
+          <span class="sys-badge badge-backbase">New</span>
+        </div>
+        <div class="system-card backbase">
+          <div class="sys-name">Employee Portal</div>
+          <div class="sys-vendor">Backbase Digital Assist</div>
+          <span class="sys-badge badge-backbase">New</span>
+        </div>
+        <!-- AGENT: Show retired channel systems with strikethrough -->
+        <div class="system-card retired">
+          <div class="sys-name">[Old Web Banking]</div>
+          <div class="sys-vendor">[Vendor] (Retired)</div>
+          <span class="sys-badge badge-retire">Retired</span>
+        </div>
+        <!-- AGENT: Repeat for all retired channel systems -->
+      </div>
+    </div>
+
+    <!-- AGENT: Backbase integration strip (blue) — replaces red P2P strips -->
+    <div class="integration-strip backbase-int">
+      <span class="int-icon">&#10003;</span>
+      <strong>All channels connect through Backbase &mdash; no direct system calls</strong>
+    </div>
+
+    <!-- LAYER 2: Journey Orchestration -->
+    <div class="arch-layer">
+      <!-- AGENT: Customize with client-specific journeys -->
+      <div class="arch-layer-header">Journey Orchestration <span class="layer-count">Backbase &mdash; central process engine</span></div>
+      <div class="system-cards">
+        <!-- AGENT: Generate Backbase journey capabilities -->
+        <div class="system-card backbase">
+          <div class="sys-name">Digital Onboarding</div>
+          <div class="sys-vendor">Backbase</div>
+          <span class="sys-badge badge-backbase">New</span>
+        </div>
+        <!-- AGENT: Add client-specific journey systems -->
+        <!-- AGENT: Show retired legacy systems in this layer -->
+        <div class="system-card retired">
+          <div class="sys-name">[Legacy System]</div>
+          <div class="sys-vendor">[Vendor] (Retired)</div>
+          <span class="sys-badge badge-retire">Retired</span>
+        </div>
+        <!-- AGENT: Repeat for all journey systems -->
+      </div>
+    </div>
+
+    <!-- AGENT: Backbase Integration Hub strip -->
+    <div class="integration-strip backbase-int">
+      <span class="int-icon">&#9733;</span>
+      <strong>Backbase Integration Services &mdash; central hub connecting all retained systems</strong>
+      <span class="int-problem" style="color: var(--primary-blue); font-style: normal;">API orchestration, event routing, data caching, real-time sync</span>
+    </div>
+
+    <!-- LAYER 3: Retained Systems (via Hub) -->
+    <div class="arch-layer">
+      <div class="arch-layer-header">Retained Systems <span class="layer-count">Connected through Backbase Integration Services &mdash; not point-to-point</span></div>
+      <div class="system-cards">
+        <!-- AGENT: Generate retained system cards — all connected via hub -->
+        <div class="system-card retained">
+          <div class="sys-name">[Core Banking]</div>
+          <div class="sys-vendor">Core of Record &rarr; via API</div>
+          <span class="sys-badge badge-retain">Retained</span>
+        </div>
+        <!-- AGENT: Repeat for all retained systems — CRM, Cards, Compliance, etc. -->
+      </div>
+    </div>
+  </div>
+
+  <!-- AGENT: Before/after system and vendor counts -->
+  <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 24px;">
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--red);">[N] &rarr; [M]</div>
+      <div class="stat-label">Systems (Before &rarr; After)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--green);">[N] &rarr; [M]</div>
+      <div class="stat-label">Vendors (Before &rarr; After)</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 10</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 14: HOW BACKBASE FIXES IT — PROBLEM → SOLUTION → VALUE
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>How Backbase Fixes Each Challenge</h2>
+  </div>
+
+  <!-- AGENT: Generate one fix-grid for EACH IT challenge from Section 6 -->
+  <!-- AGENT: Problem = the challenge, Solution = Backbase capability, Value = business outcome -->
+
+  <!-- Fix 1 -->
+  <div class="fix-grid">
+    <div class="fix-card problem">
+      <div class="fix-label">Today's Problem</div>
+      <!-- AGENT: Replace with Challenge 1 from Section 6 -->
+      <h4>[Challenge 1 Title]</h4>
+      <p>[Brief description of the problem and its impact]</p>
+    </div>
+    <div class="fix-arrow">&rarr;</div>
+    <div class="fix-card solution">
+      <div class="fix-label">Backbase Solution</div>
+      <!-- AGENT: Replace with Backbase capability that solves this -->
+      <h4>[Backbase Capability]</h4>
+      <p>[How Backbase specifically solves this problem]</p>
+    </div>
+    <div class="fix-arrow">&rarr;</div>
+    <div class="fix-card value">
+      <div class="fix-label">Value</div>
+      <!-- AGENT: Replace with business value outcome -->
+      <h4>[Value Outcome]</h4>
+      <p>[Specific business impact]</p>
+      <!-- AGENT: Add quantified metric if available -->
+      <div class="value-metric">[Quantified impact]</div>
+    </div>
+  </div>
+
+  <!-- AGENT: Repeat fix-grid for Challenge 2 -->
+  <!-- Fix 2 -->
+  <div class="fix-grid">
+    <div class="fix-card problem">
+      <div class="fix-label">Today's Problem</div>
+      <h4>[Challenge 2 Title]</h4>
+      <p>[Description]</p>
+    </div>
+    <div class="fix-arrow">&rarr;</div>
+    <div class="fix-card solution">
+      <div class="fix-label">Backbase Solution</div>
+      <h4>[Backbase Capability]</h4>
+      <p>[How it solves]</p>
+    </div>
+    <div class="fix-arrow">&rarr;</div>
+    <div class="fix-card value">
+      <div class="fix-label">Value</div>
+      <h4>[Value]</h4>
+      <p>[Impact]</p>
+      <div class="value-metric">[Metric]</div>
+    </div>
+  </div>
+
+  <!-- AGENT: Repeat fix-grid for remaining challenges (3-5 total fix-grids) -->
+
+  <div class="page-footer">Backbase | 11</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 15: DIVIDER — "Getting There"
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">05</div>
+  <div class="cyan-accent"></div>
+  <h2>Getting There</h2>
+  <div class="section-subtitle">Disposition, integration approach, and phased roadmap</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 16: DISPOSITION & VENDOR RATIONALIZATION
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Application Disposition &amp; Vendor Rationalization</h2>
+  </div>
+  <!-- AGENT: Replace with actual disposition counts -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--red);">[N]</div>
+      <div class="stat-label">Replace</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--green);">[N]</div>
+      <div class="stat-label">Retain</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--muted);">[N]</div>
+      <div class="stat-label">Retire</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--amber);">[N]</div>
+      <div class="stat-label">Rationalize</div>
+    </div>
+  </div>
+  <!-- AGENT: Generate full disposition table for all systems -->
+  <table>
+    <thead>
+      <tr>
+        <th>System</th>
+        <th>Disposition</th>
+        <th>Target</th>
+        <th>Rationale</th>
+        <th>Phase</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- AGENT: Generate a row for each system with its disposition -->
+      <tr>
+        <td>[System Name]</td>
+        <td><span class="disp-badge badge-replace">Replace</span></td>
+        <td>[Backbase replacement]</td>
+        <td>[Why this disposition]</td>
+        <td>Phase [N]</td>
+      </tr>
+      <!-- AGENT: Repeat for ALL systems in the inventory -->
+    </tbody>
+  </table>
+
+  <!-- AGENT: Replace with actual vendor rationalization stats -->
+  <div class="headline-stat">
+    <div class="big-number">[N] &rarr; [M]</div>
+    <div class="big-label">Vendor Relationships Rationalized</div>
+    <div class="sub-stat">[N-M] vendor relationships eliminated through Backbase consolidation</div>
+  </div>
+
+  <!-- AGENT: Customize contract discussion questions -->
+  <div class="validation-box">
+    <h4>Discussion</h4>
+    <ul>
+      <li>Do you agree with these dispositions?</li>
+      <li>What are the renewal dates for key vendor contracts?</li>
+      <li>Are there bundle arrangements that affect vendor timing?</li>
+    </ul>
+  </div>
+  <div class="page-footer">Backbase | 12</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 17: INTEGRATION DEEP DIVE — THROUGH THE HUB
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Integration Approach | Through the Hub</h2>
+  </div>
+  <!-- AGENT: Customize intro with client context -->
+  <div class="objective-statement">
+    Every retained system connects <strong>through Backbase Integration Services</strong>. No more direct system-to-system calls. Here's the integration approach for each key system.
+  </div>
+  <!-- AGENT: Generate integration cards for each key retained system -->
+  <div class="integration-grid">
+    <div class="integration-card">
+      <!-- AGENT: Replace with core banking system -->
+      <h4>[Core Banking System]</h4>
+      <div class="int-vendor">[Vendor] (Retain)</div>
+      <!-- AGENT: First row should always say "Via Hub" -->
+      <div class="int-detail"><span class="int-label">Via Hub</span><span class="int-value">[REST API + Event Sync / etc.]</span></div>
+      <div class="int-detail"><span class="int-label">Complexity</span><span class="int-value">[Low / Medium / High]</span></div>
+      <div class="int-detail"><span class="int-label">Key Change</span><span class="int-value">[What changes in integration approach]</span></div>
+      <div class="int-detail"><span class="int-label">Est. Effort</span><span class="int-value">[X-Y weeks]</span></div>
+    </div>
+    <!-- AGENT: Repeat for each retained system to be integrated (4-8 cards) -->
+  </div>
+
+  <!-- AGENT: Add deployment recommendation based on client context -->
+  <div class="deployment-card">
+    <!-- AGENT: Replace with recommended deployment model and regulatory rationale -->
+    <h4>Recommended Deployment: [SaaS / Private Cloud / On-Prem / Hybrid]</h4>
+    <p>[Rationale based on client regulatory requirements, data residency, cloud strategy, and preferences]</p>
+  </div>
+  <div class="page-footer">Backbase | 13</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 18: PHASED IMPLEMENTATION ROADMAP
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Phased Implementation Roadmap</h2>
+  </div>
+  <!-- AGENT: Generate 3-phase roadmap with Deploy/Integrate/Retire sections -->
+  <div class="roadmap">
+    <div class="roadmap-phase">
+      <!-- AGENT: Customize phase 1 title, scope, and timeline -->
+      <div class="roadmap-phase-header phase-1">Phase 1: [Foundation + Core] <span class="phase-time">Months [X-Y]</span></div>
+      <div class="roadmap-phase-body">
+        <div class="roadmap-section-label">Deploy</div>
+        <!-- AGENT: Replace with phase 1 capabilities -->
+        <div class="roadmap-item">Backbase Platform + Integration Hub</div>
+        <div class="roadmap-item">[Key channel capability]</div>
+        <div class="roadmap-section-label">Integrate via Hub</div>
+        <!-- AGENT: Replace with phase 1 integrations -->
+        <div class="roadmap-item">[Core Banking] API</div>
+        <div class="roadmap-section-label">Retire</div>
+        <!-- AGENT: Replace with phase 1 retirements -->
+        <div class="roadmap-item">[Legacy channel system]</div>
+        <!-- AGENT: Link outcome back to challenge(s) solved -->
+        <div class="roadmap-outcome">[Challenge N solved: description]</div>
+      </div>
+    </div>
+    <div class="roadmap-phase">
+      <!-- AGENT: Customize phase 2 -->
+      <div class="roadmap-phase-header phase-2">Phase 2: [Journeys + Employees] <span class="phase-time">Months [X-Y]</span></div>
+      <div class="roadmap-phase-body">
+        <div class="roadmap-section-label">Deploy</div>
+        <!-- AGENT: Replace with phase 2 capabilities -->
+        <div class="roadmap-item">[Digital journey capabilities]</div>
+        <div class="roadmap-item">[Employee portal]</div>
+        <div class="roadmap-section-label">Integrate via Hub</div>
+        <!-- AGENT: Replace with phase 2 integrations -->
+        <div class="roadmap-item">[CRM, Compliance, etc.]</div>
+        <div class="roadmap-section-label">Retire</div>
+        <!-- AGENT: Replace with phase 2 retirements -->
+        <div class="roadmap-item">[Legacy journey/form systems]</div>
+        <!-- AGENT: Link to challenges solved -->
+        <div class="roadmap-outcome">[Challenges N-M solved: description]</div>
+      </div>
+    </div>
+    <div class="roadmap-phase">
+      <!-- AGENT: Customize phase 3 -->
+      <div class="roadmap-phase-header phase-3">Phase 3: [Optimize + Rationalize] <span class="phase-time">Months [X-Y]</span></div>
+      <div class="roadmap-phase-body">
+        <div class="roadmap-section-label">Deploy</div>
+        <!-- AGENT: Replace with phase 3 capabilities -->
+        <div class="roadmap-item">[Advanced capabilities]</div>
+        <div class="roadmap-section-label">Rationalize via Hub</div>
+        <!-- AGENT: Replace with phase 3 rationalizations -->
+        <div class="roadmap-item">[Vendor rationalizations]</div>
+        <!-- AGENT: Final outcome -->
+        <div class="roadmap-outcome">[Full platform live: X vendors, 1 integration hub, all channels unified]</div>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 14</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 19: NEXT STEPS + CLOSING
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Open Questions &amp; Next Steps</h2>
+  </div>
+  <div class="cadence">
+    <div class="cadence-step completed"><h4>Done</h4><p>Strategy</p></div>
+    <div class="cadence-arrow">&rarr;</div>
+    <!-- AGENT: Replace with member/customer terminology -->
+    <div class="cadence-step completed"><h4>Done</h4><p>[Customer/Member] Experience</p></div>
+    <div class="cadence-arrow">&rarr;</div>
+    <div class="cadence-step completed"><h4>Done</h4><p>Employee Experience</p></div>
+    <div class="cadence-arrow">&rarr;</div>
+    <div class="cadence-step active"><h4>Today</h4><p>IT Architecture</p></div>
+    <div class="cadence-arrow">&rarr;</div>
+    <div class="cadence-step"><h4>Next</h4><p>Ignite Lab</p></div>
+  </div>
+  <!-- AGENT: Generate client-specific open questions and next steps -->
+  <div class="challenges-grid" style="grid-template-columns: repeat(2, 1fr);">
+    <div class="challenge-card">
+      <div class="challenge-label">Open Questions</div>
+      <h3>For Validation</h3>
+      <ul style="list-style: none; padding: 0;">
+        <!-- AGENT: Replace with client-specific open questions -->
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">1. [Open question about vendor contracts]</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">2. [Open question about API readiness]</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">3. [Open question about deployment preferences]</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">4. [Open question about regulatory constraints]</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">5. [Open question about cloud strategy]</li>
+      </ul>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">Action Items</div>
+      <h3>Next Steps</h3>
+      <ul style="list-style: none; padding: 0;">
+        <!-- AGENT: Replace with specific next steps -->
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">1. [CLIENT] IT: [Data/doc request]</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">2. Backbase: [Reference architecture deliverable]</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">3. [CLIENT]: [Contract/vendor info request]</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">4. Backbase: [Demo/PoC next step]</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">5. Joint: [Scope finalization for next phase]</li>
+      </ul>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 15</div>
+</div>
+
+<!-- ===============================================================
+     CLOSING (Dark background)
+     =============================================================== -->
+<div class="closing">
+  <h2>THANK YOU</h2>
+  <div class="brand">Backbase</div>
+</div>
+
+</body>
+</html>

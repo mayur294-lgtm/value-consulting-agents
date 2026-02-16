@@ -16,12 +16,15 @@
 
 ## Overview
 
-This system consists of **7 independent AI agents** that automate the creation of Backbase Ignite Value Consulting deliverables. Each agent can work standalone or receive context from other agents via a standardized context file.
+This system consists of **7 independent AI agents** (Agent 0–6) that automate the creation of Backbase Ignite Value Consulting deliverables. Each agent can work standalone or receive context from other agents via a standardized context file.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         IGNITE AGENT ARCHITECTURE                            │
 ├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  PLANNING AGENT                                                              │
+│  └── Agent 0: Engagement Plan                                               │
 │                                                                              │
 │  PRE-WORKSHOP AGENTS (Generate facilitation materials)                       │
 │  ├── Agent 1: Strategy Workshop                                             │
@@ -31,8 +34,7 @@ This system consists of **7 independent AI agents** that automate the creation o
 │                                                                              │
 │  POST-WORKSHOP AGENTS (Synthesize and deliver)                               │
 │  ├── Agent 5: Use Case Design + Prototypes                                  │
-│  ├── Agent 6: Ignite Day Presentation                                       │
-│  └── Agent 7: ROI Business Case (Two-Phase)                                 │
+│  └── Agent 6: Ignite Day Presentation                                       │
 │                                                                              │
 │  CONNECTOR                                                                   │
 │  └── ENGAGEMENT_CONTEXT.md (Travels between agents)                         │
@@ -48,20 +50,21 @@ This system consists of **7 independent AI agents** that automate the creation o
 Use all 7 agents in sequence for a complete engagement.
 
 ```
-1. Start Agent 1 → Upload strategy docs → Get workshop deck + context file
-2. Use Agent 2 → Upload context + personas → Get member experience deck
-3. Use Agent 3 → Upload context + employee info → Get employee experience deck
-4. Use Agent 4 → Upload context + architecture docs → Get architecture deck
-   
+1. Start Agent 0 → Provide client details → Get engagement plan + initial context
+2. Use Agent 1 → Upload strategy docs → Get workshop deck + updated context
+3. Use Agent 2 → Upload context + personas → Get member experience deck
+4. Use Agent 3 → Upload context + employee info → Get employee experience deck
+5. Use Agent 4 → Upload context + architecture docs → Get architecture deck
+
    [RUN WORKSHOPS WITH CLIENT]
-   
+
 5. Use Agent 5 → Upload context + transcripts → Get use case docs + prototypes
 6. Use /generate-roi-questionnaire skill → Upload context → Get customized questionnaire
 
    [CLIENT FILLS QUESTIONNAIRE]
 
 7. Use roi-business-case-builder agent → Upload filled questionnaire → Get business case + ROI
-8. Use Agent 6 → Upload context + all outputs → Get final Ignite presentation
+8. Use Agent 6 → Upload context + all outputs → Get final Ignite Day presentation
 ```
 
 ### Option 2: Selective Agent Usage
@@ -73,7 +76,7 @@ Use only the agents you need for a specific engagement type.
 | Experience Sprint | 2 → 3 → 5 | Partial chain |
 | Strategy + Presentation | 1 → 6 | Skip middle |
 | Use Case Validation | 5 only | Minimal context |
-| Full Ignite | 1 → 2 → 3 → 4 → 5 → /generate-roi-questionnaire → roi-business-case-builder → 6 | Full chain |
+| Full Ignite | 0 → 1 → 2 → 3 → 4 → 5 → /generate-roi-questionnaire → roi-business-case-builder → 6 | Full chain |
 
 ---
 
@@ -83,26 +86,26 @@ Use only the agents you need for a specific engagement type.
 
 Create 7 separate Claude Projects in claude.ai:
 
-1. **Ignite - Strategy Workshop**
-2. **Ignite - Member Experience**
-3. **Ignite - Employee Experience**
-4. **Ignite - IT Architecture**
-5. **Ignite - Use Case Design**
-6. **Ignite - Presentation**
-7. **Ignite - ROI Business Case**
+1. **Ignite - Engagement Plan**
+2. **Ignite - Strategy Workshop**
+3. **Ignite - Member Experience**
+4. **Ignite - Employee Experience**
+5. **Ignite - IT Architecture**
+6. **Ignite - Use Case Design**
+7. **Ignite - Presentation**
 
 ### Step 2: Upload CLAUDE.md Files
 
-For each project, upload the corresponding CLAUDE.md file from this repository:
+For each project, upload the corresponding agent definition file from this repository:
 
 ```
-agent-1-strategy/CLAUDE.md      → Ignite - Strategy Workshop
-agent-2-member/CLAUDE.md        → Ignite - Member Experience
-agent-3-employee/CLAUDE.md      → Ignite - Employee Experience
-agent-4-architecture/CLAUDE.md  → Ignite - IT Architecture
-agent-5-usecase/CLAUDE.md       → Ignite - Use Case Design
-agent-6-presentation/CLAUDE.md  → Ignite - Presentation
-agent-7-roi/CLAUDE.md           → Ignite - ROI Business Case
+agent-0-engagement-plan.md      → Ignite - Engagement Plan
+agent-1-strategy.md             → Ignite - Strategy Workshop
+agent-2-member.md               → Ignite - Member Experience
+agent-3-employee.md             → Ignite - Employee Experience
+agent-4-architecture.md         → Ignite - IT Architecture
+agent-5-usecase.md              → Ignite - Use Case Design
+agent-6-presentation.md         → Ignite - Presentation
 ```
 
 ### Step 3: Upload Shared Knowledge (Optional)
@@ -242,42 +245,6 @@ For richer outputs, upload these to each project's knowledge base:
 
 ---
 
-### Agent 7: ROI Business Case (Two-Phase)
-
-**Purpose**: Generate customized questionnaire and calculate ROI business case
-
-**Phase A - Questionnaire Generation**:
-
-*Inputs*:
-- ENGAGEMENT_CONTEXT.md (recommended for customization)
-- Client profile
-
-*Outputs*:
-- `[CLIENT]_Business_Case_Questionnaire.xlsx` - Customized, pre-populated questionnaire
-
-*Trigger Phrases*:
-- "Generate ROI questionnaire for [Client]"
-- "Create business case data collection template"
-
-**Phase B - Business Case Generation**:
-
-*Inputs*:
-- Completed questionnaire from client
-- ENGAGEMENT_CONTEXT.md
-- Backbase pricing estimates (optional)
-
-*Outputs*:
-- `[CLIENT]_Business_Case.pdf` - Full business case document
-- `[CLIENT]_ROI_Model.xlsx` - Detailed financial model with formulas
-- Updated `ENGAGEMENT_CONTEXT.md` with ROI summary
-
-*Trigger Phrases*:
-- "Generate ROI business case"
-- "Build the business case"
-- "Calculate the ROI"
-
----
-
 ## The Engagement Context File
 
 The `ENGAGEMENT_CONTEXT.md` file is the **connector** between all agents. It carries:
@@ -332,24 +299,37 @@ All agents automatically apply correct terminology based on client type in the c
 ## File Structure
 
 ```
-ignite-agents/
-├── README.md                          # This file
-├── templates/
-│   └── ENGAGEMENT_CONTEXT_TEMPLATE.md # Blank template for new engagements
-├── agent-1-strategy/
-│   └── CLAUDE.md                      # Strategy Workshop agent instructions
-├── agent-2-member/
-│   └── CLAUDE.md                      # Member Experience agent instructions
-├── agent-3-employee/
-│   └── CLAUDE.md                      # Employee Experience agent instructions
-├── agent-4-architecture/
-│   └── CLAUDE.md                      # IT Architecture agent instructions
-├── agent-5-usecase/
-│   └── CLAUDE.md                      # Use Case Design agent instructions
-├── agent-6-presentation/
-│   └── CLAUDE.md                      # Ignite Presentation agent instructions
-└── agent-7-roi/
-    └── CLAUDE.md                      # ROI Business Case agent instructions
+Ignite Inspire/
+├── README.md                              # This file
+├── CONSULTANT_GUIDE.md                    # Complete implementation guide
+├── QUICK_REFERENCE.md                     # One-page cheat sheet
+├── ENGAGEMENT_CONTEXT_TEMPLATE.md         # Blank template for new engagements
+├── CONVERSATION_STARTERS.md               # Trigger phrases for each agent
+├── design-system.md                       # Backbase brand rules for HTML output
+├── brand-assets/                          # Logos and visual assets
+│
+├── agent-0-engagement-plan.md             # Engagement Plan agent instructions
+├── agent-1-strategy.md                    # Strategy Workshop agent instructions
+├── agent-2-member.md                      # Member Experience agent instructions
+├── agent-3-employee.md                    # Employee Experience agent instructions
+├── agent-4-architecture.md                # IT Architecture agent instructions
+├── agent-5-usecase.md                     # Use Case Design agent instructions
+├── agent-6-presentation.md                # Ignite Presentation agent instructions
+│
+├── engagement-plan-template.html          # Template for Agent 0
+├── strategy-workshop-template.html        # Template for Agent 1
+├── member-experience-template.html        # Template for Agent 2
+├── employee-experience-template.html      # Template for Agent 3
+├── architecture-workshop-template.html    # Template for Agent 4
+├── usecase-template.html                  # Template for Agent 5
+├── ignite-day-template.html               # Template for Agent 6
+│
+├── example-member-experience-deck.html    # Example output: Agent 2
+├── example-employee-experience-deck.html  # Example output: Agent 3
+├── example-architecture-workshop-deck.html# Example output: Agent 4
+├── example-member-usecase-deck.html       # Example output: Agent 5 (member)
+├── example-employee-usecase-deck.html     # Example output: Agent 5 (employee)
+└── example-ignite-day-deck.html           # Example output: Agent 6
 ```
 
 ---
@@ -408,7 +388,8 @@ Check that you've provided all required inputs for that agent. Review the agent'
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0 | 2026-01 | Initial release with 7 agents |
+| 1.0 | 2026-01 | Initial release with 8 agents (0-7) |
+| 1.1 | 2026-02 | Removed Agent 7 (ROI) — handled by separate ROI Business Case Builder agent. Now 7 agents (0-6). |
 
 ---
 

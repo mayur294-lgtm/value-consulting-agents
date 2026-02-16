@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dubai Islamic Bank Customer Use Case Design | Backbase</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-dark: #091C35;
+    --primary-blue: #3366FF;
+    --cyan: #69FEFF;
+    --white: #FFFFFF;
+    --light-grey: #F3F6F9;
+    --light-blue: #E5EBFF;
+    --muted: #3A495D;
+    --green: #26BC71;
+    --amber: #FFAC09;
+    --red: #FF7262;
+    --text: #091C35;
+    --text-light: #5A6A7E;
+    --border: #E0E6ED;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 15px; line-height: 1.6; color: var(--text); background: var(--white); }
+
+  .cover { background: var(--primary-dark); color: var(--white); min-height: 100vh; padding: 60px 80px; display: flex; flex-direction: column; justify-content: center; position: relative; page-break-after: always; }
+  .cover .brand { font-size: 22px; font-weight: 600; color: var(--primary-blue); margin-bottom: 60px; letter-spacing: 1px; }
+  .cover h1 { font-size: 48px; font-weight: 900; line-height: 1.15; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 60px; }
+  .cover .meta { font-size: 16px; font-weight: 400; color: var(--cyan); }
+
+  .section-divider { background: var(--primary-blue); color: var(--white); padding: 80px 80px; min-height: 40vh; display: flex; flex-direction: column; justify-content: center; position: relative; page-break-before: always; page-break-after: always; }
+  .section-divider .brand { font-size: 18px; font-weight: 600; margin-bottom: 40px; letter-spacing: 1px; }
+  .section-divider .ghost-number { position: absolute; right: 80px; top: 50%; transform: translateY(-50%); font-size: 200px; font-weight: 900; color: rgba(255,255,255,0.08); line-height: 1; }
+  .section-divider h2 { font-size: 42px; font-weight: 900; line-height: 1.2; margin-bottom: 8px; }
+  .section-divider .section-subtitle { font-size: 20px; font-weight: 300; color: rgba(255,255,255,0.7); }
+  .section-divider .cyan-accent { width: 60px; height: 4px; background: var(--cyan); margin-bottom: 24px; }
+
+  .content-section { background: var(--white); padding: 60px 80px; min-height: 80vh; position: relative; page-break-after: always; }
+  .content-section .page-footer { position: absolute; bottom: 20px; right: 80px; font-size: 11px; font-weight: 600; color: var(--text-light); letter-spacing: 1px; }
+
+  .closing { background: var(--primary-dark); color: var(--white); min-height: 60vh; padding: 60px 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; page-break-before: always; }
+  .closing h2 { font-size: 42px; font-weight: 900; margin-bottom: 16px; }
+  .closing .subtitle { font-size: 20px; font-weight: 300; color: rgba(255,255,255,0.6); }
+  .closing .brand { font-size: 18px; font-weight: 600; color: var(--primary-blue); letter-spacing: 1px; margin-top: 40px; }
+
+  .section-title { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+  .section-title .accent { width: 16px; height: 16px; background: var(--primary-blue); flex-shrink: 0; }
+  .section-title h2 { font-size: 24px; font-weight: 700; color: var(--text); }
+  .section-title .subtitle { font-size: 14px; font-weight: 400; color: var(--text-light); margin-left: auto; }
+
+  .objective-statement { background: var(--light-grey); border: 1px solid var(--light-blue); border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0; padding: 24px 28px; font-size: 16px; line-height: 1.6; margin-bottom: 40px; }
+
+  .methodology-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+  .method-block { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 20px 16px; text-align: center; }
+  .method-block .block-num { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: var(--primary-blue); color: #fff; border-radius: 50%; font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .method-block h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .method-block p { font-size: 12px; color: var(--text-light); }
+
+  .recap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+  .recap-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; }
+  .recap-card .recap-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary-blue); margin-bottom: 8px; }
+  .recap-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .recap-card ul { list-style: none; padding: 0; }
+  .recap-card ul li { font-size: 13px; color: var(--text-light); padding: 3px 0 3px 16px; position: relative; }
+  .recap-card ul li::before { content:''; width: 5px; height: 5px; border-radius: 50%; background: var(--primary-blue); position: absolute; left: 0; top: 10px; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; text-align: center; }
+  .stat-card .stat-value { font-size: 36px; font-weight: 900; color: var(--primary-blue); }
+  .stat-card .stat-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+  .journey-stages { display: flex; gap: 0; margin: 32px 0; }
+  .journey-stage { flex: 1; padding: 20px 16px; text-align: center; background: var(--light-grey); border: 1px solid var(--light-blue); position: relative; }
+  .journey-stage:first-child { border-radius: 12px 0 0 12px; }
+  .journey-stage:last-child { border-radius: 0 12px 12px 0; }
+  .journey-stage h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .journey-stage .stage-ucs { font-size: 11px; color: var(--primary-blue); font-weight: 600; }
+  .journey-stage .stage-arrow { position: absolute; right: -10px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 10px solid var(--light-blue); border-top: 10px solid transparent; border-bottom: 10px solid transparent; z-index: 1; }
+
+  .data-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; font-size: 13px; }
+  .data-table thead th { background: var(--primary-blue); color: #fff; padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .data-table tbody td { padding: 12px 16px; border-bottom: 1px solid var(--light-blue); }
+  .data-table tbody tr:nth-child(even) { background: var(--light-grey); }
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; }
+  .badge-p1 { background: rgba(51,102,255,0.12); color: var(--primary-blue); }
+  .badge-p2 { background: rgba(58,73,93,0.12); color: var(--muted); }
+  .badge-p3 { background: rgba(90,106,126,0.08); color: var(--text-light); }
+
+  .usecase-header { background: var(--light-grey); border: 1px solid var(--light-blue); border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0; padding: 24px 28px; margin-bottom: 32px; }
+  .usecase-header .uc-id { font-size: 12px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1.5px; }
+  .usecase-header h3 { font-size: 22px; font-weight: 900; color: var(--text); margin-top: 4px; }
+  .usecase-header .uc-meta { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+  .usecase-header .uc-meta span { font-size: 12px; color: var(--text-light); }
+
+  .spec-section { margin-bottom: 28px; }
+  .spec-section h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-blue); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--light-blue); }
+  .spec-section p { font-size: 14px; color: var(--text-light); line-height: 1.7; margin-top: 8px; }
+  .spec-section ul { list-style: none; padding: 0; }
+  .spec-section ul li { font-size: 14px; color: var(--text-light); padding: 4px 0 4px 16px; position: relative; line-height: 1.5; }
+  .spec-section ul li::before { content:''; width: 5px; height: 5px; border-radius: 50%; background: var(--primary-blue); position: absolute; left: 0; top: 11px; }
+
+  .happy-path-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .happy-path-table th { background: var(--light-grey); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); border-bottom: 2px solid var(--light-blue); }
+  .happy-path-table td { padding: 10px 14px; font-size: 13px; color: var(--text-light); border-bottom: 1px solid var(--light-blue); }
+  .step-num { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: var(--primary-blue); color: #fff; border-radius: 50%; font-size: 11px; font-weight: 700; }
+
+  .integration-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .integration-table th { background: var(--primary-blue); color: #fff; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .integration-table td { padding: 10px 14px; font-size: 13px; color: var(--text-light); border-bottom: 1px solid var(--light-blue); }
+  .integration-table tr:nth-child(even) { background: var(--light-grey); }
+
+  .dod-list { list-style: none; padding: 0; }
+  .dod-list li { font-size: 14px; color: var(--text-light); padding: 6px 0 6px 28px; position: relative; line-height: 1.5; }
+  .dod-list li::before { content:''; width: 16px; height: 16px; border: 2px solid var(--primary-blue); border-radius: 3px; position: absolute; left: 0; top: 8px; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .summary-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; }
+  .summary-card .sc-id { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1px; }
+  .summary-card h4 { font-size: 16px; font-weight: 700; color: var(--text); margin: 8px 0; }
+  .summary-card p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+  .summary-card .sc-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .sc-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 4px; background: var(--light-blue); color: var(--primary-blue); }
+
+  .p3-list { list-style: none; padding: 0; }
+  .p3-list li { font-size: 14px; color: var(--text-light); padding: 10px 0; border-bottom: 1px solid var(--light-blue); }
+  .p3-list li strong { color: var(--text); }
+
+  .next-steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .next-step-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0; padding: 20px; }
+  .next-step-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .next-step-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+
+  /* ======= PROTOTYPE STYLES ======= */
+  .prototype-embed { margin: 48px auto; max-width: 500px; }
+  .prototype-label { text-align: center; margin-bottom: 20px; }
+  .proto-badge { display: inline-block; background: var(--primary-blue); color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; padding: 6px 16px; border-radius: 20px; margin-bottom: 8px; }
+  .proto-title { display: block; font-size: 16px; font-weight: 600; color: var(--text); margin-top: 4px; }
+
+  .phone-frame { width: 375px; height: 812px; margin: 0 auto; background: var(--white); border-radius: 40px; box-shadow: 0 8px 40px rgba(9,28,53,0.15); border: 12px solid var(--primary-dark); overflow: hidden; position: relative; }
+  .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 150px; height: 30px; background: var(--primary-dark); border-radius: 0 0 20px 20px; z-index: 10; }
+  .phone-screen { width: 100%; height: 100%; position: relative; overflow: hidden; }
+
+  .phone-screen .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; }
+  .phone-screen .screen.active { display: flex; }
+  .screen .screen-header { padding: 50px 20px 20px; background: var(--primary-blue); color: #fff; }
+  .screen .screen-header .step-indicator { font-size: 12px; opacity: 0.8; }
+  .screen .screen-header h2 { font-size: 22px; font-weight: 700; margin-top: 6px; }
+  .screen .screen-header p { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+  .screen .screen-body { flex: 1; padding: 20px; overflow-y: auto; }
+  .screen .screen-footer { padding: 16px 20px; border-top: 1px solid #E5EBFF; }
+  .screen .proto-btn { width: 100%; padding: 14px; background: #3366FF; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: default; font-family: inherit; }
+  .screen .proto-btn-outline { width: 100%; padding: 14px; background: transparent; color: #3366FF; border: 2px solid #3366FF; border-radius: 12px; font-size: 16px; font-weight: 600; margin-top: 10px; cursor: default; font-family: inherit; }
+  .screen .proto-input { width: 100%; padding: 12px 14px; background: #F3F6F9; border: 1px solid #E5EBFF; border-radius: 10px; font-size: 15px; color: #091C35; margin-bottom: 14px; font-family: inherit; }
+  .screen .proto-label { display: block; font-size: 13px; font-weight: 600; color: #091C35; margin-bottom: 6px; }
+  .screen .proto-card { background: #F3F6F9; border: 1px solid #E5EBFF; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .screen .proto-card.selected { border-color: #3366FF; background: #F0F4FF; }
+  .screen .proto-card h4 { font-size: 15px; font-weight: 700; color: #091C35; margin-bottom: 4px; }
+  .screen .proto-card p { font-size: 13px; color: #5A6A7E; }
+  .screen .proto-success { text-align: center; padding: 40px 20px; }
+  .screen .proto-checkmark { width: 80px; height: 80px; border-radius: 50%; background: #26BC71; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #fff; font-size: 36px; font-weight: 700; }
+  .screen .proto-progress { height: 4px; background: #E5EBFF; border-radius: 2px; margin-bottom: 20px; }
+  .screen .proto-progress-fill { height: 100%; background: #3366FF; border-radius: 2px; }
+  .screen .status-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 14px; color: #5A6A7E; }
+  .screen .status-check { color: #26BC71; font-weight: 700; }
+
+  .proto-nav { display: flex; justify-content: center; align-items: center; gap: 24px; margin-top: 20px; }
+  .proto-nav button { background: var(--light-grey); border: 1px solid var(--light-blue); color: var(--text); padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Libre Franklin', sans-serif; }
+  .proto-nav button:hover:not(:disabled) { background: var(--light-blue); }
+  .proto-nav button:disabled { opacity: 0.4; cursor: default; }
+  .proto-counter { font-size: 14px; font-weight: 600; color: var(--text-light); min-width: 60px; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- S1: COVER -->
+<div class="cover">
+  <div class="brand">Backbase</div>
+  <h1>Dubai Islamic Bank<br>Customer Use Case Design</h1>
+  <div class="subtitle">Backbase Ignite — Use Case Specifications &amp; Prototypes</div>
+  <div class="meta">February 2026 &nbsp;|&nbsp; Backbase Value Consulting</div>
+</div>
+
+<!-- S2: DIVIDER -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">01</div>
+  <div class="cyan-accent"></div>
+  <h2>Customer Use Cases</h2>
+  <div class="section-subtitle">Objectives, Approach &amp; Workshop Findings</div>
+</div>
+
+<!-- S3: OBJECTIVES -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Objectives &amp; Approach</h2></div>
+  <div class="objective-statement">
+    This document translates the validated findings from Dubai Islamic Bank's four Ignite workshops into detailed customer use case specifications with embedded interactive prototypes. Each Priority 1 use case includes a complete 10-section design specification and a navigable mobile prototype demonstrating the proposed Shariah-compliant digital banking experience.
+  </div>
+  <div class="methodology-grid">
+    <div class="method-block"><div class="block-num">1</div><h4>Synthesize</h4><p>Strategy, CX, EX &amp; Architecture findings</p></div>
+    <div class="method-block"><div class="block-num">2</div><h4>Prioritize</h4><p>Rank by value, Backbase fit &amp; feasibility</p></div>
+    <div class="method-block"><div class="block-num">3</div><h4>Design</h4><p>10-section specification per P1 use case</p></div>
+    <div class="method-block"><div class="block-num">4</div><h4>Prototype</h4><p>Interactive mobile prototype per P1</p></div>
+  </div>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;3</div>
+</div>
+
+<!-- S4: WORKSHOP RECAP -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Workshop Findings Recap</h2><span class="subtitle">Foundation for use case design</span></div>
+  <div class="recap-grid">
+    <div class="recap-card">
+      <div class="recap-label">Strategy Workshop</div>
+      <h3>Strategic Themes</h3>
+      <ul>
+        <li>Digital-First Islamic Banking — lead the region in Shariah-compliant digital experiences</li>
+        <li>Operational Excellence — reduce cost-to-serve through self-service and automation</li>
+        <li>Customer Lifecycle Value — deepen relationships from onboarding to wealth</li>
+        <li>Regional Expansion — scalable digital platform for UAE and beyond</li>
+      </ul>
+    </div>
+    <div class="recap-card">
+      <div class="recap-label">Customer Experience Workshop</div>
+      <h3>CX Priorities</h3>
+      <ul>
+        <li>End-to-end digital account opening with Shariah consent</li>
+        <li>Instant financing decision with Shariah-compliant product structuring</li>
+        <li>Family financial management aligned to Islamic values</li>
+        <li>Personalised product recommendations by life stage</li>
+      </ul>
+    </div>
+    <div class="recap-card">
+      <div class="recap-label">Employee Experience Workshop</div>
+      <h3>EX-to-CX Linkage</h3>
+      <ul>
+        <li>$5.4M annual system switching tax across 13 systems</li>
+        <li>Branch staff cannot see customer digital activity</li>
+        <li>Financing applications require 6+ system switches</li>
+      </ul>
+    </div>
+    <div class="recap-card">
+      <div class="recap-label">Architecture Workshop</div>
+      <h3>Architecture Enablers</h3>
+      <ul>
+        <li>Core: Temenos T24 (on-premise, UAE Private Cloud)</li>
+        <li>Integration hub needed to replace P2P spaghetti</li>
+        <li>10 vendors — rationalisation opportunity</li>
+      </ul>
+    </div>
+  </div>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;4</div>
+</div>
+
+<!-- S5: DIVIDER -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">02</div>
+  <div class="cyan-accent"></div>
+  <h2>Your Digital Experience</h2>
+  <div class="section-subtitle">Proposition Architecture &amp; Use Case Mapping</div>
+</div>
+
+<!-- S6: PROP ARCH RECAP -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Proposition Architecture</h2><span class="subtitle">From Agent 2 — Customer journey stages</span></div>
+  <div class="journey-stages">
+    <div class="journey-stage">
+      <h4>Welcome &amp; Access</h4>
+      <div class="stage-ucs">UC-M01</div>
+      <div class="stage-arrow"></div>
+    </div>
+    <div class="journey-stage">
+      <h4>Grow &amp; Finance</h4>
+      <div class="stage-ucs">UC-M02, UC-M04</div>
+      <div class="stage-arrow"></div>
+    </div>
+    <div class="journey-stage">
+      <h4>Manage &amp; Protect</h4>
+      <div class="stage-ucs">UC-M03, UC-M05</div>
+      <div class="stage-arrow"></div>
+    </div>
+    <div class="journey-stage">
+      <h4>Prosper &amp; Plan</h4>
+      <div class="stage-ucs">UC-M06, UC-M07</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;6</div>
+</div>
+
+<!-- S7: INVENTORY TABLE -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Use Case Inventory</h2><span class="subtitle">All prioritised customer use cases</span></div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-value">10</div><div class="stat-label">Total Use Cases</div></div>
+    <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">P1 (With Prototype)</div></div>
+    <div class="stat-card"><div class="stat-value">5</div><div class="stat-label">P2 (Summary)</div></div>
+    <div class="stat-card"><div class="stat-value">2</div><div class="stat-label">P3 (Future)</div></div>
+  </div>
+  <table class="data-table">
+    <thead><tr><th>ID</th><th>Use Case</th><th>Priority</th><th>Module</th><th>Journey Stage</th><th>Approach</th></tr></thead>
+    <tbody>
+      <tr><td>UC-M01</td><td>Effortless Account Opening</td><td><span class="badge badge-p1">P1</span></td><td>Digital Onboarding</td><td>Welcome &amp; Access</td><td>Configuration</td></tr>
+      <tr><td>UC-M02</td><td>Instant Shariah-Compliant Financing</td><td><span class="badge badge-p1">P1</span></td><td>Digital Lending</td><td>Grow &amp; Finance</td><td>Configuration + Extension</td></tr>
+      <tr><td>UC-M03</td><td>Family Financial Hub</td><td><span class="badge badge-p1">P1</span></td><td>Digital Banking</td><td>Manage &amp; Protect</td><td>Extension</td></tr>
+      <tr><td>UC-M04</td><td>Shariah-Compliant Home Financing</td><td><span class="badge badge-p2">P2</span></td><td>Digital Lending</td><td>Grow &amp; Finance</td><td>Extension</td></tr>
+      <tr><td>UC-M05</td><td>Seamless Card Companion</td><td><span class="badge badge-p2">P2</span></td><td>Digital Banking</td><td>Manage &amp; Protect</td><td>Configuration</td></tr>
+      <tr><td>UC-M06</td><td>Smart Spending Insights</td><td><span class="badge badge-p2">P2</span></td><td>Engage</td><td>Prosper &amp; Plan</td><td>Configuration</td></tr>
+      <tr><td>UC-M07</td><td>Stay in the Know</td><td><span class="badge badge-p2">P2</span></td><td>Engage</td><td>Prosper &amp; Plan</td><td>OOTB</td></tr>
+      <tr><td>UC-M08</td><td>One Tap, Paid</td><td><span class="badge badge-p2">P2</span></td><td>Digital Banking</td><td>Manage &amp; Protect</td><td>OOTB</td></tr>
+      <tr><td>UC-M09</td><td>Invest with Confidence</td><td><span class="badge badge-p3">P3</span></td><td>Wealth</td><td>Prosper &amp; Plan</td><td>Custom</td></tr>
+      <tr><td>UC-M10</td><td>Talk to Us, Anytime</td><td><span class="badge badge-p3">P3</span></td><td>Digital Banking</td><td>Manage &amp; Protect</td><td>Extension</td></tr>
+    </tbody>
+  </table>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;7</div>
+</div>
+
+<!-- S8: P1 DIVIDER -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">03</div>
+  <div class="cyan-accent"></div>
+  <h2>Priority 1 Use Cases</h2>
+  <div class="section-subtitle">Detailed specifications with interactive prototypes</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- UC-M01: EFFORTLESS ACCOUNT OPENING -->
+<!-- ============================================================ -->
+<div class="content-section">
+  <div class="usecase-header">
+    <div class="uc-id">UC-M01</div>
+    <h3>Effortless Account Opening</h3>
+    <div class="uc-meta">
+      <span><strong>Priority:</strong> P1</span>
+      <span><strong>Category:</strong> Tablestakes</span>
+      <span><strong>Module:</strong> Digital Onboarding</span>
+      <span><strong>Stage:</strong> Welcome &amp; Access</span>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <h4>2. Business Context</h4>
+    <p><strong>Strategic Alignment:</strong> Directly supports "Digital-First Islamic Banking" — the bank's flagship digital transformation theme.</p>
+    <p><strong>Business Value:</strong> Reduce cost per acquisition by 60%; increase digital acquisition from 15% to 50% of new accounts; reduce abandonment rate from estimated 70% to under 30%.</p>
+    <p><strong>Current State:</strong> Customers must visit a branch to complete account opening. A partial digital form exists but requires a branch visit for ID verification and Shariah consent signing.</p>
+    <p><strong>Pain Points:</strong></p>
+    <ul>
+      <li>"I started online but had to visit a branch to finish" — top CX workshop complaint</li>
+      <li>Average 3-day completion time for what should be a 10-minute process</li>
+      <li>High drop-off for younger, digitally-native customers</li>
+    </ul>
+  </div>
+
+  <div class="spec-section">
+    <h4>3. User Context</h4>
+    <p><strong>Primary Persona:</strong> Young Professional Khalid (28, tech-savvy, first Islamic banking relationship)</p>
+    <p><strong>User Goal:</strong> Open a Shariah-compliant current account entirely from my phone in under 10 minutes.</p>
+    <p><strong>Success Criteria:</strong> Account is open, IBAN is received, debit card is ordered, mobile banking is immediately accessible.</p>
+  </div>
+
+  <div class="spec-section">
+    <h4>4. Happy Path Specification</h4>
+    <p><strong>Preconditions:</strong> Customer has Emirates ID, smartphone with camera, and is a UAE resident.</p>
+    <p><strong>Trigger:</strong> Customer taps "Open Account" on DIB website or app store listing.</p>
+    <table class="happy-path-table">
+      <thead><tr><th>Step</th><th>User Action</th><th>System Response</th></tr></thead>
+      <tbody>
+        <tr><td><span class="step-num">1</span></td><td>Taps "Open Account"</td><td>Displays welcome screen with Islamic banking proposition and requirements</td></tr>
+        <tr><td><span class="step-num">2</span></td><td>Selects product type</td><td>Shows Shariah-compliant account options with features and profit rates</td></tr>
+        <tr><td><span class="step-num">3</span></td><td>Enters personal information</td><td>Validates format, checks eligibility in real-time</td></tr>
+        <tr><td><span class="step-num">4</span></td><td>Scans Emirates ID</td><td>OCR extracts data, auto-fills form, verifies with ICA</td></tr>
+        <tr><td><span class="step-num">5</span></td><td>Reviews details and accepts Shariah disclosure</td><td>Displays Mudarabah/Wakalah terms and consent checkbox</td></tr>
+        <tr><td><span class="step-num">6</span></td><td>Confirms and submits</td><td>Creates account in T24, generates IBAN, orders card</td></tr>
+        <tr><td><span class="step-num">7</span></td><td>Views confirmation</td><td>Shows IBAN, card ETA, and immediate mobile banking access</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Postconditions:</strong> Account created in T24, IBAN generated, debit card ordered, welcome SMS/email sent, customer can immediately access DIB mobile banking.</p>
+  </div>
+
+  <div class="spec-section">
+    <h4>5. Screen Flow</h4>
+    <ul>
+      <li><strong>Screen 1:</strong> Welcome — Islamic banking value proposition and requirements</li>
+      <li><strong>Screen 2:</strong> Product Selection — Choose account type (Current, Savings, Al Islami)</li>
+      <li><strong>Screen 3:</strong> Personal Information — Name, contact, nationality</li>
+      <li><strong>Screen 4:</strong> Emirates ID Capture — Camera scan and OCR</li>
+      <li><strong>Screen 5:</strong> Review &amp; Shariah Consent — Summary and Islamic disclosure</li>
+      <li><strong>Screen 6:</strong> Processing — Real-time account creation status</li>
+      <li><strong>Screen 7:</strong> Success — IBAN, card order confirmation, next steps</li>
+    </ul>
+  </div>
+
+  <div class="spec-section">
+    <h4>6. Data Requirements</h4>
+    <p><strong>Input:</strong> Full name, Emirates ID number, nationality, date of birth, mobile number, email, Emirates ID images.</p>
+    <p><strong>System:</strong> ICA verification result, AML/sanctions screening, product catalogue, profit rate schedule.</p>
+    <p><strong>Output:</strong> Account number, IBAN, customer record in T24, card order reference.</p>
+  </div>
+
+  <div class="spec-section">
+    <h4>7. Integration Requirements</h4>
+    <table class="integration-table">
+      <thead><tr><th>System</th><th>Integration</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Temenos T24</td><td>Real-time API via Hub</td><td>Account creation and customer record</td></tr>
+        <tr><td>ICA (Emirates ID)</td><td>Real-time API</td><td>Identity verification</td></tr>
+        <tr><td>AML/Sanctions</td><td>Real-time API</td><td>Compliance screening</td></tr>
+        <tr><td>Card Management</td><td>Real-time API via Hub</td><td>Debit card issuance</td></tr>
+        <tr><td>Notification Service</td><td>Event-driven</td><td>Welcome SMS/email</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="spec-section">
+    <h4>8. Backbase Implementation</h4>
+    <p><strong>Module:</strong> Digital Onboarding</p>
+    <p><strong>Approach:</strong> Configuration + Extension (Shariah consent step is extension)</p>
+    <p><strong>Key Components:</strong> Onboarding Journey Orchestrator, Identity Verification Widget, Document Capture Widget, E-Signature Widget</p>
+    <p><strong>Customization:</strong> Shariah disclosure and consent UI, Emirates ID OCR integration, DIB branding, T24-specific integration layer, Arabic language support</p>
+  </div>
+
+  <div class="spec-section">
+    <h4>9. Definition of Done</h4>
+    <ul class="dod-list">
+      <li>Customer can complete account opening 100% digitally in under 8 minutes</li>
+      <li>Emirates ID verification completes within 30 seconds</li>
+      <li>Shariah consent is digitally captured and stored for audit</li>
+      <li>Account is created in T24 within 60 seconds of submission</li>
+      <li>Customer can access mobile banking immediately after account creation</li>
+      <li>Abandonment rate below 30%</li>
+    </ul>
+  </div>
+
+  <div class="spec-section"><h4>10. Interactive Prototype</h4></div>
+
+  <!-- EMBEDDED PROTOTYPE: UC-M01 -->
+  <div class="prototype-embed" data-proto-id="UCM01">
+    <div class="prototype-label">
+      <span class="proto-badge">Interactive Prototype</span>
+      <span class="proto-title">UC-M01: Effortless Account Opening</span>
+    </div>
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <!-- Screen 1: Welcome -->
+        <div class="screen active" data-screen="1">
+          <div class="screen-header" style="padding-top:60px; padding-bottom:32px;">
+            <h2>Welcome to DIB</h2>
+            <p>Shariah-compliant banking, in your hands</p>
+          </div>
+          <div class="screen-body">
+            <div style="text-align:center; padding-top:20px;">
+              <div style="width:80px; height:80px; background:#F3F6F9; border-radius:50%; margin:0 auto 20px; display:flex; align-items:center; justify-content:center;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#3366FF" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
+              <h3 style="font-size:18px; font-weight:700; color:#091C35; margin-bottom:8px;">Open Your Account</h3>
+              <p style="font-size:14px; color:#5A6A7E; margin-bottom:24px;">100% digital. Shariah-compliant. Under 10 minutes.</p>
+              <div style="background:#F3F6F9; border-radius:12px; padding:16px; text-align:left;">
+                <div style="font-size:13px; font-weight:600; color:#091C35; margin-bottom:10px;">You'll need:</div>
+                <div style="font-size:13px; color:#5A6A7E; padding:4px 0;">&#10003; Emirates ID</div>
+                <div style="font-size:13px; color:#5A6A7E; padding:4px 0;">&#10003; UAE mobile number</div>
+                <div style="font-size:13px; color:#5A6A7E; padding:4px 0;">&#10003; About 8 minutes</div>
+              </div>
+            </div>
+          </div>
+          <div class="screen-footer">
+            <div class="proto-btn">Get Started</div>
+            <div class="proto-btn-outline">Already a customer? Sign In</div>
+          </div>
+        </div>
+
+        <!-- Screen 2: Product Selection -->
+        <div class="screen" data-screen="2">
+          <div class="screen-header">
+            <div class="step-indicator">Step 1 of 5</div>
+            <h2>Choose Your Account</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-card selected">
+              <h4>Al Islami Current Account</h4>
+              <p>Everyday banking with Shariah-compliant profit sharing</p>
+            </div>
+            <div class="proto-card">
+              <h4>Al Islami Savings Account</h4>
+              <p>Higher profit rates based on Mudarabah principles</p>
+            </div>
+            <div class="proto-card">
+              <h4>Johara Ladies Account</h4>
+              <p>Exclusive benefits designed for women</p>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Continue</div></div>
+        </div>
+
+        <!-- Screen 3: Personal Info -->
+        <div class="screen" data-screen="3">
+          <div class="screen-header">
+            <div class="step-indicator">Step 2 of 5</div>
+            <h2>Personal Information</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-progress"><div class="proto-progress-fill" style="width:40%"></div></div>
+            <div class="proto-label">Full Name</div>
+            <div class="proto-input">Khalid Ahmed Al-Rashid</div>
+            <div class="proto-label">Emirates ID Number</div>
+            <div class="proto-input">784-1995-XXXXXXX-X</div>
+            <div class="proto-label">Mobile Number</div>
+            <div class="proto-input">+971 55 XXX XXXX</div>
+            <div class="proto-label">Email Address</div>
+            <div class="proto-input">khalid.rashid@email.com</div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Continue</div></div>
+        </div>
+
+        <!-- Screen 4: ID Capture -->
+        <div class="screen" data-screen="4">
+          <div class="screen-header">
+            <div class="step-indicator">Step 3 of 5</div>
+            <h2>Verify Your Identity</h2>
+            <p>Scan your Emirates ID</p>
+          </div>
+          <div class="screen-body">
+            <div class="proto-progress"><div class="proto-progress-fill" style="width:60%"></div></div>
+            <div style="background:#F3F6F9; border:3px dashed #E5EBFF; border-radius:16px; padding:40px 20px; text-align:center; margin-bottom:20px;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3366FF" stroke-width="2" style="margin-bottom:12px;"><rect x="2" y="3" width="20" height="14" rx="2"/><circle cx="12" cy="10" r="3"/></svg>
+              <h4 style="font-size:15px; color:#091C35;">Scan Front of Emirates ID</h4>
+              <p style="font-size:12px; color:#5A6A7E; margin-top:6px;">Position your ID within the frame</p>
+            </div>
+            <div style="background:#E8F5E9; border-radius:10px; padding:12px 16px; font-size:13px; color:#2E7D32;">
+              &#10003; Camera access enabled
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Open Camera</div></div>
+        </div>
+
+        <!-- Screen 5: Review & Shariah Consent -->
+        <div class="screen" data-screen="5">
+          <div class="screen-header">
+            <div class="step-indicator">Step 4 of 5</div>
+            <h2>Review &amp; Consent</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-progress"><div class="proto-progress-fill" style="width:80%"></div></div>
+            <div class="proto-card" style="margin-bottom:16px;">
+              <div style="font-size:11px; font-weight:700; color:#3366FF; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Your Details</div>
+              <div style="font-size:13px; color:#5A6A7E; line-height:1.8;">
+                Khalid Ahmed Al-Rashid<br>
+                Emirates ID: 784-1995-XXXXXXX-X<br>
+                Al Islami Current Account
+              </div>
+            </div>
+            <div style="background:#FFF8E1; border:1px solid #FFE082; border-radius:12px; padding:16px; margin-bottom:16px;">
+              <div style="font-size:13px; font-weight:700; color:#091C35; margin-bottom:8px;">Shariah Disclosure</div>
+              <p style="font-size:12px; color:#5A6A7E; line-height:1.6;">This account operates under Mudarabah principles. Profits are shared according to a pre-agreed ratio. The bank acts as Mudarib (investment manager) and you as Rabb al-Mal (capital provider).</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+              <div style="width:20px; height:20px; border:2px solid #3366FF; border-radius:4px; background:#3366FF; display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px;">&#10003;</div>
+              <span style="font-size:13px; color:#091C35;">I accept the Shariah-compliant terms</span>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Confirm &amp; Open Account</div></div>
+        </div>
+
+        <!-- Screen 6: Processing -->
+        <div class="screen" data-screen="6">
+          <div class="screen-header">
+            <div class="step-indicator">Step 5 of 5</div>
+            <h2>Creating Your Account</h2>
+          </div>
+          <div class="screen-body" style="padding-top:40px;">
+            <div class="proto-progress"><div class="proto-progress-fill" style="width:100%"></div></div>
+            <div style="text-align:center; margin-bottom:32px;">
+              <p style="font-size:15px; color:#5A6A7E;">This will only take a moment...</p>
+            </div>
+            <div class="status-row"><span class="status-check">&#10003;</span> Identity verified</div>
+            <div class="status-row"><span class="status-check">&#10003;</span> Shariah compliance confirmed</div>
+            <div class="status-row"><span class="status-check">&#10003;</span> Account created in core system</div>
+            <div class="status-row"><span style="color:#3366FF; font-weight:700;">&#8635;</span> Ordering debit card...</div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Continue</div></div>
+        </div>
+
+        <!-- Screen 7: Success -->
+        <div class="screen" data-screen="7">
+          <div class="screen-header" style="background:#26BC71;">
+            <div class="step-indicator">Complete</div>
+            <h2>Welcome to DIB!</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-success">
+              <div class="proto-checkmark">&#10003;</div>
+              <h3 style="font-size:20px; font-weight:700; color:#091C35;">You're all set, Khalid!</h3>
+              <p style="font-size:14px; color:#5A6A7E; margin-top:8px;">Your Al Islami Current Account is ready.</p>
+            </div>
+            <div class="proto-card">
+              <div style="font-size:11px; font-weight:700; color:#3366FF; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Your Account</div>
+              <div style="font-size:14px; color:#5A6A7E; line-height:1.8;">
+                Al Islami Current Account<br>
+                IBAN: AE07 0240 XXXX XXXX XXXX XXX<br>
+                Debit card arriving in 3-5 business days
+              </div>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Go to Mobile Banking</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="proto-nav">
+      <button class="proto-back" disabled>&larr; Back</button>
+      <span class="proto-counter">1 / 7</span>
+      <button class="proto-next">Next &rarr;</button>
+    </div>
+  </div>
+  <script>
+  (function(){var p=document.querySelector('[data-proto-id="UCM01"]'),c=1,s=p.querySelectorAll('.screen'),t=s.length,ct=p.querySelector('.proto-counter'),bb=p.querySelector('.proto-back'),nb=p.querySelector('.proto-next');function sh(n){for(var i=0;i<s.length;i++)s[i].classList.remove('active');p.querySelector('[data-screen="'+n+'"]').classList.add('active');c=n;ct.textContent=n+' / '+t;bb.disabled=(n===1);nb.disabled=(n===t);}bb.addEventListener('click',function(){if(c>1)sh(c-1);});nb.addEventListener('click',function(){if(c<t)sh(c+1);});})();
+  </script>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;9</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- UC-M02: INSTANT SHARIAH-COMPLIANT FINANCING -->
+<!-- ============================================================ -->
+<div class="content-section">
+  <div class="usecase-header">
+    <div class="uc-id">UC-M02</div>
+    <h3>Instant Shariah-Compliant Financing</h3>
+    <div class="uc-meta">
+      <span><strong>Priority:</strong> P1</span>
+      <span><strong>Category:</strong> Differentiating</span>
+      <span><strong>Module:</strong> Digital Lending</span>
+      <span><strong>Stage:</strong> Grow &amp; Finance</span>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <h4>2. Business Context</h4>
+    <p><strong>Strategic Alignment:</strong> Supports "Digital-First Islamic Banking" and "Customer Lifecycle Value" by enabling instant financing decisions.</p>
+    <p><strong>Business Value:</strong> Reduce financing application time from 5 days to under 15 minutes; increase digital origination from 8% to 40%; reduce cost per origination by 45%.</p>
+    <p><strong>Current State:</strong> Customers fill a paper form in-branch or a basic web form. Average decision time is 3-5 working days with multiple document submissions.</p>
+    <p><strong>Pain Points:</strong></p>
+    <ul>
+      <li>"I applied for financing a week ago and still haven't heard back"</li>
+      <li>Customers must provide the same documents multiple times</li>
+      <li>No real-time calculator showing Shariah-compliant payment structure</li>
+    </ul>
+  </div>
+
+  <div class="spec-section">
+    <h4>3. User Context</h4>
+    <p><strong>Primary Persona:</strong> Family Provider Omar (38, mid-career, needs personal financing for home renovation)</p>
+    <p><strong>User Goal:</strong> Get an instant decision on Shariah-compliant personal financing with clear Murabaha terms, entirely from my phone.</p>
+    <p><strong>Success Criteria:</strong> Financing offer received with clear profit rate and repayment schedule; funds disbursed within 24 hours of acceptance.</p>
+  </div>
+
+  <div class="spec-section">
+    <h4>4. Happy Path Specification</h4>
+    <p><strong>Preconditions:</strong> Customer is an existing DIB account holder with active mobile banking.</p>
+    <p><strong>Trigger:</strong> Customer taps "Apply for Financing" in DIB mobile app.</p>
+    <table class="happy-path-table">
+      <thead><tr><th>Step</th><th>User Action</th><th>System Response</th></tr></thead>
+      <tbody>
+        <tr><td><span class="step-num">1</span></td><td>Taps "Apply for Financing"</td><td>Shows welcome with pre-approved amount (if eligible)</td></tr>
+        <tr><td><span class="step-num">2</span></td><td>Selects financing type</td><td>Displays Murabaha / Ijarah product options</td></tr>
+        <tr><td><span class="step-num">3</span></td><td>Uses financing calculator</td><td>Real-time calculation with Shariah-compliant profit rate</td></tr>
+        <tr><td><span class="step-num">4</span></td><td>Enters employment and salary details</td><td>Pre-fills from existing data, validates</td></tr>
+        <tr><td><span class="step-num">5</span></td><td>Uploads salary certificate</td><td>OCR extracts data, validates against entered info</td></tr>
+        <tr><td><span class="step-num">6</span></td><td>Reviews Shariah disclosure and terms</td><td>Shows Murabaha contract terms and total cost</td></tr>
+        <tr><td><span class="step-num">7</span></td><td>Submits application</td><td>Runs credit scoring and affordability check</td></tr>
+        <tr><td><span class="step-num">8</span></td><td>Views decision</td><td>Shows approved amount, profit rate, repayment schedule</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Postconditions:</strong> Application created in LOS, credit decision recorded, Shariah terms accepted, funds disbursed to account within 24 hours.</p>
+  </div>
+
+  <div class="spec-section">
+    <h4>5. Screen Flow</h4>
+    <ul>
+      <li><strong>Screen 1:</strong> Welcome — Pre-approved amount and financing options</li>
+      <li><strong>Screen 2:</strong> Product Selection — Murabaha / Ijarah options</li>
+      <li><strong>Screen 3:</strong> Financing Calculator — Amount, tenure, monthly payment</li>
+      <li><strong>Screen 4:</strong> Employment Details — Salary, employer, tenure</li>
+      <li><strong>Screen 5:</strong> Document Upload — Salary certificate</li>
+      <li><strong>Screen 6:</strong> Shariah Disclosure — Murabaha terms and consent</li>
+      <li><strong>Screen 7:</strong> Processing — Credit decision</li>
+      <li><strong>Screen 8:</strong> Approval — Congratulations with offer details</li>
+    </ul>
+  </div>
+
+  <div class="spec-section">
+    <h4>6. Data Requirements</h4>
+    <p><strong>Input:</strong> Financing amount, tenure, employment details, salary certificate, consent.</p>
+    <p><strong>System:</strong> Pre-approved limit, credit score, affordability model, Shariah profit rates, existing liabilities.</p>
+    <p><strong>Output:</strong> Financing application, credit decision, Murabaha contract, repayment schedule.</p>
+  </div>
+
+  <div class="spec-section">
+    <h4>7. Integration Requirements</h4>
+    <table class="integration-table">
+      <thead><tr><th>System</th><th>Integration</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Temenos T24</td><td>Real-time API via Hub</td><td>Customer data, account balances, liabilities</td></tr>
+        <tr><td>Loan Origination System</td><td>Real-time API</td><td>Application creation and decisioning</td></tr>
+        <tr><td>Credit Bureau (Al Etihad)</td><td>Real-time API</td><td>Credit score and report</td></tr>
+        <tr><td>Document Management</td><td>Real-time API</td><td>Salary certificate storage</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="spec-section">
+    <h4>8. Backbase Implementation</h4>
+    <p><strong>Module:</strong> Digital Lending</p>
+    <p><strong>Approach:</strong> Configuration + Extension (Shariah calculator and disclosure are extensions)</p>
+    <p><strong>Key Components:</strong> Lending Journey Orchestrator, Affordability Widget, Document Upload Widget, Decision Widget</p>
+    <p><strong>Customization:</strong> Murabaha profit rate calculator, Shariah disclosure UI, Al Etihad credit bureau integration, Arabic support</p>
+  </div>
+
+  <div class="spec-section">
+    <h4>9. Definition of Done</h4>
+    <ul class="dod-list">
+      <li>Customer receives financing decision within 5 minutes of submission</li>
+      <li>Shariah-compliant profit structure clearly displayed before consent</li>
+      <li>Salary certificate OCR achieves 90%+ accuracy</li>
+      <li>Funds disbursed within 24 hours of acceptance</li>
+      <li>Complete audit trail of Shariah consent captured</li>
+    </ul>
+  </div>
+
+  <div class="spec-section"><h4>10. Interactive Prototype</h4></div>
+
+  <!-- EMBEDDED PROTOTYPE: UC-M02 -->
+  <div class="prototype-embed" data-proto-id="UCM02">
+    <div class="prototype-label">
+      <span class="proto-badge">Interactive Prototype</span>
+      <span class="proto-title">UC-M02: Instant Shariah-Compliant Financing</span>
+    </div>
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <!-- Screen 1: Welcome -->
+        <div class="screen active" data-screen="1">
+          <div class="screen-header" style="padding-top:60px; padding-bottom:32px;">
+            <h2>Personal Financing</h2>
+            <p>Shariah-compliant, instant decision</p>
+          </div>
+          <div class="screen-body">
+            <div style="background:#E8F5E9; border-radius:12px; padding:20px; text-align:center; margin-bottom:20px;">
+              <div style="font-size:12px; color:#2E7D32; font-weight:600; margin-bottom:4px;">Pre-approved up to</div>
+              <div style="font-size:32px; font-weight:900; color:#2E7D32;">AED 250,000</div>
+            </div>
+            <div class="proto-card">
+              <h4>Quick Apply</h4>
+              <p>Use your pre-approved limit for instant financing</p>
+            </div>
+            <div class="proto-card">
+              <h4>New Application</h4>
+              <p>Apply for a custom amount with full assessment</p>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Quick Apply</div></div>
+        </div>
+
+        <!-- Screen 2: Product Selection -->
+        <div class="screen" data-screen="2">
+          <div class="screen-header">
+            <div class="step-indicator">Step 1 of 6</div>
+            <h2>Select Product</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-card selected">
+              <h4>Murabaha Personal Finance</h4>
+              <p>Cost-plus-profit structure. You know the total cost upfront.</p>
+            </div>
+            <div class="proto-card">
+              <h4>Ijarah Finance</h4>
+              <p>Lease-to-own structure for asset-backed financing.</p>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Continue</div></div>
+        </div>
+
+        <!-- Screen 3: Calculator -->
+        <div class="screen" data-screen="3">
+          <div class="screen-header">
+            <div class="step-indicator">Step 2 of 6</div>
+            <h2>Financing Calculator</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-progress"><div class="proto-progress-fill" style="width:33%"></div></div>
+            <div class="proto-label">Amount (AED)</div>
+            <div class="proto-input">150,000</div>
+            <div class="proto-label">Tenure</div>
+            <div class="proto-input">48 months</div>
+            <div style="background:#F3F6F9; border-radius:12px; padding:20px; margin-top:16px;">
+              <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:14px;"><span style="color:#5A6A7E;">Monthly Payment</span><span style="font-weight:700; color:#091C35;">AED 3,750</span></div>
+              <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:14px;"><span style="color:#5A6A7E;">Profit Rate (flat)</span><span style="font-weight:700; color:#091C35;">3.99% p.a.</span></div>
+              <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:14px; border-top:1px solid #E5EBFF; margin-top:6px; padding-top:10px;"><span style="color:#5A6A7E;">Total Cost</span><span style="font-weight:700; color:#3366FF;">AED 180,000</span></div>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Continue</div></div>
+        </div>
+
+        <!-- Screen 4: Employment -->
+        <div class="screen" data-screen="4">
+          <div class="screen-header">
+            <div class="step-indicator">Step 3 of 6</div>
+            <h2>Employment Details</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-progress"><div class="proto-progress-fill" style="width:50%"></div></div>
+            <div class="proto-label">Employer</div>
+            <div class="proto-input">Emirates NBD Group</div>
+            <div class="proto-label">Monthly Salary (AED)</div>
+            <div class="proto-input">25,000</div>
+            <div class="proto-label">Employment Duration</div>
+            <div class="proto-input">4 years</div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Continue</div></div>
+        </div>
+
+        <!-- Screen 5: Document Upload -->
+        <div class="screen" data-screen="5">
+          <div class="screen-header">
+            <div class="step-indicator">Step 4 of 6</div>
+            <h2>Upload Documents</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-progress"><div class="proto-progress-fill" style="width:66%"></div></div>
+            <div style="background:#F3F6F9; border:2px dashed #E5EBFF; border-radius:16px; padding:32px 20px; text-align:center; margin-bottom:16px;">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#3366FF" stroke-width="2" style="margin-bottom:10px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <h4 style="font-size:14px; color:#091C35;">Salary Certificate</h4>
+              <p style="font-size:12px; color:#5A6A7E; margin-top:4px;">Upload or take a photo</p>
+            </div>
+            <div style="background:#E8F5E9; border-radius:10px; padding:12px 16px; font-size:13px; color:#2E7D32;">
+              &#10003; salary_certificate.pdf uploaded
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Continue</div></div>
+        </div>
+
+        <!-- Screen 6: Shariah Disclosure -->
+        <div class="screen" data-screen="6">
+          <div class="screen-header">
+            <div class="step-indicator">Step 5 of 6</div>
+            <h2>Shariah Disclosure</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-progress"><div class="proto-progress-fill" style="width:83%"></div></div>
+            <div style="background:#FFF8E1; border:1px solid #FFE082; border-radius:12px; padding:16px; margin-bottom:16px;">
+              <div style="font-size:13px; font-weight:700; color:#091C35; margin-bottom:8px;">Murabaha Contract Terms</div>
+              <p style="font-size:12px; color:#5A6A7E; line-height:1.6;">DIB purchases the asset/commodity at AED 150,000 and sells it to you at AED 180,000 (including agreed profit). Payment in 48 equal monthly instalments of AED 3,750. This structure is reviewed and approved by DIB's Shariah Board.</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+              <div style="width:20px; height:20px; border:2px solid #3366FF; border-radius:4px; background:#3366FF; display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px;">&#10003;</div>
+              <span style="font-size:13px; color:#091C35;">I accept the Murabaha terms</span>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Submit Application</div></div>
+        </div>
+
+        <!-- Screen 7: Processing -->
+        <div class="screen" data-screen="7">
+          <div class="screen-header">
+            <div class="step-indicator">Step 6 of 6</div>
+            <h2>Processing Application</h2>
+          </div>
+          <div class="screen-body" style="padding-top:40px;">
+            <div class="proto-progress"><div class="proto-progress-fill" style="width:100%"></div></div>
+            <div class="status-row"><span class="status-check">&#10003;</span> Documents verified</div>
+            <div class="status-row"><span class="status-check">&#10003;</span> Credit assessment complete</div>
+            <div class="status-row"><span class="status-check">&#10003;</span> Shariah compliance confirmed</div>
+            <div class="status-row"><span class="status-check">&#10003;</span> Decision ready</div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">View Decision</div></div>
+        </div>
+
+        <!-- Screen 8: Approval -->
+        <div class="screen" data-screen="8">
+          <div class="screen-header" style="background:#26BC71;">
+            <div class="step-indicator">Approved</div>
+            <h2>Congratulations, Omar!</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-success">
+              <div class="proto-checkmark">&#10003;</div>
+              <h3 style="font-size:18px; font-weight:700; color:#091C35;">Financing Approved</h3>
+            </div>
+            <div class="proto-card">
+              <div style="font-size:11px; font-weight:700; color:#3366FF; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Your Financing</div>
+              <div style="font-size:14px; color:#5A6A7E; line-height:1.8;">
+                Amount: AED 150,000<br>
+                Monthly: AED 3,750 x 48 months<br>
+                Profit Rate: 3.99% p.a. (Murabaha)<br>
+                Funds disbursed within 24 hours
+              </div>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Accept Offer</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="proto-nav">
+      <button class="proto-back" disabled>&larr; Back</button>
+      <span class="proto-counter">1 / 8</span>
+      <button class="proto-next">Next &rarr;</button>
+    </div>
+  </div>
+  <script>
+  (function(){var p=document.querySelector('[data-proto-id="UCM02"]'),c=1,s=p.querySelectorAll('.screen'),t=s.length,ct=p.querySelector('.proto-counter'),bb=p.querySelector('.proto-back'),nb=p.querySelector('.proto-next');function sh(n){for(var i=0;i<s.length;i++)s[i].classList.remove('active');p.querySelector('[data-screen="'+n+'"]').classList.add('active');c=n;ct.textContent=n+' / '+t;bb.disabled=(n===1);nb.disabled=(n===t);}bb.addEventListener('click',function(){if(c>1)sh(c-1);});nb.addEventListener('click',function(){if(c<t)sh(c+1);});})();
+  </script>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;10</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- UC-M03: FAMILY FINANCIAL HUB -->
+<!-- ============================================================ -->
+<div class="content-section">
+  <div class="usecase-header">
+    <div class="uc-id">UC-M03</div>
+    <h3>Family Financial Hub</h3>
+    <div class="uc-meta">
+      <span><strong>Priority:</strong> P1</span>
+      <span><strong>Category:</strong> Differentiating</span>
+      <span><strong>Module:</strong> Digital Banking</span>
+      <span><strong>Stage:</strong> Manage &amp; Protect</span>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <h4>2. Business Context</h4>
+    <p><strong>Strategic Alignment:</strong> Supports "Customer Lifecycle Value" — deepens household relationships and increases products per family.</p>
+    <p><strong>Business Value:</strong> Increase products per household from 2.1 to 3.5; reduce churn of secondary family members; enable AED 500M+ in family savings goals.</p>
+    <p><strong>Current State:</strong> Family members have individual accounts with no shared view. Parents cannot monitor children's spending. No shared financial goals.</p>
+    <p><strong>Pain Points:</strong></p>
+    <ul>
+      <li>"I want to teach my children about money but can't see their spending"</li>
+      <li>"We save for Hajj as a family but track it in a spreadsheet"</li>
+      <li>No way to set spending limits on children's supplementary cards</li>
+    </ul>
+  </div>
+
+  <div class="spec-section">
+    <h4>3. User Context</h4>
+    <p><strong>Primary Persona:</strong> Family Provider Omar (38, married with 2 children, wants to manage family finances holistically)</p>
+    <p><strong>User Goal:</strong> See all family accounts in one view, set shared savings goals, and manage children's allowances from my phone.</p>
+    <p><strong>Success Criteria:</strong> Family dashboard shows all linked accounts, shared goals track progress, children receive allowances automatically.</p>
+  </div>
+
+  <div class="spec-section">
+    <h4>4. Happy Path Specification</h4>
+    <p><strong>Preconditions:</strong> Customer is an existing DIB account holder with at least one family member also banking with DIB.</p>
+    <p><strong>Trigger:</strong> Customer taps "Family Hub" in DIB mobile app main menu.</p>
+    <table class="happy-path-table">
+      <thead><tr><th>Step</th><th>User Action</th><th>System Response</th></tr></thead>
+      <tbody>
+        <tr><td><span class="step-num">1</span></td><td>Opens Family Hub</td><td>Shows family dashboard with linked members</td></tr>
+        <tr><td><span class="step-num">2</span></td><td>Adds a family member</td><td>Sends invitation via SMS/app notification</td></tr>
+        <tr><td><span class="step-num">3</span></td><td>Creates a shared goal</td><td>Sets up goal with target amount and timeline</td></tr>
+        <tr><td><span class="step-num">4</span></td><td>Views family budget</td><td>Shows combined spending by category across family</td></tr>
+        <tr><td><span class="step-num">5</span></td><td>Configures child allowance</td><td>Sets recurring transfer and spending limits</td></tr>
+        <tr><td><span class="step-num">6</span></td><td>Reviews notifications</td><td>Shows spending alerts and goal milestones</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Postconditions:</strong> Family members linked, shared goals tracking, allowances scheduled, spending notifications active.</p>
+  </div>
+
+  <div class="spec-section">
+    <h4>5. Screen Flow</h4>
+    <ul>
+      <li><strong>Screen 1:</strong> Family Dashboard — Members, combined balance, alerts</li>
+      <li><strong>Screen 2:</strong> Add Family Member — Invite via SMS/notification</li>
+      <li><strong>Screen 3:</strong> Shared Goals — Create and track family goals</li>
+      <li><strong>Screen 4:</strong> Family Budget — Combined spending categories</li>
+      <li><strong>Screen 5:</strong> Child Allowance — Configure recurring and limits</li>
+      <li><strong>Screen 6:</strong> Notifications &amp; Settings — Alerts and preferences</li>
+    </ul>
+  </div>
+
+  <div class="spec-section">
+    <h4>6. Data Requirements</h4>
+    <p><strong>Input:</strong> Family member invitations (phone/account), goal names/amounts/dates, allowance amounts/frequency, spending limit settings.</p>
+    <p><strong>System:</strong> Account balances for all linked members, transaction data for spending categories, goal progress calculations.</p>
+    <p><strong>Output:</strong> Family group record, shared goal accounts, scheduled transfers, notification preferences.</p>
+  </div>
+
+  <div class="spec-section">
+    <h4>7. Integration Requirements</h4>
+    <table class="integration-table">
+      <thead><tr><th>System</th><th>Integration</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Temenos T24</td><td>Real-time API via Hub</td><td>Account balances and transactions</td></tr>
+        <tr><td>Card Management</td><td>Real-time API via Hub</td><td>Supplementary card limits</td></tr>
+        <tr><td>Notification Service</td><td>Event-driven</td><td>Spending alerts and goal milestones</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="spec-section">
+    <h4>8. Backbase Implementation</h4>
+    <p><strong>Module:</strong> Digital Banking (with Engage for notifications)</p>
+    <p><strong>Approach:</strong> Extension (family grouping and goal tracking are extensions)</p>
+    <p><strong>Key Components:</strong> Account Aggregation Widget, Goal Tracker Widget, Transfer Scheduler, Notification Engine</p>
+    <p><strong>Customization:</strong> Family member linking flow, shared goal UI, child allowance logic, Islamic values-aligned goal templates (Hajj, Umrah, Zakat)</p>
+  </div>
+
+  <div class="spec-section">
+    <h4>9. Definition of Done</h4>
+    <ul class="dod-list">
+      <li>Parent can view all family member accounts in a single dashboard</li>
+      <li>Shared goals track contributions from multiple family members</li>
+      <li>Child allowances are scheduled automatically on set dates</li>
+      <li>Spending limits on supplementary cards enforced in real-time</li>
+      <li>Notifications delivered within 30 seconds of triggering event</li>
+    </ul>
+  </div>
+
+  <div class="spec-section"><h4>10. Interactive Prototype</h4></div>
+
+  <!-- EMBEDDED PROTOTYPE: UC-M03 -->
+  <div class="prototype-embed" data-proto-id="UCM03">
+    <div class="prototype-label">
+      <span class="proto-badge">Interactive Prototype</span>
+      <span class="proto-title">UC-M03: Family Financial Hub</span>
+    </div>
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <!-- Screen 1: Dashboard -->
+        <div class="screen active" data-screen="1">
+          <div class="screen-header">
+            <div class="step-indicator">Family Hub</div>
+            <h2>Al-Rashid Family</h2>
+            <p>4 members &middot; AED 127,500 combined</p>
+          </div>
+          <div class="screen-body">
+            <div class="proto-card">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:14px; font-weight:700; color:#091C35;">Omar (You)</div>
+                  <div style="font-size:12px; color:#5A6A7E;">Current &amp; Savings</div>
+                </div>
+                <div style="font-size:16px; font-weight:900; color:#3366FF;">AED 85,000</div>
+              </div>
+            </div>
+            <div class="proto-card">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:14px; font-weight:700; color:#091C35;">Fatima</div>
+                  <div style="font-size:12px; color:#5A6A7E;">Johara Ladies Account</div>
+                </div>
+                <div style="font-size:16px; font-weight:900; color:#3366FF;">AED 32,500</div>
+              </div>
+            </div>
+            <div class="proto-card">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:14px; font-weight:700; color:#091C35;">Ahmed (Son, 16)</div>
+                  <div style="font-size:12px; color:#5A6A7E;">Youth Account</div>
+                </div>
+                <div style="font-size:16px; font-weight:900; color:#3366FF;">AED 7,200</div>
+              </div>
+            </div>
+            <div class="proto-card">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:14px; font-weight:700; color:#091C35;">Sara (Daughter, 12)</div>
+                  <div style="font-size:12px; color:#5A6A7E;">Youth Account</div>
+                </div>
+                <div style="font-size:16px; font-weight:900; color:#3366FF;">AED 2,800</div>
+              </div>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Manage Family</div></div>
+        </div>
+
+        <!-- Screen 2: Add Member -->
+        <div class="screen" data-screen="2">
+          <div class="screen-header">
+            <div class="step-indicator">Family Hub</div>
+            <h2>Add Family Member</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-label">Member's Mobile Number</div>
+            <div class="proto-input">+971 50 XXX XXXX</div>
+            <div class="proto-label">Relationship</div>
+            <div class="proto-input">Spouse</div>
+            <div class="proto-label">Permissions</div>
+            <div class="proto-card selected">
+              <h4>View Only</h4>
+              <p>Can see combined family view</p>
+            </div>
+            <div class="proto-card">
+              <h4>Contributor</h4>
+              <p>Can view and contribute to shared goals</p>
+            </div>
+            <div class="proto-card">
+              <h4>Manager</h4>
+              <p>Full access including spending limits</p>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Send Invitation</div></div>
+        </div>
+
+        <!-- Screen 3: Shared Goals -->
+        <div class="screen" data-screen="3">
+          <div class="screen-header">
+            <div class="step-indicator">Family Hub</div>
+            <h2>Shared Goals</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-card">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <h4>Hajj Fund 2027</h4>
+                <span style="font-size:12px; font-weight:700; color:#26BC71;">68%</span>
+              </div>
+              <div style="height:6px; background:#E5EBFF; border-radius:3px; margin-bottom:8px;"><div style="height:100%; width:68%; background:#26BC71; border-radius:3px;"></div></div>
+              <div style="font-size:12px; color:#5A6A7E;">AED 34,000 of AED 50,000</div>
+            </div>
+            <div class="proto-card">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <h4>Ahmed's University</h4>
+                <span style="font-size:12px; font-weight:700; color:#3366FF;">32%</span>
+              </div>
+              <div style="height:6px; background:#E5EBFF; border-radius:3px; margin-bottom:8px;"><div style="height:100%; width:32%; background:#3366FF; border-radius:3px;"></div></div>
+              <div style="font-size:12px; color:#5A6A7E;">AED 32,000 of AED 100,000</div>
+            </div>
+            <div style="margin-top:20px; padding:16px; background:#F3F6F9; border:2px dashed #E5EBFF; border-radius:12px; text-align:center;">
+              <span style="font-size:14px; color:#3366FF; font-weight:600;">+ Create New Goal</span>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Contribute Now</div></div>
+        </div>
+
+        <!-- Screen 4: Budget -->
+        <div class="screen" data-screen="4">
+          <div class="screen-header">
+            <div class="step-indicator">Family Hub</div>
+            <h2>Family Budget</h2>
+            <p>January 2026</p>
+          </div>
+          <div class="screen-body">
+            <div style="text-align:center; margin-bottom:20px;">
+              <div style="font-size:14px; color:#5A6A7E;">Total Spending</div>
+              <div style="font-size:28px; font-weight:900; color:#091C35;">AED 18,750</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #E5EBFF; font-size:14px;">
+              <span style="color:#5A6A7E;">Housing</span><span style="font-weight:600; color:#091C35;">AED 8,000</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #E5EBFF; font-size:14px;">
+              <span style="color:#5A6A7E;">Groceries</span><span style="font-weight:600; color:#091C35;">AED 3,200</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #E5EBFF; font-size:14px;">
+              <span style="color:#5A6A7E;">Education</span><span style="font-weight:600; color:#091C35;">AED 4,500</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #E5EBFF; font-size:14px;">
+              <span style="color:#5A6A7E;">Transport</span><span style="font-weight:600; color:#091C35;">AED 1,800</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0; font-size:14px;">
+              <span style="color:#5A6A7E;">Other</span><span style="font-weight:600; color:#091C35;">AED 1,250</span>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Set Budget Limits</div></div>
+        </div>
+
+        <!-- Screen 5: Child Allowance -->
+        <div class="screen" data-screen="5">
+          <div class="screen-header">
+            <div class="step-indicator">Family Hub</div>
+            <h2>Child Allowances</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h4>Ahmed (16)</h4>
+                <span style="font-size:12px; font-weight:700; color:#26BC71; background:rgba(38,188,113,0.12); padding:2px 8px; border-radius:4px;">Active</span>
+              </div>
+              <div style="font-size:13px; color:#5A6A7E; line-height:1.6;">
+                Allowance: AED 500 / month<br>
+                Spending limit: AED 200 / day<br>
+                Next payment: 1 Feb 2026
+              </div>
+            </div>
+            <div class="proto-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h4>Sara (12)</h4>
+                <span style="font-size:12px; font-weight:700; color:#26BC71; background:rgba(38,188,113,0.12); padding:2px 8px; border-radius:4px;">Active</span>
+              </div>
+              <div style="font-size:13px; color:#5A6A7E; line-height:1.6;">
+                Allowance: AED 300 / month<br>
+                Spending limit: AED 100 / day<br>
+                Next payment: 1 Feb 2026
+              </div>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Edit Allowances</div></div>
+        </div>
+
+        <!-- Screen 6: Notifications -->
+        <div class="screen" data-screen="6">
+          <div class="screen-header">
+            <div class="step-indicator">Family Hub</div>
+            <h2>Notifications</h2>
+          </div>
+          <div class="screen-body">
+            <div class="proto-card" style="border-left:3px solid #26BC71;">
+              <div style="font-size:12px; color:#26BC71; font-weight:600; margin-bottom:4px;">Goal Milestone</div>
+              <p style="font-size:13px; color:#091C35;">Hajj Fund reached 68% — AED 16,000 to go!</p>
+              <div style="font-size:11px; color:#5A6A7E; margin-top:4px;">Today, 9:15 AM</div>
+            </div>
+            <div class="proto-card" style="border-left:3px solid #FFAC09;">
+              <div style="font-size:12px; color:#FFAC09; font-weight:600; margin-bottom:4px;">Spending Alert</div>
+              <p style="font-size:13px; color:#091C35;">Ahmed spent AED 180 at Dubai Mall</p>
+              <div style="font-size:11px; color:#5A6A7E; margin-top:4px;">Yesterday, 4:32 PM</div>
+            </div>
+            <div class="proto-card" style="border-left:3px solid #3366FF;">
+              <div style="font-size:12px; color:#3366FF; font-weight:600; margin-bottom:4px;">Allowance Sent</div>
+              <p style="font-size:13px; color:#091C35;">AED 500 sent to Ahmed's account</p>
+              <div style="font-size:11px; color:#5A6A7E; margin-top:4px;">1 Jan 2026</div>
+            </div>
+          </div>
+          <div class="screen-footer"><div class="proto-btn">Notification Settings</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="proto-nav">
+      <button class="proto-back" disabled>&larr; Back</button>
+      <span class="proto-counter">1 / 6</span>
+      <button class="proto-next">Next &rarr;</button>
+    </div>
+  </div>
+  <script>
+  (function(){var p=document.querySelector('[data-proto-id="UCM03"]'),c=1,s=p.querySelectorAll('.screen'),t=s.length,ct=p.querySelector('.proto-counter'),bb=p.querySelector('.proto-back'),nb=p.querySelector('.proto-next');function sh(n){for(var i=0;i<s.length;i++)s[i].classList.remove('active');p.querySelector('[data-screen="'+n+'"]').classList.add('active');c=n;ct.textContent=n+' / '+t;bb.disabled=(n===1);nb.disabled=(n===t);}bb.addEventListener('click',function(){if(c>1)sh(c-1);});nb.addEventListener('click',function(){if(c<t)sh(c+1);});})();
+  </script>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;11</div>
+</div>
+
+<!-- S14: ADDITIONAL USE CASES DIVIDER -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">04</div>
+  <div class="cyan-accent"></div>
+  <h2>Additional Use Cases</h2>
+  <div class="section-subtitle">Priority 2 &amp; Priority 3 use cases for future phases</div>
+</div>
+
+<!-- S15: P2 SUMMARY CARDS + P3 LIST -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Priority 2 Use Cases</h2><span class="subtitle">Summary specifications</span></div>
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="sc-id">UC-M04</div>
+      <h4>Shariah-Compliant Home Financing</h4>
+      <p>End-to-end digital Ijarah mortgage application with property valuation integration. P2 due to complexity of property documentation and valuation dependencies.</p>
+      <div class="sc-meta"><span class="sc-tag">Digital Lending</span><span class="sc-tag">Extension</span><span class="sc-tag">Grow &amp; Finance</span></div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-id">UC-M05</div>
+      <h4>Seamless Card Companion</h4>
+      <p>Instant card controls (freeze/unfreeze, limits, notifications), virtual card issuance, and Apple/Google Pay provisioning. P2 — complements P1 onboarding.</p>
+      <div class="sc-meta"><span class="sc-tag">Digital Banking</span><span class="sc-tag">Configuration</span><span class="sc-tag">Manage &amp; Protect</span></div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-id">UC-M06</div>
+      <h4>Smart Spending Insights</h4>
+      <p>AI-powered transaction categorisation with personalised savings tips aligned to Islamic finance principles. P2 — requires data maturity.</p>
+      <div class="sc-meta"><span class="sc-tag">Engage</span><span class="sc-tag">Configuration</span><span class="sc-tag">Prosper &amp; Plan</span></div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-id">UC-M07</div>
+      <h4>Stay in the Know</h4>
+      <p>Proactive, personalised notifications for account activity, product offers, and Shariah-compliant investment opportunities.</p>
+      <div class="sc-meta"><span class="sc-tag">Engage</span><span class="sc-tag">OOTB</span><span class="sc-tag">Prosper &amp; Plan</span></div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-id">UC-M08</div>
+      <h4>One Tap, Paid</h4>
+      <p>Streamlined bill payments, domestic and international transfers with Shariah-compliant FX. Near tablestakes — P2 for sequencing.</p>
+      <div class="sc-meta"><span class="sc-tag">Digital Banking</span><span class="sc-tag">OOTB</span><span class="sc-tag">Manage &amp; Protect</span></div>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:48px;"><div class="accent"></div><h2>Priority 3 Use Cases</h2><span class="subtitle">Future consideration</span></div>
+  <ul class="p3-list">
+    <li><strong>UC-M09:</strong> Invest with Confidence — Shariah-compliant investment and sukuk marketplace within mobile banking</li>
+    <li><strong>UC-M10:</strong> Talk to Us, Anytime — Secure in-app messaging with context-aware routing to branch or contact centre</li>
+  </ul>
+
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;15</div>
+</div>
+
+<!-- S17: IMPLEMENTATION SUMMARY -->
+<div class="content-section">
+  <div class="section-title"><div class="accent"></div><h2>Implementation Summary &amp; Next Steps</h2></div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">P1 Use Cases</div></div>
+    <div class="stat-card"><div class="stat-value">21</div><div class="stat-label">Prototype Screens</div></div>
+    <div class="stat-card"><div class="stat-value">5</div><div class="stat-label">P2 Use Cases</div></div>
+    <div class="stat-card"><div class="stat-value">10</div><div class="stat-label">Total Use Cases</div></div>
+  </div>
+  <div class="next-steps-grid">
+    <div class="next-step-card">
+      <h4>Immediate</h4>
+      <p>Stakeholder review of P1 specifications and prototypes. Validate Shariah disclosure requirements with Shariah Board. Confirm T24 integration scope.</p>
+    </div>
+    <div class="next-step-card">
+      <h4>Short-term</h4>
+      <p>Detailed technical requirements for UC-M01 and UC-M02. Architecture design for Backbase-T24 integration hub. Emirates ID OCR vendor selection.</p>
+    </div>
+    <div class="next-step-card">
+      <h4>Medium-term</h4>
+      <p>P2 use case elaboration (UC-M04, UC-M05). Implementation roadmap and resource planning. Phase 1 build initiation.</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase&nbsp;&nbsp;|&nbsp;&nbsp;17</div>
+</div>
+
+<!-- S18: CLOSING -->
+<div class="closing">
+  <h2>Next Steps</h2>
+  <div class="subtitle">From use case design to Shariah-compliant digital banking</div>
+  <div class="brand" style="margin-top:40px;">Backbase</div>
+</div>
+
+</body>
+</html>

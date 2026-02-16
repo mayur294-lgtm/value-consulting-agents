@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dubai Islamic Bank Customer Experience Workshop | Backbase</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-dark: #091C35;
+    --primary-blue: #3366FF;
+    --cyan: #69FEFF;
+    --white: #FFFFFF;
+    --light-grey: #F3F6F9;
+    --light-blue: #E5EBFF;
+    --muted: #3A495D;
+    --green: #26BC71;
+    --amber: #FFAC09;
+    --red: #FF7262;
+    --text: #091C35;
+    --text-light: #5A6A7E;
+    --border: #E0E6ED;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px; line-height: 1.6; color: var(--text); background: var(--white);
+  }
+
+  /* ═══ COVER ═══ */
+  .cover {
+    background: var(--primary-dark); color: var(--white); min-height: 100vh;
+    padding: 60px 80px; display: flex; flex-direction: column; justify-content: center;
+    position: relative; page-break-after: always;
+  }
+  .cover .brand { font-size: 22px; font-weight: 600; color: var(--primary-blue); margin-bottom: 60px; letter-spacing: 1px; }
+  .cover h1 { font-size: 48px; font-weight: 900; line-height: 1.15; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 60px; }
+  .cover .meta { font-size: 16px; font-weight: 400; color: var(--cyan); }
+
+  /* ═══ SECTION DIVIDER ═══ */
+  .section-divider {
+    background: var(--primary-blue); color: var(--white); padding: 80px 80px;
+    min-height: 40vh; display: flex; flex-direction: column; justify-content: center;
+    position: relative; page-break-before: always; page-break-after: always;
+  }
+  .section-divider .brand { font-size: 18px; font-weight: 600; margin-bottom: 40px; letter-spacing: 1px; }
+  .section-divider .ghost-number {
+    position: absolute; right: 80px; top: 50%; transform: translateY(-50%);
+    font-size: 200px; font-weight: 900; color: rgba(255,255,255,0.08); line-height: 1;
+  }
+  .section-divider h2 { font-size: 42px; font-weight: 900; line-height: 1.2; margin-bottom: 8px; }
+  .section-divider .section-subtitle { font-size: 20px; font-weight: 300; color: rgba(255,255,255,0.7); }
+  .section-divider .cyan-accent { width: 60px; height: 4px; background: var(--cyan); margin-bottom: 24px; }
+
+  /* ═══ CONTENT SECTION ═══ */
+  .content-section {
+    background: var(--white); padding: 60px 80px; min-height: 80vh;
+    position: relative; page-break-after: always;
+  }
+  .content-section .page-footer {
+    position: absolute; bottom: 20px; right: 80px;
+    font-size: 11px; font-weight: 600; color: var(--text-light); letter-spacing: 1px;
+  }
+
+  /* ═══ TITLE ═══ */
+  .section-title { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+  .section-title .accent { width: 16px; height: 16px; background: var(--primary-blue); flex-shrink: 0; }
+  .section-title h2 { font-size: 24px; font-weight: 700; color: var(--text); }
+  .section-title .subtitle { font-size: 14px; font-weight: 400; color: var(--text-light); margin-left: auto; }
+
+  /* ═══ OBJECTIVE STATEMENT ═══ */
+  .objective-statement {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0;
+    padding: 24px 28px; font-size: 16px; line-height: 1.6; margin-bottom: 40px;
+  }
+
+  /* ═══ METHOD GRID ═══ */
+  .methodology-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+  .method-block {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 20px 16px; text-align: center;
+  }
+  .method-block .block-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; background: var(--primary-blue); color: #fff;
+    border-radius: 50%; font-size: 14px; font-weight: 700; margin-bottom: 10px;
+  }
+  .method-block h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .method-block p { font-size: 12px; color: var(--text-light); }
+
+  /* ═══ CHALLENGE CARDS ═══ */
+  .challenges-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .challenges-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .challenge-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .challenge-card .challenge-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--primary-blue); margin-bottom: 8px;
+  }
+  .challenge-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .challenge-card p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+  .challenge-card.problem { border-left: 3px solid var(--red); }
+  .challenge-card .link-btn {
+    display: inline-block; padding: 6px 14px; background: var(--light-blue);
+    color: var(--primary-blue); border-radius: 6px; font-size: 11px; font-weight: 700;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .challenge-card .link-btn:hover { background: var(--primary-blue); color: #fff; }
+
+  /* ═══ HYPOTHESIS CARDS ═══ */
+  .hypothesis-card {
+    background: #FFFBF0; border: 1px solid var(--light-blue);
+    border-left: 3px solid var(--amber); border-radius: 12px; padding: 16px 20px;
+  }
+  .hypothesis-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+  .hypothesis-label { font-size: 12px; font-weight: 700; color: var(--amber); margin-bottom: 12px; }
+
+  /* ═══ TABLES ═══ */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 16px; }
+  th {
+    background: var(--primary-blue); color: #fff; padding: 12px 16px; text-align: left;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;
+  }
+  td { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  tr:nth-child(even) td { background: var(--light-grey); }
+  .benchmark { color: var(--primary-blue); font-weight: 600; }
+  .leader { color: var(--green); font-weight: 600; }
+  .gap { color: var(--red); font-weight: 600; }
+
+  /* ═══ HARVEY BALLS ═══ */
+  .hb { font-size: 16px; margin-right: 5px; }
+  .hb.full { color: var(--green); }
+  .hb.partial { color: var(--amber); }
+  .hb.none { color: var(--red); }
+  .hb-legend { font-size: 12px; color: var(--text-light); margin-bottom: 14px; }
+  .hb-legend span { margin-right: 16px; }
+
+  /* ═══ VALIDATION BOX ═══ */
+  .validation-box {
+    background: rgba(51,102,255,0.04); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 20px 24px; margin-top: 24px;
+  }
+  .validation-box h4 { font-size: 13px; font-weight: 700; color: var(--primary-blue); margin-bottom: 10px; }
+  .validation-box ul { list-style: none; padding: 0; }
+  .validation-box li {
+    font-size: 13px; color: var(--text-light); padding: 5px 0; padding-left: 16px; position: relative;
+  }
+  .validation-box li::before { content: '?'; position: absolute; left: 0; color: var(--primary-blue); font-weight: 700; }
+
+  /* ═══ CO-CREATION ═══ */
+  .cocreation-card {
+    background: var(--light-grey); border: 2px dashed var(--primary-blue);
+    border-radius: 12px; padding: 24px; margin-top: 24px;
+  }
+  .cocreation-card h3 { font-size: 16px; font-weight: 700; color: var(--primary-blue); margin-bottom: 16px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .kpi-slot {
+    background: #fff; border: 1px dashed var(--border); border-radius: 8px;
+    padding: 16px; text-align: center; min-height: 60px;
+  }
+  .kpi-slot h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .kpi-slot p { font-size: 12px; color: var(--text-light); }
+
+  /* ═══ EXPERIENCE CURVE ═══ */
+  .curve-container { margin: 20px 0; }
+  .curve-legend { display: flex; gap: 20px; margin-top: 12px; font-size: 12px; color: var(--text-light); }
+  .curve-legend span { display: flex; align-items: center; gap: 5px; }
+  .curve-legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* ═══ SWIM LANES ═══ */
+  .swim-lane-header {
+    background: var(--primary-blue); color: #fff; padding: 8px; text-align: center;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    border-radius: 6px 6px 0 0;
+  }
+  .swim-lane-cell { padding: 10px; font-size: 12px; line-height: 1.4; }
+  .swim-lane-cell ul { list-style: none; padding: 0; }
+  .swim-lane-cell ul li { padding: 3px 0; padding-left: 12px; position: relative; }
+  .swim-lane-cell ul li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; position: absolute; left: 0; top: 8px; }
+  .swim-lane-cell.capability { border-top: 3px solid var(--primary-blue); background: rgba(51,102,255,0.04); }
+  .swim-lane-cell.capability ul li::before { background: var(--primary-blue); }
+  .swim-lane-cell.gaps { border-top: 3px solid var(--red); background: rgba(255,114,98,0.04); }
+  .swim-lane-cell.gaps ul li::before { background: var(--red); }
+
+  /* ═══ CROSSCUT ═══ */
+  .crosscut-challenges {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px; margin-top: 24px;
+  }
+  .crosscut-challenges h4 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .crosscut-challenges ul { list-style: none; padding: 0; }
+  .crosscut-challenges li {
+    padding: 6px 0; font-size: 13px; color: var(--text-light);
+    border-bottom: 1px solid var(--border); padding-left: 16px; position: relative; line-height: 1.5;
+  }
+  .crosscut-challenges li:last-child { border: none; }
+  .crosscut-challenges li::before { content: ''; width: 6px; height: 6px; background: var(--red); border-radius: 50%; position: absolute; left: 0; top: 12px; }
+
+  /* ═══ FRICTION GRID ═══ */
+  .friction-grid { display: grid; gap: 2px; font-size: 12px; }
+  .friction-grid .fg-header {
+    background: var(--primary-blue); color: #fff; padding: 8px; text-align: center;
+    font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px;
+    border-radius: 4px 4px 0 0;
+  }
+  .friction-grid .fg-row { padding: 8px 10px; font-size: 12px; line-height: 1.4; }
+  .friction-grid .fg-row.capability { background: rgba(51,102,255,0.04); border-left: 3px solid var(--primary-blue); }
+  .friction-grid .fg-row.experience { background: rgba(255,172,9,0.04); border-left: 3px solid var(--amber); }
+  .friction-grid .fg-row.gaps { background: rgba(255,114,98,0.04); border-left: 3px solid var(--red); }
+  .friction-grid .row-label {
+    font-weight: 700; font-size: 10px; text-transform: uppercase;
+    display: flex; align-items: center; padding: 8px;
+  }
+  .friction-grid .row-label.capability { color: var(--primary-blue); }
+  .friction-grid .row-label.experience { color: var(--amber); }
+  .friction-grid .row-label.gaps { color: var(--red); }
+
+  /* ═══ PERSONA CARDS ═══ */
+  .persona-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .persona-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .persona-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .persona-avatar {
+    width: 64px; height: 64px; border-radius: 50%; background: var(--light-blue);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .persona-avatar svg { width: 40px; height: 40px; }
+  .persona-name { font-size: 18px; font-weight: 900; color: var(--text); }
+  .persona-segment { font-size: 13px; color: var(--primary-blue); font-weight: 600; margin-top: 2px; }
+  .persona-section-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; margin-top: 12px; margin-bottom: 6px;
+  }
+  .persona-section-label.pain { color: var(--red); }
+  .persona-section-label.need { color: var(--green); }
+  .persona-section-label.hmw { color: var(--primary-blue); }
+  .persona-card ul { list-style: none; padding: 0; }
+  .persona-card ul li {
+    font-size: 12px; color: var(--text-light); padding: 3px 0; padding-left: 12px;
+    position: relative; line-height: 1.4;
+  }
+  .persona-card ul li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; position: absolute; left: 0; top: 8px; }
+  .persona-card .pain-points li::before { background: var(--red); }
+  .persona-card .needs li::before { background: var(--green); }
+  .persona-card .hmw-list li::before { background: var(--primary-blue); }
+  .persona-card .stage-tag {
+    display: inline-block; font-size: 10px; background: var(--light-blue);
+    color: var(--primary-blue); padding: 3px 8px; border-radius: 4px;
+    font-weight: 600; margin-top: 8px; margin-right: 4px;
+  }
+
+  /* ═══ PROPOSITION ARCHITECTURE ═══ */
+  .prop-arch-grid { display: grid; gap: 2px; }
+  .pa-cell { padding: 12px; font-size: 12px; line-height: 1.4; }
+  .pa-cell.stage-header {
+    background: var(--primary-blue); color: #fff; text-align: center;
+    font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
+    border-radius: 6px 6px 0 0; cursor: pointer; transition: all 0.3s;
+  }
+  .pa-cell.stage-header:hover { background: #2952CC; }
+  .pa-cell.stage-header.active { background: var(--cyan); color: var(--primary-dark); }
+  .pa-cell.row-label {
+    font-weight: 700; font-size: 10px; text-transform: uppercase;
+    color: var(--primary-blue); display: flex; align-items: center;
+  }
+  .pa-cell.content { background: var(--light-grey); border: 1px solid var(--light-blue); }
+  .pa-cell.promise { background: var(--light-grey); border: 1px solid var(--light-blue); font-style: italic; color: var(--primary-blue); font-size: 12px; }
+  .pa-cell.hmw { background: rgba(51,102,255,0.04); border: 1px solid var(--light-blue); }
+  .pa-cell.hmw ul, .pa-cell.usecase ul, .pa-cell.value ul { list-style: none; padding: 0; }
+  .pa-cell.hmw ul li, .pa-cell.usecase ul li, .pa-cell.value ul li {
+    padding: 3px 0; padding-left: 10px; position: relative; font-size: 12px;
+  }
+  .pa-cell.hmw ul li::before { content: ''; width: 4px; height: 4px; background: var(--primary-blue); border-radius: 50%; position: absolute; left: 0; top: 8px; }
+  .pa-cell.usecase { background: rgba(38,188,113,0.04); border: 1px solid var(--light-blue); }
+  .pa-cell.usecase ul li::before { content: ''; width: 4px; height: 4px; background: var(--green); border-radius: 50%; position: absolute; left: 0; top: 8px; }
+  .pa-cell.value { background: rgba(255,172,9,0.04); border: 1px solid var(--light-blue); }
+  .pa-cell.value ul li::before { content: ''; width: 4px; height: 4px; background: var(--amber); border-radius: 50%; position: absolute; left: 0; top: 8px; }
+  .pa-cell .co-create { color: var(--primary-blue); font-style: italic; font-weight: 600; }
+
+  /* Prop arch focus */
+  .pa-col-fade { opacity: 0.15; transition: opacity 0.3s; }
+  .pa-col-focus { opacity: 1; transition: opacity 0.3s; }
+
+  /* ═══ QUESTIONS ═══ */
+  .questions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .question-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 20px;
+  }
+  .question-card .q-num { font-size: 22px; font-weight: 900; color: var(--primary-blue); margin-bottom: 6px; }
+  .question-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+
+  /* ═══ CADENCE ═══ */
+  .cadence { display: flex; align-items: center; gap: 8px; margin-bottom: 32px; }
+  .cadence-step {
+    background: var(--light-grey); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px; text-align: center; flex: 1;
+  }
+  .cadence-step.completed { border-color: var(--green); background: rgba(38,188,113,0.06); }
+  .cadence-step.active { border-color: var(--primary-blue); background: var(--light-blue); }
+  .cadence-step h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; }
+  .cadence-step.completed h4 { color: var(--green); }
+  .cadence-step.active h4 { color: var(--primary-blue); }
+  .cadence-step p { font-size: 13px; font-weight: 600; }
+  .cadence-arrow { font-size: 18px; color: var(--border); }
+
+  /* ═══ CLOSING ═══ */
+  .closing {
+    background: var(--primary-dark); color: var(--white); min-height: 50vh;
+    padding: 60px 80px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; page-break-before: always;
+  }
+  .closing h2 { font-size: 48px; font-weight: 900; margin-bottom: 24px; }
+  .closing .brand { font-size: 20px; font-weight: 600; color: var(--primary-blue); letter-spacing: 1px; }
+
+  @media (max-width: 900px) {
+    .content-section, .cover, .section-divider { padding: 30px 24px; }
+    .challenges-grid, .questions-grid { grid-template-columns: 1fr; }
+    .persona-grid { grid-template-columns: 1fr; }
+    .methodology-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 1: COVER (Dark background)
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="brand">Backbase</div>
+  <h1>Customer Experience Workshop</h1>
+  <div class="subtitle">Dubai Islamic Bank</div>
+  <div class="meta">Backbase Ignite | 2026</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 2: OBJECTIVES & AGENDA (White background)
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Objectives &amp; Agenda</h2>
+  </div>
+  <div class="objective-statement">
+    Co-create a <strong>customer-centric digital experience vision</strong> for Dubai Islamic Bank — grounded in real market data, persona-driven insights, and Backbase capabilities — that bridges strategic ambition to actionable digital initiatives.
+  </div>
+  <div class="methodology-grid">
+    <div class="method-block"><div class="block-num">1</div><h4>Validate</h4><p>Business &amp; digital benchmarks, capability gaps (15 min)</p></div>
+    <div class="method-block"><div class="block-num">2</div><h4>Explore</h4><p>Tablestake experiences, journey friction points (45 min)</p></div>
+    <div class="method-block"><div class="block-num">3</div><h4>Design</h4><p>Proposition architecture, persona journeys, use cases (45 min)</p></div>
+    <div class="method-block"><div class="block-num">4</div><h4>Align</h4><p>Priorities, open questions, next steps (15 min)</p></div>
+  </div>
+  <div class="page-footer">Backbase | 2</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 3: TOP 3 CX CHALLENGES (White background)
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="content-section" id="challenges">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>What We Heard | Top 3 Customer Experience Challenges</h2>
+  </div>
+  <div class="challenges-grid">
+    <div class="challenge-card">
+      <div class="challenge-label">Challenge 1</div>
+      <h3>Digital-First, Sharia-Compliant Experiences</h3>
+      <p>Customers expect fully digital journeys comparable to neobanks, but Islamic banking products require additional Sharia compliance steps that add friction and force branch visits.</p>
+      <a class="link-btn" href="#tablestake">&#8594; See Tablestake Gaps</a>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">Challenge 2</div>
+      <h3>Fragmented Channel Experience</h3>
+      <p>Different capabilities across OLB, mobile app, and branch. Starting a finance application online requires restarting in-branch, creating frustration and drop-off.</p>
+      <a class="link-btn" href="#origination">&#8594; See Journey Friction</a>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">Challenge 3</div>
+      <h3>Youth &amp; Emerging Affluent Growth</h3>
+      <p>The under-35 demographic compares DIB not to other Islamic banks but to Emirates NBD's Liv. and global fintechs. DIB needs mobile-first, instant experiences.</p>
+      <a class="link-btn" href="#proparch">&#8594; See Proposition Architecture</a>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 3</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 4: BUSINESS & DIGITAL CONTEXT — Divider
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">01</div>
+  <div class="cyan-accent"></div>
+  <h2>Business Goals to Digital Experiences</h2>
+  <div class="section-subtitle">Validation &amp; Refinement (15 min)</div>
+</div>
+
+<!-- SECTION 4A: Business Metric Benchmarking -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Business Metric Benchmarking</h2>
+  </div>
+  <table>
+    <thead><tr><th>Metric</th><th>DIB</th><th>Emirates NBD</th><th>ADCB</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Retail Customers</strong></td><td><span class="benchmark">~1.7M</span></td><td><span class="leader">~4.5M</span></td><td>~1.2M</td></tr>
+      <tr><td><strong>Total Assets</strong></td><td><span class="benchmark">AED 345B</span></td><td><span class="leader">AED 900B+</span></td><td>AED 560B</td></tr>
+      <tr><td><strong>Customer Growth (YoY)</strong></td><td>~8%</td><td><span class="leader">~12%</span></td><td>~6%</td></tr>
+      <tr><td><strong>Deposit Growth Rate</strong></td><td><span class="benchmark">~10%</span></td><td><span class="leader">~14%</span></td><td>~9%</td></tr>
+      <tr><td><strong>Finance Portfolio Growth</strong></td><td><span class="leader">~12%</span></td><td>~10%</td><td>~8%</td></tr>
+      <tr><td><strong>Cost-to-Income Ratio</strong></td><td>~38%</td><td><span class="leader">~32%</span></td><td>~36%</td></tr>
+      <tr><td><strong>Products per Customer</strong></td><td><span class="gap">~2.1</span></td><td><span class="leader">~3.4</span></td><td>~2.8</td></tr>
+    </tbody>
+  </table>
+  <div class="hypothesis-label">&#9650; Hypotheses for Validation</div>
+  <div class="challenges-grid">
+    <div class="hypothesis-card"><p><strong>H1:</strong> DIB's 8% customer growth vs ENBD's 12% suggests digital acquisition is a bottleneck — the gap may widen as digital-native banks capture more share.</p></div>
+    <div class="hypothesis-card"><p><strong>H2:</strong> Products-per-customer of 2.1 vs 3.4 indicates a cross-sell gap. Digital engagement journeys could drive product deepening.</p></div>
+    <div class="hypothesis-card"><p><strong>H3:</strong> Finance portfolio growth (12%) outpacing deposit growth (10%) suggests strong demand — digital origination could accelerate this further.</p></div>
+  </div>
+  <div class="cocreation-card">
+    <h3>Top 3 Business Goals / Challenges</h3>
+    <div class="kpi-row">
+      <div class="kpi-slot"><h4>Challenge 1</h4><p>Add during workshop</p></div>
+      <div class="kpi-slot"><h4>Challenge 2</h4><p>Add during workshop</p></div>
+      <div class="kpi-slot"><h4>Challenge 3</h4><p>Add during workshop</p></div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 4</div>
+</div>
+
+<!-- SECTION 4B: Digital Metric Benchmarking -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Digital Metric Benchmarking</h2>
+  </div>
+  <table>
+    <thead><tr><th>Metric</th><th>DIB</th><th>Emirates NBD</th><th>ADCB</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Digital Adoption</strong></td><td><span class="benchmark">~65%</span></td><td><span class="leader">~82%</span></td><td>~70%</td></tr>
+      <tr><td><strong>Mobile Adoption</strong></td><td>~55%</td><td><span class="leader">~75%</span></td><td>~60%</td></tr>
+      <tr><td><strong>Digital Acquisitions</strong></td><td><span class="gap">~20%</span></td><td><span class="leader">~45%</span></td><td>~30%</td></tr>
+      <tr><td><strong>Digital Sales (of Total)</strong></td><td><span class="gap">~15%</span></td><td><span class="leader">~35%</span></td><td>~25%</td></tr>
+      <tr><td><strong>App Rating (iOS)</strong></td><td>4.1</td><td><span class="leader">4.6</span></td><td>4.3</td></tr>
+      <tr><td><strong>Self-Service Rate</strong></td><td><span class="gap">~45%</span></td><td><span class="leader">~72%</span></td><td>~58%</td></tr>
+      <tr><td><strong>Avg. Session Duration</strong></td><td>3.2 min</td><td><span class="leader">5.8 min</span></td><td>4.1 min</td></tr>
+    </tbody>
+  </table>
+  <div class="hypothesis-label">&#9650; Hypotheses for Validation</div>
+  <div class="challenges-grid">
+    <div class="hypothesis-card"><p><strong>H4:</strong> 65% digital adoption vs 82% ENBD means ~595K digitally inactive customers — migrating even half could reduce branch load by 15-20%.</p></div>
+    <div class="hypothesis-card"><p><strong>H5:</strong> 20% digital acquisitions vs 45% ENBD indicates most onboarding still requires branch — highest-impact automation opportunity.</p></div>
+    <div class="hypothesis-card"><p><strong>H6:</strong> 3.2 min avg session vs 5.8 min suggests customers complete basic tasks but don't engage deeper — missing PFM and engagement features may be the cause.</p></div>
+  </div>
+  <div class="cocreation-card">
+    <h3>Top 3 Customer Experience Goals / Challenges</h3>
+    <div class="kpi-row">
+      <div class="kpi-slot"><h4>Challenge 1</h4><p>Add during workshop</p></div>
+      <div class="kpi-slot"><h4>Challenge 2</h4><p>Add during workshop</p></div>
+      <div class="kpi-slot"><h4>Challenge 3</h4><p>Add during workshop</p></div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 5</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 5: DIGITAL CAPABILITY MAP (Harvey Balls)
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>DIB Digital Capability Map</h2>
+    <span class="subtitle">Current State Overview</span>
+  </div>
+  <div class="hb-legend">
+    <span><span class="hb full">&#9679;</span> Full</span>
+    <span><span class="hb partial">&#9684;</span> Partial</span>
+    <span><span class="hb none">&#9675;</span> None</span>
+  </div>
+  <table>
+    <thead><tr><th>Capability</th><th>Online Banking</th><th>Mobile App</th><th>Branch</th><th>Contact Center</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Account Opening</strong></td><td><span class="hb partial">&#9684;</span> Savings only; finance requires branch</td><td><span class="hb partial">&#9684;</span> Savings via app; limited products</td><td><span class="hb full">&#9679;</span> All products with Sharia signing</td><td><span class="hb none">&#9675;</span> Referral to branch</td></tr>
+      <tr><td><strong>Account Mgmt</strong></td><td><span class="hb full">&#9679;</span> Balances, statements, profit rates</td><td><span class="hb full">&#9679;</span> Balances, statements, history</td><td><span class="hb full">&#9679;</span> Via teller system</td><td><span class="hb full">&#9679;</span> Via agent system</td></tr>
+      <tr><td><strong>Payments &amp; Transfers</strong></td><td><span class="hb full">&#9679;</span> Local (UAEFTS, IPP), intl, bill pay</td><td><span class="hb full">&#9679;</span> Local transfers, bills, Zakat</td><td><span class="hb full">&#9679;</span> All payment types</td><td><span class="hb partial">&#9684;</span> Internal transfers only</td></tr>
+      <tr><td><strong>Card Management</strong></td><td><span class="hb partial">&#9684;</span> View, block/unblock; no spend controls</td><td><span class="hb partial">&#9684;</span> View, temp block, Apple Pay</td><td><span class="hb full">&#9679;</span> Full + instant issuance</td><td><span class="hb full">&#9679;</span> Block, replace, limits</td></tr>
+      <tr><td><strong>Finance (Lending)</strong></td><td><span class="hb partial">&#9684;</span> Apply personal finance; no tracking</td><td><span class="hb none">&#9675;</span> Cannot apply or track</td><td><span class="hb full">&#9679;</span> E2E with Sharia approval</td><td><span class="hb none">&#9675;</span> Referral to branch</td></tr>
+      <tr><td><strong>Financial Mgmt (PFM)</strong></td><td><span class="hb none">&#9675;</span> No PFM or budgeting</td><td><span class="hb partial">&#9684;</span> Basic spending categorization</td><td>N/A</td><td>N/A</td></tr>
+      <tr><td><strong>Support &amp; Service</strong></td><td><span class="hb partial">&#9684;</span> FAQ; no messaging or chat</td><td><span class="hb partial">&#9684;</span> FAQ, chatbot (limited)</td><td><span class="hb full">&#9679;</span> In-person advisory</td><td><span class="hb full">&#9679;</span> Phone + WhatsApp</td></tr>
+      <tr><td><strong>Notifications</strong></td><td><span class="hb partial">&#9684;</span> Email/SMS alerts</td><td><span class="hb partial">&#9684;</span> Push (transactions only)</td><td>N/A</td><td>N/A</td></tr>
+      <tr><td><strong>Security &amp; Auth</strong></td><td><span class="hb full">&#9679;</span> UAE Pass, OTP, password</td><td><span class="hb full">&#9679;</span> Biometric, UAE Pass, OTP</td><td><span class="hb full">&#9679;</span> Emirates ID verification</td><td><span class="hb partial">&#9684;</span> Knowledge-based auth</td></tr>
+    </tbody>
+  </table>
+  <div class="validation-box">
+    <h4>Validation Questions — Capability Map</h4>
+    <ul>
+      <li>Is this an accurate picture of DIB's current digital capabilities across channels?</li>
+      <li>Are there capabilities we have missed or status levels that should be adjusted?</li>
+      <li>Which capability gaps generate the most customer complaints or call center volume?</li>
+      <li>Are there capabilities currently in development or recently launched?</li>
+      <li>How does the Sharia compliance review process impact digital journey completion rates?</li>
+      <li>What percentage of finance applications start digitally but require branch completion?</li>
+    </ul>
+  </div>
+  <div class="page-footer">Backbase | 6</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 6: FUNDAMENTAL PROBLEMS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Fundamental Problems of the Current Digital Experience</h2>
+  </div>
+  <div class="challenges-grid cols-2">
+    <div class="challenge-card problem"><div class="challenge-label" style="color:var(--red);">Problem 1</div><h3>Channel Fragmentation</h3><p>OLB, mobile, and branch offer different capabilities and interfaces. A customer who starts a home finance application on OLB cannot continue it on mobile or in-branch without restarting the entire process.</p></div>
+    <div class="challenge-card problem"><div class="challenge-label" style="color:var(--red);">Problem 2</div><h3>Incomplete Digital Journeys</h3><p>Finance applications (auto, home, personal), credit card applications, and complex servicing requests all require branch visits. Digital initiates but cannot close — creating high abandonment.</p></div>
+    <div class="challenge-card problem"><div class="challenge-label" style="color:var(--red);">Problem 3</div><h3>No Personalization</h3><p>All 1.7 million customers see the same generic interface regardless of segment, product holdings, life stage, or relationship depth. A young professional sees the same experience as an established business owner.</p></div>
+    <div class="challenge-card problem"><div class="challenge-label" style="color:var(--red);">Problem 4</div><h3>Sharia Compliance Friction</h3><p>Contract signing, Fatwa disclosures, Murabaha/Ijara structuring are not digitized — forcing branch visits even for tech-savvy customers. These are unique to Islamic banking and require specific digital solutions.</p></div>
+    <div class="challenge-card problem"><div class="challenge-label" style="color:var(--red);">Problem 5</div><h3>Reactive Service Model</h3><p>No proactive notifications for finance payment reminders, rate changes, or life-event triggers. Customers only engage when something goes wrong, missing opportunities for value-add interactions.</p></div>
+    <div class="challenge-card problem"><div class="challenge-label" style="color:var(--red);">Problem 6</div><h3>Missing Financial Wellness</h3><p>No budgeting tools, savings goals, Zakat calculator, or financial health scoring. Customers manage money outside the app using spreadsheets or competing fintech apps.</p></div>
+  </div>
+  <div class="cocreation-card">
+    <h3>What Did We Miss?</h3>
+    <div class="kpi-row">
+      <div class="kpi-slot"><h4>Problem 7</h4><p>Add during workshop</p></div>
+      <div class="kpi-slot"><h4>Problem 8</h4><p>Add during workshop</p></div>
+      <div class="kpi-slot"><h4>Most Critical?</h4><p>Rank by customer impact</p></div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 7</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 7: TABLESTAKE EXPERIENCES — Divider
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="section-divider" id="tablestake">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">02</div>
+  <div class="cyan-accent"></div>
+  <h2>Tablestake Experiences</h2>
+  <div class="section-subtitle">DIB Experience Gaps Today (45 min)</div>
+</div>
+
+<!-- SECTION 8: Baseline + Experience Curve -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>DIB Mobile Retail Experience Curve</h2>
+    <span class="subtitle">Current State Quality Assessment</span>
+  </div>
+  <div class="objective-statement">
+    If we had to launch a <strong>fully functional digital experience tomorrow</strong>, what would that basic banking app look like?
+  </div>
+  <div class="curve-container">
+    <svg viewBox="0 0 720 250" style="width:100%;max-height:360px;" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="curveGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3366FF" stop-opacity="0.12"/><stop offset="100%" stop-color="#FF7262" stop-opacity="0.08"/></linearGradient></defs>
+      <!-- Baseline -->
+      <line x1="50" y1="115" x2="690" y2="115" stroke="#E0E6ED" stroke-dasharray="4,4"/>
+      <text x="10" y="119" font-size="9" fill="#5A6A7E" font-family="Libre Franklin">Baseline</text>
+      <!-- Area fill -->
+      <path d="M80,128 C110,75 140,58 180,58 C220,58 240,82 290,82 C340,82 350,90 390,90 C430,90 450,120 490,120 C530,120 550,160 590,160 C630,160 650,145 670,145 L670,195 L80,195 Z" fill="url(#curveGrad)"/>
+      <!-- Curve line -->
+      <path d="M80,128 C110,75 140,58 180,58 C220,58 240,82 290,82 C340,82 350,90 390,90 C430,90 450,120 490,120 C530,120 550,160 590,160 C630,160 650,145 670,145" fill="none" stroke="#3366FF" stroke-width="3" stroke-linecap="round"/>
+      <!-- Points -->
+      <circle cx="80" cy="128" r="7" fill="#FFAC09" stroke="#fff" stroke-width="2"/>
+      <circle cx="180" cy="58" r="7" fill="#26BC71" stroke="#fff" stroke-width="2"/>
+      <circle cx="290" cy="82" r="7" fill="#26BC71" stroke="#fff" stroke-width="2"/>
+      <circle cx="390" cy="90" r="7" fill="#26BC71" stroke="#fff" stroke-width="2"/>
+      <circle cx="490" cy="120" r="7" fill="#FFAC09" stroke="#fff" stroke-width="2"/>
+      <circle cx="590" cy="160" r="7" fill="#FF7262" stroke="#fff" stroke-width="2"/>
+      <circle cx="670" cy="145" r="7" fill="#FF7262" stroke="#fff" stroke-width="2"/>
+      <!-- Scores -->
+      <text x="80" y="120" text-anchor="middle" font-size="10" fill="#FFAC09" font-weight="700" font-family="Libre Franklin">40%</text>
+      <text x="180" y="50" text-anchor="middle" font-size="10" fill="#26BC71" font-weight="700" font-family="Libre Franklin">75%</text>
+      <text x="290" y="74" text-anchor="middle" font-size="10" fill="#26BC71" font-weight="700" font-family="Libre Franklin">65%</text>
+      <text x="390" y="82" text-anchor="middle" font-size="10" fill="#26BC71" font-weight="700" font-family="Libre Franklin">60%</text>
+      <text x="490" y="112" text-anchor="middle" font-size="10" fill="#FFAC09" font-weight="700" font-family="Libre Franklin">45%</text>
+      <text x="590" y="152" text-anchor="middle" font-size="10" fill="#FF7262" font-weight="700" font-family="Libre Franklin">20%</text>
+      <text x="670" y="137" text-anchor="middle" font-size="10" fill="#FF7262" font-weight="700" font-family="Libre Franklin">30%</text>
+      <!-- Labels -->
+      <text x="80" y="218" text-anchor="middle" font-size="11" fill="#091C35" font-weight="600" font-family="Libre Franklin">Enrollment</text>
+      <text x="180" y="218" text-anchor="middle" font-size="11" fill="#091C35" font-weight="600" font-family="Libre Franklin">Login</text>
+      <text x="290" y="218" text-anchor="middle" font-size="11" fill="#091C35" font-weight="600" font-family="Libre Franklin">Accounts</text>
+      <text x="390" y="218" text-anchor="middle" font-size="11" fill="#091C35" font-weight="600" font-family="Libre Franklin">Payments</text>
+      <text x="490" y="218" text-anchor="middle" font-size="11" fill="#091C35" font-weight="600" font-family="Libre Franklin">Cards</text>
+      <text x="590" y="218" text-anchor="middle" font-size="11" fill="#091C35" font-weight="600" font-family="Libre Franklin">PFM</text>
+      <text x="670" y="218" text-anchor="middle" font-size="11" fill="#091C35" font-weight="600" font-family="Libre Franklin">Services</text>
+    </svg>
+  </div>
+  <div class="curve-legend">
+    <span><span class="dot" style="background:var(--green);"></span> Above baseline (good)</span>
+    <span><span class="dot" style="background:var(--amber);"></span> Near baseline (moderate)</span>
+    <span><span class="dot" style="background:var(--red);"></span> Below baseline (critical gap)</span>
+  </div>
+
+  <!-- Cross-cutting challenges -->
+  <div class="crosscut-challenges">
+    <h4>Cross-Cutting Challenges</h4>
+    <ul>
+      <li>Online Banking and mobile app offer different functionality, creating confusion for customers who use both</li>
+      <li>No cross-channel continuity: processes started in one channel cannot be resumed in another</li>
+      <li>Lack of personalization throughout the experience — all 1.7M customers see the same interface</li>
+      <li>Sharia-specific product features (profit rates, Murabaha structures) not well-explained in digital channels</li>
+      <li>Expatriate customers face additional friction due to document requirements not supported digitally</li>
+      <li>No unified customer profile across channels — branch and digital have separate views</li>
+      <li>Arabic language experience inconsistent across touchpoints; right-to-left layout issues in some flows</li>
+    </ul>
+  </div>
+  <div class="page-footer">Backbase | 8</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 9: FRICTION POINTS — ORIGINATION
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="content-section" id="origination">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Friction Points | Account Origination</h2>
+  </div>
+  <div class="friction-grid" style="grid-template-columns: 80px repeat(6, 1fr);">
+    <div class="fg-header"></div><div class="fg-header">Discovery &amp; Pre-Qual</div><div class="fg-header">Identity &amp; KYC</div><div class="fg-header">Application &amp; Data</div><div class="fg-header">Sharia Compliance</div><div class="fg-header">Setup &amp; Funding</div><div class="fg-header">Activation</div>
+    <div class="row-label capability">Capability</div>
+    <div class="fg-row capability">Rate calculators on dib.ae for home/auto finance</div>
+    <div class="fg-row capability">Emirates ID + UAE Pass eKYC; video call for expats</div>
+    <div class="fg-row capability">Digital for savings/current; PDF upload for finance</div>
+    <div class="fg-row capability">Sharia board review; Fatwa disclosures in branch only</div>
+    <div class="fg-row capability">Savings active in 24h; finance requires branch signing</div>
+    <div class="fg-row capability">Debit card mailed 5-7 days; app credentials via SMS</div>
+    <div class="row-label experience">Experience</div>
+    <div class="fg-row experience">No pre-qualification; eligibility discovered after full application</div>
+    <div class="fg-row experience">Emirates ID works; expat KYC needs multiple uploads, unclear guidance</div>
+    <div class="fg-row experience">Savings simple; finance needs repetitive entry + branch callback</div>
+    <div class="fg-row experience">Opaque to customers; no visibility into Sharia review progress</div>
+    <div class="fg-row experience">Funding not integrated; separate transfer required post-activation</div>
+    <div class="fg-row experience">No guided onboarding; customer must discover features alone</div>
+    <div class="row-label gaps">Gaps</div>
+    <div class="fg-row gaps">Instant eligibility check; personalized product recommendation</div>
+    <div class="fg-row gaps">Streamlined expat KYC; guided checklist; real-time status</div>
+    <div class="fg-row gaps">E2E digital finance app; save &amp; resume; no branch handoff</div>
+    <div class="fg-row gaps">Digital Sharia disclosure; transparent compliance tracking</div>
+    <div class="fg-row gaps">Immediate funding via card/transfer within the application flow</div>
+    <div class="fg-row gaps">Contextual onboarding tour; guided first transfer + Apple Pay</div>
+  </div>
+  <div class="page-footer">Backbase | 9</div>
+</div>
+
+<!-- SECTION 10: FRICTION — LENDING / CC -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Friction Points | Finance &amp; Credit Card Origination</h2>
+  </div>
+  <div class="friction-grid" style="grid-template-columns: 80px repeat(6, 1fr);">
+    <div class="fg-header"></div><div class="fg-header">Research</div><div class="fg-header">Eligibility</div><div class="fg-header">Application</div><div class="fg-header">Sharia Review</div><div class="fg-header">Approval</div><div class="fg-header">Disbursement</div>
+    <div class="row-label capability">Capability</div>
+    <div class="fg-row capability">Product pages with Murabaha/Ijara rate comparisons</div>
+    <div class="fg-row capability">No digital pre-qualification; salary estimation on website</div>
+    <div class="fg-row capability">Personal finance: OLB only; home/auto/CC: branch only</div>
+    <div class="fg-row capability">Manual Sharia board review; 3-5 day processing</div>
+    <div class="fg-row capability">SMS notification; branch visit for contract signing</div>
+    <div class="fg-row capability">Funds transferred; no digital tracking of drawdown</div>
+    <div class="row-label experience">Experience</div>
+    <div class="fg-row experience">Generic product info; no personalized scenarios</div>
+    <div class="fg-row experience">Full application required before learning eligibility</div>
+    <div class="fg-row experience">Repetitive data entry; documents must go to branch</div>
+    <div class="fg-row experience">Customers wait with no visibility; must call for status</div>
+    <div class="fg-row experience">Branch visit for wet signature; scheduling friction</div>
+    <div class="fg-row experience">No repayment schedule in app; email statements only</div>
+    <div class="row-label gaps">Gaps</div>
+    <div class="fg-row gaps">Interactive calculators; scenario modeling; instant rates</div>
+    <div class="fg-row gaps">Instant pre-qual with soft credit check; income estimation</div>
+    <div class="fg-row gaps">E2E digital app with doc upload and e-signature</div>
+    <div class="fg-row gaps">Digital Sharia compliance; real-time status; automated review</div>
+    <div class="fg-row gaps">Digital contract signing; qualified electronic signature (QES)</div>
+    <div class="fg-row gaps">In-app finance dashboard with schedule and balance tracking</div>
+  </div>
+  <div class="page-footer">Backbase | 10</div>
+</div>
+
+<!-- SECTION 11: FRICTION — SERVICING -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Friction Points | Ongoing Servicing</h2>
+  </div>
+  <div class="friction-grid" style="grid-template-columns: 80px repeat(6, 1fr);">
+    <div class="fg-header"></div><div class="fg-header">Profile Mgmt</div><div class="fg-header">Card Services</div><div class="fg-header">Payments</div><div class="fg-header">Disputes</div><div class="fg-header">Support</div><div class="fg-header">Notifications</div>
+    <div class="row-label capability">Capability</div>
+    <div class="fg-row capability">View profile; cannot update address/phone digitally</div>
+    <div class="fg-row capability">View/block card; Apple Pay; no spend controls or PIN</div>
+    <div class="fg-row capability">Local transfers and bill pay; no scheduled payments</div>
+    <div class="fg-row capability">No in-app disputes; must call or visit branch</div>
+    <div class="fg-row capability">FAQ + limited chatbot; no secure messaging</div>
+    <div class="fg-row capability">Transaction SMS/push; no proactive lifecycle alerts</div>
+    <div class="row-label experience">Experience</div>
+    <div class="fg-row experience">Simple changes require branch; outdated data persists</div>
+    <div class="fg-row experience">Replacement requires branch; no self-service controls</div>
+    <div class="fg-row experience">Beneficiary setup complex; no international remittance</div>
+    <div class="fg-row experience">Dispute process opaque; no tracking after filing</div>
+    <div class="fg-row experience">Chatbot handles basic FAQs only; escalation = hotline</div>
+    <div class="fg-row experience">Alert fatigue from SMS; no actionable notifications</div>
+    <div class="row-label gaps">Gaps</div>
+    <div class="fg-row gaps">Self-service profile updates with ID verification</div>
+    <div class="fg-row gaps">Digital card controls, PIN mgmt, instant virtual replacement</div>
+    <div class="fg-row gaps">Scheduled payments, standing orders, intl remittance</div>
+    <div class="fg-row gaps">In-app dispute filing with real-time status tracking</div>
+    <div class="fg-row gaps">Secure messaging, video banking, appointment scheduling</div>
+    <div class="fg-row gaps">Smart notifications: payment reminders, rates, offers</div>
+  </div>
+  <div class="page-footer">Backbase | 11</div>
+</div>
+
+<!-- SECTION 12: FRICTION — MARKETING -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Friction Points | Engagement &amp; Marketing</h2>
+  </div>
+  <div class="friction-grid" style="grid-template-columns: 80px repeat(6, 1fr);">
+    <div class="fg-header"></div><div class="fg-header">Segmentation</div><div class="fg-header">Personalization</div><div class="fg-header">Offers</div><div class="fg-header">Cross-Sell</div><div class="fg-header">Campaigns</div><div class="fg-header">Measurement</div>
+    <div class="row-label capability">Capability</div>
+    <div class="fg-row capability">Basic demographic segments; no behavioral segmentation</div>
+    <div class="fg-row capability">No in-app personalization; same experience for all</div>
+    <div class="fg-row capability">Mass offers via email/SMS; no in-app offer engine</div>
+    <div class="fg-row capability">Branch staff manual cross-sell; no digital recs</div>
+    <div class="fg-row capability">Email campaigns; no in-app or push orchestration</div>
+    <div class="fg-row capability">Delivery tracking only; no conversion metrics</div>
+    <div class="row-label experience">Experience</div>
+    <div class="fg-row experience">Irrelevant offers; no segment-based targeting</div>
+    <div class="fg-row experience">Dashboard shows generic content for everyone</div>
+    <div class="fg-row experience">Offers not contextual; wrong time in journey</div>
+    <div class="fg-row experience">No next-best-product recommendations digitally</div>
+    <div class="fg-row experience">Campaigns feel disconnected from banking</div>
+    <div class="fg-row experience">No feedback loop; cannot measure digital ROI</div>
+    <div class="row-label gaps">Gaps</div>
+    <div class="fg-row gaps">Behavioral + transactional segmentation; life-stage triggers</div>
+    <div class="fg-row gaps">Personalized dashboard, content, product recommendations</div>
+    <div class="fg-row gaps">Contextual in-app offers triggered by behavior/life events</div>
+    <div class="fg-row gaps">AI-powered next-best-action at the right moment</div>
+    <div class="fg-row gaps">Omnichannel orchestration: in-app + push + email</div>
+    <div class="fg-row gaps">Full-funnel analytics; conversion tracking; scoring</div>
+  </div>
+  <div class="page-footer">Backbase | 12</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 13: DIFFERENTIATING — Divider
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="section-divider" id="proparch">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">03</div>
+  <div class="cyan-accent"></div>
+  <h2>Differentiating Proposition Architecture</h2>
+  <div class="section-subtitle">Persona-Driven Experiences (45 min)</div>
+</div>
+
+<!-- SECTION 14: PERSONAS -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Personalised Customer Experiences: DIB Segments</h2>
+  </div>
+  <div class="persona-grid">
+
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-avatar"><svg viewBox="0 0 40 40"><circle cx="20" cy="12" r="9" fill="#3366FF"/><path d="M5 36 C5 24 35 24 35 36" fill="#3366FF"/></svg></div>
+        <div><div class="persona-name">Digital Pioneer</div><div class="persona-segment">Young Professional (25-35)</div></div>
+      </div>
+      <div class="persona-section-label pain">Pain Points</div>
+      <ul class="pain-points"><li>Cannot complete finance applications without visiting a branch</li><li>App feels dated compared to Liv. and Mashreq Neo</li><li>No instant account opening or virtual card issuance</li></ul>
+      <div class="persona-section-label need">Key Needs</div>
+      <ul class="needs"><li>Fully mobile banking with zero branch dependency</li><li>Instant product activation and digital wallet integration</li><li>Modern, fast interface with real-time notifications</li></ul>
+      <div class="persona-section-label hmw">How Might We</div>
+      <ul class="hmw-list"><li>HMW enable 100% digital onboarding with Sharia compliance?</li><li>HMW deliver an app experience that rivals neobanks?</li><li>HMW provide instant virtual cards upon approval?</li></ul>
+      <span class="stage-tag">Acquire</span><span class="stage-tag">Activate</span>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-avatar" style="background:#E8F5E9;"><svg viewBox="0 0 40 40"><circle cx="14" cy="12" r="7" fill="#26BC71"/><path d="M3 34 C3 25 25 25 25 34" fill="#26BC71"/><circle cx="27" cy="14" r="6" fill="#26BC71" opacity="0.6"/><path d="M17 34 C17 27 37 27 37 34" fill="#26BC71" opacity="0.6"/></svg></div>
+        <div><div class="persona-name">Growing Family</div><div class="persona-segment">Dual-Income Household (30-45)</div></div>
+      </div>
+      <div class="persona-section-label pain">Pain Points</div>
+      <ul class="pain-points"><li>Home finance process is slow and paper-heavy</li><li>No shared account visibility between spouses</li><li>Cannot track Murabaha payment schedules digitally</li></ul>
+      <div class="persona-section-label need">Key Needs</div>
+      <ul class="needs"><li>Streamlined home and auto finance origination</li><li>Family financial planning tools and shared dashboards</li><li>Clear visibility into Islamic finance payment structures</li></ul>
+      <div class="persona-section-label hmw">How Might We</div>
+      <ul class="hmw-list"><li>HMW enable families to view and manage shared finances?</li><li>HMW digitize home finance end-to-end?</li><li>HMW make Murabaha structures transparent and trackable?</li></ul>
+      <span class="stage-tag">Engage</span><span class="stage-tag">Expand</span>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-avatar" style="background:#FFF3E0;"><svg viewBox="0 0 40 40"><circle cx="20" cy="11" r="8" fill="#FFAC09"/><path d="M6 36 C6 24 34 24 34 36" fill="#FFAC09"/><rect x="15" y="21" width="10" height="3" rx="1" fill="#fff"/></svg></div>
+        <div><div class="persona-name">Established Professional</div><div class="persona-segment">Senior Manager / Business Owner (40-55)</div></div>
+      </div>
+      <div class="persona-section-label pain">Pain Points</div>
+      <ul class="pain-points"><li>No wealth management or investment overview in app</li><li>Cannot switch between personal and business accounts</li><li>Premium service expectations not met digitally</li></ul>
+      <div class="persona-section-label need">Key Needs</div>
+      <ul class="needs"><li>Unified view of personal, business, and investment portfolios</li><li>Priority digital servicing and dedicated RM access</li><li>Proactive financial insights and Sharia-compliant investments</li></ul>
+      <div class="persona-section-label hmw">How Might We</div>
+      <ul class="hmw-list"><li>HMW offer unified personal + business context switching?</li><li>HMW provide a digital RM experience for premium customers?</li><li>HMW surface Sharia-compliant investment opportunities?</li></ul>
+      <span class="stage-tag">Retain</span><span class="stage-tag">Expand</span>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-avatar" style="background:#E0F7FA;"><svg viewBox="0 0 40 40"><circle cx="20" cy="12" r="9" fill="#69FEFF" stroke="#3366FF" stroke-width="1"/><path d="M5 36 C5 24 35 24 35 36" fill="#69FEFF" stroke="#3366FF" stroke-width="1"/><path d="M28 5 L33 2 M28 9 L35 9 M28 13 L33 16" stroke="#3366FF" stroke-width="1.5" fill="none"/></svg></div>
+        <div><div class="persona-name">New-to-UAE Expatriate</div><div class="persona-segment">Recently Relocated Professional</div></div>
+      </div>
+      <div class="persona-section-label pain">Pain Points</div>
+      <ul class="pain-points"><li>Complex onboarding requiring multiple branch visits</li><li>International remittances not available in mobile app</li><li>Unfamiliar with Islamic banking product structures</li></ul>
+      <div class="persona-section-label need">Key Needs</div>
+      <ul class="needs"><li>Quick, guided digital onboarding with minimal documentation</li><li>Easy international transfers and multi-currency visibility</li><li>Educational content explaining Islamic finance simply</li></ul>
+      <div class="persona-section-label hmw">How Might We</div>
+      <ul class="hmw-list"><li>HMW make expat onboarding as simple as resident onboarding?</li><li>HMW enable seamless international remittances in-app?</li><li>HMW educate expats on Islamic banking in a welcoming way?</li></ul>
+      <span class="stage-tag">Acquire</span><span class="stage-tag">Activate</span>
+    </div>
+
+    <div class="persona-card" style="grid-column: span 2;">
+      <div class="persona-header">
+        <div class="persona-avatar" style="background:var(--light-grey);"><svg viewBox="0 0 40 40"><circle cx="20" cy="12" r="9" fill="#3A495D"/><path d="M5 36 C5 24 35 24 35 36" fill="#3A495D"/><path d="M13 9 L27 9" stroke="#fff" stroke-width="1" opacity="0.5"/></svg></div>
+        <div><div class="persona-name">Traditional Banking Customer</div><div class="persona-segment">Branch-Loyal (55+)</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+        <div><div class="persona-section-label pain">Pain Points</div><ul class="pain-points"><li>Finds mobile app confusing and not intuitive</li><li>Worried about security of digital transactions</li><li>Prefers human interaction for important decisions</li></ul></div>
+        <div><div class="persona-section-label need">Key Needs</div><ul class="needs"><li>Simplified interface with larger text and guided flows</li><li>Easy access to human support from digital channels</li><li>Assurance of security with trusted authentication</li></ul></div>
+        <div><div class="persona-section-label hmw">How Might We</div><ul class="hmw-list"><li>HMW help older customers feel confident using the app?</li><li>HMW seamlessly bridge digital to human when needed?</li><li>HMW provide reassuring security without complexity?</li></ul></div>
+      </div>
+      <span class="stage-tag">Activate</span><span class="stage-tag">Retain</span>
+    </div>
+
+  </div>
+  <div class="page-footer">Backbase | 14</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 15: PROPOSITION ARCHITECTURE CANVAS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Customer Centricity: From First Banking to Trusted Partnership</h2>
+  </div>
+  <p style="font-size:13px;color:var(--text-light);margin-bottom:16px;">Click a stage header to focus. Click again to show all.</p>
+
+  <div class="prop-arch-grid" id="pa-grid" style="grid-template-columns: 100px repeat(5, 1fr);">
+
+    <!-- Stage Headers -->
+    <div class="pa-cell row-label" style="background:transparent;"></div>
+    <div class="pa-cell stage-header" onclick="focusCol(1)">Acquire</div>
+    <div class="pa-cell stage-header" onclick="focusCol(2)">Activate</div>
+    <div class="pa-cell stage-header" onclick="focusCol(3)">Engage</div>
+    <div class="pa-cell stage-header" onclick="focusCol(4)">Retain</div>
+    <div class="pa-cell stage-header" onclick="focusCol(5)">Expand</div>
+
+    <!-- Initiative -->
+    <div class="pa-cell row-label">Initiative</div>
+    <div class="pa-cell content" data-col="1">Digital-first onboarding that eliminates branch dependency for account opening and initial product setup</div>
+    <div class="pa-cell content" data-col="2">Guided activation journey that drives first value within 48 hours of account opening</div>
+    <div class="pa-cell content" data-col="3">Personalized daily banking experience with smart financial management tools</div>
+    <div class="pa-cell content" data-col="4">Proactive lifecycle servicing that anticipates needs and resolves issues before escalation</div>
+    <div class="pa-cell content" data-col="5">Intelligent cross-sell and wealth growth pathways based on customer life stage</div>
+
+    <!-- Promise -->
+    <div class="pa-cell row-label">Promise</div>
+    <div class="pa-cell promise" data-col="1">"Let me open an account and start banking from my phone, without visiting a branch."</div>
+    <div class="pa-cell promise" data-col="2">"Show me how to get the most from my new account in my first week."</div>
+    <div class="pa-cell promise" data-col="3">"Make my everyday banking effortless and help me manage my money wisely."</div>
+    <div class="pa-cell promise" data-col="4">"Know me, anticipate my needs, and resolve issues before I have to ask."</div>
+    <div class="pa-cell promise" data-col="5">"Help me grow my wealth and finance my family's future with confidence."</div>
+
+    <!-- Persona -->
+    <div class="pa-cell row-label">Persona</div>
+    <div class="pa-cell content" data-col="1">Primary: Digital Pioneer<br>Secondary: New-to-UAE Expatriate</div>
+    <div class="pa-cell content" data-col="2">Primary: Digital Pioneer<br>Secondary: Traditional Banking Customer</div>
+    <div class="pa-cell content" data-col="3">Primary: Growing Family<br>Secondary: Digital Pioneer</div>
+    <div class="pa-cell content" data-col="4">Primary: Traditional Banking Customer<br>Secondary: Growing Family</div>
+    <div class="pa-cell content" data-col="5">Primary: Established Professional<br>Secondary: Growing Family</div>
+
+    <!-- HMW -->
+    <div class="pa-cell row-label">How Might We</div>
+    <div class="pa-cell hmw" data-col="1"><ul><li>HMW enable E2E digital account opening with Sharia-compliant disclosures?</li><li>HMW make expat onboarding as simple as resident onboarding?</li><li>HMW offer instant virtual cards upon approval?</li><li class="co-create">Add during workshop</li></ul></div>
+    <div class="pa-cell hmw" data-col="2"><ul><li>HMW guide customers to complete first transfer, bill payment, and Apple Pay?</li><li>HMW help older customers feel confident using the app?</li><li>HMW demonstrate Islamic finance benefits during onboarding?</li><li class="co-create">Add during workshop</li></ul></div>
+    <div class="pa-cell hmw" data-col="3"><ul><li>HMW provide personalized financial insights based on spending?</li><li>HMW enable families to view and manage shared finances?</li><li>HMW make Zakat calculation and payment seamless?</li><li class="co-create">Add during workshop</li></ul></div>
+    <div class="pa-cell hmw" data-col="4"><ul><li>HMW proactively notify customers of upcoming payments and rate changes?</li><li>HMW resolve disputes and service requests without branch visits?</li><li>HMW provide a digital RM experience for premium customers?</li><li class="co-create">Add during workshop</li></ul></div>
+    <div class="pa-cell hmw" data-col="5"><ul><li>HMW recommend the right next product at the right life stage?</li><li>HMW offer a unified view of personal, business, and investment portfolios?</li><li>HMW enable digital home and auto finance origination E2E?</li><li class="co-create">Add during workshop</li></ul></div>
+
+    <!-- Use Cases -->
+    <div class="pa-cell row-label">Use Cases</div>
+    <div class="pa-cell usecase" data-col="1"><ul><li>Digital account opening with UAE Pass eKYC</li><li>Instant virtual debit card issuance</li><li>Guided expat onboarding with document checklist</li><li>Sharia-compliant digital disclosure acceptance</li></ul></div>
+    <div class="pa-cell usecase" data-col="2"><ul><li>Contextual onboarding checklist and guided tour</li><li>First transfer and bill payment wizard</li><li>Apple Pay and digital wallet setup</li><li>Personalized welcome journey based on segment</li></ul></div>
+    <div class="pa-cell usecase" data-col="3"><ul><li>Personalized dashboard with financial insights</li><li>Smart savings goals with Wakala auto-sweep</li><li>Zakat calculator and one-tap payment</li><li>Family financial management dashboard</li></ul></div>
+    <div class="pa-cell usecase" data-col="4"><ul><li>In-app transaction dispute and resolution</li><li>Proactive finance payment reminders</li><li>Secure messaging with RM / support team</li><li>Self-service card replacement and controls</li></ul></div>
+    <div class="pa-cell usecase" data-col="5"><ul><li>E2E digital home finance origination</li><li>Intelligent product recommendations</li><li>Wealth dashboard with Sharia-compliant investments</li><li>Personal-to-business context switching</li></ul></div>
+
+    <!-- Business Value -->
+    <div class="pa-cell row-label">Business Value</div>
+    <div class="pa-cell value" data-col="1"><ul><li>Reduce onboarding drop-off by 40%</li><li>Increase digital acquisition from 20% to 40%</li></ul></div>
+    <div class="pa-cell value" data-col="2"><ul><li>Drive 80%+ activation within first week</li><li>Reduce early-stage dormancy by 30%</li></ul></div>
+    <div class="pa-cell value" data-col="3"><ul><li>Increase monthly active users by 25%</li><li>Grow deposits per customer through savings goals</li></ul></div>
+    <div class="pa-cell value" data-col="4"><ul><li>Reduce call center volume by 20%</li><li>Improve NPS by 15 points through proactive service</li></ul></div>
+    <div class="pa-cell value" data-col="5"><ul><li>Increase products per customer from 2.1 to 3.0</li><li>Grow digital finance origination by 50%</li></ul></div>
+
+  </div>
+  <div class="page-footer">Backbase | 15</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 16: OPEN QUESTIONS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Open Questions</h2>
+    <span class="subtitle">Data &amp; Information Needs</span>
+  </div>
+  <div class="questions-grid">
+    <div class="question-card"><div class="q-num">01</div><p>What is DIB's current digital-to-branch handoff rate for finance products, and what is the target for E2E digital origination within 18 months?</p></div>
+    <div class="question-card"><div class="q-num">02</div><p>Can Sharia contract signing and Fatwa disclosure acceptance be legally digitized under current UAE Central Bank and Sharia board regulations?</p></div>
+    <div class="question-card"><div class="q-num">03</div><p>What customer data is currently available for personalization, and what are the data privacy constraints under UAE PDPL?</p></div>
+    <div class="question-card"><div class="q-num">04</div><p>What is the current app abandonment rate at each stage of account opening, and how does it differ for UAE nationals vs expatriates?</p></div>
+    <div class="question-card"><div class="q-num">05</div><p>Is there an existing API layer or middleware connecting core banking to digital channels, or would Backbase integrate directly with the core?</p></div>
+    <div class="question-card"><div class="q-num">06</div><p>How does DIB view the competitive threat from Emirates NBD's Liv. and Mashreq Neo among the under-35 segment?</p></div>
+  </div>
+  <div class="page-footer">Backbase | 16</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 17: NEXT STEPS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Next Steps</h2>
+  </div>
+  <div class="cadence">
+    <div class="cadence-step completed"><h4>Done</h4><p>Strategy Alignment</p></div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step active"><h4>Today</h4><p>Customer Experience</p></div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step"><h4>Next</h4><p>Employee Experience</p></div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step"><h4>Next</h4><p>IT Architecture</p></div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step"><h4>Onsite</h4><p>Ignite Lab</p></div>
+  </div>
+  <div class="section-title"><div class="accent"></div><h2>Action Items</h2></div>
+  <table>
+    <thead><tr><th>Owner</th><th>Action</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td><strong>DIB</strong></td><td>Share digital journey analytics and drop-off data</td><td>Account opening funnel, app usage metrics, call center top inquiries</td></tr>
+      <tr><td><strong>DIB</strong></td><td>Confirm Sharia compliance digitization feasibility</td><td>Legal opinion on digital Fatwa disclosure and e-contract signing</td></tr>
+      <tr><td><strong>Backbase</strong></td><td>Refine proposition architecture based on today's feedback</td><td>Validated personas, prioritized use cases, adjusted business value</td></tr>
+      <tr><td><strong>Backbase</strong></td><td>Prepare Employee Experience Workshop materials</td><td>Branch staff, contact center agents, RMs serving retail customers</td></tr>
+      <tr><td><strong>Both</strong></td><td>Schedule Employee Experience Workshop</td><td>Target within 2 weeks</td></tr>
+    </tbody>
+  </table>
+  <div class="page-footer">Backbase | 17</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 18: CLOSING
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="closing">
+  <h2>THANK YOU</h2>
+  <div class="brand">Backbase</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT: Prop Arch Click-to-Focus
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+let activeCol = -1;
+function focusCol(col) {
+  const grid = document.getElementById('pa-grid');
+  const cells = grid.querySelectorAll('.pa-cell[data-col]');
+  const headers = grid.querySelectorAll('.stage-header');
+
+  if (activeCol === col) {
+    // Deselect — show all
+    cells.forEach(c => { c.classList.remove('pa-col-fade', 'pa-col-focus'); });
+    headers.forEach(h => { h.classList.remove('active'); });
+    activeCol = -1;
+  } else {
+    cells.forEach(c => {
+      if (parseInt(c.getAttribute('data-col')) === col) {
+        c.classList.remove('pa-col-fade');
+        c.classList.add('pa-col-focus');
+      } else {
+        c.classList.remove('pa-col-focus');
+        c.classList.add('pa-col-fade');
+      }
+    });
+    headers.forEach((h, i) => {
+      h.classList.toggle('active', i + 1 === col);
+      if (i + 1 === col) { h.classList.remove('pa-col-fade'); h.classList.add('pa-col-focus'); }
+      else { h.classList.remove('pa-col-focus'); h.classList.add('pa-col-fade'); }
+    });
+    activeCol = col;
+  }
+}
+</script>
+
+</body>
+</html>

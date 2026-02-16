@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- AGENT: Replace [CLIENT] with actual client name -->
+<title>[CLIENT] Employee Experience Workshop | Backbase</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-dark: #091C35;
+    --primary-blue: #3366FF;
+    --cyan: #69FEFF;
+    --white: #FFFFFF;
+    --light-grey: #F3F6F9;
+    --light-blue: #E5EBFF;
+    --muted: #3A495D;
+    --green: #26BC71;
+    --amber: #FFAC09;
+    --red: #FF7262;
+    --text: #091C35;
+    --text-light: #5A6A7E;
+    --border: #E0E6ED;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px; line-height: 1.6; color: var(--text); background: var(--white);
+  }
+
+  /* === COVER (Dark background) === */
+  .cover {
+    background: var(--primary-dark); color: var(--white); min-height: 100vh;
+    padding: 60px 80px; display: flex; flex-direction: column; justify-content: center;
+    position: relative; page-break-after: always;
+  }
+  .cover .brand { font-size: 22px; font-weight: 600; color: var(--primary-blue); margin-bottom: 60px; letter-spacing: 1px; }
+  .cover h1 { font-size: 48px; font-weight: 900; line-height: 1.15; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 60px; }
+  .cover .meta { font-size: 16px; font-weight: 400; color: var(--cyan); }
+
+  /* === SECTION DIVIDER (Blue background) === */
+  .section-divider {
+    background: var(--primary-blue); color: var(--white); padding: 80px 80px;
+    min-height: 40vh; display: flex; flex-direction: column; justify-content: center;
+    position: relative; page-break-before: always; page-break-after: always;
+  }
+  .section-divider .brand { font-size: 18px; font-weight: 600; margin-bottom: 40px; letter-spacing: 1px; }
+  .section-divider .ghost-number {
+    position: absolute; right: 80px; top: 50%; transform: translateY(-50%);
+    font-size: 200px; font-weight: 900; color: rgba(255,255,255,0.08); line-height: 1;
+  }
+  .section-divider h2 { font-size: 42px; font-weight: 900; line-height: 1.2; margin-bottom: 8px; }
+  .section-divider .section-subtitle { font-size: 20px; font-weight: 300; color: rgba(255,255,255,0.7); }
+  .section-divider .cyan-accent { width: 60px; height: 4px; background: var(--cyan); margin-bottom: 24px; }
+
+  /* === CONTENT SECTION (White background) === */
+  .content-section {
+    background: var(--white); padding: 60px 80px; min-height: 80vh;
+    position: relative; page-break-after: always;
+  }
+  .content-section .page-footer {
+    position: absolute; bottom: 20px; right: 80px;
+    font-size: 11px; font-weight: 600; color: var(--text-light); letter-spacing: 1px;
+  }
+
+  /* === TITLE === */
+  .section-title { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+  .section-title .accent { width: 16px; height: 16px; background: var(--primary-blue); flex-shrink: 0; }
+  .section-title h2 { font-size: 24px; font-weight: 700; color: var(--text); }
+  .section-title .subtitle { font-size: 14px; font-weight: 400; color: var(--text-light); margin-left: auto; }
+
+  /* === OBJECTIVE STATEMENT === */
+  .objective-statement {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0;
+    padding: 24px 28px; font-size: 16px; line-height: 1.6; margin-bottom: 40px;
+  }
+
+  /* === METHOD GRID === */
+  .methodology-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+  .method-block {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 20px 16px; text-align: center;
+  }
+  .method-block .block-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; background: var(--primary-blue); color: #fff;
+    border-radius: 50%; font-size: 14px; font-weight: 700; margin-bottom: 10px;
+  }
+  .method-block h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .method-block p { font-size: 12px; color: var(--text-light); }
+
+  /* === CHALLENGE / RECAP CARDS === */
+  .challenges-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .challenge-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .challenge-card .challenge-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--primary-blue); margin-bottom: 8px;
+  }
+  .challenge-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .challenge-card p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+
+  /* === STATS DASHBOARD === */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px; text-align: center;
+  }
+  .stat-card .stat-value { font-size: 36px; font-weight: 900; color: var(--primary-blue); }
+  .stat-card .stat-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+  /* === PERSONA CARDS === */
+  .persona-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .persona-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .persona-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .persona-avatar {
+    width: 64px; height: 64px; border-radius: 50%; background: var(--light-blue);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .persona-avatar svg { width: 40px; height: 40px; }
+  .persona-name { font-size: 18px; font-weight: 900; color: var(--text); }
+  .persona-segment { font-size: 13px; color: var(--primary-blue); font-weight: 600; margin-top: 2px; }
+  .persona-section-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; margin-top: 12px; margin-bottom: 6px;
+  }
+  .persona-section-label.pain { color: var(--red); }
+  .persona-section-label.systems { color: var(--primary-blue); }
+  .persona-section-label.desired { color: var(--green); }
+  .persona-section-label.cx { color: var(--amber); }
+  .persona-card ul { list-style: none; padding: 0; }
+  .persona-card ul li {
+    font-size: 12px; color: var(--text-light); padding: 3px 0; padding-left: 12px;
+    position: relative; line-height: 1.4;
+  }
+  .persona-card ul li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; position: absolute; left: 0; top: 8px; }
+  .persona-card .pain-points li::before { background: var(--red); }
+  .persona-card .systems-list li::before { background: var(--primary-blue); }
+  .persona-card .desired-list li::before { background: var(--green); }
+  .persona-card .cx-link li::before { background: var(--amber); }
+  .system-tag {
+    display: inline-block; background: var(--light-blue); color: var(--primary-blue);
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 4px;
+    margin: 2px 4px 2px 0;
+  }
+  .system-count { font-size: 13px; font-weight: 700; color: var(--red); margin-top: 8px; }
+
+  /* === TABLES === */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 16px; }
+  th {
+    background: var(--primary-blue); color: #fff; padding: 12px 16px; text-align: left;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;
+  }
+  th:first-child { border-radius: 8px 0 0 0; }
+  th:last-child { border-radius: 0 8px 0 0; }
+  td { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  tr:nth-child(even) td { background: var(--light-grey); }
+  .leader { color: var(--green); font-weight: 600; }
+  .gap { color: var(--red); font-weight: 600; }
+  .benchmark { color: var(--primary-blue); font-weight: 600; }
+  tr.total-row td { background: var(--primary-dark); color: var(--white); font-weight: 700; }
+
+  /* === HARVEY BALLS === */
+  .hb { font-size: 16px; margin-right: 5px; }
+  .hb.full { color: var(--green); }
+  .hb.partial { color: var(--amber); }
+  .hb.none { color: var(--red); }
+  .hb-legend { font-size: 12px; color: var(--text-light); margin-bottom: 14px; }
+  .hb-legend span { margin-right: 16px; }
+
+  /* === HEADLINE STAT === */
+  .headline-stat {
+    text-align: center; padding: 40px 0; margin-bottom: 32px;
+    background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 16px;
+  }
+  .headline-stat .big-number { font-size: 64px; font-weight: 900; color: var(--red); }
+  .headline-stat .big-label { font-size: 20px; font-weight: 400; color: var(--text); margin-top: 8px; }
+  .headline-stat .sub-stat { font-size: 14px; color: var(--text-light); margin-top: 4px; }
+
+  /* === DAY IN THE LIFE === */
+  .ditl-container { display: grid; grid-template-columns: 1fr 60px 1fr; gap: 0; margin-bottom: 40px; }
+  .ditl-current, .ditl-future { padding: 24px; border-radius: 12px; }
+  .ditl-current { background: rgba(255,114,98,0.05); border: 1px solid rgba(255,114,98,0.15); }
+  .ditl-future { background: rgba(38,188,113,0.05); border: 1px solid rgba(38,188,113,0.15); }
+  .ditl-arrow { display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--primary-blue); font-weight: 900; }
+  .ditl-step {
+    display: flex; align-items: center; gap: 12px; padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ditl-step:last-child { border: none; }
+  .ditl-step .step-num {
+    width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .ditl-current .step-num { background: var(--red); }
+  .ditl-future .step-num { background: var(--green); }
+  .ditl-step .step-system { font-size: 11px; font-weight: 700; color: var(--primary-blue); min-width: 80px; }
+  .ditl-step .step-action { font-size: 12px; color: var(--text-light); flex: 1; }
+  .ditl-step .step-time { font-size: 11px; font-weight: 700; color: var(--muted); }
+  .ditl-total { margin-top: 12px; padding: 12px; border-radius: 8px; text-align: center; font-weight: 700; font-size: 14px; }
+  .ditl-current .ditl-total { background: rgba(255,114,98,0.1); color: var(--red); }
+  .ditl-future .ditl-total { background: rgba(38,188,113,0.1); color: var(--green); }
+
+  /* === EX-TO-CX LINKAGE === */
+  .linkage-chain {
+    display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr; gap: 0; align-items: center;
+    margin-bottom: 20px;
+  }
+  .linkage-card { padding: 20px; border-radius: 12px; }
+  .linkage-card.ex { background: rgba(255,114,98,0.06); border: 1px solid rgba(255,114,98,0.15); border-left: 3px solid var(--red); }
+  .linkage-card.cx { background: rgba(255,172,9,0.06); border: 1px solid rgba(255,172,9,0.15); border-left: 3px solid var(--amber); }
+  .linkage-card.cost { background: rgba(51,102,255,0.06); border: 1px solid var(--light-blue); border-left: 3px solid var(--primary-blue); }
+  .linkage-card .linkage-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .linkage-card.ex .linkage-label { color: var(--red); }
+  .linkage-card.cx .linkage-label { color: var(--amber); }
+  .linkage-card.cost .linkage-label { color: var(--primary-blue); }
+  .linkage-card p { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .linkage-card .cost-figure { font-size: 20px; font-weight: 900; color: var(--primary-blue); margin-top: 8px; }
+  .linkage-arrow { text-align: center; font-size: 20px; color: var(--border); }
+
+  /* === TRANSFORMATION VISUAL === */
+  .transform-grid { display: grid; grid-template-columns: 1fr 80px 1fr; gap: 0; margin-bottom: 32px; }
+  .transform-side { padding: 32px; border-radius: 16px; }
+  .transform-side.current { background: rgba(255,114,98,0.04); border: 1px solid rgba(255,114,98,0.12); }
+  .transform-side.future { background: rgba(38,188,113,0.04); border: 1px solid rgba(38,188,113,0.12); }
+  .transform-side h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+  .transform-side.current h3 { color: var(--red); }
+  .transform-side.future h3 { color: var(--green); }
+  .transform-side ul { list-style: none; padding: 0; }
+  .transform-side ul li { font-size: 13px; padding: 6px 0; padding-left: 16px; position: relative; color: var(--text-light); }
+  .transform-side.current ul li::before { content: ''; width: 6px; height: 6px; background: var(--red); border-radius: 50%; position: absolute; left: 0; top: 12px; }
+  .transform-side.future ul li::before { content: ''; width: 6px; height: 6px; background: var(--green); border-radius: 50%; position: absolute; left: 0; top: 12px; }
+  .transform-arrow-center { display: flex; align-items: center; justify-content: center; flex-direction: column; }
+  .transform-arrow-center .arrow-label { font-size: 10px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .transform-arrow-center .arrow-icon { font-size: 32px; color: var(--primary-blue); }
+  .transform-metric { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; margin-top: 12px; border-radius: 8px; }
+  .transform-side.current .transform-metric { background: rgba(255,114,98,0.08); }
+  .transform-side.future .transform-metric { background: rgba(38,188,113,0.08); }
+  .transform-metric .metric-label { font-size: 12px; color: var(--text-light); }
+  .transform-metric .metric-value { font-size: 18px; font-weight: 900; }
+  .transform-side.current .metric-value { color: var(--red); }
+  .transform-side.future .metric-value { color: var(--green); }
+
+  /* === CAPABILITY MAP === */
+  .capability-grid { display: grid; grid-template-columns: 200px repeat(auto-fit, minmax(120px, 1fr)); gap: 2px; }
+  .cap-cell { padding: 12px; font-size: 12px; line-height: 1.4; }
+  .cap-cell.header { background: var(--primary-blue); color: #fff; font-weight: 700; text-align: center; font-size: 11px; text-transform: uppercase; }
+  .cap-cell.row-label { background: var(--light-grey); font-weight: 600; color: var(--text); display: flex; align-items: center; }
+  .cap-cell.content { background: var(--white); border: 1px solid var(--light-blue); text-align: center; }
+
+  /* === PRIORITIZATION MATRIX === */
+  .matrix-container { position: relative; margin: 32px 0; }
+  .matrix-grid {
+    display: grid; grid-template-columns: 80px 1fr 1fr 1fr; grid-template-rows: auto 1fr 1fr 1fr;
+    gap: 2px; min-height: 400px;
+  }
+  .matrix-cell { padding: 16px; border-radius: 4px; font-size: 12px; }
+  .matrix-cell.header { background: var(--primary-blue); color: #fff; font-weight: 700; text-align: center; font-size: 11px; text-transform: uppercase; }
+  .matrix-cell.row-label { background: var(--light-grey); font-weight: 700; color: var(--text); writing-mode: vertical-lr; transform: rotate(180deg); text-align: center; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .matrix-cell.q-transform { background: rgba(38,188,113,0.08); border: 1px solid rgba(38,188,113,0.15); }
+  .matrix-cell.q-streamline { background: rgba(51,102,255,0.06); border: 1px solid var(--light-blue); }
+  .matrix-cell.q-optimize { background: rgba(255,172,9,0.06); border: 1px solid rgba(255,172,9,0.15); }
+  .matrix-cell.q-defer { background: var(--light-grey); border: 1px solid var(--border); }
+  .matrix-item { font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 6px; margin: 4px 0; display: inline-block; }
+  .matrix-item.high { background: var(--green); color: #fff; }
+  .matrix-item.medium { background: var(--primary-blue); color: #fff; }
+  .matrix-item.low { background: var(--light-grey); color: var(--text); }
+
+  /* === USE CASE CARDS === */
+  .usecase-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .usecase-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .usecase-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .usecase-card .uc-label { font-size: 10px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .usecase-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+  .usecase-card .uc-value { font-size: 16px; font-weight: 900; color: var(--green); margin-top: 12px; }
+  .usecase-card .uc-cx { font-size: 12px; color: var(--amber); font-weight: 600; margin-top: 8px; font-style: italic; }
+
+  /* === PERSONA USE CASE GROUPS === */
+  .persona-group { margin-bottom: 48px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .persona-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .persona-group-header {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+    padding: 20px 24px; background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0;
+  }
+  .pg-icon {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--primary-blue);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .pg-icon svg { width: 28px; height: 28px; }
+  .persona-group-header h3 { font-size: 18px; font-weight: 700; color: var(--text); }
+  .persona-group-header .pg-roles { font-size: 13px; color: var(--text-light); margin-top: 2px; }
+  .pain-challenge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .pc-card { border-radius: 12px; padding: 20px; }
+  .pc-card.pain { background: rgba(255,114,98,0.04); border: 1px solid rgba(255,114,98,0.15); border-left: 3px solid var(--red); }
+  .pc-card.challenge { background: rgba(255,172,9,0.04); border: 1px solid rgba(255,172,9,0.15); border-left: 3px solid var(--amber); }
+  .pc-card h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .pc-card.pain h4 { color: var(--red); }
+  .pc-card.challenge h4 { color: var(--amber); }
+  .pc-card ul { list-style: none; padding: 0; }
+  .pc-card ul li { font-size: 13px; color: var(--text-light); padding: 4px 0 4px 14px; position: relative; line-height: 1.5; }
+  .pc-card ul li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; position: absolute; left: 0; top: 10px; }
+  .pc-card.pain ul li::before { background: var(--red); }
+  .pc-card.challenge ul li::before { background: var(--amber); }
+  .hmw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .hmw-card {
+    background: rgba(51,102,255,0.04); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 14px 16px 14px 44px; font-size: 13px; color: var(--text);
+    line-height: 1.5; position: relative;
+  }
+  .hmw-card::before {
+    content: 'HMW'; position: absolute; left: 12px; top: 14px;
+    font-size: 9px; font-weight: 900; color: var(--primary-blue); letter-spacing: 0.5px;
+  }
+  .group-summary {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px; background: rgba(38,188,113,0.06); border: 1px solid rgba(38,188,113,0.15);
+    border-radius: 12px; margin-top: 16px;
+  }
+  .group-summary .gs-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+  .group-summary .gs-value { font-size: 24px; font-weight: 900; color: var(--green); }
+
+  /* === HYPOTHESIS CARDS === */
+  .hypothesis-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .hypothesis-card {
+    background: #FFFBF0; border: 1px solid var(--light-blue);
+    border-left: 3px solid var(--amber); border-radius: 12px; padding: 20px;
+  }
+  .hypothesis-card .h-label { font-size: 12px; font-weight: 700; color: var(--amber); margin-bottom: 8px; }
+  .hypothesis-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .hypothesis-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+  .hypothesis-card .h-source { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 8px; }
+
+  /* === VALIDATION BOX === */
+  .validation-box {
+    background: rgba(51,102,255,0.04); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 20px 24px; margin-top: 24px;
+  }
+  .validation-box h4 { font-size: 13px; font-weight: 700; color: var(--primary-blue); margin-bottom: 10px; }
+  .validation-box ul { list-style: none; padding: 0; }
+  .validation-box li { font-size: 13px; color: var(--text-light); padding: 5px 0; padding-left: 16px; position: relative; }
+  .validation-box li::before { content: '?'; position: absolute; left: 0; color: var(--primary-blue); font-weight: 700; }
+
+  /* === CO-CREATION === */
+  .cocreation-card {
+    background: var(--white); border: 2px dashed var(--amber);
+    border-radius: 12px; padding: 24px; margin-top: 24px;
+  }
+  .cocreation-card h3 { font-size: 16px; font-weight: 700; color: var(--amber); margin-bottom: 16px; }
+
+  /* === CADENCE === */
+  .cadence { display: flex; align-items: center; gap: 8px; margin-bottom: 32px; }
+  .cadence-step {
+    background: var(--light-grey); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px; text-align: center; flex: 1;
+  }
+  .cadence-step.completed { border-color: var(--green); background: rgba(38,188,113,0.06); }
+  .cadence-step.active { border-color: var(--primary-blue); background: var(--light-blue); }
+  .cadence-step h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; }
+  .cadence-step.completed h4 { color: var(--green); }
+  .cadence-step.active h4 { color: var(--primary-blue); }
+  .cadence-step p { font-size: 13px; font-weight: 600; }
+  .cadence-arrow { font-size: 18px; color: var(--border); }
+
+  /* === CHANNEL CARDS === */
+  .channel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .channel-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .channel-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .channel-metric { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .channel-metric:last-child { border: none; }
+  .channel-metric .cm-label { color: var(--text-light); }
+  .channel-metric .cm-current { color: var(--red); font-weight: 600; }
+  .channel-metric .cm-target { color: var(--green); font-weight: 600; }
+
+  /* === CLOSING === */
+  .closing {
+    background: var(--primary-dark); color: var(--white); min-height: 50vh;
+    padding: 60px 80px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; page-break-before: always;
+  }
+  .closing h2 { font-size: 48px; font-weight: 900; margin-bottom: 24px; }
+  .closing .brand { font-size: 20px; font-weight: 600; color: var(--primary-blue); letter-spacing: 1px; }
+
+  @media (max-width: 900px) {
+    .content-section, .cover, .section-divider { padding: 30px 24px; }
+    .challenges-grid, .usecase-grid, .hypothesis-grid, .pain-challenge-grid, .hmw-grid { grid-template-columns: 1fr; }
+    .persona-grid, .channel-grid { grid-template-columns: 1fr; }
+    .methodology-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .linkage-chain { grid-template-columns: 1fr; }
+    .linkage-arrow { transform: rotate(90deg); }
+    .transform-grid { grid-template-columns: 1fr; }
+    .ditl-container { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===============================================================
+     SECTION 1: COVER (Dark background)
+     =============================================================== -->
+<div class="cover">
+  <div class="brand">Backbase</div>
+  <!-- AGENT: Replace with client name -->
+  <h1>Employee Experience Workshop</h1>
+  <!-- AGENT: Replace with client name -->
+  <div class="subtitle">[CLIENT]</div>
+  <!-- AGENT: Replace with date -->
+  <div class="meta">Backbase Ignite | [DATE]</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 2: OBJECTIVES & AGENDA
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">01</div>
+  <div class="cyan-accent"></div>
+  <h2>Employee Experience</h2>
+  <div class="section-subtitle">Objectives &amp; Agenda</div>
+</div>
+
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Objectives &amp; Agenda</h2>
+  </div>
+  <!-- AGENT: Customize objective with client name and terminology -->
+  <div class="objective-statement">
+    Quantify the hidden cost of employee tool fragmentation, connect it to <strong>[member/customer]</strong> experience impact, and prioritize Digital Assist enablement that transforms <strong>[CLIENT]</strong>'s workforce from Transaction Center to Advisory Hub.
+  </div>
+  <div class="methodology-grid">
+    <div class="method-block"><div class="block-num">1</div><h4>Validate</h4><p>Employee landscape, personas, systems (15 min)</p></div>
+    <div class="method-block"><div class="block-num">2</div><h4>Quantify</h4><p>System Switching Tax &mdash; the hidden cost (30 min)</p></div>
+    <div class="method-block"><div class="block-num">3</div><h4>Envision</h4><p>Advisory Hub transformation &amp; Digital Assist (30 min)</p></div>
+    <div class="method-block"><div class="block-num">4</div><h4>Prioritize</h4><p>Enablement use cases &amp; next steps (15 min)</p></div>
+  </div>
+  <div class="page-footer">Backbase | 2</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 3: STRATEGY & CX RECAP (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Replace with member/customer terminology -->
+    <h2>What We Heard | Strategy &amp; [Member/Customer] Experience Context</h2>
+  </div>
+  <div class="challenges-grid">
+    <!-- AGENT: Replace with 3 recap cards from Agent 1 + Agent 2 findings -->
+    <div class="challenge-card">
+      <div class="challenge-label">Strategy Theme</div>
+      <h3>[Theme from Agent 1]</h3>
+      <p>[Description of strategic priority and how it relates to employee enablement]</p>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">[Member/Customer] Experience</div>
+      <h3>[Key CX finding from Agent 2]</h3>
+      <p>[Description of CX gap that employees must bridge]</p>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">The Bridge</div>
+      <h3>Employees Are the Connection</h3>
+      <!-- AGENT: Customize connection statement -->
+      <p>Your employees are the bridge between strategy and [member/customer] experience. When they struggle with tools, [members/customers] feel it.</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 3</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 4: SECTION DIVIDER — "The People Behind the Experience"
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">02</div>
+  <div class="cyan-accent"></div>
+  <h2>The People Behind the Experience</h2>
+  <!-- AGENT: Customize subtitle with client name -->
+  <div class="section-subtitle">Understanding [CLIENT]'s workforce</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 5: EMPLOYEE AT-A-GLANCE (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Replace with client name -->
+    <h2>[CLIENT] Employee Landscape</h2>
+  </div>
+  <!-- AGENT: Replace all stat values with client-specific data -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">Total Employees</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">Branches</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">Contact Center Agents</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">[N]+</div>
+      <div class="stat-label">Systems per Transaction</div>
+    </div>
+  </div>
+  <!-- AGENT: Add additional workforce metrics relevant to client -->
+  <div class="page-footer">Backbase | 4</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 6: EMPLOYEE PERSONAS (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Replace with client name -->
+    <h2>[CLIENT] Employee Personas</h2>
+  </div>
+  <div class="persona-grid">
+    <!-- AGENT: Generate 3-5 persona cards based on validated roles -->
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-avatar">
+          <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#3366FF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#3366FF" opacity="0.3"/></svg>
+        </div>
+        <div>
+          <!-- AGENT: Replace with actual role title -->
+          <div class="persona-name">[Role Title]</div>
+          <!-- AGENT: Replace with channel and headcount -->
+          <div class="persona-segment">[Channel] | ~[N] employees</div>
+        </div>
+      </div>
+      <!-- AGENT: Replace with actual systems used -->
+      <div class="persona-section-label systems">Systems Used Daily</div>
+      <div>
+        <span class="system-tag">[System 1]</span>
+        <span class="system-tag">[System 2]</span>
+        <span class="system-tag">[System 3]</span>
+        <span class="system-tag">[System 4]</span>
+        <span class="system-tag">+ [N] more</span>
+      </div>
+      <div class="system-count">[N] systems for complete [member/customer] service</div>
+      <!-- AGENT: Replace with actual pain points -->
+      <div class="persona-section-label pain">Pain Points</div>
+      <ul class="pain-points">
+        <li>[Critical pain point 1]</li>
+        <li>[Critical pain point 2]</li>
+        <li>[Moderate pain point 3]</li>
+      </ul>
+      <!-- AGENT: Replace with desired state -->
+      <div class="persona-section-label desired">Desired State</div>
+      <ul class="desired-list">
+        <li>[Desired capability 1]</li>
+        <li>[Desired capability 2]</li>
+      </ul>
+      <!-- AGENT: Replace with CX connection from Agent 2 -->
+      <div class="persona-section-label cx">CX Connection</div>
+      <ul class="cx-link">
+        <li>Serves [Agent 2 persona] — their friction causes [CX impact]</li>
+      </ul>
+    </div>
+    <!-- AGENT: Repeat persona card for each validated role -->
+  </div>
+  <div class="page-footer">Backbase | 5</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 7: SECTION DIVIDER — "The Hidden Tax"
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">03</div>
+  <div class="cyan-accent"></div>
+  <h2>The Hidden Tax</h2>
+  <div class="section-subtitle">Quantifying the cost of tool fragmentation</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 8: SYSTEM LANDSCAPE (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Replace with client name -->
+    <h2>[CLIENT] System Landscape</h2>
+  </div>
+  <div class="hb-legend">
+    <span><span class="hb full">&#9679;</span> Primary system</span>
+    <span><span class="hb partial">&#9684;</span> Occasional use</span>
+    <span><span class="hb none">&#9675;</span> Not used</span>
+  </div>
+  <!-- AGENT: Generate system landscape table with client-specific systems and roles -->
+  <table>
+    <thead>
+      <tr>
+        <th>System</th>
+        <th>Category</th>
+        <!-- AGENT: Add role columns based on validated personas -->
+        <th>[Role 1]</th>
+        <th>[Role 2]</th>
+        <th>[Role 3]</th>
+        <th>[Role 4]</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- AGENT: Generate rows for each system in the landscape -->
+      <tr>
+        <td>[Core Banking System]</td>
+        <td>Core</td>
+        <td><span class="hb full">&#9679;</span></td>
+        <td><span class="hb full">&#9679;</span></td>
+        <td><span class="hb full">&#9679;</span></td>
+        <td><span class="hb partial">&#9684;</span></td>
+      </tr>
+      <!-- AGENT: Repeat for all systems -->
+    </tbody>
+  </table>
+  <!-- AGENT: Add summary metrics -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">Total Systems</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">Avg per Task</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">Point-to-Point Integrations</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">[N]</div>
+      <div class="stat-label">Unique Vendors</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 6</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 9: SYSTEM SWITCHING TAX — THE CORE ARTIFACT (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>The System Switching Tax</h2>
+    <div class="subtitle">The hidden cost of tool fragmentation</div>
+  </div>
+  <!-- AGENT: Calculate and replace headline stat with actual switching tax total -->
+  <div class="headline-stat">
+    <div class="big-number">$[X.X]M</div>
+    <div class="big-label">Annual cost of system switching at [CLIENT]</div>
+    <div class="sub-stat">Across [N] systems | [N] common tasks | [N] employees</div>
+  </div>
+  <!-- AGENT: Generate full switching tax table with per-task analysis -->
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>Systems Required</th>
+        <th># Switches</th>
+        <th>Time (Current)</th>
+        <th>Time (Future)</th>
+        <th>Annual Volume</th>
+        <th>Switching Cost/yr</th>
+        <th>Savings/yr</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- AGENT: Generate rows for each common task -->
+      <tr>
+        <td>[Task 1]</td>
+        <td>[System list]</td>
+        <td>[N]</td>
+        <td>[X min]</td>
+        <td>[Y min]</td>
+        <td>[Volume]</td>
+        <td class="gap">$[XXX,XXX]</td>
+        <td class="leader">$[XXX,XXX]</td>
+      </tr>
+      <!-- AGENT: Repeat for all tasks -->
+      <!-- AGENT: Add total row -->
+      <tr class="total-row">
+        <td><strong>TOTAL</strong></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><strong>$[X.XM]</strong></td>
+        <td><strong>$[X.XM]</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  <!-- AGENT: Add per-channel rollup breakdown -->
+  <div class="stats-grid" style="margin-top: 24px;">
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--red);">$[X.X]M</div>
+      <div class="stat-label">Branch Switching Cost</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--red);">$[X.X]M</div>
+      <div class="stat-label">Contact Center Cost</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--red);">$[X.X]M</div>
+      <div class="stat-label">Back Office Cost</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--green);">$[X.X]M</div>
+      <div class="stat-label">Projected Savings</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 7</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 10: "A DAY IN THE LIFE" (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>A Day in the Life</h2>
+    <!-- AGENT: Replace with specific task name -->
+    <div class="subtitle">Task: [Common Task Name]</div>
+  </div>
+  <!-- AGENT: Generate 2-3 day-in-the-life journey comparisons -->
+  <div class="ditl-container">
+    <div class="ditl-current">
+      <h3 style="color: var(--red); font-size: 16px; margin-bottom: 16px;">Current State</h3>
+      <!-- AGENT: Generate steps for current state -->
+      <div class="ditl-step">
+        <div class="step-num">1</div>
+        <div class="step-system">[System]</div>
+        <div class="step-action">[Action description]</div>
+        <div class="step-time">[X sec]</div>
+      </div>
+      <!-- AGENT: Repeat for all steps -->
+      <div class="ditl-total">[N] systems | [X] minutes total</div>
+    </div>
+    <div class="ditl-arrow">&#8594;</div>
+    <div class="ditl-future">
+      <h3 style="color: var(--green); font-size: 16px; margin-bottom: 16px;">With Digital Assist</h3>
+      <!-- AGENT: Generate steps for future state -->
+      <div class="ditl-step">
+        <div class="step-num">1</div>
+        <div class="step-system">Digital Assist</div>
+        <div class="step-action">[Unified action description]</div>
+        <div class="step-time">[Y sec]</div>
+      </div>
+      <div class="ditl-total">1 system | [Y] minutes total | [X]% time saved</div>
+    </div>
+  </div>
+  <!-- AGENT: Repeat ditl-container for 1-2 more tasks -->
+  <div class="cocreation-card">
+    <h3>What Would You Change?</h3>
+    <p style="font-size: 13px; color: var(--text-light);">Which daily tasks cause the most frustration? What scenarios should we analyze?</p>
+  </div>
+  <div class="page-footer">Backbase | 8</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 11: EX-TO-CX LINKAGE (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Replace with member/customer terminology -->
+    <h2>When Employees Struggle, [Members/Customers] Suffer</h2>
+  </div>
+  <!-- AGENT: Generate 4-6 linkage chains -->
+  <div class="linkage-chain">
+    <div class="linkage-card ex">
+      <div class="linkage-label">Employee Friction</div>
+      <!-- AGENT: Replace with specific friction -->
+      <p>[Specific employee friction point]</p>
+    </div>
+    <div class="linkage-arrow">&#8594;</div>
+    <div class="linkage-card cx">
+      <div class="linkage-label">[Member/Customer] Impact</div>
+      <!-- AGENT: Replace with CX impact -->
+      <p>[How this affects members/customers]</p>
+    </div>
+    <div class="linkage-arrow">&#8594;</div>
+    <div class="linkage-card cost">
+      <div class="linkage-label">Business Cost</div>
+      <!-- AGENT: Replace with quantified cost -->
+      <p>[Description of business impact]</p>
+      <div class="cost-figure">$[X.X]M/yr</div>
+    </div>
+  </div>
+  <!-- AGENT: Repeat linkage-chain for each EX-to-CX connection -->
+  <div class="page-footer">Backbase | 9</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 12: SECTION DIVIDER — "The Advisory Hub Vision"
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">04</div>
+  <div class="cyan-accent"></div>
+  <h2>The Advisory Hub Vision</h2>
+  <div class="section-subtitle">From Transaction Center to Advisory Hub</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 13: TRANSACTION CENTER vs ADVISORY HUB (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Transaction Center to Advisory Hub</h2>
+    <!-- AGENT: Replace with client name -->
+    <div class="subtitle">Transforming how [CLIENT] employees serve [members/customers]</div>
+  </div>
+  <!-- AGENT: Customize transformation visual with client-specific metrics -->
+  <div class="transform-grid">
+    <div class="transform-side current">
+      <h3>Today: Transaction Center</h3>
+      <ul>
+        <!-- AGENT: Replace with client-specific characteristics -->
+        <li>[N]+ systems per transaction</li>
+        <li>No unified [member/customer] view</li>
+        <li>Cannot see digital interactions</li>
+        <li>Manual, paper-based processes</li>
+        <li>Channel-siloed information</li>
+        <li>Reactive, task-focused service</li>
+      </ul>
+      <div class="transform-metric">
+        <div class="metric-label">Time on admin tasks</div>
+        <!-- AGENT: Replace with estimated percentage -->
+        <div class="metric-value">[X]%</div>
+      </div>
+    </div>
+    <div class="transform-arrow-center">
+      <div class="arrow-label">Digital Assist</div>
+      <div class="arrow-icon">&#8594;</div>
+    </div>
+    <div class="transform-side future">
+      <h3>Tomorrow: Advisory Hub</h3>
+      <ul>
+        <li>Single unified platform</li>
+        <!-- AGENT: Replace with client terminology -->
+        <li>360&deg; [member/customer] view</li>
+        <li>Full omnichannel context</li>
+        <li>Digital, guided workflows</li>
+        <li>Seamless cross-channel handoffs</li>
+        <li>Proactive, advisory-focused service</li>
+      </ul>
+      <div class="transform-metric">
+        <!-- AGENT: Replace with target percentage -->
+        <div class="metric-label">Time on [members/customers]</div>
+        <div class="metric-value">[X]%</div>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 10</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 14: DIGITAL ASSIST CAPABILITY MAP (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Backbase Digital Assist Capabilities</h2>
+    <div class="subtitle">Mapped to validated pain points</div>
+  </div>
+  <!-- AGENT: Generate capability-to-friction mapping table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Capability</th>
+        <th>What It Does</th>
+        <th>Employee Benefit</th>
+        <!-- AGENT: Replace with member/customer terminology -->
+        <th>[Member/Customer] Benefit</th>
+        <th>Friction Points Solved</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- AGENT: Generate rows for each Digital Assist capability -->
+      <tr>
+        <!-- AGENT: Replace with member/customer terminology -->
+        <td><strong>360&deg; [Member/Customer] View</strong></td>
+        <td>Unified view of all interactions, products, history</td>
+        <td>No more switching between systems</td>
+        <td>Faster, more informed service</td>
+        <td>[List friction points this solves]</td>
+      </tr>
+      <!-- AGENT: Repeat for all 8 capabilities -->
+    </tbody>
+  </table>
+  <div class="page-footer">Backbase | 11</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 15: CHANNEL TRANSFORMATION (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Channel Transformation</h2>
+    <div class="subtitle">Branch | Contact Center | Back Office</div>
+  </div>
+  <!-- AGENT: Generate channel transformation cards for in-scope channels -->
+  <div class="channel-grid">
+    <div class="channel-card">
+      <h3>Branch</h3>
+      <!-- AGENT: Replace with client-specific branch metrics -->
+      <div class="channel-metric"><span class="cm-label">Visits/month</span><span class="cm-current">[Current]</span><span class="cm-target">[Target]</span></div>
+      <div class="channel-metric"><span class="cm-label">Avg task time</span><span class="cm-current">[Current]</span><span class="cm-target">[Target]</span></div>
+      <div class="channel-metric"><span class="cm-label">Systems/task</span><span class="cm-current">[Current]</span><span class="cm-target">[Target]</span></div>
+      <div class="channel-metric"><span class="cm-label">Advisory time</span><span class="cm-current">[Current]</span><span class="cm-target">[Target]</span></div>
+    </div>
+    <div class="channel-card">
+      <h3>Contact Center</h3>
+      <!-- AGENT: Replace with client-specific CC metrics -->
+      <div class="channel-metric"><span class="cm-label">Calls/month</span><span class="cm-current">[Current]</span><span class="cm-target">[Target]</span></div>
+      <div class="channel-metric"><span class="cm-label">AHT</span><span class="cm-current">[Current]</span><span class="cm-target">[Target]</span></div>
+      <div class="channel-metric"><span class="cm-label">FCR</span><span class="cm-current">[Current]</span><span class="cm-target">[Target]</span></div>
+      <div class="channel-metric"><span class="cm-label">Digital deflection</span><span class="cm-current">[Current]</span><span class="cm-target">[Target]</span></div>
+    </div>
+    <div class="channel-card">
+      <h3>Back Office</h3>
+      <!-- AGENT: Replace with client-specific back office metrics -->
+      <div class="channel-metric"><span class="cm-label">Tasks/month</span><span class="cm-current">[Current]</span><span class="cm-target">[Target]</span></div>
+      <div class="channel-metric"><span class="cm-label">STP rate</span><span class="cm-current">[Current]</span><span class="cm-target">[Target]</span></div>
+      <div class="channel-metric"><span class="cm-label">Error rate</span><span class="cm-current">[Current]</span><span class="cm-target">[Target]</span></div>
+      <div class="channel-metric"><span class="cm-label">Processing time</span><span class="cm-current">[Current]</span><span class="cm-target">[Target]</span></div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 12</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 16: SECTION DIVIDER — "Priorities & Use Cases"
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">05</div>
+  <div class="cyan-accent"></div>
+  <h2>Priorities &amp; Use Cases</h2>
+  <div class="section-subtitle">What to fix first</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 17: ENABLEMENT PRIORITIZATION MATRIX (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Enablement Prioritization</h2>
+    <div class="subtitle">Reach &times; Impact</div>
+  </div>
+  <!-- AGENT: Position items in the matrix based on analysis -->
+  <div class="matrix-grid">
+    <div class="matrix-cell header"></div>
+    <div class="matrix-cell header">Low Impact</div>
+    <div class="matrix-cell header">Medium Impact</div>
+    <div class="matrix-cell header">High Impact</div>
+    <div class="matrix-cell row-label">Many Employees</div>
+    <div class="matrix-cell q-defer">
+      <!-- AGENT: Place low-impact/high-reach items -->
+      <div style="font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase;">Automate</div>
+    </div>
+    <div class="matrix-cell q-streamline">
+      <!-- AGENT: Place medium-impact/high-reach items -->
+      <div style="font-size: 10px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase;">Streamline</div>
+    </div>
+    <div class="matrix-cell q-transform">
+      <!-- AGENT: Place high-impact/high-reach items (TRANSFORM) -->
+      <div style="font-size: 10px; font-weight: 700; color: var(--green); text-transform: uppercase;">Transform</div>
+    </div>
+    <div class="matrix-cell row-label">Some Employees</div>
+    <div class="matrix-cell q-defer"></div>
+    <div class="matrix-cell q-streamline">
+      <div style="font-size: 10px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase;">Optimize</div>
+    </div>
+    <div class="matrix-cell q-streamline">
+      <div style="font-size: 10px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase;">Prioritize</div>
+    </div>
+    <div class="matrix-cell row-label">Few Employees</div>
+    <div class="matrix-cell q-defer">
+      <div style="font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase;">Defer</div>
+    </div>
+    <div class="matrix-cell q-defer">
+      <div style="font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase;">Consider</div>
+    </div>
+    <div class="matrix-cell q-optimize">
+      <div style="font-size: 10px; font-weight: 700; color: var(--amber); text-transform: uppercase;">Plan For</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 13</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 18: EMPLOYEE USE CASE CANDIDATES — PERSONA-BASED (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Employee Experience Use Cases</h2>
+    <div class="subtitle">Mapped to personas &mdash; from pain to solution</div>
+  </div>
+
+  <!-- === FRONTLINE GROUP: BRANCH + CONTACT CENTER === -->
+  <!-- AGENT: Generate frontline persona group with client-specific roles and headcounts -->
+  <div class="persona-group">
+    <div class="persona-group-header">
+      <div class="pg-icon"><svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="10" r="5" fill="#fff" opacity="0.9"/><ellipse cx="14" cy="24" rx="9" ry="7" fill="#fff" opacity="0.9"/></svg></div>
+      <div>
+        <!-- AGENT: Replace with client-specific frontline title -->
+        <h3>Frontline: Branch &amp; Contact Center</h3>
+        <!-- AGENT: Replace with client-specific roles and headcounts -->
+        <div class="pg-roles">[Role 1] (~N) &bull; [Role 2] (~N) &bull; [Role 3] (~N)</div>
+      </div>
+    </div>
+
+    <div class="pain-challenge-grid">
+      <div class="pc-card pain">
+        <h4>Pain Points</h4>
+        <!-- AGENT: Generate 4 frontline-specific pain points from persona analysis -->
+        <ul>
+          <li>[Pain point 1 — system switching / interaction time impact]</li>
+          <li>[Pain point 2 — no omnichannel context / customer repetition]</li>
+          <li>[Pain point 3 — high AHT / slow service for simple tasks]</li>
+          <li>[Pain point 4 — compliance or process friction specific to client]</li>
+        </ul>
+      </div>
+      <div class="pc-card challenge">
+        <h4>Challenges</h4>
+        <!-- AGENT: Generate 4 frontline-specific challenges -->
+        <ul>
+          <li>[Challenge 1 — channel silos preventing handoffs]</li>
+          <li>[Challenge 2 — training burden from system complexity]</li>
+          <li>[Challenge 3 — reactive service / no advisory capability]</li>
+          <li>[Challenge 4 — client-specific operational challenge]</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- AGENT: Generate 4 HMW statements derived from pain points above -->
+    <div class="hmw-grid">
+      <div class="hmw-card">[How might we... unified view]</div>
+      <div class="hmw-card">[How might we... channel continuity]</div>
+      <div class="hmw-card">[How might we... process simplification]</div>
+      <div class="hmw-card">[How might we... training reduction]</div>
+    </div>
+
+    <!-- AGENT: Generate 2-3 use case cards for frontline group -->
+    <div class="usecase-grid">
+      <div class="usecase-card">
+        <div class="uc-label">Use Case &bull; Frontline</div>
+        <h3>[Use Case Name]</h3>
+        <p>[Description — what it solves for frontline employees]</p>
+        <div class="uc-value">Est. savings: $[X.X]M/yr</div>
+        <div class="uc-cx">CX impact: [How this improves member/customer experience]</div>
+      </div>
+      <!-- AGENT: Repeat for each frontline use case -->
+    </div>
+
+    <!-- AGENT: Calculate total frontline savings -->
+    <div class="group-summary">
+      <div class="gs-label">Total Frontline Opportunity</div>
+      <div class="gs-value">$[X.X]M/yr</div>
+    </div>
+  </div>
+
+  <!-- === BACK OFFICE GROUP: OPERATIONS & COMPLIANCE === -->
+  <!-- AGENT: Generate back office persona group with client-specific roles -->
+  <div class="persona-group">
+    <div class="persona-group-header">
+      <div class="pg-icon"><svg viewBox="0 0 28 28" fill="none"><rect x="4" y="6" width="20" height="16" rx="2" fill="#fff" opacity="0.9"/><line x1="4" y1="12" x2="24" y2="12" stroke="#3366FF" stroke-width="1.5"/></svg></div>
+      <div>
+        <!-- AGENT: Replace with client-specific back office title -->
+        <h3>Back Office: Operations &amp; Compliance</h3>
+        <!-- AGENT: Replace with client-specific roles and headcounts -->
+        <div class="pg-roles">[Role 1] &bull; [Role 2] &bull; [Role 3] (~N employees)</div>
+      </div>
+    </div>
+
+    <div class="pain-challenge-grid">
+      <div class="pc-card pain">
+        <h4>Pain Points</h4>
+        <!-- AGENT: Generate 4 back-office-specific pain points -->
+        <ul>
+          <li>[Pain point 1 — manual audit trails / compliance overhead]</li>
+          <li>[Pain point 2 — exception handling via email / no workflow]</li>
+          <li>[Pain point 3 — dispute or KYC processing time]</li>
+          <li>[Pain point 4 — regulatory reporting aggregation]</li>
+        </ul>
+      </div>
+      <div class="pc-card challenge">
+        <h4>Challenges</h4>
+        <!-- AGENT: Generate 4 back-office-specific challenges -->
+        <ul>
+          <li>[Challenge 1 — no case management / lost requests]</li>
+          <li>[Challenge 2 — low STP rate / manual intervention]</li>
+          <li>[Challenge 3 — high error rate from re-keying]</li>
+          <li>[Challenge 4 — scattered compliance documentation]</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- AGENT: Generate 4 HMW statements for back office -->
+    <div class="hmw-grid">
+      <div class="hmw-card">[How might we... end-to-end case visibility]</div>
+      <div class="hmw-card">[How might we... automate compliance trails]</div>
+      <div class="hmw-card">[How might we... increase STP rate]</div>
+      <div class="hmw-card">[How might we... real-time SLA dashboards]</div>
+    </div>
+
+    <!-- AGENT: Generate 1-2 use case cards for back office group -->
+    <div class="usecase-grid">
+      <div class="usecase-card">
+        <div class="uc-label">Use Case &bull; Back Office</div>
+        <h3>[Use Case Name]</h3>
+        <p>[Description — what it solves for back office employees]</p>
+        <div class="uc-value">Est. savings: $[XXX]K/yr</div>
+        <div class="uc-cx">CX impact: [How this improves member/customer experience]</div>
+      </div>
+      <!-- AGENT: Repeat for each back office use case -->
+    </div>
+
+    <!-- AGENT: Calculate total back office savings -->
+    <div class="group-summary">
+      <div class="gs-label">Total Back Office Opportunity</div>
+      <div class="gs-value">$[XXX]K/yr</div>
+    </div>
+  </div>
+
+  <!-- === COMBINED TOTAL === -->
+  <!-- AGENT: Calculate combined total across all persona groups -->
+  <div class="headline-stat" style="margin-top: 32px;">
+    <div class="big-number" style="color: var(--green);">$[X.X]M</div>
+    <div class="big-label">Total Annual Opportunity Across All Use Cases</div>
+    <div class="sub-stat">Frontline: $[X.X]M &bull; Back Office: $[XXX]K &bull; Serving [N] [members/customers] with [N] employees</div>
+  </div>
+
+  <div class="page-footer">Backbase | 14</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 19: HYPOTHESES FOR VALIDATION (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Hypotheses for Validation</h2>
+  </div>
+  <!-- AGENT: Generate 6 hypothesis cards with client-specific context -->
+  <div class="hypothesis-grid">
+    <div class="hypothesis-card">
+      <div class="h-label">H1 | System Switching Tax</div>
+      <!-- AGENT: Customize hypothesis with client context -->
+      <h4>System switching accounts for 20-30% of employee productive time</h4>
+      <p>[Client-specific implication and what validation would look like]</p>
+      <div class="h-source">Source: HBR/Qatalog research; banking industry benchmarks</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H2 | First Contact Resolution</div>
+      <h4>FCR is below 70% due to lack of [member/customer] context</h4>
+      <p>[Client-specific implication]</p>
+      <div class="h-source">Source: Industry benchmark; top-quartile FCR is 80-85%</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H3 | Training Time</div>
+      <h4>New employee training exceeds 4 weeks due to system complexity</h4>
+      <p>[Client-specific implication]</p>
+      <div class="h-source">Source: Banking industry average; unified platforms achieve 1-2 weeks</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H4 | Digital Deflection</div>
+      <h4>40-60% of interactions could be deflected to self-service</h4>
+      <p>[Client-specific implication]</p>
+      <div class="h-source">Source: Leading digital banks achieve 70%+ self-service</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H5 | Handoff Failures</div>
+      <h4>Manual handoffs cause 15%+ of escalations</h4>
+      <p>[Client-specific implication]</p>
+      <div class="h-source">Source: Bain &amp; Company channel switching research</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H6 | Employee Satisfaction</div>
+      <h4>Employee satisfaction correlates directly to tool quality</h4>
+      <p>[Client-specific implication]</p>
+      <div class="h-source">Source: Gallup employee engagement research</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 15</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 20: OPEN QUESTIONS & NEXT STEPS (White background)
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Open Questions &amp; Next Steps</h2>
+  </div>
+  <div class="cadence">
+    <div class="cadence-step completed"><h4>Done</h4><p>Strategy</p></div>
+    <div class="cadence-arrow">&#8594;</div>
+    <!-- AGENT: Replace with member/customer terminology -->
+    <div class="cadence-step completed"><h4>Done</h4><p>[Member/Customer] Experience</p></div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step active"><h4>Today</h4><p>Employee Experience</p></div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step"><h4>Next</h4><p>IT Architecture</p></div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step"><h4>Final</h4><p>Ignite Lab</p></div>
+  </div>
+  <!-- AGENT: Generate open questions and action items -->
+  <div class="challenges-grid" style="grid-template-columns: repeat(2, 1fr);">
+    <div class="challenge-card">
+      <div class="challenge-label">Open Questions</div>
+      <h3>For Validation</h3>
+      <ul style="list-style: none; padding: 0;">
+        <!-- AGENT: Replace with client-specific open questions -->
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">1. [Open question 1]</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">2. [Open question 2]</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">3. [Open question 3]</li>
+      </ul>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">Action Items</div>
+      <h3>Next Steps</h3>
+      <ul style="list-style: none; padding: 0;">
+        <!-- AGENT: Replace with specific next steps -->
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">1. [Action item 1]</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">2. [Action item 2]</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">3. [Action item 3]</li>
+      </ul>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 16</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 21: CLOSING (Dark background)
+     =============================================================== -->
+<div class="closing">
+  <h2>THANK YOU</h2>
+  <div class="brand">Backbase</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dubai Islamic Bank Employee Experience Workshop | Backbase</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-dark: #091C35;
+    --primary-blue: #3366FF;
+    --cyan: #69FEFF;
+    --white: #FFFFFF;
+    --light-grey: #F3F6F9;
+    --light-blue: #E5EBFF;
+    --muted: #3A495D;
+    --green: #26BC71;
+    --amber: #FFAC09;
+    --red: #FF7262;
+    --text: #091C35;
+    --text-light: #5A6A7E;
+    --border: #E0E6ED;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px; line-height: 1.6; color: var(--text); background: var(--white);
+  }
+
+  /* === COVER === */
+  .cover {
+    background: var(--primary-dark); color: var(--white); min-height: 100vh;
+    padding: 60px 80px; display: flex; flex-direction: column; justify-content: center;
+    position: relative; page-break-after: always;
+  }
+  .cover .brand { font-size: 22px; font-weight: 600; color: var(--primary-blue); margin-bottom: 60px; letter-spacing: 1px; }
+  .cover h1 { font-size: 48px; font-weight: 900; line-height: 1.15; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 60px; }
+  .cover .meta { font-size: 16px; font-weight: 400; color: var(--cyan); }
+
+  /* === SECTION DIVIDER === */
+  .section-divider {
+    background: var(--primary-blue); color: var(--white); padding: 80px 80px;
+    min-height: 40vh; display: flex; flex-direction: column; justify-content: center;
+    position: relative; page-break-before: always; page-break-after: always;
+  }
+  .section-divider .brand { font-size: 18px; font-weight: 600; margin-bottom: 40px; letter-spacing: 1px; }
+  .section-divider .ghost-number {
+    position: absolute; right: 80px; top: 50%; transform: translateY(-50%);
+    font-size: 200px; font-weight: 900; color: rgba(255,255,255,0.08); line-height: 1;
+  }
+  .section-divider h2 { font-size: 42px; font-weight: 900; line-height: 1.2; margin-bottom: 8px; }
+  .section-divider .section-subtitle { font-size: 20px; font-weight: 300; color: rgba(255,255,255,0.7); }
+  .section-divider .cyan-accent { width: 60px; height: 4px; background: var(--cyan); margin-bottom: 24px; }
+
+  /* === CONTENT SECTION === */
+  .content-section {
+    background: var(--white); padding: 60px 80px; min-height: 80vh;
+    position: relative; page-break-after: always;
+  }
+  .content-section .page-footer {
+    position: absolute; bottom: 20px; right: 80px;
+    font-size: 11px; font-weight: 600; color: var(--text-light); letter-spacing: 1px;
+  }
+
+  /* === TITLE === */
+  .section-title { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+  .section-title .accent { width: 16px; height: 16px; background: var(--primary-blue); flex-shrink: 0; }
+  .section-title h2 { font-size: 24px; font-weight: 700; color: var(--text); }
+  .section-title .subtitle { font-size: 14px; font-weight: 400; color: var(--text-light); margin-left: auto; }
+
+  /* === OBJECTIVE === */
+  .objective-statement {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0;
+    padding: 24px 28px; font-size: 16px; line-height: 1.6; margin-bottom: 40px;
+  }
+
+  /* === METHODOLOGY === */
+  .methodology-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+  .method-block {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 20px 16px; text-align: center;
+  }
+  .method-block .block-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; background: var(--primary-blue); color: #fff;
+    border-radius: 50%; font-size: 14px; font-weight: 700; margin-bottom: 10px;
+  }
+  .method-block h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .method-block p { font-size: 12px; color: var(--text-light); }
+
+  /* === CARDS === */
+  .challenges-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .challenge-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .challenge-card .challenge-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--primary-blue); margin-bottom: 8px;
+  }
+  .challenge-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .challenge-card p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+
+  /* === STATS === */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px; text-align: center;
+  }
+  .stat-card .stat-value { font-size: 36px; font-weight: 900; color: var(--primary-blue); }
+  .stat-card .stat-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+  /* === PERSONA === */
+  .persona-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .persona-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .persona-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .persona-avatar {
+    width: 64px; height: 64px; border-radius: 50%; background: var(--light-blue);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .persona-avatar svg { width: 40px; height: 40px; }
+  .persona-name { font-size: 18px; font-weight: 900; color: var(--text); }
+  .persona-segment { font-size: 13px; color: var(--primary-blue); font-weight: 600; margin-top: 2px; }
+  .persona-section-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; margin-top: 12px; margin-bottom: 6px;
+  }
+  .persona-section-label.pain { color: var(--red); }
+  .persona-section-label.systems { color: var(--primary-blue); }
+  .persona-section-label.desired { color: var(--green); }
+  .persona-section-label.cx { color: var(--amber); }
+  .persona-card ul { list-style: none; padding: 0; }
+  .persona-card ul li {
+    font-size: 12px; color: var(--text-light); padding: 3px 0; padding-left: 12px;
+    position: relative; line-height: 1.4;
+  }
+  .persona-card ul li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; position: absolute; left: 0; top: 8px; }
+  .persona-card .pain-points li::before { background: var(--red); }
+  .persona-card .systems-list li::before { background: var(--primary-blue); }
+  .persona-card .desired-list li::before { background: var(--green); }
+  .persona-card .cx-link li::before { background: var(--amber); }
+  .system-tag {
+    display: inline-block; background: var(--light-blue); color: var(--primary-blue);
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 4px;
+    margin: 2px 4px 2px 0;
+  }
+  .system-count { font-size: 13px; font-weight: 700; color: var(--red); margin-top: 8px; }
+
+  /* === TABLES === */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 16px; }
+  th {
+    background: var(--primary-blue); color: #fff; padding: 12px 16px; text-align: left;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;
+  }
+  th:first-child { border-radius: 8px 0 0 0; }
+  th:last-child { border-radius: 0 8px 0 0; }
+  td { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  tr:nth-child(even) td { background: var(--light-grey); }
+  .leader { color: var(--green); font-weight: 600; }
+  .gap { color: var(--red); font-weight: 600; }
+  .benchmark { color: var(--primary-blue); font-weight: 600; }
+  tr.total-row td { background: var(--primary-dark); color: var(--white); font-weight: 700; }
+
+  /* === HARVEY BALLS === */
+  .hb { font-size: 16px; margin-right: 5px; }
+  .hb.full { color: var(--green); }
+  .hb.partial { color: var(--amber); }
+  .hb.none { color: var(--red); }
+  .hb-legend { font-size: 12px; color: var(--text-light); margin-bottom: 14px; }
+  .hb-legend span { margin-right: 16px; }
+
+  /* === HEADLINE STAT === */
+  .headline-stat {
+    text-align: center; padding: 40px 0; margin-bottom: 32px;
+    background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 16px;
+  }
+  .headline-stat .big-number { font-size: 64px; font-weight: 900; color: var(--red); }
+  .headline-stat .big-label { font-size: 20px; font-weight: 400; color: var(--text); margin-top: 8px; }
+  .headline-stat .sub-stat { font-size: 14px; color: var(--text-light); margin-top: 4px; }
+
+  /* === DAY IN THE LIFE === */
+  .ditl-container { display: grid; grid-template-columns: 1fr 60px 1fr; gap: 0; margin-bottom: 40px; }
+  .ditl-current, .ditl-future { padding: 24px; border-radius: 12px; }
+  .ditl-current { background: rgba(255,114,98,0.05); border: 1px solid rgba(255,114,98,0.15); }
+  .ditl-future { background: rgba(38,188,113,0.05); border: 1px solid rgba(38,188,113,0.15); }
+  .ditl-arrow { display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--primary-blue); font-weight: 900; }
+  .ditl-step {
+    display: flex; align-items: center; gap: 12px; padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ditl-step:last-child { border: none; }
+  .ditl-step .step-num {
+    width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .ditl-current .step-num { background: var(--red); }
+  .ditl-future .step-num { background: var(--green); }
+  .ditl-step .step-system { font-size: 11px; font-weight: 700; color: var(--primary-blue); min-width: 80px; }
+  .ditl-step .step-action { font-size: 12px; color: var(--text-light); flex: 1; }
+  .ditl-step .step-time { font-size: 11px; font-weight: 700; color: var(--muted); }
+  .ditl-total { margin-top: 12px; padding: 12px; border-radius: 8px; text-align: center; font-weight: 700; font-size: 14px; }
+  .ditl-current .ditl-total { background: rgba(255,114,98,0.1); color: var(--red); }
+  .ditl-future .ditl-total { background: rgba(38,188,113,0.1); color: var(--green); }
+
+  /* === EX-TO-CX LINKAGE === */
+  .linkage-chain {
+    display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr; gap: 0; align-items: center;
+    margin-bottom: 20px;
+  }
+  .linkage-card { padding: 20px; border-radius: 12px; }
+  .linkage-card.ex { background: rgba(255,114,98,0.06); border: 1px solid rgba(255,114,98,0.15); border-left: 3px solid var(--red); }
+  .linkage-card.cx { background: rgba(255,172,9,0.06); border: 1px solid rgba(255,172,9,0.15); border-left: 3px solid var(--amber); }
+  .linkage-card.cost { background: rgba(51,102,255,0.06); border: 1px solid var(--light-blue); border-left: 3px solid var(--primary-blue); }
+  .linkage-card .linkage-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .linkage-card.ex .linkage-label { color: var(--red); }
+  .linkage-card.cx .linkage-label { color: var(--amber); }
+  .linkage-card.cost .linkage-label { color: var(--primary-blue); }
+  .linkage-card p { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .linkage-card .cost-figure { font-size: 20px; font-weight: 900; color: var(--primary-blue); margin-top: 8px; }
+  .linkage-arrow { text-align: center; font-size: 20px; color: var(--border); }
+
+  /* === TRANSFORMATION === */
+  .transform-grid { display: grid; grid-template-columns: 1fr 80px 1fr; gap: 0; margin-bottom: 32px; }
+  .transform-side { padding: 32px; border-radius: 16px; }
+  .transform-side.current { background: rgba(255,114,98,0.04); border: 1px solid rgba(255,114,98,0.12); }
+  .transform-side.future { background: rgba(38,188,113,0.04); border: 1px solid rgba(38,188,113,0.12); }
+  .transform-side h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+  .transform-side.current h3 { color: var(--red); }
+  .transform-side.future h3 { color: var(--green); }
+  .transform-side ul { list-style: none; padding: 0; }
+  .transform-side ul li { font-size: 13px; padding: 6px 0; padding-left: 16px; position: relative; color: var(--text-light); }
+  .transform-side.current ul li::before { content: ''; width: 6px; height: 6px; background: var(--red); border-radius: 50%; position: absolute; left: 0; top: 12px; }
+  .transform-side.future ul li::before { content: ''; width: 6px; height: 6px; background: var(--green); border-radius: 50%; position: absolute; left: 0; top: 12px; }
+  .transform-arrow-center { display: flex; align-items: center; justify-content: center; flex-direction: column; }
+  .transform-arrow-center .arrow-label { font-size: 10px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .transform-arrow-center .arrow-icon { font-size: 32px; color: var(--primary-blue); }
+  .transform-metric { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; margin-top: 12px; border-radius: 8px; }
+  .transform-side.current .transform-metric { background: rgba(255,114,98,0.08); }
+  .transform-side.future .transform-metric { background: rgba(38,188,113,0.08); }
+  .transform-metric .metric-label { font-size: 12px; color: var(--text-light); }
+  .transform-metric .metric-value { font-size: 18px; font-weight: 900; }
+  .transform-side.current .metric-value { color: var(--red); }
+  .transform-side.future .metric-value { color: var(--green); }
+
+  /* === CHANNEL CARDS === */
+  .channel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .channel-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .channel-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .channel-metric { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .channel-metric:last-child { border: none; }
+  .channel-metric .cm-label { color: var(--text-light); }
+  .channel-metric .cm-current { color: var(--red); font-weight: 600; }
+  .channel-metric .cm-target { color: var(--green); font-weight: 600; }
+
+  /* === MATRIX === */
+  .matrix-grid {
+    display: grid; grid-template-columns: 80px 1fr 1fr 1fr; grid-template-rows: auto 1fr 1fr 1fr;
+    gap: 2px; min-height: 360px;
+  }
+  .matrix-cell { padding: 16px; border-radius: 4px; font-size: 12px; }
+  .matrix-cell.header { background: var(--primary-blue); color: #fff; font-weight: 700; text-align: center; font-size: 11px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; }
+  .matrix-cell.row-label { background: var(--light-grey); font-weight: 700; color: var(--text); writing-mode: vertical-lr; transform: rotate(180deg); text-align: center; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; }
+  .matrix-cell.q-transform { background: rgba(38,188,113,0.08); border: 1px solid rgba(38,188,113,0.15); }
+  .matrix-cell.q-streamline { background: rgba(51,102,255,0.06); border: 1px solid var(--light-blue); }
+  .matrix-cell.q-optimize { background: rgba(255,172,9,0.06); border: 1px solid rgba(255,172,9,0.15); }
+  .matrix-cell.q-defer { background: var(--light-grey); border: 1px solid var(--border); }
+  .matrix-item { font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 6px; margin: 4px 0; display: inline-block; }
+  .matrix-item.high { background: var(--green); color: #fff; }
+  .matrix-item.medium { background: var(--primary-blue); color: #fff; }
+  .matrix-item.low { background: var(--light-grey); color: var(--text); border: 1px solid var(--border); }
+
+  /* === USE CASES === */
+  .usecase-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .usecase-card {
+    background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 24px;
+  }
+  .usecase-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .usecase-card .uc-label { font-size: 10px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .usecase-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+  .usecase-card .uc-value { font-size: 16px; font-weight: 900; color: var(--green); margin-top: 12px; }
+  .usecase-card .uc-cx { font-size: 12px; color: var(--amber); font-weight: 600; margin-top: 8px; font-style: italic; }
+
+  /* === PERSONA USE CASE GROUPS === */
+  .persona-group { margin-bottom: 48px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .persona-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .persona-group-header {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+    padding: 20px 24px; background: var(--light-grey); border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--primary-blue); border-radius: 0 12px 12px 0;
+  }
+  .pg-icon {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--primary-blue);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .pg-icon svg { width: 28px; height: 28px; }
+  .persona-group-header h3 { font-size: 18px; font-weight: 700; color: var(--text); }
+  .persona-group-header .pg-roles { font-size: 13px; color: var(--text-light); margin-top: 2px; }
+  .pain-challenge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .pc-card { border-radius: 12px; padding: 20px; }
+  .pc-card.pain { background: rgba(255,114,98,0.04); border: 1px solid rgba(255,114,98,0.15); border-left: 3px solid var(--red); }
+  .pc-card.challenge { background: rgba(255,172,9,0.04); border: 1px solid rgba(255,172,9,0.15); border-left: 3px solid var(--amber); }
+  .pc-card h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .pc-card.pain h4 { color: var(--red); }
+  .pc-card.challenge h4 { color: var(--amber); }
+  .pc-card ul { list-style: none; padding: 0; }
+  .pc-card ul li { font-size: 13px; color: var(--text-light); padding: 4px 0 4px 14px; position: relative; line-height: 1.5; }
+  .pc-card ul li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; position: absolute; left: 0; top: 10px; }
+  .pc-card.pain ul li::before { background: var(--red); }
+  .pc-card.challenge ul li::before { background: var(--amber); }
+  .hmw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .hmw-card {
+    background: rgba(51,102,255,0.04); border: 1px solid var(--light-blue);
+    border-radius: 12px; padding: 14px 16px 14px 44px; font-size: 13px; color: var(--text);
+    line-height: 1.5; position: relative;
+  }
+  .hmw-card::before {
+    content: 'HMW'; position: absolute; left: 12px; top: 14px;
+    font-size: 9px; font-weight: 900; color: var(--primary-blue); letter-spacing: 0.5px;
+  }
+  .group-summary {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px; background: rgba(38,188,113,0.06); border: 1px solid rgba(38,188,113,0.15);
+    border-radius: 12px; margin-top: 16px;
+  }
+  .group-summary .gs-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+  .group-summary .gs-value { font-size: 24px; font-weight: 900; color: var(--green); }
+
+  /* === HYPOTHESIS === */
+  .hypothesis-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .hypothesis-card {
+    background: #FFFBF0; border: 1px solid var(--light-blue);
+    border-left: 3px solid var(--amber); border-radius: 12px; padding: 20px;
+  }
+  .hypothesis-card .h-label { font-size: 12px; font-weight: 700; color: var(--amber); margin-bottom: 8px; }
+  .hypothesis-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .hypothesis-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+  .hypothesis-card .h-source { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 8px; }
+
+  /* === CADENCE === */
+  .cadence { display: flex; align-items: center; gap: 8px; margin-bottom: 32px; }
+  .cadence-step {
+    background: var(--light-grey); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px; text-align: center; flex: 1;
+  }
+  .cadence-step.completed { border-color: var(--green); background: rgba(38,188,113,0.06); }
+  .cadence-step.active { border-color: var(--primary-blue); background: var(--light-blue); }
+  .cadence-step h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; }
+  .cadence-step.completed h4 { color: var(--green); }
+  .cadence-step.active h4 { color: var(--primary-blue); }
+  .cadence-step p { font-size: 13px; font-weight: 600; }
+  .cadence-arrow { font-size: 18px; color: var(--border); }
+
+  /* === CO-CREATION === */
+  .cocreation-card {
+    background: var(--white); border: 2px dashed var(--amber);
+    border-radius: 12px; padding: 24px; margin-top: 24px;
+  }
+  .cocreation-card h3 { font-size: 16px; font-weight: 700; color: var(--amber); margin-bottom: 16px; }
+
+  /* === CLOSING === */
+  .closing {
+    background: var(--primary-dark); color: var(--white); min-height: 50vh;
+    padding: 60px 80px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; page-break-before: always;
+  }
+  .closing h2 { font-size: 48px; font-weight: 900; margin-bottom: 24px; }
+  .closing .brand { font-size: 20px; font-weight: 600; color: var(--primary-blue); letter-spacing: 1px; }
+
+  @media (max-width: 900px) {
+    .content-section, .cover, .section-divider { padding: 30px 24px; }
+    .challenges-grid, .usecase-grid, .hypothesis-grid, .pain-challenge-grid, .hmw-grid { grid-template-columns: 1fr; }
+    .persona-grid, .channel-grid { grid-template-columns: 1fr; }
+    .methodology-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .linkage-chain { grid-template-columns: 1fr; }
+    .linkage-arrow { transform: rotate(90deg); }
+    .transform-grid { grid-template-columns: 1fr; }
+    .ditl-container { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===============================================================
+     SECTION 1: COVER
+     =============================================================== -->
+<div class="cover">
+  <div class="brand">Backbase</div>
+  <h1>Employee Experience Workshop</h1>
+  <div class="subtitle">Dubai Islamic Bank</div>
+  <div class="meta">Backbase Ignite | 2026</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 2: OBJECTIVES & AGENDA
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">01</div>
+  <div class="cyan-accent"></div>
+  <h2>Employee Experience</h2>
+  <div class="section-subtitle">Objectives &amp; Agenda</div>
+</div>
+
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Objectives &amp; Agenda</h2>
+  </div>
+  <div class="objective-statement">
+    Quantify the hidden cost of employee tool fragmentation, connect it to <strong>customer</strong> experience impact, and prioritize Digital Assist enablement that transforms <strong>Dubai Islamic Bank</strong>'s workforce from Transaction Center to Advisory Hub.
+  </div>
+  <div class="methodology-grid">
+    <div class="method-block"><div class="block-num">1</div><h4>Validate</h4><p>Employee landscape, personas, systems (15 min)</p></div>
+    <div class="method-block"><div class="block-num">2</div><h4>Quantify</h4><p>System Switching Tax &mdash; the hidden cost (30 min)</p></div>
+    <div class="method-block"><div class="block-num">3</div><h4>Envision</h4><p>Advisory Hub transformation &amp; Digital Assist (30 min)</p></div>
+    <div class="method-block"><div class="block-num">4</div><h4>Prioritize</h4><p>Enablement use cases &amp; next steps (15 min)</p></div>
+  </div>
+  <div class="page-footer">Backbase | 2</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 3: STRATEGY & CX RECAP
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>What We Heard | Strategy &amp; Customer Experience Context</h2>
+  </div>
+  <div class="challenges-grid">
+    <div class="challenge-card">
+      <div class="challenge-label">Strategy Theme</div>
+      <h3>Digital-First Islamic Banking</h3>
+      <p>DIB aims to become the leading digital Islamic bank in the UAE, competing with neobanks while maintaining full Shariah compliance across every product and journey.</p>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">Customer Experience</div>
+      <h3>Fragmented Channel Journeys</h3>
+      <p>Customers starting Murabaha financing online must restart in-branch. The digital and physical channels operate as separate worlds, creating frustration and drop-off.</p>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">The Bridge</div>
+      <h3>Employees Are the Connection</h3>
+      <p>Your employees are the bridge between strategy and customer experience. When they struggle with fragmented tools, customers feel it in longer wait times, repeated information, and inconsistent service.</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 3</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 4: SECTION DIVIDER
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">02</div>
+  <div class="cyan-accent"></div>
+  <h2>The People Behind the Experience</h2>
+  <div class="section-subtitle">Understanding DIB's workforce</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 5: EMPLOYEE AT-A-GLANCE
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>DIB Employee Landscape</h2>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">3,200</div>
+      <div class="stat-label">Total Employees</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">~40</div>
+      <div class="stat-label">Branches (UAE)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">~180</div>
+      <div class="stat-label">Contact Center Agents</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">13+</div>
+      <div class="stat-label">Systems per Transaction</div>
+    </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">1.7M</div>
+      <div class="stat-label">Customers Served</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">AED 306B</div>
+      <div class="stat-label">Total Assets</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">AR/EN</div>
+      <div class="stat-label">Bilingual Operations</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">100%</div>
+      <div class="stat-label">Shariah Compliant</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 4</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 6: EMPLOYEE PERSONAS
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>DIB Employee Personas</h2>
+  </div>
+  <div class="persona-grid">
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-avatar"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#3366FF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#3366FF" opacity="0.3"/></svg></div>
+        <div>
+          <div class="persona-name">Customer Service Officer</div>
+          <div class="persona-segment">Branch | ~450 employees</div>
+        </div>
+      </div>
+      <div class="persona-section-label systems">Systems Used Daily</div>
+      <div>
+        <span class="system-tag">Temenos T24</span>
+        <span class="system-tag">Salesforce CRM</span>
+        <span class="system-tag">Card Management</span>
+        <span class="system-tag">Doc Management</span>
+        <span class="system-tag">Shariah Compliance</span>
+        <span class="system-tag">E-Forms</span>
+        <span class="system-tag">EID Reader</span>
+        <span class="system-tag">Queue Mgmt</span>
+        <span class="system-tag">+ 4 more</span>
+      </div>
+      <div class="system-count">12 systems for complete customer service</div>
+      <div class="persona-section-label pain">Pain Points</div>
+      <ul class="pain-points">
+        <li>Switching between Temenos and CRM for every inquiry adds 2-3 minutes per interaction</li>
+        <li>Cannot see what the customer started in mobile banking; they must re-explain</li>
+        <li>Shariah compliance checks require a separate system lookup for product eligibility</li>
+      </ul>
+      <div class="persona-section-label desired">Desired State</div>
+      <ul class="desired-list">
+        <li>Single screen showing full customer profile with product eligibility</li>
+        <li>See customer's digital journey before they arrive at the branch</li>
+        <li>Integrated Shariah compliance checks within guided workflows</li>
+      </ul>
+      <div class="persona-section-label cx">CX Connection</div>
+      <ul class="cx-link">
+        <li>Serves Values-Aligned Professional and Established Family customers &mdash; their tool friction causes slow service and information repetition</li>
+      </ul>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-avatar"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#3366FF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#3366FF" opacity="0.3"/></svg></div>
+        <div>
+          <div class="persona-name">Contact Center Agent</div>
+          <div class="persona-segment">Contact Center | ~180 employees</div>
+        </div>
+      </div>
+      <div class="persona-section-label systems">Systems Used Daily</div>
+      <div>
+        <span class="system-tag">Temenos T24</span>
+        <span class="system-tag">CRM</span>
+        <span class="system-tag">IVR Platform</span>
+        <span class="system-tag">Card System</span>
+        <span class="system-tag">Knowledge Base</span>
+        <span class="system-tag">Email</span>
+        <span class="system-tag">Chat Platform</span>
+        <span class="system-tag">Case Mgmt</span>
+        <span class="system-tag">+ 3 more</span>
+      </div>
+      <div class="system-count">11 systems across phone, chat, and email</div>
+      <div class="persona-section-label pain">Pain Points</div>
+      <ul class="pain-points">
+        <li>Average handle time of 8+ minutes for simple inquiries due to system switching</li>
+        <li>No visibility into customer's branch visit or digital banking activity</li>
+        <li>Bilingual support (Arabic/English) requires switching language settings per system</li>
+      </ul>
+      <div class="persona-section-label desired">Desired State</div>
+      <ul class="desired-list">
+        <li>Omnichannel customer view with full interaction history</li>
+        <li>Unified bilingual interface with instant language switching</li>
+        <li>AI-assisted knowledge search for Shariah-compliant product queries</li>
+      </ul>
+      <div class="persona-section-label cx">CX Connection</div>
+      <ul class="cx-link">
+        <li>Serves all customer segments remotely &mdash; long AHT and repeat calls directly hurt NPS and satisfaction scores</li>
+      </ul>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-avatar"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#3366FF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#3366FF" opacity="0.3"/></svg></div>
+        <div>
+          <div class="persona-name">Relationship Manager</div>
+          <div class="persona-segment">Branch / Premium | ~200 employees</div>
+        </div>
+      </div>
+      <div class="persona-section-label systems">Systems Used Daily</div>
+      <div>
+        <span class="system-tag">Temenos T24</span>
+        <span class="system-tag">CRM</span>
+        <span class="system-tag">Financing System</span>
+        <span class="system-tag">Investment Platform</span>
+        <span class="system-tag">Shariah Compliance</span>
+        <span class="system-tag">Doc Mgmt</span>
+        <span class="system-tag">Credit Bureau</span>
+        <span class="system-tag">Email</span>
+        <span class="system-tag">+ 5 more</span>
+      </div>
+      <div class="system-count">13 systems for portfolio management and advisory</div>
+      <div class="persona-section-label pain">Pain Points</div>
+      <ul class="pain-points">
+        <li>No consolidated portfolio view; must manually aggregate across 4-5 systems</li>
+        <li>Financing application requires touching 6 systems from initiation to Shariah approval</li>
+        <li>Cannot proactively identify cross-sell opportunities; relies on intuition</li>
+      </ul>
+      <div class="persona-section-label desired">Desired State</div>
+      <ul class="desired-list">
+        <li>360-degree customer view with portfolio summary and next-best-action</li>
+        <li>Guided financing workflow with embedded Shariah compliance checks</li>
+        <li>Proactive alerts for life events and product triggers</li>
+      </ul>
+      <div class="persona-section-label cx">CX Connection</div>
+      <ul class="cx-link">
+        <li>Serves Emerging Affluent and HNW customers &mdash; inability to provide proactive advisory erodes premium service promise</li>
+      </ul>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-avatar"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#3366FF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#3366FF" opacity="0.3"/></svg></div>
+        <div>
+          <div class="persona-name">Operations &amp; Compliance Specialist</div>
+          <div class="persona-segment">Back Office | ~300 employees</div>
+        </div>
+      </div>
+      <div class="persona-section-label systems">Systems Used Daily</div>
+      <div>
+        <span class="system-tag">Temenos T24</span>
+        <span class="system-tag">Shariah Audit</span>
+        <span class="system-tag">AML/KYC</span>
+        <span class="system-tag">Doc Mgmt</span>
+        <span class="system-tag">Case Mgmt</span>
+        <span class="system-tag">OFAC</span>
+        <span class="system-tag">Central Bank</span>
+        <span class="system-tag">Email</span>
+      </div>
+      <div class="system-count">8 systems for processing and compliance</div>
+      <div class="persona-section-label pain">Pain Points</div>
+      <ul class="pain-points">
+        <li>Manual Shariah audit trails require documentation across 3-4 separate systems</li>
+        <li>Exception handling involves back-and-forth emails with no structured workflow</li>
+        <li>Central Bank reporting requires manual data aggregation from multiple sources</li>
+      </ul>
+      <div class="persona-section-label desired">Desired State</div>
+      <ul class="desired-list">
+        <li>End-to-end case management with automated Shariah audit trail</li>
+        <li>Structured exception handling with SLA tracking</li>
+        <li>Automated regulatory reporting with data aggregation</li>
+      </ul>
+      <div class="persona-section-label cx">CX Connection</div>
+      <ul class="cx-link">
+        <li>Processes all customer requests &mdash; back-office delays cause SLA breaches and customer frustration on financing approvals</li>
+      </ul>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 5</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 7: SECTION DIVIDER — "The Hidden Tax"
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">03</div>
+  <div class="cyan-accent"></div>
+  <h2>The Hidden Tax</h2>
+  <div class="section-subtitle">Quantifying the cost of tool fragmentation</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 8: SYSTEM LANDSCAPE
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>DIB System Landscape</h2>
+  </div>
+  <div class="hb-legend">
+    <span><span class="hb full">&#9679;</span> Primary</span>
+    <span><span class="hb partial">&#9684;</span> Occasional</span>
+    <span><span class="hb none">&#9675;</span> Not used</span>
+  </div>
+  <table>
+    <thead>
+      <tr><th>System</th><th>Category</th><th>CSO</th><th>CC Agent</th><th>RM</th><th>Ops/Compliance</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Temenos T24 (Core)</td><td>Core Banking</td><td><span class="hb full">&#9679;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb full">&#9679;</span></td></tr>
+      <tr><td>Salesforce CRM</td><td>CRM</td><td><span class="hb full">&#9679;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb partial">&#9684;</span></td></tr>
+      <tr><td>Islamic Financing System</td><td>Lending/Financing</td><td><span class="hb partial">&#9684;</span></td><td><span class="hb none">&#9675;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb full">&#9679;</span></td></tr>
+      <tr><td>Card Management Platform</td><td>Cards</td><td><span class="hb full">&#9679;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb partial">&#9684;</span></td><td><span class="hb partial">&#9684;</span></td></tr>
+      <tr><td>Shariah Compliance System</td><td>Compliance</td><td><span class="hb partial">&#9684;</span></td><td><span class="hb none">&#9675;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb full">&#9679;</span></td></tr>
+      <tr><td>Document Management (DMS)</td><td>Documents</td><td><span class="hb full">&#9679;</span></td><td><span class="hb partial">&#9684;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb full">&#9679;</span></td></tr>
+      <tr><td>AML/KYC &amp; EID Integration</td><td>Compliance</td><td><span class="hb full">&#9679;</span></td><td><span class="hb partial">&#9684;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb full">&#9679;</span></td></tr>
+      <tr><td>Contact Center Platform</td><td>Telephony</td><td><span class="hb none">&#9675;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb none">&#9675;</span></td><td><span class="hb none">&#9675;</span></td></tr>
+      <tr><td>Investment/Sukuk Platform</td><td>Investments</td><td><span class="hb none">&#9675;</span></td><td><span class="hb none">&#9675;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb partial">&#9684;</span></td></tr>
+      <tr><td>Queue Management System</td><td>Branch Ops</td><td><span class="hb full">&#9679;</span></td><td><span class="hb none">&#9675;</span></td><td><span class="hb none">&#9675;</span></td><td><span class="hb none">&#9675;</span></td></tr>
+      <tr><td>E-Forms / E-Signature</td><td>Documents</td><td><span class="hb full">&#9679;</span></td><td><span class="hb none">&#9675;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb partial">&#9684;</span></td></tr>
+      <tr><td>Etihad Credit Bureau</td><td>Credit</td><td><span class="hb partial">&#9684;</span></td><td><span class="hb none">&#9675;</span></td><td><span class="hb full">&#9679;</span></td><td><span class="hb partial">&#9684;</span></td></tr>
+      <tr><td>CBUAE Reporting</td><td>Regulatory</td><td><span class="hb none">&#9675;</span></td><td><span class="hb none">&#9675;</span></td><td><span class="hb none">&#9675;</span></td><td><span class="hb full">&#9679;</span></td></tr>
+    </tbody>
+  </table>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-value">13</div><div class="stat-label">Total Systems</div></div>
+    <div class="stat-card"><div class="stat-value">4.1</div><div class="stat-label">Avg per Task</div></div>
+    <div class="stat-card"><div class="stat-value">18+</div><div class="stat-label">Point-to-Point Integrations</div></div>
+    <div class="stat-card"><div class="stat-value">10</div><div class="stat-label">Unique Vendors</div></div>
+  </div>
+  <div class="page-footer">Backbase | 6</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 9: SYSTEM SWITCHING TAX — THE CORE ARTIFACT
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>The System Switching Tax</h2>
+    <div class="subtitle">The hidden cost of tool fragmentation</div>
+  </div>
+  <div class="headline-stat">
+    <div class="big-number">$5.4M</div>
+    <div class="big-label">Annual cost of system switching at DIB</div>
+    <div class="sub-stat">Across 13 systems | 8 common tasks | 1,130 frontline &amp; operations employees</div>
+  </div>
+  <table>
+    <thead>
+      <tr><th>Task</th><th>Systems Required</th><th>Switches</th><th>Time (Current)</th><th>Time (Future)</th><th>Annual Volume</th><th>Switching Cost/yr</th><th>Savings/yr</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Account Inquiry</td><td>T24, CRM, Digital Admin</td><td>3</td><td>6 min</td><td>1.5 min</td><td>480,000</td><td class="gap">$1,320,000</td><td class="leader">$792,000</td></tr>
+      <tr><td>New Account Opening (with EID)</td><td>T24, CRM, DMS, EID, E-Forms, AML/KYC</td><td>5</td><td>28 min</td><td>10 min</td><td>96,000</td><td class="gap">$1,232,000</td><td class="leader">$739,200</td></tr>
+      <tr><td>Murabaha Financing Application</td><td>T24, Financing, Credit Bureau, Shariah, DMS, E-Sig</td><td>5</td><td>40 min</td><td>15 min</td><td>36,000</td><td class="gap">$660,000</td><td class="leader">$412,500</td></tr>
+      <tr><td>Card Issue / Block / PIN</td><td>Card Mgmt, T24, CRM</td><td>3</td><td>5 min</td><td>2 min</td><td>144,000</td><td class="gap">$330,000</td><td class="leader">$198,000</td></tr>
+      <tr><td>Dispute Filing</td><td>Card/T24, Case Mgmt, DMS</td><td>3</td><td>15 min</td><td>5 min</td><td>48,000</td><td class="gap">$330,000</td><td class="leader">$220,000</td></tr>
+      <tr><td>Profile / Address Change</td><td>T24, CRM, Card, EID</td><td>4</td><td>10 min</td><td>3 min</td><td>72,000</td><td class="gap">$330,000</td><td class="leader">$231,000</td></tr>
+      <tr><td>International Transfer (SWIFT)</td><td>T24, SWIFT, Compliance, AML, CRM</td><td>4</td><td>18 min</td><td>7 min</td><td>60,000</td><td class="gap">$495,000</td><td class="leader">$302,500</td></tr>
+      <tr><td>Shariah Compliance Review</td><td>Shariah System, T24, DMS, Audit Log</td><td>4</td><td>25 min</td><td>10 min</td><td>24,000</td><td class="gap">$275,000</td><td class="leader">$165,000</td></tr>
+      <tr class="total-row"><td><strong>TOTAL</strong></td><td></td><td></td><td></td><td></td><td><strong>960,000</strong></td><td><strong>$4,972,000</strong></td><td><strong>$3,060,200</strong></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size: 12px; color: var(--text-light); margin-bottom: 24px;">Calculation basis: Loaded FTE cost AED 2.00/min (~$0.55/min). Time per switch: 45 sec avg. Future state assumes 60% reduction via Digital Assist unified view and guided workflows. Volumes estimated from 1.7M customer base with UAE banking interaction benchmarks.</p>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-value" style="color: var(--red);">$2.1M</div><div class="stat-label">Branch Switching Cost</div></div>
+    <div class="stat-card"><div class="stat-value" style="color: var(--red);">$1.5M</div><div class="stat-label">Contact Center Cost</div></div>
+    <div class="stat-card"><div class="stat-value" style="color: var(--red);">$1.4M</div><div class="stat-label">Back Office Cost</div></div>
+    <div class="stat-card"><div class="stat-value" style="color: var(--green);">$3.1M</div><div class="stat-label">Projected Savings</div></div>
+  </div>
+  <div class="page-footer">Backbase | 7</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 10: A DAY IN THE LIFE
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>A Day in the Life</h2>
+    <div class="subtitle">Task: Customer Asks About Murabaha Financing</div>
+  </div>
+  <div class="ditl-container">
+    <div class="ditl-current">
+      <h3 style="color: var(--red); font-size: 16px; margin-bottom: 16px;">Current State</h3>
+      <div class="ditl-step"><div class="step-num">1</div><div class="step-system">Temenos T24</div><div class="step-action">Look up customer profile and accounts</div><div class="step-time">45 sec</div></div>
+      <div class="ditl-step"><div class="step-num">2</div><div class="step-system">CRM</div><div class="step-action">Check contact history and previous inquiries</div><div class="step-time">60 sec</div></div>
+      <div class="ditl-step"><div class="step-num">3</div><div class="step-system">Credit Bureau</div><div class="step-action">Pull Etihad Credit Bureau report</div><div class="step-time">90 sec</div></div>
+      <div class="ditl-step"><div class="step-num">4</div><div class="step-system">Financing</div><div class="step-action">Check product eligibility and Shariah parameters</div><div class="step-time">120 sec</div></div>
+      <div class="ditl-step"><div class="step-num">5</div><div class="step-system">Shariah Sys</div><div class="step-action">Verify Shariah compliance for selected product</div><div class="step-time">60 sec</div></div>
+      <div class="ditl-step"><div class="step-num">6</div><div class="step-system">DMS</div><div class="step-action">Locate and prepare required documents</div><div class="step-time">90 sec</div></div>
+      <div class="ditl-total">6 systems | 7.8 minutes total (~3.5 min is switching)</div>
+    </div>
+    <div class="ditl-arrow">&#8594;</div>
+    <div class="ditl-future">
+      <h3 style="color: var(--green); font-size: 16px; margin-bottom: 16px;">With Digital Assist</h3>
+      <div class="ditl-step"><div class="step-num">1</div><div class="step-system">Digital Assist</div><div class="step-action">360 view: profile, credit score, eligibility, Shariah status, documents &mdash; all in one screen</div><div class="step-time">60 sec</div></div>
+      <div class="ditl-step"><div class="step-num">2</div><div class="step-system">Digital Assist</div><div class="step-action">Launch guided financing workflow with pre-filled data</div><div class="step-time">90 sec</div></div>
+      <div class="ditl-total">1 system | 2.5 minutes total | 68% time saved</div>
+    </div>
+  </div>
+
+  <h3 style="font-size: 16px; font-weight: 700; margin: 24px 0 16px;">Task: New Account Opening with Emirates ID</h3>
+  <div class="ditl-container">
+    <div class="ditl-current">
+      <h3 style="color: var(--red); font-size: 16px; margin-bottom: 16px;">Current State</h3>
+      <div class="ditl-step"><div class="step-num">1</div><div class="step-system">EID Reader</div><div class="step-action">Scan Emirates ID and capture data</div><div class="step-time">30 sec</div></div>
+      <div class="ditl-step"><div class="step-num">2</div><div class="step-system">AML/KYC</div><div class="step-action">Run AML screening and KYC checks</div><div class="step-time">120 sec</div></div>
+      <div class="ditl-step"><div class="step-num">3</div><div class="step-system">Temenos T24</div><div class="step-action">Create customer record and open account</div><div class="step-time">180 sec</div></div>
+      <div class="ditl-step"><div class="step-num">4</div><div class="step-system">CRM</div><div class="step-action">Create CRM record and link to core</div><div class="step-time">90 sec</div></div>
+      <div class="ditl-step"><div class="step-num">5</div><div class="step-system">E-Forms</div><div class="step-action">Generate and print forms for signature</div><div class="step-time">120 sec</div></div>
+      <div class="ditl-step"><div class="step-num">6</div><div class="step-system">DMS</div><div class="step-action">Scan signed documents and archive</div><div class="step-time">90 sec</div></div>
+      <div class="ditl-total">6 systems | 10.5 minutes total (~4 min is switching/duplicating)</div>
+    </div>
+    <div class="ditl-arrow">&#8594;</div>
+    <div class="ditl-future">
+      <h3 style="color: var(--green); font-size: 16px; margin-bottom: 16px;">With Digital Assist</h3>
+      <div class="ditl-step"><div class="step-num">1</div><div class="step-system">Digital Assist</div><div class="step-action">EID scan auto-populates all fields, AML/KYC runs in background</div><div class="step-time">45 sec</div></div>
+      <div class="ditl-step"><div class="step-num">2</div><div class="step-system">Digital Assist</div><div class="step-action">Guided workflow: review, e-signature, instant account creation</div><div class="step-time">120 sec</div></div>
+      <div class="ditl-total">1 system | 2.8 minutes total | 73% time saved</div>
+    </div>
+  </div>
+  <div class="cocreation-card">
+    <h3>What Would You Change?</h3>
+    <p style="font-size: 13px; color: var(--text-light);">Which daily tasks cause the most frustration? What scenarios should we analyze in the workshop?</p>
+  </div>
+  <div class="page-footer">Backbase | 8</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 11: EX-TO-CX LINKAGE
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>When Employees Struggle, Customers Suffer</h2>
+  </div>
+  <div class="linkage-chain">
+    <div class="linkage-card ex"><div class="linkage-label">Employee Friction</div><p>13 systems per transaction &mdash; CSOs spend 40% of interaction time navigating tools instead of serving customers</p></div>
+    <div class="linkage-arrow">&#8594;</div>
+    <div class="linkage-card cx"><div class="linkage-label">Customer Impact</div><p>Simple inquiries take 6+ minutes; customers wait while employees search across screens</p></div>
+    <div class="linkage-arrow">&#8594;</div>
+    <div class="linkage-card cost"><div class="linkage-label">Business Cost</div><p>Excessive servicing labor and poor satisfaction scores</p><div class="cost-figure">$2.1M/yr</div></div>
+  </div>
+  <div class="linkage-chain">
+    <div class="linkage-card ex"><div class="linkage-label">Employee Friction</div><p>No omnichannel context &mdash; agents cannot see mobile app activity or branch visit history</p></div>
+    <div class="linkage-arrow">&#8594;</div>
+    <div class="linkage-card cx"><div class="linkage-label">Customer Impact</div><p>Customers must re-explain their situation every interaction; digital applications cannot be continued in branch</p></div>
+    <div class="linkage-arrow">&#8594;</div>
+    <div class="linkage-card cost"><div class="linkage-label">Business Cost</div><p>15-20% repeat contacts; application drop-off at channel transitions</p><div class="cost-figure">$1.2M/yr</div></div>
+  </div>
+  <div class="linkage-chain">
+    <div class="linkage-card ex"><div class="linkage-label">Employee Friction</div><p>Shariah compliance checks require separate system &mdash; adds 2-5 min to every financing interaction</p></div>
+    <div class="linkage-arrow">&#8594;</div>
+    <div class="linkage-card cx"><div class="linkage-label">Customer Impact</div><p>Financing applications take days instead of hours; customers lose confidence in DIB's digital promise</p></div>
+    <div class="linkage-arrow">&#8594;</div>
+    <div class="linkage-card cost"><div class="linkage-label">Business Cost</div><p>Processing delays and competitive loss to digital challengers</p><div class="cost-figure">$0.9M/yr</div></div>
+  </div>
+  <div class="linkage-chain">
+    <div class="linkage-card ex"><div class="linkage-label">Employee Friction</div><p>New hire training exceeds 5 weeks &mdash; each system requires separate training module</p></div>
+    <div class="linkage-arrow">&#8594;</div>
+    <div class="linkage-card cx"><div class="linkage-label">Customer Impact</div><p>Inconsistent service quality from newer employees; longer resolution times during ramp-up</p></div>
+    <div class="linkage-arrow">&#8594;</div>
+    <div class="linkage-card cost"><div class="linkage-label">Business Cost</div><p>At 22% annual turnover in frontline roles: training and ramp-up costs</p><div class="cost-figure">$1.2M/yr</div></div>
+  </div>
+  <div class="page-footer">Backbase | 9</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 12: SECTION DIVIDER
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">04</div>
+  <div class="cyan-accent"></div>
+  <h2>The Advisory Hub Vision</h2>
+  <div class="section-subtitle">From Transaction Center to Advisory Hub</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 13: TRANSFORMATION VISUAL
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Transaction Center to Advisory Hub</h2>
+    <div class="subtitle">Transforming how DIB employees serve customers</div>
+  </div>
+  <div class="transform-grid">
+    <div class="transform-side current">
+      <h3>Today: Transaction Center</h3>
+      <ul>
+        <li>13+ systems per transaction</li>
+        <li>No unified customer view</li>
+        <li>Cannot see digital banking activity</li>
+        <li>Manual forms and paper signatures</li>
+        <li>Separate Shariah compliance step</li>
+        <li>Channel-siloed information</li>
+        <li>Reactive, task-focused service</li>
+      </ul>
+      <div class="transform-metric">
+        <div class="metric-label">Time on admin tasks</div>
+        <div class="metric-value">60%</div>
+      </div>
+    </div>
+    <div class="transform-arrow-center">
+      <div class="arrow-label">Digital Assist</div>
+      <div class="arrow-icon">&#8594;</div>
+    </div>
+    <div class="transform-side future">
+      <h3>Tomorrow: Advisory Hub</h3>
+      <ul>
+        <li>Single unified platform</li>
+        <li>360-degree customer view</li>
+        <li>Full omnichannel context</li>
+        <li>Digital forms with e-signature</li>
+        <li>Embedded Shariah compliance checks</li>
+        <li>Seamless cross-channel handoffs</li>
+        <li>Proactive, advisory-focused service</li>
+      </ul>
+      <div class="transform-metric">
+        <div class="metric-label">Time on customers</div>
+        <div class="metric-value">75%</div>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 10</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 14: DIGITAL ASSIST CAPABILITY MAP
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Backbase Digital Assist Capabilities</h2>
+    <div class="subtitle">Mapped to validated pain points</div>
+  </div>
+  <table>
+    <thead><tr><th>Capability</th><th>What It Does</th><th>Employee Benefit</th><th>Customer Benefit</th><th>Frictions Solved</th></tr></thead>
+    <tbody>
+      <tr><td><strong>360 Customer View</strong></td><td>Unified view of all interactions, products, history</td><td>No more switching between T24, CRM, and Card systems</td><td>Faster, more informed service</td><td>System switching, slow inquiries</td></tr>
+      <tr><td><strong>Omnichannel Context</strong></td><td>See customer's mobile/OLB journey before interaction</td><td>Continue where customer left off digitally</td><td>No repeating information</td><td>No digital context, repeat contacts</td></tr>
+      <tr><td><strong>Guided Workflows</strong></td><td>Step-by-step processes with embedded compliance</td><td>Shariah checks embedded; 50% training reduction</td><td>Faster processing, fewer errors</td><td>Complex processes, long training</td></tr>
+      <tr><td><strong>Case Management</strong></td><td>End-to-end request tracking with SLAs</td><td>No dropped requests; clear ownership</td><td>Transparency on request status</td><td>Manual handoffs, lost requests</td></tr>
+      <tr><td><strong>Task Management</strong></td><td>Prioritized work queues with alerts</td><td>Focus on highest-impact activities</td><td>Faster resolution for urgent items</td><td>Lack of prioritization</td></tr>
+      <tr><td><strong>Real-time Collaboration</strong></td><td>Warm handoff with notes between employees</td><td>Seamless transitions between teams</td><td>No restarting conversations</td><td>Cold transfers, lost context</td></tr>
+      <tr><td><strong>Knowledge Base</strong></td><td>Contextual access to Shariah-compliant product info</td><td>Instant answers to complex product queries</td><td>Accurate, confident advice</td><td>Product knowledge gaps</td></tr>
+      <tr><td><strong>Customer Communication</strong></td><td>Secure messaging, appointment scheduling</td><td>Bilingual communication from one screen</td><td>Choose preferred language and channel</td><td>Fragmented communication</td></tr>
+    </tbody>
+  </table>
+  <div class="page-footer">Backbase | 11</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 15: CHANNEL TRANSFORMATION
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Channel Transformation</h2>
+    <div class="subtitle">Branch | Contact Center | Back Office</div>
+  </div>
+  <div class="channel-grid">
+    <div class="channel-card">
+      <h3>Branch (~40 locations)</h3>
+      <div class="channel-metric"><span class="cm-label">Visits/month</span><span class="cm-current">280K</span><span class="cm-target">170K</span></div>
+      <div class="channel-metric"><span class="cm-label">Avg task time</span><span class="cm-current">18 min</span><span class="cm-target">7 min</span></div>
+      <div class="channel-metric"><span class="cm-label">Systems/task</span><span class="cm-current">5-6</span><span class="cm-target">1</span></div>
+      <div class="channel-metric"><span class="cm-label">Advisory time</span><span class="cm-current">30%</span><span class="cm-target">70%</span></div>
+    </div>
+    <div class="channel-card">
+      <h3>Contact Center (~180 agents)</h3>
+      <div class="channel-metric"><span class="cm-label">Contacts/month</span><span class="cm-current">140K</span><span class="cm-target">85K</span></div>
+      <div class="channel-metric"><span class="cm-label">AHT</span><span class="cm-current">8.2 min</span><span class="cm-target">5.5 min</span></div>
+      <div class="channel-metric"><span class="cm-label">FCR</span><span class="cm-current">62%</span><span class="cm-target">82%</span></div>
+      <div class="channel-metric"><span class="cm-label">Digital deflection</span><span class="cm-current">25%</span><span class="cm-target">50%</span></div>
+    </div>
+    <div class="channel-card">
+      <h3>Back Office (~300 staff)</h3>
+      <div class="channel-metric"><span class="cm-label">Tasks/month</span><span class="cm-current">85K</span><span class="cm-target">85K</span></div>
+      <div class="channel-metric"><span class="cm-label">STP rate</span><span class="cm-current">42%</span><span class="cm-target">72%</span></div>
+      <div class="channel-metric"><span class="cm-label">Error rate</span><span class="cm-current">6.5%</span><span class="cm-target">2.5%</span></div>
+      <div class="channel-metric"><span class="cm-label">Avg processing</span><span class="cm-current">22 min</span><span class="cm-target">12 min</span></div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 12</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 16: SECTION DIVIDER
+     =============================================================== -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">05</div>
+  <div class="cyan-accent"></div>
+  <h2>Priorities &amp; Use Cases</h2>
+  <div class="section-subtitle">What to fix first</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 17: PRIORITIZATION MATRIX
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Enablement Prioritization</h2>
+    <div class="subtitle">Reach &times; Impact</div>
+  </div>
+  <div class="matrix-grid">
+    <div class="matrix-cell header"></div>
+    <div class="matrix-cell header">Low Impact</div>
+    <div class="matrix-cell header">Medium Impact</div>
+    <div class="matrix-cell header">High Impact</div>
+    <div class="matrix-cell row-label">Many Employees</div>
+    <div class="matrix-cell q-defer"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;">Automate</div><div class="matrix-item low">Queue Management</div></div>
+    <div class="matrix-cell q-streamline"><div style="font-size:10px;font-weight:700;color:var(--primary-blue);text-transform:uppercase;">Streamline</div><div class="matrix-item medium">Knowledge Base</div><div class="matrix-item medium">Customer Comms</div></div>
+    <div class="matrix-cell q-transform"><div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;">Transform</div><div class="matrix-item high">360 Customer View</div><div class="matrix-item high">Guided Workflows</div></div>
+    <div class="matrix-cell row-label">Some Employees</div>
+    <div class="matrix-cell q-defer"></div>
+    <div class="matrix-cell q-streamline"><div style="font-size:10px;font-weight:700;color:var(--primary-blue);text-transform:uppercase;">Optimize</div><div class="matrix-item medium">Task Management</div></div>
+    <div class="matrix-cell q-streamline"><div style="font-size:10px;font-weight:700;color:var(--primary-blue);text-transform:uppercase;">Prioritize</div><div class="matrix-item high">Omnichannel Context</div><div class="matrix-item high">Case Management</div></div>
+    <div class="matrix-cell row-label">Few Employees</div>
+    <div class="matrix-cell q-defer"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;">Defer</div></div>
+    <div class="matrix-cell q-defer"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;">Consider</div></div>
+    <div class="matrix-cell q-optimize"><div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;">Plan For</div><div class="matrix-item medium">Collaboration</div></div>
+  </div>
+  <div class="page-footer">Backbase | 13</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 18: USE CASE CANDIDATES — PERSONA-BASED
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Employee Experience Use Cases</h2>
+    <div class="subtitle">Mapped to personas &mdash; from pain to solution</div>
+  </div>
+
+  <!-- === FRONTLINE GROUP: BRANCH + CONTACT CENTER === -->
+  <div class="persona-group">
+    <div class="persona-group-header">
+      <div class="pg-icon"><svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="10" r="5" fill="#fff" opacity="0.9"/><ellipse cx="14" cy="24" rx="9" ry="7" fill="#fff" opacity="0.9"/></svg></div>
+      <div>
+        <h3>Frontline: Branch &amp; Contact Center</h3>
+        <div class="pg-roles">Customer Service Officer (~450) &bull; Contact Center Agent (~180) &bull; Relationship Manager (~200)</div>
+      </div>
+    </div>
+
+    <div class="pain-challenge-grid">
+      <div class="pc-card pain">
+        <h4>Pain Points</h4>
+        <ul>
+          <li>12-13 systems per customer interaction &mdash; constant screen switching steals 40% of interaction time</li>
+          <li>No visibility into customer's digital journey; customers must repeat themselves at every touchpoint</li>
+          <li>Average handle time of 8+ minutes for simple inquiries that should take 2 minutes</li>
+          <li>Shariah compliance as a separate manual step adds 2-5 minutes to every financing interaction</li>
+        </ul>
+      </div>
+      <div class="pc-card challenge">
+        <h4>Challenges</h4>
+        <ul>
+          <li>Channel silos prevent seamless handoffs between mobile, branch, and contact center</li>
+          <li>5+ week training for new hires due to 13-system landscape; 22% annual turnover amplifies cost</li>
+          <li>Cannot proactively identify cross-sell or advisory opportunities &mdash; service remains reactive</li>
+          <li>Bilingual (Arabic/English) operations require switching language settings per system</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="hmw-grid">
+      <div class="hmw-card">How might we give frontline staff a single, unified view of every customer interaction, product, and Shariah eligibility?</div>
+      <div class="hmw-card">How might we enable seamless conversation continuity when customers move between mobile, branch, and contact center?</div>
+      <div class="hmw-card">How might we embed Shariah compliance into guided workflows so it disappears as a separate friction step?</div>
+      <div class="hmw-card">How might we reduce new-hire time-to-competency from 5+ weeks to under 2 weeks?</div>
+    </div>
+
+    <div class="usecase-grid">
+      <div class="usecase-card">
+        <div class="uc-label">Use Case 1 &bull; Frontline</div>
+        <h3>Unified Advisor Desktop</h3>
+        <p>Single screen combining customer profile, product holdings, interaction history, and Shariah-compliant product eligibility. Eliminates switching between T24, CRM, and compliance systems for every interaction.</p>
+        <div class="uc-value">Est. savings: $1.8M/yr</div>
+        <div class="uc-cx">CX impact: Inquiry time drops from 6 min to 1.5 min; customer feels known and valued</div>
+      </div>
+      <div class="usecase-card">
+        <div class="uc-label">Use Case 2 &bull; Frontline</div>
+        <h3>Omnichannel Customer Context</h3>
+        <p>Agents and CSOs see the customer's complete digital journey: app sessions, online applications in progress, branch visits, and previous call notes. Conversations continue across channels without restarting.</p>
+        <div class="uc-value">Est. savings: $620K/yr</div>
+        <div class="uc-cx">CX impact: Seamless channel transitions; 15-20% reduction in repeat contacts</div>
+      </div>
+      <div class="usecase-card" style="grid-column: 1 / -1;">
+        <div class="uc-label">Use Case 3 &bull; Frontline</div>
+        <h3>Shariah-Smart Guided Workflows</h3>
+        <p>Step-by-step financing workflows with embedded Shariah compliance checks, auto-populated customer data from EID, and integrated e-signature. Reduces Murabaha processing from 40 min to 15 min. New employees follow the same guided process, cutting training time by 50%.</p>
+        <div class="uc-value">Est. savings: $740K/yr</div>
+        <div class="uc-cx">CX impact: Financing decisions same-day instead of multi-day; new hires deliver consistent quality from week 1</div>
+      </div>
+    </div>
+
+    <div class="group-summary">
+      <div class="gs-label">Total Frontline Opportunity</div>
+      <div class="gs-value">$3.16M/yr</div>
+    </div>
+  </div>
+
+  <!-- === BACK OFFICE GROUP: OPERATIONS & COMPLIANCE === -->
+  <div class="persona-group">
+    <div class="persona-group-header">
+      <div class="pg-icon"><svg viewBox="0 0 28 28" fill="none"><rect x="4" y="6" width="20" height="16" rx="2" fill="#fff" opacity="0.9"/><line x1="4" y1="12" x2="24" y2="12" stroke="#3366FF" stroke-width="1.5"/></svg></div>
+      <div>
+        <h3>Back Office: Operations &amp; Compliance</h3>
+        <div class="pg-roles">Operations Specialist &bull; Shariah Compliance Officer &bull; Processing Staff (~300 employees)</div>
+      </div>
+    </div>
+
+    <div class="pain-challenge-grid">
+      <div class="pc-card pain">
+        <h4>Pain Points</h4>
+        <ul>
+          <li>Manual Shariah audit trails require documentation across 3-4 separate systems for every review</li>
+          <li>Exception handling relies on email chains with no structured workflow or SLA tracking</li>
+          <li>Transaction disputes take 15+ minutes to file and have no end-to-end status visibility</li>
+          <li>CBUAE regulatory reporting requires manual data aggregation from multiple sources</li>
+        </ul>
+      </div>
+      <div class="pc-card challenge">
+        <h4>Challenges</h4>
+        <ul>
+          <li>No structured case management &mdash; requests get lost between departments, SLAs breach silently</li>
+          <li>STP rate of only 42% means 58% of transactions require manual intervention</li>
+          <li>6.5% processing error rate due to manual data re-entry across disconnected systems</li>
+          <li>KYC refresh and compliance documentation scattered across DMS, email, and audit logs</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="hmw-grid">
+      <div class="hmw-card">How might we create end-to-end case visibility from customer request through to resolution with automatic SLA tracking?</div>
+      <div class="hmw-card">How might we automate Shariah audit trails so compliance documentation doesn't slow down processing?</div>
+      <div class="hmw-card">How might we increase straight-through processing from 42% to 70%+ by eliminating manual re-keying?</div>
+      <div class="hmw-card">How might we give operations staff real-time dashboards to prevent SLA breaches before they happen?</div>
+    </div>
+
+    <div class="usecase-grid">
+      <div class="usecase-card">
+        <div class="uc-label">Use Case 4 &bull; Back Office</div>
+        <h3>Intelligent Case &amp; Exception Management</h3>
+        <p>End-to-end case tracking for disputes, KYC reviews, and transaction exceptions with SLA monitoring, automated routing, and built-in escalation paths. Specialists see full request history without email chains.</p>
+        <div class="uc-value">Est. savings: $480K/yr</div>
+        <div class="uc-cx">CX impact: Customers receive proactive status updates; dispute resolution time halved</div>
+      </div>
+      <div class="usecase-card">
+        <div class="uc-label">Use Case 5 &bull; Back Office</div>
+        <h3>Automated Compliance &amp; STP Engine</h3>
+        <p>Automated Shariah audit trail generation, KYC refresh workflows, and straight-through processing for standard transactions. Reduces manual re-keying, cuts error rate from 6.5% to under 2.5%, and frees compliance officers for exception-only reviews.</p>
+        <div class="uc-value">Est. savings: $360K/yr</div>
+        <div class="uc-cx">CX impact: Faster processing of financing applications and account requests; fewer error-driven delays</div>
+      </div>
+    </div>
+
+    <div class="group-summary">
+      <div class="gs-label">Total Back Office Opportunity</div>
+      <div class="gs-value">$840K/yr</div>
+    </div>
+  </div>
+
+  <!-- === COMBINED TOTAL === -->
+  <div class="headline-stat" style="margin-top: 32px;">
+    <div class="big-number" style="color: var(--green);">$4.0M</div>
+    <div class="big-label">Total Annual Opportunity Across 5 Use Cases</div>
+    <div class="sub-stat">Frontline: $3.16M &bull; Back Office: $840K &bull; Serving 1.7M customers with 1,130 employees</div>
+  </div>
+
+  <div class="page-footer">Backbase | 14</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 19: HYPOTHESES FOR VALIDATION
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Hypotheses for Validation</h2>
+  </div>
+  <div class="hypothesis-grid">
+    <div class="hypothesis-card">
+      <div class="h-label">H1 | System Switching Tax</div>
+      <h4>System switching accounts for 25-30% of DIB employee productive time</h4>
+      <p>With 13 systems in the landscape and an average of 4.1 switches per task, DIB employees spend an estimated $5M+ annually on context switching. Validation: Track actual switching time for 10 common tasks across 3 branches.</p>
+      <div class="h-source">Source: HBR/Qatalog research; UAE banking benchmarks</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H2 | First Contact Resolution</div>
+      <h4>Contact center FCR is below 65% due to lack of omnichannel context</h4>
+      <p>Without visibility into digital banking activity, agents cannot resolve inquiries that span channels. Each unresolved contact generates 1.5-2.0 additional contacts at AED 25-35 each.</p>
+      <div class="h-source">Source: Industry benchmark; top-quartile Gulf banks achieve 80%+ FCR</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H3 | Training Time</div>
+      <h4>New hire training exceeds 5 weeks due to 13-system landscape</h4>
+      <p>Each system requires separate training. At 22% annual frontline turnover, DIB trains approximately 250 new employees per year. Reducing training from 5 weeks to 2 weeks saves significant onboarding cost.</p>
+      <div class="h-source">Source: UAE banking industry; unified platform achieves 1-2 weeks</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H4 | Digital Deflection</div>
+      <h4>40-55% of branch visits and contact center calls could be self-served digitally</h4>
+      <p>Balance inquiries, card management, profile changes, and basic transaction support are all candidates for digital deflection. Leading UAE digital banks achieve 60%+ self-service resolution.</p>
+      <div class="h-source">Source: Emirates NBD and Mashreq benchmarks; GCC digital banking reports</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H5 | Shariah Compliance Overhead</div>
+      <h4>Separate Shariah compliance step adds 15-20% processing time to every financing product</h4>
+      <p>Unlike conventional banks, DIB requires an additional compliance verification layer. Embedding this into guided workflows could eliminate 2-5 min per financing interaction without compromising compliance.</p>
+      <div class="h-source">Source: Islamic banking operational benchmarks; DIB-specific hypothesis</div>
+    </div>
+    <div class="hypothesis-card">
+      <div class="h-label">H6 | Employee Satisfaction</div>
+      <h4>Employee satisfaction with tools is below 50%, directly impacting retention</h4>
+      <p>Tool frustration is the top driver of frontline disengagement in banking. Engaged employees deliver 21% higher productivity (Gallup). For DIB's premium service positioning, employee tool quality directly affects brand promise delivery.</p>
+      <div class="h-source">Source: Gallup employee engagement research; Gulf banking HR benchmarks</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 15</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 20: OPEN QUESTIONS & NEXT STEPS
+     =============================================================== -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Open Questions &amp; Next Steps</h2>
+  </div>
+  <div class="cadence">
+    <div class="cadence-step completed"><h4>Done</h4><p>Strategy</p></div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step completed"><h4>Done</h4><p>Customer Experience</p></div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step active"><h4>Today</h4><p>Employee Experience</p></div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step"><h4>Next</h4><p>IT Architecture</p></div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step"><h4>Final</h4><p>Ignite Lab</p></div>
+  </div>
+  <div class="challenges-grid" style="grid-template-columns: repeat(2, 1fr);">
+    <div class="challenge-card">
+      <div class="challenge-label">Open Questions</div>
+      <h3>For Validation</h3>
+      <ul style="list-style: none; padding: 0;">
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">1. What is the actual AHT for the contact center today?</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">2. How many Shariah compliance reviews are processed monthly?</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">3. What is the current new-hire training duration by role?</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">4. Are there plans to consolidate any of the 13 systems independently?</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">5. What percentage of branch visits are purely transactional vs. advisory?</li>
+      </ul>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">Action Items</div>
+      <h3>Next Steps</h3>
+      <ul style="list-style: none; padding: 0;">
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">1. DIB to share contact center metrics (AHT, FCR, call volumes)</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">2. DIB to share branch transaction volumes by type</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">3. Backbase to prepare IT Architecture Workshop materials</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">4. Schedule IT Architecture Workshop within 2 weeks</li>
+        <li style="font-size: 13px; color: var(--text-light); padding: 4px 0;">5. Validate switching tax calculations with operations team</li>
+      </ul>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 16</div>
+</div>
+
+<!-- ===============================================================
+     SECTION 21: CLOSING
+     =============================================================== -->
+<div class="closing">
+  <h2>THANK YOU</h2>
+  <div class="brand">Backbase</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[CLIENT] Member/Customer Experience Workshop | Backbase</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-dark: #091C35;
+    --primary-blue: #3366FF;
+    --cyan: #69FEFF;
+    --white: #FFFFFF;
+    --light-grey: #F3F6F9;
+    --light-blue: #E5EBFF;
+    --muted: #3A495D;
+    --green: #26BC71;
+    --amber: #FFAC09;
+    --red: #FF7262;
+    --text: #091C35;
+    --text-light: #5A6A7E;
+    --border: #E0E6ED;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--white);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     SECTION: COVER (Dark background)
+     ═══════════════════════════════════════════════════════ */
+  .cover {
+    background: var(--primary-dark);
+    color: var(--white);
+    min-height: 100vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    page-break-after: always;
+  }
+  .cover .brand {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-bottom: 60px;
+    letter-spacing: 1px;
+  }
+  .cover h1 {
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .cover .subtitle {
+    font-size: 24px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 60px;
+  }
+  .cover .meta {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--cyan);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     SECTION DIVIDER (Blue background)
+     ═══════════════════════════════════════════════════════ */
+  .section-divider {
+    background: var(--primary-blue);
+    color: var(--white);
+    padding: 80px 80px;
+    min-height: 40vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    page-break-before: always;
+    page-break-after: always;
+  }
+  .section-divider .brand {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+  }
+  .section-divider .ghost-number {
+    position: absolute;
+    right: 80px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 200px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.08);
+    line-height: 1;
+  }
+  .section-divider h2 {
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .section-divider .section-subtitle {
+    font-size: 20px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.7);
+  }
+  .section-divider .cyan-accent {
+    width: 60px;
+    height: 4px;
+    background: var(--cyan);
+    margin-bottom: 24px;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     CONTENT SECTION (White background)
+     ═══════════════════════════════════════════════════════ */
+  .content-section {
+    background: var(--white);
+    padding: 60px 80px;
+    min-height: 80vh;
+    position: relative;
+    page-break-after: always;
+  }
+  .content-section .page-footer {
+    position: absolute;
+    bottom: 20px;
+    right: 80px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-light);
+    letter-spacing: 1px;
+  }
+
+  /* Title with blue accent square */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .section-title .accent {
+    width: 16px;
+    height: 16px;
+    background: var(--primary-blue);
+    flex-shrink: 0;
+  }
+  .section-title h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-title .subtitle {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-light);
+    margin-left: auto;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Objectives & Agenda
+     ═══════════════════════════════════════════════════════ */
+  .objective-statement {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--primary-blue);
+    border-radius: 0 12px 12px 0;
+    padding: 24px 28px;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 40px;
+  }
+
+  .methodology-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 32px;
+  }
+  .method-block {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+  .method-block .block-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .method-block h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .method-block p {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .method-block .time {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-top: 8px;
+  }
+  .method-arrow {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    color: var(--primary-blue);
+    flex-shrink: 0;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Challenge Cards (Strategy Recap)
+     ═══════════════════════════════════════════════════════ */
+  .challenges-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 32px;
+  }
+  .challenge-card {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+    padding: 28px 24px;
+  }
+  .challenge-card .challenge-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .challenge-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .challenge-card p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Benchmarking Tables
+     ═══════════════════════════════════════════════════════ */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 32px;
+    font-size: 13px;
+  }
+  table thead th {
+    background: var(--primary-blue);
+    color: var(--white);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  table thead th:first-child { border-radius: 8px 0 0 0; }
+  table thead th:last-child { border-radius: 0 8px 0 0; }
+  table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table tbody tr:nth-child(even) { background: var(--light-grey); }
+  .leader { color: var(--green); font-weight: 600; }
+  .gap { color: var(--red); font-weight: 600; }
+  .benchmark { color: var(--primary-blue); font-weight: 600; }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Co-Creation Card (empty for workshop)
+     ═══════════════════════════════════════════════════════ */
+  .cocreation-card {
+    background: var(--white);
+    border: 2px dashed var(--amber);
+    border-radius: 12px;
+    padding: 28px 24px;
+    margin-top: 32px;
+  }
+  .cocreation-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--amber);
+    margin-bottom: 16px;
+  }
+  .cocreation-card .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .cocreation-card .kpi-slot {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 8px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+  .cocreation-card .kpi-slot h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .cocreation-card .kpi-slot p {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Retail Experience Map (Swim Lane)
+     ═══════════════════════════════════════════════════════ */
+  .experience-map {
+    margin-top: 32px;
+    overflow-x: auto;
+  }
+  .swim-lane {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 2px;
+    margin-bottom: 2px;
+  }
+  .swim-lane-header {
+    background: var(--primary-blue);
+    color: var(--white);
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+    border-radius: 8px 8px 0 0;
+  }
+  .swim-lane-cell {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    padding: 12px 10px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .swim-lane-cell.capability { border-top: 3px solid var(--primary-blue); }
+  .swim-lane-cell.experience { border-top: 3px solid var(--amber); }
+  .swim-lane-cell.gaps { border-top: 3px solid var(--red); }
+  .swim-lane-cell ul {
+    list-style: none;
+    padding: 0;
+  }
+  .swim-lane-cell ul li {
+    padding: 2px 0;
+    padding-left: 12px;
+    position: relative;
+  }
+  .swim-lane-cell ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+  .swim-lane-cell.capability ul li::before { background: var(--primary-blue); }
+  .swim-lane-cell.experience ul li::before { background: var(--amber); }
+  .swim-lane-cell.gaps ul li::before { background: var(--red); }
+
+  .swim-lane-label {
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px 4px;
+    text-align: center;
+    min-width: 28px;
+  }
+  .swim-lane-label.cap-label { background: rgba(51,102,255,0.1); color: var(--primary-blue); }
+  .swim-lane-label.exp-label { background: rgba(255,172,9,0.1); color: var(--amber); }
+  .swim-lane-label.gap-label { background: rgba(255,114,98,0.1); color: var(--red); }
+
+  /* Friction indicators */
+  .friction-indicators {
+    display: flex;
+    gap: 8px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .friction-tag {
+    background: rgba(255,114,98,0.1);
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,114,98,0.2);
+  }
+  .friction-tag.missing {
+    background: rgba(255,172,9,0.1);
+    color: var(--amber);
+    border-color: rgba(255,172,9,0.2);
+  }
+
+  /* Cross-cutting challenges */
+  .crosscut-challenges {
+    margin-top: 32px;
+    padding: 20px 24px;
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+  }
+  .crosscut-challenges h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .crosscut-challenges ul {
+    list-style: none;
+    padding: 0;
+  }
+  .crosscut-challenges ul li {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 4px 0;
+    padding-left: 16px;
+    position: relative;
+  }
+  .crosscut-challenges ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 6px;
+    height: 6px;
+    background: var(--red);
+    border-radius: 50%;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Friction Point Swim Lane (per lifecycle stage)
+     ═══════════════════════════════════════════════════════ */
+  .friction-grid {
+    display: grid;
+    gap: 2px;
+    margin-top: 32px;
+  }
+  .friction-grid .fg-header {
+    display: grid;
+    gap: 2px;
+  }
+  .friction-grid .fg-row {
+    display: grid;
+    gap: 2px;
+  }
+  .fg-cell {
+    padding: 14px 12px;
+    font-size: 11px;
+    line-height: 1.5;
+    border-radius: 4px;
+  }
+  .fg-cell.header {
+    background: var(--primary-blue);
+    color: var(--white);
+    font-weight: 700;
+    text-align: center;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .fg-cell.row-label {
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+  }
+  .fg-cell.row-label.capability { background: rgba(51,102,255,0.08); color: var(--primary-blue); }
+  .fg-cell.row-label.experience { background: rgba(255,172,9,0.08); color: var(--amber); }
+  .fg-cell.row-label.gaps { background: rgba(255,114,98,0.08); color: var(--red); }
+  .fg-cell.content {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    color: var(--muted);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Persona Summary Grid
+     ═══════════════════════════════════════════════════════ */
+  .persona-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 32px;
+  }
+  .persona-card {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+    padding: 24px 20px;
+  }
+  .persona-card .persona-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .persona-card .persona-segment {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+  }
+  .persona-card .persona-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+  .persona-card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .persona-card ul li {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 2px 0;
+    padding-left: 14px;
+    position: relative;
+    line-height: 1.4;
+  }
+  .persona-card ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+  .persona-card .pain-points li::before { background: var(--red); }
+  .persona-card .needs li::before { background: var(--green); }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Proposition Architecture Canvas (Core Artifact)
+     ═══════════════════════════════════════════════════════ */
+  .prop-arch {
+    margin-top: 32px;
+    overflow-x: auto;
+  }
+  .prop-arch-grid {
+    display: grid;
+    gap: 2px;
+    min-width: 900px;
+  }
+  .pa-cell {
+    padding: 14px 12px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .pa-cell.stage-header {
+    background: var(--primary-blue);
+    color: var(--white);
+    font-weight: 700;
+    text-align: center;
+    font-size: 16px;
+    padding: 16px 12px;
+    border-radius: 8px 8px 0 0;
+  }
+  .pa-cell.row-label {
+    background: var(--primary-dark);
+    color: var(--white);
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+  }
+  .pa-cell.content {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    color: var(--muted);
+  }
+  .pa-cell.promise {
+    background: var(--white);
+    border: 1px solid var(--light-blue);
+    color: var(--text);
+    font-style: italic;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .pa-cell.hmw {
+    background: rgba(51,102,255,0.04);
+    border: 1px solid var(--light-blue);
+    color: var(--primary-blue);
+    font-weight: 500;
+  }
+  .pa-cell.usecase {
+    background: var(--white);
+    border: 1px solid var(--light-blue);
+    color: var(--text);
+  }
+  .pa-cell.value {
+    background: rgba(38,188,113,0.06);
+    border: 1px solid rgba(38,188,113,0.2);
+    color: var(--green);
+    font-weight: 600;
+  }
+  .pa-cell .co-create {
+    color: var(--amber);
+    font-weight: 600;
+    font-style: italic;
+  }
+  .pa-cell ul {
+    list-style: none;
+    padding: 0;
+  }
+  .pa-cell ul li {
+    padding: 2px 0;
+    padding-left: 12px;
+    position: relative;
+  }
+  .pa-cell ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    border-radius: 50%;
+    opacity: 0.5;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Use Case Detail Cards
+     ═══════════════════════════════════════════════════════ */
+  .usecase-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 32px;
+  }
+  .usecase-card {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+    padding: 24px 20px;
+  }
+  .usecase-card .uc-stage {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .usecase-card h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .usecase-card .uc-module {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--white);
+    background: var(--primary-blue);
+    padding: 3px 10px;
+    border-radius: 12px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+  .usecase-card p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .usecase-card .uc-impact {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--green);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Open Questions
+     ═══════════════════════════════════════════════════════ */
+  .questions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 32px;
+  }
+  .question-card {
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .question-card .q-num {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--primary-blue);
+    margin-bottom: 8px;
+  }
+  .question-card p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Validation Box
+     ═══════════════════════════════════════════════════════ */
+  .validation-box {
+    margin-top: 24px;
+    padding: 20px 24px;
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-left: 4px solid var(--cyan);
+    border-radius: 0 12px 12px 0;
+  }
+  .validation-box h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  .validation-box ul {
+    list-style: none;
+    padding: 0;
+  }
+  .validation-box ul li {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 4px 0;
+    padding-left: 20px;
+    position: relative;
+  }
+  .validation-box ul li::before {
+    content: '?';
+    position: absolute;
+    left: 0;
+    font-weight: 900;
+    color: var(--cyan);
+    font-size: 14px;
+  }
+  .facilitation-note {
+    margin-top: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     COMPONENT: Next Steps
+     ═══════════════════════════════════════════════════════ */
+  .cadence {
+    display: flex;
+    gap: 8px;
+    margin-top: 32px;
+    align-items: stretch;
+  }
+  .cadence-step {
+    flex: 1;
+    background: var(--light-grey);
+    border: 1px solid var(--light-blue);
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+  .cadence-step.completed {
+    background: var(--primary-blue);
+    color: var(--white);
+    border-color: var(--primary-blue);
+  }
+  .cadence-step.active {
+    background: var(--primary-blue);
+    color: var(--white);
+    border-color: var(--primary-blue);
+  }
+  .cadence-step.completed h4, .cadence-step.active h4 { color: var(--cyan); }
+  .cadence-step.completed p, .cadence-step.active p { color: rgba(255,255,255,0.8); }
+  .cadence-step h4 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary-blue);
+    margin-bottom: 8px;
+  }
+  .cadence-step p {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .cadence-arrow {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    color: var(--primary-blue);
+    flex-shrink: 0;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     SECTION: CLOSING (Dark background)
+     ═══════════════════════════════════════════════════════ */
+  .closing {
+    background: var(--primary-dark);
+    color: var(--white);
+    min-height: 60vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    page-break-before: always;
+  }
+  .closing h2 {
+    font-size: 52px;
+    font-weight: 900;
+    margin-bottom: 24px;
+  }
+  .closing .brand {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    letter-spacing: 1px;
+  }
+
+  /* Print styles */
+  @media print {
+    body { font-size: 12px; }
+    .cover, .section-divider, .content-section, .closing { min-height: auto; }
+    .section-divider .ghost-number { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 1: COVER PAGE (Dark background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="brand">Backbase</div>
+  <!-- AGENT: Replace [CLIENT] with actual client name -->
+  <h1>Member Experience Workshop</h1>
+  <!-- AGENT: Use "Customer Experience Workshop" for banks -->
+  <div class="subtitle">[CLIENT] — Backbase Ignite</div>
+  <!-- AGENT: Replace with actual date -->
+  <div class="meta">February 2026</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 2: WORKSHOP OBJECTIVES — Section Divider (Blue background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">01</div>
+  <div class="cyan-accent"></div>
+  <h2>Workshop Objectives</h2>
+  <!-- AGENT: Customize subtitle to client -->
+  <div class="section-subtitle">Understanding [CLIENT]'s Member Experience</div>
+</div>
+
+<!-- SECTION 2: OBJECTIVES — Content (White background) -->
+<div class="content-section">
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Objectives & Agenda</h2>
+    <span class="subtitle">~2 hours</span>
+  </div>
+
+  <!-- AGENT: Customize the objective statement with client name and journey stages -->
+  <div class="objective-statement">
+    Co-identify and prioritize the <strong>member experiences</strong> that best move [CLIENT] members
+    from <strong>[Stage 1]</strong> to <strong>[Stage N]</strong>, and shape them into
+    <strong>Ignite-ready use cases</strong> with clear business value.
+  </div>
+
+  <!-- Workshop methodology blocks -->
+  <div class="methodology-grid">
+    <div class="method-block">
+      <div class="block-num">1. Business & Digital Context</div>
+      <h4>Validation & Refinement</h4>
+      <p>Business goals, digital benchmarks, top challenges</p>
+      <div class="time">15 min</div>
+    </div>
+    <div class="method-block">
+      <div class="block-num">2. Tablestake Experiences</div>
+      <h4>Experience Gaps Today</h4>
+      <p>Retail experience map, friction points across lifecycle</p>
+      <div class="time">45 min</div>
+    </div>
+    <div class="method-block">
+      <div class="block-num">3. Differentiating Use Cases</div>
+      <h4>Proposition Architecture</h4>
+      <p>Persona-driven journey, HMW opportunities, use cases</p>
+      <div class="time">45 min</div>
+    </div>
+    <div class="method-block">
+      <div class="block-num">4. Prioritization</div>
+      <h4>Use Case Validation</h4>
+      <p>Priority use cases, business value, next steps</p>
+      <div class="time">15 min</div>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 2</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 3: STRATEGY RECAP (White background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Use "Member" or "Customer" -->
+    <h2>What We Heard | Top 3 Member Experience Challenges</h2>
+  </div>
+
+  <!-- AGENT: Pre-populate from Agent 1 strategy workshop findings -->
+  <div class="challenges-grid">
+    <div class="challenge-card">
+      <div class="challenge-label">Challenge 1</div>
+      <!-- AGENT: Replace with actual challenge from strategy workshop -->
+      <h3>Challenge Title Here</h3>
+      <p>Description of the challenge as identified in the strategy workshop. Connect to member/customer impact.</p>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">Challenge 2</div>
+      <h3>Challenge Title Here</h3>
+      <p>Description of the second challenge. Be specific about how it affects the member/customer experience.</p>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">Challenge 3</div>
+      <h3>Challenge Title Here</h3>
+      <p>Description of the third challenge. Reference specific pain points or metrics where available.</p>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 3</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 4: BUSINESS & DIGITAL CONTEXT — Section Divider (Blue bg)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">01</div>
+  <div class="cyan-accent"></div>
+  <h2>Business Goals to Digital Experiences</h2>
+  <div class="section-subtitle">Validation & Refinement (15 min)</div>
+</div>
+
+<!-- SECTION 4A: Business Metric Benchmarking (White background) -->
+<div class="content-section">
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Business Metric Benchmarking</h2>
+  </div>
+
+  <!-- AGENT: Populate via web search. Replace client and competitor data. -->
+  <table>
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>[CLIENT]</th>
+        <th>Peer 1</th>
+        <th>Peer 2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- AGENT: Pre-populate with researched metrics -->
+      <tr>
+        <td><strong>Members / Customers</strong></td>
+        <td>XX</td>
+        <td>XX</td>
+        <td>XX</td>
+      </tr>
+      <tr>
+        <td><strong>Membership Growth</strong></td>
+        <td>XX%</td>
+        <td>XX%</td>
+        <td>XX%</td>
+      </tr>
+      <tr>
+        <td><strong>Balance per Member</strong></td>
+        <td>$XX K</td>
+        <td>$XX K</td>
+        <td>$XX K</td>
+      </tr>
+      <tr>
+        <td><strong>Deposit Growth Rate</strong></td>
+        <td>XX%</td>
+        <td>XX%</td>
+        <td>XX%</td>
+      </tr>
+      <tr>
+        <td><strong>Loan Growth Rate</strong></td>
+        <td>XX%</td>
+        <td>XX%</td>
+        <td>XX%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Co-creation card for workshop -->
+  <div class="cocreation-card">
+    <h3>Top 3 Business Goals / Challenges</h3>
+    <div class="kpi-row">
+      <div class="kpi-slot">
+        <h4>Challenge 1</h4>
+        <p>- Add challenge here</p>
+        <p style="color: var(--primary-blue); font-weight: 600; margin-top: 8px;">KPI</p>
+      </div>
+      <div class="kpi-slot">
+        <h4>Challenge 2</h4>
+        <p>- Add challenge here</p>
+        <p style="color: var(--primary-blue); font-weight: 600; margin-top: 8px;">KPI</p>
+      </div>
+      <div class="kpi-slot">
+        <h4>Challenge 3</h4>
+        <p>- Add challenge here</p>
+        <p style="color: var(--primary-blue); font-weight: 600; margin-top: 8px;">KPI</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 4</div>
+</div>
+
+<!-- SECTION 4B: Digital Metric Benchmarking (White background) -->
+<div class="content-section">
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Digital Metric Benchmarking</h2>
+  </div>
+
+  <!-- AGENT: Populate via web search -->
+  <table>
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>[CLIENT]</th>
+        <th>Peer 1</th>
+        <th>Peer 2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Digital Adoption</strong></td>
+        <td>XX%</td>
+        <td>XX%</td>
+        <td>XX%</td>
+      </tr>
+      <tr>
+        <td><strong>Mobile Adoption</strong></td>
+        <td>XX%</td>
+        <td>XX%</td>
+        <td>XX%</td>
+      </tr>
+      <tr>
+        <td><strong>Digital Acquisitions</strong></td>
+        <td>XX%</td>
+        <td>XX%</td>
+        <td>XX%</td>
+      </tr>
+      <tr>
+        <td><strong>Digital Sales</strong></td>
+        <td>XX%</td>
+        <td>XX%</td>
+        <td>XX%</td>
+      </tr>
+      <tr>
+        <td><strong>App Rating (iOS)</strong></td>
+        <td>X.X</td>
+        <td>X.X</td>
+        <td>X.X</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Co-creation card -->
+  <div class="cocreation-card">
+    <!-- AGENT: Use "Member" or "Customer" -->
+    <h3>Top 3 Member Experience Goals / Challenges</h3>
+    <div class="kpi-row">
+      <div class="kpi-slot">
+        <h4>Challenge 1</h4>
+        <p>- Add challenge here</p>
+        <p style="color: var(--primary-blue); font-weight: 600; margin-top: 8px;">KPI</p>
+      </div>
+      <div class="kpi-slot">
+        <h4>Challenge 2</h4>
+        <p>- Add challenge here</p>
+        <p style="color: var(--primary-blue); font-weight: 600; margin-top: 8px;">KPI</p>
+      </div>
+      <div class="kpi-slot">
+        <h4>Challenge 3</h4>
+        <p>- Add challenge here</p>
+        <p style="color: var(--primary-blue); font-weight: 600; margin-top: 8px;">KPI</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 5</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 5: DIGITAL CAPABILITY MAP (White background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Replace [CLIENT] -->
+    <h2>[CLIENT] Digital Capability Map</h2>
+    <span class="subtitle">Current State Overview</span>
+  </div>
+
+  <!-- AGENT: Pre-populate from client docs, app store research, or website analysis.
+       Mark hypothesized entries with "To Validate" in italic.
+       Status: Full = fully available, Partial = limited, None = not available. -->
+  <div style="overflow-x: auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability Domain</th>
+          <th>Online Banking (OLB)</th>
+          <th>Mobile App</th>
+          <th>Branch</th>
+          <th>Contact Center</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- AGENT: Replace each row with client-specific capabilities -->
+        <tr>
+          <td><strong>Account Opening</strong></td>
+          <td><span class="leader">Full</span> — Online application with eKYC</td>
+          <td><span class="gap">None</span> — Not available in-app</td>
+          <td><span class="leader">Full</span> — In-branch with paper forms</td>
+          <td><span class="benchmark">Partial</span> — Phone-assisted only</td>
+        </tr>
+        <tr>
+          <td><strong>Account Management</strong></td>
+          <td><span class="leader">Full</span> — Balances, statements, history</td>
+          <td><span class="leader">Full</span> — Balances, statements, history</td>
+          <td><span class="leader">Full</span> — Via teller system</td>
+          <td><span class="leader">Full</span> — Via agent system</td>
+        </tr>
+        <tr>
+          <td><strong>Payments & Transfers</strong></td>
+          <td><span class="leader">Full</span> — A2A, bill pay, wires</td>
+          <td><span class="benchmark">Partial</span> — A2A, P2P; no wires</td>
+          <td><span class="leader">Full</span> — All payment types</td>
+          <td><span class="benchmark">Partial</span> — Limited to A2A</td>
+        </tr>
+        <tr>
+          <td><strong>Card Management</strong></td>
+          <td><span class="benchmark">Partial</span> — View, block; no controls</td>
+          <td><span class="benchmark">Partial</span> — View, block; no controls</td>
+          <td><span class="leader">Full</span> — Full card services</td>
+          <td><span class="leader">Full</span> — Full card services</td>
+        </tr>
+        <tr>
+          <td><strong>Lending / Origination</strong></td>
+          <td><span class="benchmark">Partial</span> — Apply only; no tracking</td>
+          <td><span class="gap">None</span> — Not available</td>
+          <td><span class="leader">Full</span> — End-to-end in branch</td>
+          <td><span class="gap">None</span> — Referral to branch</td>
+        </tr>
+        <tr>
+          <td><strong>Financial Management</strong></td>
+          <td><span class="gap">None</span> — No PFM features</td>
+          <td><span class="benchmark">Partial</span> — Basic spending insights</td>
+          <td>N/A</td>
+          <td>N/A</td>
+        </tr>
+        <tr>
+          <td><strong>Support & Service</strong></td>
+          <td><span class="benchmark">Partial</span> — FAQ, no secure messaging</td>
+          <td><span class="benchmark">Partial</span> — FAQ, no secure messaging</td>
+          <td><span class="leader">Full</span> — In-person service</td>
+          <td><span class="leader">Full</span> — Phone support</td>
+        </tr>
+        <tr>
+          <td><strong>Notifications & Alerts</strong></td>
+          <td><span class="benchmark">Partial</span> — Email alerts only</td>
+          <td><span class="benchmark">Partial</span> — Push + email; limited types</td>
+          <td>N/A</td>
+          <td>N/A</td>
+        </tr>
+        <tr>
+          <td><strong>Security & Auth</strong></td>
+          <td><span class="leader">Full</span> — MFA, password, security Qs</td>
+          <td><span class="leader">Full</span> — Biometric + MFA</td>
+          <td><span class="leader">Full</span> — ID verification</td>
+          <td><span class="benchmark">Partial</span> — Knowledge-based auth</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Validation box -->
+  <div class="validation-box">
+    <h4>Validation Questions — Capability Map</h4>
+    <!-- AGENT: Customize questions based on gaps identified -->
+    <ul>
+      <li>Is this an accurate picture of your current digital capabilities?</li>
+      <li>Are there capabilities we've missed or status levels we should adjust?</li>
+      <li>Which capability gaps create the most member/customer complaints?</li>
+      <li>Are there capabilities currently in development or recently launched?</li>
+    </ul>
+  </div>
+
+  <div class="page-footer">Backbase | 6</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 6: FUNDAMENTAL PROBLEMS (White background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Fundamental Problems of the Current Digital Experience</h2>
+  </div>
+
+  <!-- AGENT: Pre-populate with 4-6 root-cause problems identified from
+       capability map analysis, app reviews, and client document research.
+       These should be SYSTEMIC issues, not individual feature gaps. -->
+  <div class="challenges-grid" style="grid-template-columns: repeat(2, 1fr);">
+    <div class="challenge-card">
+      <div class="challenge-label">Problem 1</div>
+      <!-- AGENT: Replace with actual fundamental problem -->
+      <h3>Channel Fragmentation</h3>
+      <p>Members/customers experience different capabilities and interfaces across OLB, mobile, and branch. Starting a process in one channel often requires restarting in another.</p>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">Problem 2</div>
+      <h3>Incomplete Digital Journeys</h3>
+      <p>Key processes like lending and dispute resolution begin digitally but require branch visits or phone calls to complete, breaking the member/customer experience.</p>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">Problem 3</div>
+      <h3>No Personalization</h3>
+      <p>Every member/customer sees the same generic experience regardless of their segment, behavior, life stage, or relationship depth with the institution.</p>
+    </div>
+    <div class="challenge-card">
+      <div class="challenge-label">Problem 4</div>
+      <h3>Data Not Leveraged</h3>
+      <p>Rich transaction and behavioral data exists but is not used for insights, recommendations, or proactive financial wellness guidance.</p>
+    </div>
+    <!-- AGENT: Add more problem cards as needed (typically 4-6) -->
+  </div>
+
+  <!-- Co-creation card for workshop input -->
+  <div class="cocreation-card">
+    <h3>What Did We Miss?</h3>
+    <div class="kpi-row">
+      <div class="kpi-slot">
+        <h4>Problem 5</h4>
+        <p>XX — Add during workshop</p>
+      </div>
+      <div class="kpi-slot">
+        <h4>Problem 6</h4>
+        <p>XX — Add during workshop</p>
+      </div>
+      <div class="kpi-slot">
+        <h4>Most Critical?</h4>
+        <p>XX — Rank by impact</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 7</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 7: TABLESTAKE EXPERIENCES — Section Divider (Blue bg)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">02</div>
+  <div class="cyan-accent"></div>
+  <h2>Tablestake Experiences</h2>
+  <!-- AGENT: Customize subtitle -->
+  <div class="section-subtitle">[CLIENT] Experience Gaps Today (45 min)</div>
+</div>
+
+<!-- Intro statement -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Baseline Digital Experience</h2>
+  </div>
+  <div class="objective-statement">
+    If we had to launch a <strong>fully functional digital experience tomorrow</strong>,
+    what would that basic banking app look like?
+  </div>
+  <div class="page-footer">Backbase | 8</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 8: RETAIL EXPERIENCE MAP (White background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Replace [CLIENT] -->
+    <h2>[CLIENT] Mobile Retail Experience Map (Status Quo)</h2>
+  </div>
+
+  <!-- AGENT: Pre-populate each column with client's current capabilities.
+       Add/remove columns based on client's actual digital touchpoints. -->
+  <div class="experience-map">
+    <!-- Headers -->
+    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px;">
+      <div class="swim-lane-header">Enrollment</div>
+      <div class="swim-lane-header">Login</div>
+      <div class="swim-lane-header">Accounts & Transactions</div>
+      <div class="swim-lane-header">Transfers & Payments</div>
+      <div class="swim-lane-header">Card Management</div>
+      <div class="swim-lane-header">Financial Management</div>
+      <div class="swim-lane-header">Account Services</div>
+    </div>
+
+    <!-- Capabilities row -->
+    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px;">
+      <!-- AGENT: Replace each cell with client-specific capabilities -->
+      <div class="swim-lane-cell capability">
+        <ul>
+          <li>Complete Online Form</li>
+          <li>Read & accept disclosures</li>
+          <li>Download App</li>
+        </ul>
+      </div>
+      <div class="swim-lane-cell capability">
+        <ul>
+          <li>Choose Credentials</li>
+          <li>Login Verification</li>
+          <li>Multi-factor Auth</li>
+        </ul>
+      </div>
+      <div class="swim-lane-cell capability">
+        <ul>
+          <li>Account Listing</li>
+          <li>Account Activity</li>
+          <li>Transaction Visibility</li>
+        </ul>
+      </div>
+      <div class="swim-lane-cell capability">
+        <ul>
+          <li>Account to Account</li>
+          <li>Bill Pay</li>
+          <li>P2P</li>
+          <li>Deposit Checks</li>
+        </ul>
+      </div>
+      <div class="swim-lane-cell capability">
+        <ul>
+          <li>Card Ordering</li>
+          <li>Card Blocking</li>
+          <li>Card Limit</li>
+          <li>Card PIN</li>
+        </ul>
+      </div>
+      <div class="swim-lane-cell capability">
+        <ul>
+          <li>Budgeting</li>
+          <li>Insights</li>
+          <li>Aggregation</li>
+          <li>Notifications</li>
+        </ul>
+      </div>
+      <div class="swim-lane-cell capability">
+        <ul>
+          <li>Direct Deposit</li>
+          <li>Check Management</li>
+          <li>eStatements</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Challenges / friction row -->
+    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;">
+      <!-- AGENT: Replace with client-specific friction points -->
+      <div class="swim-lane-cell gaps">
+        <ul>
+          <li>Separate sign-up</li>
+          <li>Re-verify needed</li>
+          <li>No funding in flow</li>
+        </ul>
+      </div>
+      <div class="swim-lane-cell gaps">
+        <ul>
+          <li>Redundant security</li>
+          <li>Extra friction at login</li>
+        </ul>
+      </div>
+      <div class="swim-lane-cell gaps">
+        <ul>
+          <li>Disputes not in digital</li>
+          <li>Lack of rich detail</li>
+        </ul>
+      </div>
+      <div class="swim-lane-cell gaps">
+        <ul>
+          <li>Separate enrollments</li>
+          <li>Confusing language</li>
+          <li>Connection delays</li>
+        </ul>
+      </div>
+      <div class="swim-lane-cell gaps">
+        <ul>
+          <li>Limits not adjustable</li>
+          <li>PIN setup missing</li>
+        </ul>
+      </div>
+      <div class="swim-lane-cell gaps">
+        <ul>
+          <li>Insights not useful</li>
+          <li>Not available on web</li>
+          <li>Limited notifications</li>
+        </ul>
+      </div>
+      <div class="swim-lane-cell gaps">
+        <ul>
+          <li>eStatements missing</li>
+          <li>Profile mgmt limited</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cross-cutting challenges -->
+  <div class="crosscut-challenges">
+    <h4>Cross-Cutting Challenges</h4>
+    <!-- AGENT: Pre-populate with client-specific cross-cutting issues -->
+    <ul>
+      <li>Disparate experiences with different functionality across browser and mobile</li>
+      <li>Redundant capabilities across processes (e.g., authentication, aggregation)</li>
+      <li>Lack of personalization throughout the experience</li>
+      <li>XX</li>
+    </ul>
+  </div>
+
+  <div class="page-footer">Backbase | 9</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 9: FRICTION POINTS — ORIGINATION (White background)
+     AGENT: Repeat this pattern for Activation (10), Servicing (11), Marketing (12)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Friction Points Across the Digital Journey | Origination</h2>
+  </div>
+
+  <!-- AGENT: Customize columns to match client's origination sub-stages.
+       Use 5-6 columns typical: Discovery, Identity/KYC, Application, Decision, Setup/Funding, Activation -->
+  <div class="friction-grid" style="grid-template-columns: 100px repeat(6, 1fr);">
+    <!-- Header row -->
+    <div class="fg-cell" style="background: transparent;"></div>
+    <div class="fg-cell header">Discovery & Pre-Qual</div>
+    <div class="fg-cell header">Identity & KYC</div>
+    <div class="fg-cell header">Application & Data</div>
+    <div class="fg-cell header">Decision & Risk</div>
+    <div class="fg-cell header">Account Setup & Funding</div>
+    <div class="fg-cell header">Activation & First Use</div>
+
+    <!-- Capability row -->
+    <div class="fg-cell row-label capability">Capability</div>
+    <!-- AGENT: Pre-populate from client research -->
+    <div class="fg-cell content">Website product pages</div>
+    <div class="fg-cell content">ID verification & KYC routines</div>
+    <div class="fg-cell content">Digital application for most products</div>
+    <div class="fg-cell content">Straight-through processing</div>
+    <div class="fg-cell content">Account set up immediately</div>
+    <div class="fg-cell content">Activation is simple</div>
+
+    <!-- Experience row -->
+    <div class="fg-cell row-label experience">Experience</div>
+    <!-- AGENT: Pre-populate with member/customer experience observations -->
+    <div class="fg-cell content">No pre-qualification or personalization</div>
+    <div class="fg-cell content">Verification happens twice</div>
+    <div class="fg-cell content">Simple process; disclosures complex</div>
+    <div class="fg-cell content">Happy path simple; exceptions unclear</div>
+    <div class="fg-cell content">Funding not part of process</div>
+    <div class="fg-cell content">Easy; without funding enablement is hard</div>
+
+    <!-- Gaps row -->
+    <div class="fg-cell row-label gaps">Gaps</div>
+    <!-- AGENT: Pre-populate with identified gaps -->
+    <div class="fg-cell content">Personalized product discovery</div>
+    <div class="fg-cell content">Fraud experience unclear</div>
+    <div class="fg-cell content">Simplify disclosures</div>
+    <div class="fg-cell content">Include funding in flow</div>
+    <div class="fg-cell content">Immediate funding needed</div>
+    <div class="fg-cell content">More guided activation routines</div>
+  </div>
+
+  <!-- Open Questions for this swim lane -->
+  <div class="validation-box" style="margin-top: 32px;">
+    <h4>Open Questions — Origination</h4>
+    <!-- AGENT: Customize questions for this lifecycle stage -->
+    <ul>
+      <li>What are the other products you want to originate digitally?</li>
+      <li>From a member's view, what is the single most frustrating moment in the digital application process?</li>
+      <li>Where do you see the highest drop-off rate in the application journey?</li>
+      <li>What is the most common reason a member is referred to a branch during origination?</li>
+      <li>How often does a member need to stop and restart their application?</li>
+    </ul>
+  </div>
+
+  <div class="page-footer">Backbase | 10</div>
+</div>
+
+<!-- AGENT: Repeat the friction point content-section above for:
+     - Activation (Section 10): Credentials, Familiarization, Funding, Personalization, Guided Support, Habit Formation
+     - Servicing (Section 11): Profile Mgmt, Payments, Cards, Account Maintenance, Credit/Lending, Financial Mgmt
+     - Marketing (Section 12): Segmentation, Offers, Channel, Orchestration, Personalization, Measurement
+     Each with their own Open Questions box. Increment page numbers accordingly. -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 13: DIFFERENTIATING PROPOSITION ARCHITECTURE — Section Divider
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="brand">Backbase</div>
+  <div class="ghost-number">03</div>
+  <div class="cyan-accent"></div>
+  <h2>Differentiating Proposition Architecture</h2>
+  <!-- AGENT: Customize subtitle -->
+  <div class="section-subtitle">Persona-Driven Experiences (45 min)</div>
+</div>
+
+<!-- Intro statement -->
+<div class="content-section">
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Persona-Tailored Experiences</h2>
+  </div>
+  <!-- AGENT: Customize journey name -->
+  <div class="objective-statement">
+    Experiences tailored to persona to drive <strong>member journey</strong> from
+    <strong>[Stage 1]</strong> to <strong>[Stage N]</strong>.
+  </div>
+  <div class="page-footer">Backbase | 14</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 14: PERSONA SUMMARY (White background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Use "Member" or "Customer" and replace [CLIENT] -->
+    <h2>Personalised Member Experiences: [CLIENT] Segments</h2>
+  </div>
+
+  <!-- AGENT: Pre-populate with 4-7 persona cards based on research.
+       Each card should have specific pain points and needs, not generic. -->
+  <div class="persona-grid">
+    <div class="persona-card">
+      <!-- AGENT: Replace with actual persona name and segment -->
+      <div class="persona-name">Persona Name 1</div>
+      <div class="persona-segment">Segment Label</div>
+      <div class="persona-section-label">Key Pain Points</div>
+      <ul class="pain-points">
+        <li>Specific pain point from research</li>
+        <li>Another specific pain point</li>
+        <li>Third pain point</li>
+      </ul>
+      <div class="persona-section-label">Key Needs</div>
+      <ul class="needs">
+        <li>Specific need derived from pain points</li>
+        <li>Another specific need</li>
+        <li>Third need</li>
+      </ul>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-name">Persona Name 2</div>
+      <div class="persona-segment">Segment Label</div>
+      <div class="persona-section-label">Key Pain Points</div>
+      <ul class="pain-points">
+        <li>Pain point</li>
+        <li>Pain point</li>
+        <li>Pain point</li>
+      </ul>
+      <div class="persona-section-label">Key Needs</div>
+      <ul class="needs">
+        <li>Need</li>
+        <li>Need</li>
+        <li>Need</li>
+      </ul>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-name">Persona Name 3</div>
+      <div class="persona-segment">Segment Label</div>
+      <div class="persona-section-label">Key Pain Points</div>
+      <ul class="pain-points">
+        <li>Pain point</li>
+        <li>Pain point</li>
+        <li>Pain point</li>
+      </ul>
+      <div class="persona-section-label">Key Needs</div>
+      <ul class="needs">
+        <li>Need</li>
+        <li>Need</li>
+        <li>Need</li>
+      </ul>
+    </div>
+
+    <!-- AGENT: Add more persona cards as needed (4-7 total).
+         For wide persona sets, use a 4-column grid instead of 3. -->
+  </div>
+
+  <div class="page-footer">Backbase | 15</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 15: PROPOSITION ARCHITECTURE CANVAS (Core Artifact)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <!-- AGENT: Replace with actual journey name, e.g., "Member Centricity: Financial Access to Financial Freedom" -->
+    <h2>Member Centricity: [Journey Name]</h2>
+  </div>
+
+  <!-- AGENT: This is the CORE ARTIFACT. Customize the number of stage columns (typically 4-6).
+       Each row must be populated with client-specific content from Phases 3-5. -->
+  <div class="prop-arch">
+    <!-- Row labels + Stage columns. Example with 4 stages.
+         AGENT: Adjust grid-template-columns to match number of stages. -->
+    <div class="prop-arch-grid" style="grid-template-columns: 120px repeat(4, 1fr);">
+
+      <!-- Stage Headers -->
+      <div class="pa-cell row-label" style="background: transparent;"></div>
+      <!-- AGENT: Replace stage names -->
+      <div class="pa-cell stage-header">Stage 1</div>
+      <div class="pa-cell stage-header">Stage 2</div>
+      <div class="pa-cell stage-header">Stage 3</div>
+      <div class="pa-cell stage-header">Stage 4</div>
+
+      <!-- Initiative Row -->
+      <div class="pa-cell row-label">Initiative</div>
+      <!-- AGENT: Replace with stage-specific initiatives -->
+      <div class="pa-cell content">Initiative description for Stage 1</div>
+      <div class="pa-cell content">Initiative description for Stage 2</div>
+      <div class="pa-cell content">Initiative description for Stage 3</div>
+      <div class="pa-cell content">Initiative description for Stage 4</div>
+
+      <!-- Member Promise Row -->
+      <div class="pa-cell row-label">Member Promise</div>
+      <!-- AGENT: Replace with first-person member promises -->
+      <div class="pa-cell promise">"Give me safe, simple access..."</div>
+      <div class="pa-cell promise">"Make my everyday banking effortless..."</div>
+      <div class="pa-cell promise">"Help our household see and manage..."</div>
+      <div class="pa-cell promise">"Give me one clear place to grow..."</div>
+
+      <!-- Persona Row -->
+      <div class="pa-cell row-label">Persona</div>
+      <!-- AGENT: Replace with mapped personas -->
+      <div class="pa-cell content">Primary: Persona 1<br>Secondary: Persona 2</div>
+      <div class="pa-cell content">Primary: Persona 3</div>
+      <div class="pa-cell content">Primary: Persona 4<br>Secondary: Persona 5</div>
+      <div class="pa-cell content">Primary: Persona 6<br>Secondary: Persona 7</div>
+
+      <!-- How Might We Row -->
+      <div class="pa-cell row-label">How Might We</div>
+      <!-- AGENT: Replace with HMW opportunities per stage -->
+      <div class="pa-cell hmw">
+        <ul>
+          <li>HMW make it effortless to open and start using an account?</li>
+          <li>HMW guide members to setup and use the app?</li>
+          <li class="co-create">XX</li>
+        </ul>
+      </div>
+      <div class="pa-cell hmw">
+        <ul>
+          <li>HMW make everyday transactions effortless?</li>
+          <li>HMW provide real-time financial planning?</li>
+          <li class="co-create">XX</li>
+        </ul>
+      </div>
+      <div class="pa-cell hmw">
+        <ul>
+          <li>HMW help with onboarding of spouse?</li>
+          <li>HMW provide shared view of finances?</li>
+          <li class="co-create">XX</li>
+        </ul>
+      </div>
+      <div class="pa-cell hmw">
+        <ul>
+          <li>HMW provide a unified view of wealth?</li>
+          <li>HMW encourage wealth building?</li>
+          <li class="co-create">XX</li>
+        </ul>
+      </div>
+
+      <!-- Use Cases Row -->
+      <div class="pa-cell row-label">Use Cases</div>
+      <!-- AGENT: Replace with Backbase-aligned use cases per stage -->
+      <div class="pa-cell usecase">
+        <ul>
+          <li>Unified membership & product origination</li>
+          <li>Tailored onboarding experience</li>
+          <li>Data-driven product recommendation</li>
+          <li>Activation checklist & guided tour</li>
+        </ul>
+      </div>
+      <div class="pa-cell usecase">
+        <ul>
+          <li>Tailored dashboards</li>
+          <li>Transaction disputes & subscription mgmt</li>
+          <li>PFM & smart savings automation</li>
+          <li>AI conversational banking</li>
+        </ul>
+      </div>
+      <div class="pa-cell usecase">
+        <ul>
+          <li>Household banking views</li>
+          <li>Shared financial goals</li>
+          <li>Life-event pre-qualification</li>
+          <li>End-to-end digital lending</li>
+        </ul>
+      </div>
+      <div class="pa-cell usecase">
+        <ul>
+          <li>Wealth dashboard & investment nudges</li>
+          <li>Business banking context switching</li>
+          <li>Proactive financial advisory</li>
+        </ul>
+      </div>
+
+      <!-- Business Value Row -->
+      <div class="pa-cell row-label">Business Value</div>
+      <!-- AGENT: Replace with estimated business value per stage -->
+      <div class="pa-cell value">
+        <ul>
+          <li>Reduce onboarding leakage</li>
+          <li>Improve activation & retention</li>
+        </ul>
+      </div>
+      <div class="pa-cell value">
+        <ul>
+          <li>Increase logins & engagement</li>
+          <li>Lower calls and wait times</li>
+        </ul>
+      </div>
+      <div class="pa-cell value">
+        <ul>
+          <li>Grow balances & product adoption</li>
+          <li>Increase products per household</li>
+        </ul>
+      </div>
+      <div class="pa-cell value">
+        <ul>
+          <li>Increase AUM</li>
+          <li>Grow SMB segment revenue</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 16</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 16: OPEN QUESTIONS (White background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Open Questions</h2>
+    <span class="subtitle">Data & information needs</span>
+  </div>
+
+  <!-- AGENT: Populate with questions that emerged from analysis -->
+  <div class="questions-grid">
+    <div class="question-card">
+      <div class="q-num">01</div>
+      <p>Open question or data request specific to gaps identified during the workshop.</p>
+    </div>
+    <div class="question-card">
+      <div class="q-num">02</div>
+      <p>Another open question about member experience data or metrics.</p>
+    </div>
+    <div class="question-card">
+      <div class="q-num">03</div>
+      <p>Question about digital capability or technology constraint.</p>
+    </div>
+    <div class="question-card">
+      <div class="q-num">04</div>
+      <p>Question about prioritization or resource constraints.</p>
+    </div>
+    <div class="question-card">
+      <div class="q-num">05</div>
+      <p>Data request for subsequent workshops.</p>
+    </div>
+    <div class="question-card">
+      <div class="q-num">06</div>
+      <p>Question about competitive positioning or benchmark data.</p>
+    </div>
+  </div>
+
+  <div class="page-footer">Backbase | 17</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 17: NEXT STEPS (White background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="content-section">
+
+  <div class="section-title">
+    <div class="accent"></div>
+    <h2>Next Steps</h2>
+  </div>
+
+  <!-- Workshop cadence -->
+  <div class="cadence">
+    <div class="cadence-step completed">
+      <h4>Done</h4>
+      <p>Strategy Alignment</p>
+    </div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step active">
+      <h4>Today</h4>
+      <!-- AGENT: Use "Member" or "Customer" -->
+      <p>Member Experience</p>
+    </div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step">
+      <h4>Next</h4>
+      <p>Employee Experience</p>
+    </div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step">
+      <h4>Next</h4>
+      <p>IT Architecture</p>
+    </div>
+    <div class="cadence-arrow">&#8594;</div>
+    <div class="cadence-step">
+      <h4>Onsite</h4>
+      <p>Ignite Lab</p>
+    </div>
+  </div>
+
+  <!-- Action items -->
+  <!-- AGENT: Populate action items -->
+  <div style="margin-top: 40px;">
+    <div class="section-title">
+      <div class="accent"></div>
+      <h2>Action Items</h2>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Owner</th>
+          <th>Action</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>[CLIENT]</strong></td>
+          <td>Share requested data and documents</td>
+          <td>Specific documents listed in Open Questions</td>
+        </tr>
+        <tr>
+          <td><strong>Backbase</strong></td>
+          <td>Refine proposition architecture based on today's feedback</td>
+          <td>Incorporate validated personas and use cases</td>
+        </tr>
+        <tr>
+          <td><strong>Both</strong></td>
+          <td>Schedule Employee Experience Workshop</td>
+          <td>Next workshop in the Ignite series</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-footer">Backbase | 18</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 18: CLOSING (Dark background)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="closing">
+  <h2>THANK YOU</h2>
+  <div class="brand">Backbase</div>
+</div>
+
+</body>
+</html>

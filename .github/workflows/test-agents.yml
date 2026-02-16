@@ -31,17 +31,12 @@ jobs:
       - name: Install dependencies
         run: pip install pyyaml
 
-      - name: Get changed files
-        id: changed
-        run: |
-          FILES=$(git diff --name-only origin/main...HEAD | grep '\.md$' | tr '\n' ' ')
-          echo "files=$FILES" >> $GITHUB_OUTPUT
-
       - name: Run quality checks
         id: test
         run: |
           python scripts/test_agent.py \
-            --files ${{ steps.changed.outputs.files }} \
+            --branch HEAD \
+            --base-branch origin/main \
             --output test_results.json
 
       - name: Comment on PR with results
