@@ -28,7 +28,7 @@ jobs:
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
           # ─── Architects: allowed to change anything ───
-          ARCHITECTS="mayur294-lgtm shobhitonnet"
+          ARCHITECTS="mayur294-lgtm shobhitonnet mariamt-coder"
 
           if echo "$ARCHITECTS" | grep -qw "$PR_AUTHOR"; then
             echo "result=architect" >> $GITHUB_OUTPUT
@@ -57,11 +57,8 @@ jobs:
 
           DOMAIN_LEADS=()
 
-          # Mariam — ROI Domain Lead
-          # Can modify: ROI agent, ROI templates, ROI Excel generator, ROI tools
-          DOMAIN_LEADS+=("mariamt-coder:^\.claude/agents/roi-business-case-builder\.md")
-          DOMAIN_LEADS+=("mariamt-coder:^templates/outputs/roi")
-          DOMAIN_LEADS+=("mariamt-coder:^tools/roi_excel_generator\.py")
+          # Mariam — promoted to Architect (see ARCHITECTS list above)
+          # Previous ROI Domain Lead entries removed — full access granted
 
           # Shobhit — Ignite Inspire Domain Lead (also an architect, so this is redundant but documented)
           # DOMAIN_LEADS+=("shobhitonnet:^\.claude/agents/workshop-preparation\.md")
@@ -123,7 +120,7 @@ jobs:
 
             **Domain Leads** get additional access to files in their domain (see CONTRIBUTING.md).
 
-            **These files require an architect** (@mayur294-lgtm or @shobhitonnet):
+            **These files require an architect** (@mayur294-lgtm, @shobhitonnet, or @mariamt-coder):
             ${violations}
 
             ### What to do:

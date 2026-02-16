@@ -12,6 +12,7 @@ Architects design and maintain the system — agents, skills, tools, workflows, 
 |------|--------|------|
 | Mayur | @mayur294-lgtm | Architect |
 | Shobhit | @shobhitonnet | Architect |
+| Mariam | @mariamt-coder | Architect |
 
 **Can modify:** Everything — agents, skills, commands, tools, workflows, CLAUDE.md, templates, knowledge, benchmarks
 
@@ -19,9 +20,7 @@ Architects design and maintain the system — agents, skills, tools, workflows, 
 
 Domain Leads are consultants who own a specific area and can modify files within that domain — including agents, tools, and templates scoped to their domain. Their changes still require architect review before merging.
 
-| Name | GitHub | Domain | Additional Access |
-|------|--------|--------|-------------------|
-| Mariam | @mariamt-coder | **ROI** | `roi-business-case-builder.md`, `tools/roi_excel_generator.py`, `templates/outputs/roi*` |
+*No current Domain Leads — Mariam has been promoted to Architect.*
 
 **Important for Domain Leads:** When you pull the latest code, your domain files may have new sections (e.g., consultant checkpoints). When resolving conflicts, **merge both sides** — keep your improvements AND the new sections. Don't just pick "your version" wholesale.
 

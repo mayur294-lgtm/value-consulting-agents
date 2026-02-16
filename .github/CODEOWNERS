@@ -8,32 +8,32 @@
 # The enforce-contribution-scope.yml workflow enforces path restrictions.
 
 # ─── DEFAULT: Architects own everything ───
-* @mayur294-lgtm @shobhitonnet
+* @mayur294-lgtm @shobhitonnet @mariamt-coder
 
 # ─── KNOWLEDGE: Consultants can contribute learnings ───
 # These paths are open for consultant contributions (knowledge harvest,
 # benchmark corrections, domain expansions). Architects still review.
-knowledge/learnings/** @mayur294-lgtm @shobhitonnet
-knowledge/domains/** @mayur294-lgtm @shobhitonnet
-benchmarks/** @mayur294-lgtm @shobhitonnet
+knowledge/learnings/** @mayur294-lgtm @shobhitonnet @mariamt-coder
+knowledge/domains/** @mayur294-lgtm @shobhitonnet @mariamt-coder
+benchmarks/** @mayur294-lgtm @shobhitonnet @mariamt-coder
 
 # ─── PROTECTED: Architect-only paths (explicit for clarity) ───
 # Agent definitions — prompt engineering, sensitive
-.claude/agents/** @mayur294-lgtm @shobhitonnet
+.claude/agents/** @mayur294-lgtm @shobhitonnet @mariamt-coder
 # Skills and commands — workflow logic
-.claude/commands/** @mayur294-lgtm @shobhitonnet
+.claude/commands/** @mayur294-lgtm @shobhitonnet @mariamt-coder
 # Settings and hooks — infrastructure
-.claude/settings.json @mayur294-lgtm @shobhitonnet
-.claude/hooks/** @mayur294-lgtm @shobhitonnet
+.claude/settings.json @mayur294-lgtm @shobhitonnet @mariamt-coder
+.claude/hooks/** @mayur294-lgtm @shobhitonnet @mariamt-coder
 # Tools — Python code, security-sensitive
-tools/** @mayur294-lgtm @shobhitonnet
+tools/** @mayur294-lgtm @shobhitonnet @mariamt-coder
 # CI/CD workflows
-.github/** @mayur294-lgtm @shobhitonnet
+.github/** @mayur294-lgtm @shobhitonnet @mariamt-coder
 # Scripts
-scripts/** @mayur294-lgtm @shobhitonnet
+scripts/** @mayur294-lgtm @shobhitonnet @mariamt-coder
 # Root config
-CLAUDE.md @mayur294-lgtm @shobhitonnet
+CLAUDE.md @mayur294-lgtm @shobhitonnet @mariamt-coder
 # Output templates — affect deliverable quality
-templates/outputs/** @mayur294-lgtm @shobhitonnet
+templates/outputs/** @mayur294-lgtm @shobhitonnet @mariamt-coder
 # Agent role definitions
-agents/definitions/** @mayur294-lgtm @shobhitonnet
+agents/definitions/** @mayur294-lgtm @shobhitonnet @mariamt-coder

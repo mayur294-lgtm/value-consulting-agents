@@ -208,7 +208,7 @@ This project has two contribution tiers, enforced by CI:
 
 | Tier | Who | Can Modify |
 |------|-----|-----------|
-| **Architect** | Mayur (@mayur294-lgtm), Shobhit (@shobhitonnet) | Everything — agents, skills, tools, workflows, knowledge, templates |
+| **Architect** | Mayur (@mayur294-lgtm), Shobhit (@shobhitonnet), Mariam (@mariamt-coder) | Everything — agents, skills, tools, workflows, knowledge, templates |
 | **Consultant** | All other contributors | `knowledge/learnings/**`, `knowledge/domains/**`, `benchmarks/**` only |
 
 **Enforcement:** The `enforce-contribution-scope.yml` CI workflow blocks PRs from consultants that touch restricted paths (agents, skills, tools, workflows, CLAUDE.md, templates). Consultants contribute KNOWLEDGE back — not architecture.
