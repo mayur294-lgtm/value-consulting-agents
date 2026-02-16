@@ -195,6 +195,7 @@ You succeed in this repository when:
 4. **Jargon and complexity:** Write for executives, not technologists
 5. **Hidden assumptions:** Every assumption must be visible
 6. **Academic output:** This is business consulting, not research papers
+7. **Ad-hoc HTML generation for assessments:** Assessment HTML dashboards MUST be produced by the `/generate-assessment-html` skill, which contains the full Future UI design system with sidebar navigation, bento grids, capability heatmaps, ROI scenario toggles, and phone-frame prototypes. NEVER generate assessment HTML by converting markdown to HTML directly or by writing custom CSS inline. The skill output is a 250-400KB self-contained file; anything smaller is wrong.
 
 ## Remember
 

@@ -3,6 +3,3 @@
 
 # ROI Excel model generation (tools/roi_excel_generator.py)
 openpyxl>=3.1.0
-
-# HTML report generation (tools/html_report_generator.py)
-markdown>=3.5

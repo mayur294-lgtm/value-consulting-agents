@@ -360,6 +360,20 @@ Before finalizing, verify:
 - Generate executive summary synthesizing key findings
 - Output to specified folder structure
 
+#### 6b. Interactive HTML Dashboard Gate (MANDATORY for Detailed Assessment / Ignite Assess)
+
+After the Executive Narrative Assembler completes, verify that the consolidated interactive HTML dashboard exists and was produced by the `/generate-assessment-html` skill:
+
+- [ ] File `{engagement_code}_Consolidated_Assessment_Interactive.html` exists in the outputs directory
+- [ ] File size is >200KB (the `/generate-assessment-html` skill produces 250-400KB files; anything under 100KB means the wrong tool was used)
+- [ ] File contains `class="sidebar"` (left sidebar navigation — NOT a top navbar)
+- [ ] File contains `switchTab(` (panel-based navigation JavaScript)
+- [ ] File contains `renderHeatmap(` (interactive capability heatmap engine)
+
+If ANY check fails: the HTML was NOT produced by `/generate-assessment-html`. Re-invoke the skill from the engagement outputs directory. Do NOT accept output from any ad-hoc HTML generation or markdown-to-HTML conversion.
+
+**NEVER generate assessment HTML by converting markdown to HTML directly.** Always use the `/generate-assessment-html` skill, which contains the full Future UI design system with sidebar navigation, bento grids, dark feature sections, interactive heatmaps, ROI scenario toggles, phone-frame prototypes, journey swimlanes, and cross-act traceability.
+
 ### Step 7: Post-Assembly Cross-Deliverable Review
 
 After the Executive Narrative Assembler completes, perform this final review before declaring the engagement complete. This review is **non-delegable** — the orchestrator performs it directly.

@@ -653,6 +653,8 @@ Before declaring "ready to send":
 
 ### Step 7: Interactive HTML Dashboard Generation (MANDATORY)
 
+**CRITICAL:** Do NOT generate HTML by converting markdown to HTML yourself, and do NOT use any Python tool (e.g., `html_report_generator.py`). You MUST invoke the `/generate-assessment-html` skill, which contains the full 1070-line design system with Future UI styling, sidebar navigation, interactive components, and traceability engine. Any other method produces unacceptable output — a generic text-heavy page with a top navbar instead of the premium interactive dashboard executives expect.
+
 After completing the markdown deliverables and all quality checks, generate the premium interactive HTML dashboard by invoking the `/generate-assessment-html` skill.
 
 **Why this step exists:** Markdown deliverables are the canonical source of truth, but executives consume the interactive HTML dashboard. Every Ignite Assess engagement MUST produce this dashboard. It is not optional.
