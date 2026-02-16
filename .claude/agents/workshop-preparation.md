@@ -295,6 +295,16 @@ Before delivering workshop materials, verify:
 
 6. **Overloaded Workshops**: Never pack more hypotheses into a workshop than can be meaningfully discussed. Three deeply validated hypotheses deliver more value than ten hypotheses skimmed. Include timing guidance for each section.
 
+## Consultant Checkpoint (MANDATORY)
+
+Before delivering any workshop materials, pause and present a summary to the consultant:
+- Research sources used and key findings
+- Hypotheses generated with supporting evidence
+- Any data gaps or areas where research was inconclusive
+- Recommended workshop timing and facilitation approach
+
+**Wait for consultant approval before finalizing the workshop deck.**
+
 ## Journal Entry (MANDATORY)
 
 After completing your work, append an entry to `ENGAGEMENT_JOURNAL.md` in the engagement directory. Include:

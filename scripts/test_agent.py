@@ -53,7 +53,7 @@ def check_file(filepath: str, checks: list) -> list:
     try:
         content = Path(filepath).read_text(encoding='utf-8')
     except FileNotFoundError:
-        return [{'name': 'File exists', 'passed': False, 'reason': f'File not found: {filepath}'}]
+        return []  # Skip deleted files
     except (UnicodeDecodeError, ValueError):
         return []  # Skip binary files (images, etc.)
 
@@ -92,7 +92,9 @@ def determine_file_type(filepath: str) -> str:
     if '.claude/agents/' in filepath:
         return 'agent_definition'
     elif 'knowledge/' in filepath:
-        return 'knowledge'
+        if filepath.endswith('.md'):
+            return 'knowledge'
+        return 'other'
     elif 'templates/outputs/' in filepath:
         return 'template'
     else:

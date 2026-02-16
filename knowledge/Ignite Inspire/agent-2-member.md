@@ -194,7 +194,7 @@ TYPE C: Digital Challenger
 
 TYPE D: Mass-Market Universal Bank
   Journey: Start → Simplify → Optimise → Consolidate
-  Example banks: BDO, CBA, Chase
+  Example banks: BDO, CBA, Large US Retail
   Best for: Large retail banks aiming to become the customer's
   primary bank by reducing complexity
 

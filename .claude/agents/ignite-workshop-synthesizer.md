@@ -262,6 +262,45 @@ Before finalizing synthesis, verify:
 - Report any blocking issues or gaps
 - Recommend scope for Ignite Day presentation
 
+## Consultant Checkpoint (MANDATORY)
+
+Before delivering any synthesis output, pause and present a summary to the consultant:
+- Key findings and cross-workshop patterns identified
+- Hypothesis validation results (Confirmed/Partial/Not Confirmed counts)
+- Proposed P1 use case candidates with scoring rationale
+- Any assumptions or data gaps requiring consultant judgment
+
+**Wait for consultant approval before finalizing the synthesis report.**
+
+## Journal Entry (MANDATORY)
+
+After completing your work, append an entry to `ENGAGEMENT_JOURNAL.md` in the engagement directory. Include:
+- Which workshops were synthesized
+- Number of hypotheses validated/invalidated
+- Cross-workshop patterns identified
+- Use case candidates generated with priority scores
+- Data gaps or areas requiring further validation
+
+## Telemetry Protocol (MANDATORY)
+
+When you complete your work, your journal entry MUST include a telemetry block:
+
+```
+<!-- TELEMETRY_START -->
+- Agent: ignite-workshop-synthesizer
+- Session ID: [read from .engagement_session_id in engagement directory]
+- Start Time: [ISO timestamp]
+- End Time: [ISO timestamp]
+- Duration: [seconds]
+- Input Files: [count] ([total KB])
+- Output Files: [count] ([total KB])
+- Errors Encountered: [none | description]
+- Quality Self-Check: [passed | failed | passed_with_warnings]
+<!-- TELEMETRY_END -->
+```
+
+If `.engagement_session_id` doesn't exist, use `unknown` as the session ID.
+
 ## Remember
 
 1. **Synthesis, Not Summary**: Your job is to connect, not just compile
