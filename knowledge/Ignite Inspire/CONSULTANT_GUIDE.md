@@ -87,7 +87,8 @@ The Ignite AI Agent System is a suite of 7 specialized AI agents that automate t
 | **Agent 4** | IT Architecture | HTML facilitation deck with tech landscape & rationalization | Pre-workshop |
 | **Agent 5** | Use Case Design | Use Case Documents + Interactive Prototypes | Post-workshop |
 | **Agent 6** | Presentation | Final Ignite Day PPTX/HTML presentation | Post-workshop |
-| **Agent 7** | ROI Business Case | Questionnaire (Phase A) + Business Case (Phase B) | Pre/Post |
+| **/generate-roi-questionnaire** | ROI Questionnaire | Customized questionnaire (Phase A) | Pre/Post |
+| **roi-business-case-builder** | ROI Business Case | Business Case + ROI Model (Phase B) | Post-questionnaire |
 
 ## How Agents Connect
 
@@ -442,9 +443,9 @@ Week 5: Architecture Workshop
 │
 Week 6-7: Deliverable Creation
 ├── Agent 5 → Create Use Case Documents + Prototypes
-├── Agent 7 Phase A → Generate ROI Questionnaire
+├── /generate-roi-questionnaire skill → Generate ROI Questionnaire
 ├── Collect ROI data from client
-├── Agent 7 Phase B → Generate Business Case
+├── roi-business-case-builder agent → Generate Business Case
 │
 Week 8: Final Presentation
 ├── Agent 6 → Compile Ignite Day Presentation
@@ -458,14 +459,14 @@ Week 8: Final Presentation
 ```
 Day 1: Setup
 ├── Gather basic client information
-├── Agent 7 Phase A → Generate Questionnaire
+├── /generate-roi-questionnaire skill → Generate Questionnaire
 │
 Days 2-5: Data Collection
 ├── Send questionnaire to client
 ├── Follow up on missing data
 │
 Day 6-7: Business Case
-├── Agent 7 Phase B → Generate Business Case
+├── roi-business-case-builder agent → Generate Business Case
 └── Present findings
 ```
 
@@ -493,8 +494,8 @@ Week 3:
 
 | Engagement Type | Agents Used | Duration |
 |-----------------|-------------|----------|
-| **Full Ignite** | 1 → 2 → 3 → 4 → 5 → 7 → 6 | 6-8 weeks |
-| **ROI Only** | 7 (Phase A + B) | 1-2 weeks |
+| **Full Ignite** | 1 → 2 → 3 → 4 → 5 → /generate-roi-questionnaire → roi-business-case-builder → 6 | 6-8 weeks |
+| **ROI Only** | /generate-roi-questionnaire + roi-business-case-builder | 1-2 weeks |
 | **Experience Sprint** | 2 → 3 → 5 | 3-4 weeks |
 | **Strategy + Presentation** | 1 → 6 | 2-3 weeks |
 | **Architecture Assessment** | 4 → 5 | 2-3 weeks |

@@ -15,7 +15,7 @@ cp agent-3-employee.md ~/backbase-ignite/agents/
 cp agent-4-architecture.md ~/backbase-ignite/agents/
 cp agent-5-usecase.md ~/backbase-ignite/agents/
 cp agent-6-presentation.md ~/backbase-ignite/agents/
-cp agent-7-roi.md ~/backbase-ignite/agents/
+cp agent-7-roi.md ~/backbase-ignite/knowledge/  # Knowledge reference, not active agent
 
 # Copy master CLAUDE.md
 cp CLAUDE.md ~/backbase-ignite/

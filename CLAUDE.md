@@ -323,3 +323,27 @@ Then provide your content (PDF path, bullet points, transcript, or description).
 3. Content (15-30 scenes) - Main material
 4. Climax (2-3 scenes) - Key insight
 5. Close (1-2 scenes) - Call to action
+
+### /generate-roi-questionnaire - ROI Questionnaire Generator
+
+Generate a customized Business Case Questionnaire pre-populated with upstream agent data.
+
+**This is Phase A of the ROI workflow.** It reads all available upstream outputs (Inspire workshops, Discovery, Journey Builder, Market Context, Capability Assessment) and generates a questionnaire where known data is already filled in — reducing client burden from "fill everything" to "verify what we know, fill what's missing."
+
+**Key Features:**
+- Pipeline-agnostic: works with Ignite Inspire, Value Assessment, or Hybrid engagements
+- Pre-populates from up to 9 upstream agent sources
+- Color-coded cells: GREEN (pre-filled, verify), YELLOW (required, fill), BLUE (benchmark), WHITE (optional)
+- Source annotations on every pre-filled cell
+- Hides irrelevant sheets based on use case scope
+- Consultant checkpoint before generation
+
+**Usage:**
+```
+/generate-roi-questionnaire
+```
+Then provide the engagement directory path. The skill reads ENGAGEMENT_CONTEXT.md and all available upstream outputs automatically.
+
+**Output:** `[CLIENT]_Business_Case_Questionnaire.xlsx` — feeds into `roi-business-case-builder` agent as input 7b.
+
+**Knowledge Reference:** `knowledge/Ignite Inspire/agent-7-roi.md` — value lever framework, calculation methodology, ROI examples.

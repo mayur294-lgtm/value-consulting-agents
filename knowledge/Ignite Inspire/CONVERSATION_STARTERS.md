@@ -112,25 +112,23 @@ Attached:
 - Prototype screenshots
 ```
 
-### Agent 7: ROI Business Case
+### /generate-roi-questionnaire - ROI Questionnaire Generation
 
 **Phase A - Questionnaire:**
 ```
-Acting as Agent 7 Phase A, generate the ROI questionnaire.
+/generate-roi-questionnaire
 
-Client: [NAME]
-Type: [Credit Union / Bank]
+Engagement directory: [path to engagement folder]
 
 Pre-populate with known data from the attached context.
 Focus on these use cases: [list in-scope use cases]
-
-Attached:
-- ENGAGEMENT_CONTEXT.md
 ```
+
+### roi-business-case-builder - ROI Business Case
 
 **Phase B - Business Case:**
 ```
-Acting as Agent 7 Phase B, build the business case.
+Acting as roi-business-case-builder agent, build the business case.
 
 Use the completed questionnaire to calculate ROI.
 

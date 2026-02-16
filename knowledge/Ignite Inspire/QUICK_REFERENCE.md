@@ -22,8 +22,8 @@ Create 7 projects, upload one CLAUDE.md each, pass context file manually
 | Employee/EX deck | `Generate Employee Experience Workshop deck` |
 | Architecture deck | `Generate IT Architecture Workshop deck` |
 | Use Case docs | `Create use case design documents and prototypes` |
-| ROI questionnaire | `Generate ROI questionnaire for [Client]` |
-| Business case | `Build the business case from this questionnaire` |
+| ROI questionnaire | `/generate-roi-questionnaire` |
+| Business case | `Build the business case from this questionnaire` (roi-business-case-builder agent) |
 | Final presentation | `Compile the Ignite Day presentation` |
 
 ---
@@ -52,8 +52,8 @@ Create 7 projects, upload one CLAUDE.md each, pass context file manually
 
 | Type | Agents | Duration |
 |------|--------|----------|
-| **Full Ignite** | 1→2→3→4→5→7→6 | 6-8 weeks |
-| **ROI Only** | 7 | 1-2 weeks |
+| **Full Ignite** | 1→2→3→4→5→/generate-roi-questionnaire→roi-business-case-builder→6 | 6-8 weeks |
+| **ROI Only** | /generate-roi-questionnaire + roi-business-case-builder | 1-2 weeks |
 | **Experience Sprint** | 2→3→5 | 3-4 weeks |
 | **Architecture Only** | 4→5 | 2-3 weeks |
 
@@ -69,7 +69,8 @@ Create 7 projects, upload one CLAUDE.md each, pass context file manually
 | **4 Architecture** | Context file, core banking info | Tech landscape docs |
 | **5 Use Case** | Context file, workshop findings | Existing wireframes |
 | **6 Presentation** | All prior outputs | Prototype screenshots |
-| **7 ROI** | Context file (Phase A), Filled questionnaire (Phase B) | Pricing info |
+| **/generate-roi-questionnaire** | Context file, engagement directory | Use case scope |
+| **roi-business-case-builder** | Filled questionnaire, context file | Pricing info |
 
 ---
 

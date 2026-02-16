@@ -25,15 +25,16 @@ All visual outputs (HTML dashboards, business case documents, ROI presentations)
 
 ## Engagement Type Routing
 
-This agent owns **Phase B (ROI Calculation)** for ALL engagement types. The `agent-7-roi` agent (in `knowledge/Ignite Inspire/`) owns **Phase A (Questionnaire Generation)** for ALL engagement types.
+This agent owns **Phase B (ROI Calculation)** for ALL engagement types. The `/generate-roi-questionnaire` skill owns **Phase A (Questionnaire Generation)** for ALL engagement types.
 
-| Phase | Owner | Used In |
-|-------|-------|---------|
-| **Phase A — ROI Questionnaire** | `agent-7-roi` | ALL engagements — generates customized data collection questionnaires |
-| **Phase B — ROI Calculation** | **This agent** | ALL engagements — Ignite, Value Assessment, Hybrid |
+| Phase | Owner | Location |
+|-------|-------|----------|
+| **Phase A — ROI Questionnaire** | `/generate-roi-questionnaire` skill | `.claude/commands/generate-roi-questionnaire.md` |
+| **Phase B — ROI Calculation** | **This agent** | `.claude/agents/roi-business-case-builder.md` |
+| **Knowledge Reference** | `agent-7-roi.md` | `knowledge/Ignite Inspire/agent-7-roi.md` — value lever framework, calculation methodology, examples |
 
 **How it works:**
-1. `agent-7-roi` generates a customized questionnaire tailored to the engagement
+1. The `/generate-roi-questionnaire` skill generates a pre-populated questionnaire using upstream agent data
 2. The consultant sends it to the client — sometimes it comes back fully filled, partially filled, or not at all
 3. This agent receives the filled questionnaire as input 7b (when available), alongside the evidence register, market context, and domain benchmarks
 4. This agent produces the final ROI model, business case, and Excel output
@@ -80,7 +81,7 @@ Before building any ROI model, you must have:
 5. **Initiative scope** (what is being evaluated)
 6. **Market Context Brief** *(optional but recommended)* — `market_context_validated.md` from the Market Context Researcher. Contains the client's published financials (C/I ratio, segment revenue, customer counts, digital adoption rates) and peer bank comparisons. When present, use these as **validation anchors** for your assumptions — any assumption that conflicts with published data must be flagged with a note explaining the discrepancy.
 7. **Ignite Workshop Synthesis** *(optional — hybrid engagements only)* — prioritized use cases and value themes from the Ignite Workshop Synthesizer. When present, this is the **primary source** for lever selection, superseding evidence-count thresholds.
-7b. **ROI Questionnaire** *(optional — all engagement types)* — `[CLIENT]_Business_Case_Questionnaire_FILLED.xlsx` from `agent-7-roi` Phase A. Contains structured financial data collected from the client (volumes, rates, costs, penetration ratios). When present, this is a **high-confidence primary data source** — prefer questionnaire values over benchmark proxies. When partially filled, use available fields and fall back to benchmarks for gaps. When not available, proceed with evidence register + benchmarks only.
+7b. **ROI Questionnaire** *(optional — all engagement types)* — `[CLIENT]_Business_Case_Questionnaire_FILLED.xlsx` from the `/generate-roi-questionnaire` skill. Contains structured financial data collected from the client (volumes, rates, costs, penetration ratios). When present, this is a **high-confidence primary data source** — prefer questionnaire values over benchmark proxies. When partially filled, use available fields and fall back to benchmarks for gaps. When not available, proceed with evidence register + benchmarks only.
 8. **Domain benchmarks** *(auto-loaded)* — `knowledge/domains/{domain}/benchmarks.md` — engagement-sourced metrics for the engagement's domain
 9. **Domain ROI levers** *(auto-loaded if exists)* — `knowledge/domains/{domain}/roi_levers.md` — pre-built value lever templates with calculation formulas and ranges
 

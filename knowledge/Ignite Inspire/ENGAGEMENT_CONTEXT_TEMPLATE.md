@@ -361,8 +361,8 @@
 | [Date] | Agent 3: Employee Experience | Employee Workshop Prep | employee_deck.html |
 | [Date] | Agent 4: IT Architecture | Architecture Workshop Prep | architecture_deck.html |
 | [Date] | Agent 5: Use Case Design | Use Case Documents + Prototypes | use_case_docs/, prototypes/ |
-| [Date] | Agent 7: ROI (Phase A) | Questionnaire Generation | questionnaire.xlsx |
-| [Date] | Agent 7: ROI (Phase B) | Business Case | business_case.pdf, roi_model.xlsx |
+| [Date] | /generate-roi-questionnaire | Questionnaire Generation | questionnaire.xlsx |
+| [Date] | roi-business-case-builder | Business Case | business_case.pdf, roi_model.xlsx |
 | [Date] | Agent 6: Presentation | Ignite Day Deck | ignite_presentation.pptx |
 
 ---
