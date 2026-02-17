@@ -231,6 +231,23 @@ Record the extraction in the engagement journal:
 - **For scanned PDFs** (image-based with no selectable text): inform the consultant immediately. OCR is out of scope for this system. The consultant must provide a text alternative.
 - **For password-protected PDFs**: inform the consultant. Do not attempt to bypass encryption.
 
+## Rule 10: Use Domain-Indexed Knowledge Files
+
+Large knowledge files have been split into domain-specific slices. **Always load the domain slice, not the full master file.**
+
+| Full File | Lines | Domain Slice | Lines |
+|-----------|-------|-------------|-------|
+| `knowledge/domains/Product Directory (1).csv` | 3,117 | `knowledge/domains/product_directory_{domain}.md` | 87-285 |
+| `knowledge/standards/capability_taxonomy.md` | 2,109 | `knowledge/standards/capability_taxonomy_{domain}.md` | 204-758 |
+
+**Rules:**
+- **Narrative Assembler, Capability Agent, ROI Agent, Roadmap Agent, Market Context, Benchmark Librarian:** Load the domain slice only. Never load the full CSV or full taxonomy.
+- **Use Case Designer:** The ONLY agent authorized to load the full Product Directory CSV (needed for feature-level validation).
+- **Multi-domain engagements:** Load multiple domain slices (e.g., `capability_taxonomy_retail.md` + `capability_taxonomy_investing.md`). Still cheaper than the full 2,109-line master.
+- **Domain slices are regenerated** by running `python3 scripts/index_product_directory.py` and `python3 scripts/split_capability_taxonomy.py`. Regenerate when the source files are updated.
+
+Replace `{domain}` with the engagement domain: `retail`, `wealth`, `sme`, `commercial`, or `investing`.
+
 ## Applying This Protocol
 
 Every agent in the system includes a reference to this protocol. The rules are non-negotiable. They apply to:

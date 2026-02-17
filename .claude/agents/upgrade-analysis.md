@@ -77,11 +77,26 @@ The Migration Co-Pilot (or consultant) provides:
 - Signals detected (opportunities, renewals, cloud status, account size)
 ```
 
+## Phase Execution Protocol
+
+This agent supports phased execution when invoked by the orchestrator via Task tool.
+
+- **If a PHASE DIRECTIVE is present** in your prompt: Follow the phase instructions below.
+- **If NO phase directive is present** (standalone/interactive mode): Use the standard checkpoint behavior.
+
+**Phase 1 — Strategic Assessment & Approach:**
+Analyze account data, tier mapping, and migration play context. Build strategic assessment, positioning strategy, and peer selection. Write checkpoint to `CHECKPOINT_upgrade_analysis.md` with account assessment, play recommendation, positioning angles, peer selection, ROI napkin parameters, and questions.
+
+**Phase 2 — Produce Deliverables:**
+Read `CHECKPOINT_upgrade_analysis_APPROVED.md`. Apply consultant corrections to positioning and peer selection. Produce the deliverables specified by the play-specific output matrix (Outside-In POV, Tier Value Articulation, ROI Napkin, Peer Comparison, Objection Prep). Write journal entry.
+
+---
+
 ## Consultant Checkpoint (MANDATORY)
 
 **When:** After analyzing account data and migration context, and before producing deliverables.
 
-**You MUST present your strategic assessment to the consultant (or AE) before producing deliverables.** Packaging conversations are commercially sensitive — the wrong positioning angle can damage the client relationship.
+Packaging conversations are commercially sensitive — the wrong positioning angle can damage the client relationship.
 
 ### Present to the Consultant:
 
@@ -92,13 +107,10 @@ The Migration Co-Pilot (or consultant) provides:
 5. **ROI Napkin Parameters** — Key value levers and their estimated ranges — the consultant validates against their knowledge of the account
 6. **Questions** — Any account-specific context you're missing
 
-### Format:
-
-**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
-
-In Claude Code: Display the checkpoint content directly with a clear `## APPROVAL REQUIRED` heading. Then say "Please review and respond before I continue." Stop generating and wait.
-
-Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## APPROVAL REQUIRED` heading. Then say "Please review and respond before I continue." Stop generating and wait.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
 Example structure:
 ```

@@ -110,6 +110,18 @@ Before building calculations, check if `market_context_validated.md` exists. If 
 4. Flag any assumption where your estimate differs >20% from published data: "Note: Model assumes X, but client's published figure is Y — validate with client"
 5. Use peer bank metrics as benchmark anchors for "best-in-class" scenarios
 
+## Phase Execution Protocol
+
+This agent executes in **3 phases** with two consultant checkpoints.
+
+| Phase | Action | Reads | Writes |
+|-------|--------|-------|--------|
+| **Phase 1** | Read evidence register, capability assessment, financial data. Identify value levers from evidence, map assumptions. | Evidence register, capability assessment, financial data, market context | `CHECKPOINT_roi_CP1.md` with proposed levers + assumptions for consultant review |
+| **Phase 2** | Read approved CP1. Build the full model with scenarios and sensitivity analysis. | `CHECKPOINT_roi_CP1_APPROVED.md` | `CHECKPOINT_roi_CP2.md` with model results + sensitivity for consultant review |
+| **Phase 3** | Read approved CP2. Finalize deliverables. | `CHECKPOINT_roi_CP2_APPROVED.md` | `roi_report.md` + `roi_config.json` (final deliverables) |
+
+**Phase transitions:** Phase 1 ends at CP1. Phase 2 begins after `CHECKPOINT_roi_CP1_APPROVED.md` is available. Phase 2 ends at CP2. Phase 3 begins after `CHECKPOINT_roi_CP2_APPROVED.md` is available.
+
 ## Consultant Checkpoint (MANDATORY)
 
 **When:** After reading all required inputs and before building the Excel model or writing the report.
@@ -245,7 +257,13 @@ Combine Steps 0-3 into a single `## DECISION REQUIRED` section:
 10. **Questions** — any data gaps, ambiguous evidence, or judgment calls that need consultant input
 
 ### Format:
-Wrap your entire checkpoint output in a `<checkpoint>` tag so the system can detect it and route it to the consultant via WhatsApp. Inside the tag, use a clear `## DECISION REQUIRED` heading. Include:
+
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## DECISION REQUIRED` heading. Stop generating and wait for the consultant's response.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
+
+Include in the checkpoint:
 - Lifecycle distribution summary
 - Table of proposed levers with a column for "Your Input"
 - Table of excluded levers with a column for "Override? (Y/N)"
@@ -270,10 +288,12 @@ Example structure:
 
 ## Output Formats
 
-You MUST produce BOTH outputs:
+You MUST produce these outputs:
 
-1. **Excel ROI Model** (PRIMARY) - Using `tools/roi_excel_generator.py`
-2. **Executive Summary Report** (SECONDARY) - Markdown for presentation
+1. **ROI Report** (`roi_report.md`) — Full analytical report with scenarios, sensitivity analysis, assumptions register
+2. **ROI Config JSON** (`roi_config.json`) — Structured data for the orchestrator to generate the Excel model via `/generate-roi-excel`. Contains: bank_profile, value_lever_groups, assumptions_register, data_gaps_for_validation, scenario parameters.
+
+**Do NOT generate the Excel file yourself.** The orchestrator invokes `/generate-roi-excel` with your `roi_config.json` as input. Your job is to produce the analytical model and the structured config — the orchestrator handles Excel generation.
 
 ### Knowledge References (MANDATORY)
 
@@ -715,7 +735,7 @@ Before finalizing any ROI report, verify:
 
 ## Consultant Checkpoint #2 — Business Case Review (MANDATORY)
 
-**STOP. Present the completed business case to the consultant. Do NOT mark this task as complete or hand off to downstream agents until they approve.**
+**Present the completed business case to the consultant. Do NOT mark this task as complete or hand off to downstream agents until they approve.**
 
 Present to the consultant:
 1. **ROI Summary** — Headline numbers: Total Investment, Total Benefits, Net ROI, NPV, Payback Period across all 3 scenarios
@@ -727,9 +747,10 @@ Present to the consultant:
 7. **Excel Model** — The working ROI model with formulas (generated via `tools/roi_excel_generator.py`)
 8. **Go / Conditional Go / No Go** — Your recommendation
 
-Say: "The business case is ready for your review. Please check the ROI numbers, lever selection, assumptions, and sensitivity analysis. Should I make any adjustments before this is handed off?"
-
-**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT finalize or hand off until the consultant explicitly approves.**
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## DECISION REQUIRED` heading. Stop generating and wait for the consultant's response.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
 ---
 

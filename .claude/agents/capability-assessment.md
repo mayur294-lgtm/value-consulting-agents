@@ -37,13 +37,15 @@ You have access to the **Backbase Infobank** MCP server. Use tools prefixed with
 
 ## Authoritative Reference
 
-**You MUST load and follow `knowledge/standards/capability_taxonomy.md` as your authoritative reference for:**
+**You MUST load `knowledge/standards/capability_taxonomy_{domain}.md` (the domain-indexed slice) as your authoritative reference for:**
 - The 0-4 maturity scale definition and scoring rules
 - Front / Middle / Back layer definitions
 - BIAN → Backbase domain mapping
-- Capability catalog with probing questions
-- Unconsidered needs library
+- Capability catalog with probing questions (domain-specific)
+- Unconsidered needs library (domain-specific)
 - Problem statement classification
+
+Each domain slice (~200-750 lines) contains Parts 1-3 (shared framework) + the domain-specific capability catalog + unconsidered needs. **Do NOT load the full master** (`capability_taxonomy.md` is 2,109 lines) unless the engagement spans multiple domains — in that case, load only the relevant domain slices.
 
 This taxonomy is the single source of truth. Do not invent capabilities, scales, or layer definitions that conflict with it.
 
@@ -95,6 +97,21 @@ Related Capabilities: [CAP-IDs from taxonomy]
 - Frame them as business outcomes at risk, not technology gaps
 - These should make the stakeholder say "we hadn't thought about that"
 
+### Phase Execution Protocol
+
+This agent supports phased execution when invoked by the orchestrator via Task tool.
+
+- **If a PHASE DIRECTIVE is present** in your prompt: Follow the phase instructions below.
+- **If NO phase directive is present** (standalone/interactive mode): Use the standard checkpoint behavior.
+
+**Phase 1 — Problem Identification & Scope:**
+Read discovery outputs, build problem map, identify capability domains in scope. Write checkpoint to `CHECKPOINT_capability.md` with problem map + proposed scope + unconsidered needs candidates.
+
+**Phase 2 — Capability Scoring:**
+Read `CHECKPOINT_capability_APPROVED.md`. Score all capabilities in approved scope, build heatmap, finalize capability_assessment.md. Append journal entry.
+
+---
+
 ### Consultant Checkpoint (MANDATORY)
 
 **When:** After completing Phase 1 (Problem Identification) and before beginning Phase 2 (detailed scoring).
@@ -109,22 +126,10 @@ Related Capabilities: [CAP-IDs from taxonomy]
 4. **Assessment Mode Confirmation** — Workshop Assessment vs. Transcript Inference, and confidence level for the evidence base
 5. **Questions** — Any ambiguous evidence, conflicting signals, or areas where you need the consultant's judgment
 
-**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
-
-In Claude Code: Display the checkpoint content directly with a clear `## DECISION REQUIRED` heading. List each unconsidered need with a "Keep / Remove / Modify" choice. Then say "Please review and respond before I continue." Stop generating and wait.
-
-Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
-
-Example structure:
-```
-<checkpoint>
-## DECISION REQUIRED: Problem Map & Assessment Scope
-
-[Your considered needs, unconsidered needs candidates, proposed scope, assessment mode, and questions here]
-</checkpoint>
-```
-
-**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step.**
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## DECISION REQUIRED` heading. List each unconsidered need with a "Keep / Remove / Modify" choice. Then say "Please review and respond before I continue." Stop generating and wait.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
 **Rules:**
 - NEVER begin Phase 2 scoring before this checkpoint

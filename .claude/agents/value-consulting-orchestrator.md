@@ -182,7 +182,8 @@ Every full engagement produces:
 2. `assessment_report.md` - Comprehensive findings and analysis
 3. `capability_assessment.md` - Maturity scores with evidence
 4. `roi_report.md` - Financial model with scenarios and assumptions
-5. `roadmap.md` - Sequenced initiatives with dependencies
+5. `roi_config.json` - Structured ROI data for Excel generation (produced by ROI agent, consumed by `/generate-roi-excel`)
+6. `roadmap.md` - Sequenced initiatives with dependencies
 
 For partial engagements (e.g., ROI_only), produce only the relevant subset.
 
@@ -208,6 +209,72 @@ When running through the Donna webhook, wrap checkpoint content in `<checkpoint>
 - NEVER continue past a checkpoint without consultant input — even if the checkpoint content "looks fine." The consultant's domain knowledge is irreplaceable.
 - If a consultant says "proceed" or "looks good" — log their approval and continue.
 - If a consultant modifies anything — incorporate changes before proceeding.
+
+## Two-Phase Agent Invocation Protocol
+
+**Why:** Agents launched via the Task tool run as subprocesses that execute to completion — they CANNOT pause mid-execution for consultant input. The "STOP and wait" checkpoint instructions are ignored because the subprocess has no interactive channel.
+
+**Solution:** Split agent execution into discrete phases separated by orchestrator-managed disk-based checkpoints. Each phase runs to natural completion. The orchestrator reads the checkpoint file from disk, presents it to the consultant, and writes the approved response before launching the next phase.
+
+### Checkpoint Artifact Convention
+
+```
+Phase 1 → Agent writes: {engagement_dir}/outputs/CHECKPOINT_{agent_name}.md
+Orchestrator reads checkpoint → presents to consultant → waits for response
+Orchestrator writes: {engagement_dir}/outputs/CHECKPOINT_{agent_name}_APPROVED.md
+Phase 2 → Agent reads approved checkpoint → continues work
+```
+
+For agents with 2 checkpoints (3 phases):
+```
+Phase 1 → CHECKPOINT_{agent}_CP1.md → approval → CHECKPOINT_{agent}_CP1_APPROVED.md
+Phase 2 → CHECKPOINT_{agent}_CP2.md → approval → CHECKPOINT_{agent}_CP2_APPROVED.md
+Phase 3 → Final output
+```
+
+### Phase Directive
+
+When invoking an agent via Task, include a **Phase Directive** at the top of the prompt:
+
+```
+PHASE DIRECTIVE: Phase {N} of {total}
+Checkpoint file: CHECKPOINT_{agent_name}.md (or _CP1/_CP2 for multi-checkpoint agents)
+Engagement directory: {engagement_dir}
+```
+
+The Phase Directive tells the agent:
+- Which phase to execute (Phase 1, 2, or 3)
+- Where to write the checkpoint file (Phase 1/2)
+- Where to read the approved checkpoint (Phase 2/3)
+
+### Agent Phase Reference Table
+
+| Agent | Phases | CP1 Output | CP2 Output | Final Output |
+|-------|--------|------------|------------|--------------|
+| discovery-transcript-interpreter | 2 | Draft registers + open questions | — | Finalized registers |
+| market-context-researcher | 2 | Research findings + positioning angles | — | market_context_validated.md |
+| journey-builder | 3 | Journey candidates for selection | Draft swimlanes + value estimates | journey_maps.json + summary |
+| capability-assessment | 2 | Problem map + proposed scope | — | Scored heatmap + assessment |
+| roi-business-case-builder | 3 | Proposed levers + assumptions | Model + sensitivity analysis | roi_report.md + roi_config.json |
+| roadmap-prioritization | 2 | Proposed phasing + candidates | — | roadmap.md |
+| narrative-assembler | 3 | Assembly plan + narrative arc | Draft report for review | assessment_report.md + executive_summary.md |
+| workshop-preparation | 3 | Research + hypotheses | Deck draft | Workshop HTML deck |
+| ignite-workshop-synthesizer | 3 | Cross-workshop analysis | Final synthesis | Synthesis report |
+| usecase-designer | 3 | Portfolio + P1 shortlist | Completed specs | Use case docs + persona_use_case_summary.md |
+| benchmark-librarian | 2 | Benchmark shortlist | — | Finalized benchmarks |
+| upgrade-analysis | 2 | Strategic assessment + approach | — | Upgrade deliverables |
+
+### Orchestrator Phase Execution Rules
+
+1. **Phase 1 prompt must include:** All required inputs (file paths, engagement context), the Phase Directive, and explicit instruction to write checkpoint output to disk and then stop.
+
+2. **Between phases:** Orchestrator reads the checkpoint file, presents it to the consultant with `## DECISION REQUIRED` heading, and waits for response. After response, writes the approved checkpoint file with the consultant's feedback/modifications.
+
+3. **Phase 2/3 prompt must include:** The Phase Directive (with phase number), path to the approved checkpoint file, all required input file paths, instruction to read the approved checkpoint before continuing, and **an explicit list of ALL output files the agent must produce** (copied from the "Final Output" column of the Agent Phase Reference Table). Do NOT rely on the agent "knowing" its outputs — spell them out in the prompt. For example, ROI Phase 3 must explicitly state: "Produce BOTH `roi_report.md` AND `roi_config.json`."
+
+4. **Parallel execution:** Multiple agents can run Phase 1 simultaneously (e.g., Journey Builder, Market Context, Capability, ROI all start Phase 1 after Discovery completes). Phase 2 starts individually as each agent's checkpoint is approved — no need to wait for all agents' Phase 1s to complete.
+
+5. **Fallback — standalone mode:** When an agent is invoked directly by the consultant (not via orchestrator), the agent uses its standalone checkpoint behavior (display checkpoint, wait for interactive response). The Phase Directive's presence/absence controls which mode is used.
 
 ---
 
@@ -289,6 +356,17 @@ Assembly Agent → reads all output files + journey_maps_summary.md + market_con
 This ensures each agent starts with a clean context containing only what it needs.
 
 ### Step 4: Delegation to Subagents
+
+**CRITICAL: Use the Two-Phase Agent Invocation Protocol (above) for ALL agent invocations.** Never invoke an agent in a single Task call and expect checkpoints to fire — they won't. Every agent invocation must follow the phase pattern:
+
+1. Launch Phase 1 via Task (agent writes checkpoint to disk, completes naturally)
+2. Read checkpoint file from `outputs/CHECKPOINT_{agent}.md`
+3. Present checkpoint to consultant with `## DECISION REQUIRED` heading — STOP and wait
+4. After consultant responds, write `CHECKPOINT_{agent}_APPROVED.md` with their feedback
+5. Launch Phase 2 via Task (agent reads approved checkpoint, continues to final output)
+6. For 3-phase agents (ROI, Assembler, Journey Builder, etc.): repeat steps 2-5 for CP2
+
+**Parallel execution after Discovery completes:** Launch Phase 1 of Journey Builder, Market Context Researcher, Capability Assessment, and ROI Agent simultaneously. As each agent's checkpoint is approved individually, launch its Phase 2 — no need to wait for all Phase 1s.
 
 Route work to specialized agents based on engagement type:
 
@@ -385,23 +463,72 @@ Before finalizing, verify:
 - Generate executive summary synthesizing key findings
 - Output to specified folder structure
 
-#### 6b. Interactive HTML Dashboard Gate (MANDATORY for Detailed Assessment / Ignite Assess)
+#### 6b. Generate Interactive HTML Dashboard (MANDATORY for Detailed Assessment / Ignite Assess)
 
-After the Narrative Assembler completes, verify that the consolidated interactive HTML dashboard exists and was produced by the `/generate-assessment-html` skill:
+After the Narrative Assembler completes and `assessment_report.md` + `executive_summary.md` exist, the **orchestrator** invokes the HTML skill directly:
 
+```
+Invoke: /generate-assessment-html
+Working directory: {engagement_dir}
+```
+
+**The orchestrator invokes this skill — do NOT delegate HTML generation to the Narrative Assembler or any other subagent.** The Assembler produces markdown; the orchestrator produces the visual dashboard.
+
+After invocation, verify the output:
 - [ ] File `{engagement_code}_Consolidated_Assessment_Interactive.html` exists in the outputs directory
-- [ ] File size is >200KB (the `/generate-assessment-html` skill produces 250-400KB files; anything under 100KB means the wrong tool was used)
-- [ ] File contains `class="sidebar"` (left sidebar navigation — NOT a top navbar)
+- [ ] File size is >200KB (the skill produces 250-400KB files; anything under 100KB means it failed)
+- [ ] File contains `class="sidebar"` (left sidebar navigation)
 - [ ] File contains `switchTab(` (panel-based navigation JavaScript)
 - [ ] File contains `renderHeatmap(` (interactive capability heatmap engine)
 
-If ANY check fails: the HTML was NOT produced by `/generate-assessment-html`. Re-invoke the skill from the engagement outputs directory. Do NOT accept output from any ad-hoc HTML generation or markdown-to-HTML conversion.
+If verification fails, re-invoke the skill. Do NOT fall back to ad-hoc HTML generation.
 
-**NEVER generate assessment HTML by converting markdown to HTML directly.** Always use the `/generate-assessment-html` skill, which contains the full Future UI design system with sidebar navigation, bento grids, dark feature sections, interactive heatmaps, ROI scenario toggles, phone-frame prototypes, journey swimlanes, and cross-act traceability.
+#### 6c. Generate ROI Excel Model (MANDATORY when ROI Agent has run)
+
+After the ROI Agent completes and `roi_report.md` + `roi_config.json` exist, the **orchestrator** invokes the Excel skill directly:
+
+```
+Invoke: /generate-roi-excel
+Input: {engagement_dir}/outputs/roi_config.json
+Working directory: {engagement_dir}
+```
+
+**The orchestrator invokes this skill — do NOT delegate Excel generation to the ROI Agent.** The ROI Agent produces the analytical model (markdown + JSON config); the orchestrator produces the formatted Excel deliverable.
+
+After invocation, verify:
+- [ ] Excel file exists in the outputs directory
+- [ ] File contains expected sheets (Summary, Scenarios, Assumptions, Sensitivity)
+
+### Step 6d. OUTPUT COMPLETION GATE (MANDATORY — BLOCKS Step 7)
+
+**This is a hard gate. Step 7 CANNOT begin until this gate passes.**
+
+Run the validation script:
+```bash
+bash scripts/validate_engagement_outputs.sh "{engagement_dir}" "{engagement_type}"
+```
+
+The script checks for EVERY required output file. If ANY are missing, it prints exactly what's missing and exits with code 1.
+
+**If the gate FAILS (exit code 1):**
+1. Read the script output to identify missing files
+2. For each missing file, invoke the responsible agent or skill:
+   - Missing HTML dashboard → invoke `/generate-assessment-html`
+   - Missing `roi_config.json` → re-run ROI Agent Phase 3 with explicit instruction to produce it
+   - Missing ROI Excel → invoke `/generate-roi-excel`
+   - Missing any agent output → re-run the responsible agent's final phase
+3. Re-run the validation script
+4. Repeat until exit code 0
+
+**The orchestrator MUST NOT proceed to Step 7 until the gate passes with exit code 0.**
+
+This gate exists because LLMs skip steps. The script is the enforcement mechanism — it does not forget, it does not skip, and it does not rationalize missing outputs as acceptable.
+
+---
 
 ### Step 7: Post-Assembly Cross-Deliverable Review
 
-After the Narrative Assembler completes, perform this final review before declaring the engagement complete. This review is **non-delegable** — the orchestrator performs it directly.
+After the completion gate passes (Step 6d), perform this final review before declaring the engagement complete. This review is **non-delegable** — the orchestrator performs it directly.
 
 #### 7a. Cross-Deliverable Numerical Consistency
 Verify that numbers match across ALL output documents:

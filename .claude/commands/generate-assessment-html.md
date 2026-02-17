@@ -566,19 +566,41 @@ If `market_context_validated.md` or `*_Market_Research.md` is found:
 
 ---
 
+## Incremental Write Protocol (MANDATORY)
+
+Building the full HTML in-context accumulates 2,000-6,000 lines and risks context limits. Instead, build each panel incrementally and write partials to disk:
+
+1. **Create partials directory:** `outputs/partials/` (create if it doesn't exist)
+2. **For each panel (Steps 4-8):** Build the panel's HTML content (~200-800 lines), then **immediately write it to disk** as `outputs/partials/panel_{name}.html` before moving to the next panel. This keeps your working context at ~800-1200 lines per panel instead of accumulating the full dashboard.
+3. **In Step 9 (Assemble):** Read the template, then read each partial file and inject it into the corresponding `{{PLACEHOLDER}}` marker. Write the final assembled HTML.
+
+**Panel file naming convention:**
+- `panel_hero.html` — Hero section + floating cards
+- `panel_exec.html` — Executive Summary (Panel 0)
+- `panel_act1.html` through `panel_act7.html` — Act panels
+- `panel_next.html` — Next Steps panel
+- `panel_appendix.html` — Appendix/traceability panel
+
+**Rules:**
+- NEVER hold more than 2 panels in working context simultaneously
+- Write each partial BEFORE starting the next panel
+- If a panel exceeds 1,000 lines, split it into sub-partials (e.g., `panel_act4_journey_experience.html`, `panel_act4_swimlanes.html`)
+
+---
+
 ## Generation Process
 
 ### Step 1: Inventory
-Scan the outputs directory. Report what was found and what's missing.
+Scan the outputs directory. Report what was found and what's missing. Create `outputs/partials/` directory.
 
 ### Step 2: Extract Hero Data
-From `executive_summary.md`: 5 headline metrics, transformation arc, cost-of-inaction stat, floating card stats.
+From `executive_summary.md`: 5 headline metrics, transformation arc, cost-of-inaction stat, floating card stats. **Write `outputs/partials/panel_hero.html`.**
 
 ### Step 3: Identify Business Lines
 From discovery/persona data: identify 2-3 business lines, assign colors.
 
 ### Step 4: Build Each Act Panel
-For each of the 10 panels: read content from `assessment_report.md`, select components from the registry, inject content, add trace IDs, apply business line tags.
+For each of the 10 panels: read content from `assessment_report.md`, select components from the registry, inject content, add trace IDs, apply business line tags. **Write each panel to `outputs/partials/panel_{name}.html` immediately after building it.** Do NOT accumulate panels in context.
 
 ### Step 5: Build Capability Heatmap Data
 Extract scores from assessment JSON. Generate JavaScript arrays per business line. Embed `<script>` blocks calling `renderHeatmap()`.
@@ -605,8 +627,8 @@ If `journey_maps.json` contains a `journeys[]` array: parse journey data and bui
 ### Step 8: Build Phone Prototypes
 Top 3 use cases: phone-frame mockups with key screens.
 
-### Step 9: Assemble
-Using the template file read in Step 0, replace all `{{PLACEHOLDER}}` markers with the content built in Steps 1-8. Do NOT rewrite the CSS or JS — use the template's CSS and JS exactly as-is. Save as `{engagement_code}_Consolidated_Assessment_Interactive.html`.
+### Step 9: Assemble from Partials
+Read the template file from Step 0. Then read each partial file from `outputs/partials/` and inject its content into the corresponding `{{PLACEHOLDER}}` marker. Do NOT rewrite the CSS or JS — use the template's CSS and JS exactly as-is. Save as `{engagement_code}_Consolidated_Assessment_Interactive.html`. Delete the `outputs/partials/` directory after successful assembly.
 
 ### Step 10: Validate
 Run through the Quality Checklist below.

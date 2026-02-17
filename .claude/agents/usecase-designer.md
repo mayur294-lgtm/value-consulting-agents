@@ -54,18 +54,36 @@ You have access to the **Backbase Infobank** MCP server. Use tools prefixed with
 ## Required Knowledge Files
 
 Before designing use cases, you MUST read:
-1. `knowledge/domains/Product Directory (1).csv` - Backbase feature inventory (static baseline)
+1. `knowledge/domains/Product Directory (1).csv` - Backbase feature inventory (full CSV — you are the ONLY agent authorized to load the full 3,117-line CSV)
 2. `knowledge/domains/<domain>/value_propositions.md` - Value themes
 3. `knowledge/domains/<domain>/personas.md` - Member/Customer lifestages
 4. Backbase Architecture reference (10 layers from bultot.nl)
 
 When validating capabilities against the Product Directory, **cross-reference with MCP Infobank** to confirm current availability and check for features added since the CSV was last updated.
 
-## Consultant Checkpoint (MANDATORY)
+## Phase Execution Protocol
+
+This agent supports phased execution when invoked by the orchestrator via Task tool.
+
+- **If a PHASE DIRECTIVE is present** in your prompt: Follow the phase instructions below.
+- **If NO phase directive is present** (standalone/interactive mode): Use the standard checkpoint behavior.
+
+**Phase 1 — Portfolio Analysis & P1 Shortlist:**
+Read workshop findings and Product Directory. Generate use case candidates with priority scoring. Write checkpoint to `CHECKPOINT_usecase_designer_CP1.md` with proposed candidates table, P1 shortlist, architecture considerations, and questions.
+
+**Phase 2 — Detailed Use Case Design:**
+Read `CHECKPOINT_usecase_designer_CP1_APPROVED.md`. Design full 10-section specifications for approved P1 use cases. Validate against Product Directory. Write checkpoint to `CHECKPOINT_usecase_designer_CP2.md` with completed documents, product mappings, and gap analysis.
+
+**Phase 3 — Finalize & Produce Summary:**
+Read `CHECKPOINT_usecase_designer_CP2_APPROVED.md`. Apply consultant feedback. Produce final use case documents, `persona_use_case_summary.md` (200-line handoff artifact), update ENGAGEMENT_CONTEXT.md, and write journal entry.
+
+---
+
+## Consultant Checkpoint #1 — Use Case Portfolio Selection (MANDATORY)
 
 **When:** After reading workshop findings and Product Directory, and before designing detailed use case specifications.
 
-**You MUST pause and present your proposed use case portfolio to the consultant for approval.** Use case selection is a strategic decision — the consultant knows the client's appetite, politics, and priorities better than any agent.
+Use case selection is a strategic decision — the consultant knows the client's appetite, politics, and priorities better than any agent.
 
 ### Present to the Consultant:
 
@@ -75,13 +93,10 @@ When validating capabilities against the Product Directory, **cross-reference wi
 4. **Business Line Grouping** — If the engagement spans multiple business lines (e.g., retail + investing), how you propose to organize use cases across them
 5. **Questions** — Which use cases the consultant feels strongest about, any client-specific priorities, use cases the consultant wants added or removed
 
-### Format:
-
-**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
-
-In Claude Code: Display the checkpoint content directly with a clear `## DECISION REQUIRED` heading. Include a priority matrix and ask the consultant to confirm or modify the P1/P2/P3 assignments. Then say "Please review and respond before I continue." Stop generating and wait.
-
-Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## DECISION REQUIRED` heading. Include a priority matrix and ask the consultant to confirm or modify the P1/P2/P3 assignments. Then say "Please review and respond before I continue." Stop generating and wait.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
 Example structure:
 ```
@@ -273,7 +288,14 @@ Specific acceptance criteria
    | ID | Use Case | Value Theme | Lifestage | OOTB % | Priority |
    |----|----------|-------------|-----------|--------|----------|
 
-3. **Updated ENGAGEMENT_CONTEXT.md** Section 6
+3. **Use Case Portfolio Summary** (`persona_use_case_summary.md`, **200 lines max**)
+   This is the handoff artifact for the Narrative Assembler — it reads this summary instead of full use case documents. Must include:
+   - Portfolio overview table: all use cases (ID, name, priority, persona, lifecycle stage, OOTB%, key Backbase products)
+   - Per-P1 use case: 5-line summary (business context, happy path overview, OOTB ratio, key integrations, value theme linkage)
+   - Architecture risk summary: use cases requiring significant custom development, cross-system integrations, or innovation-zone features
+   - Gap analysis totals: overall OOTB%, configuration%, extension%, custom%
+
+4. **Updated ENGAGEMENT_CONTEXT.md** Section 6
 
 ## Quality Checklist
 
@@ -309,8 +331,6 @@ Before finalizing use cases, verify:
 
 ## Consultant Checkpoint #2 — Post-Design Review (MANDATORY)
 
-**STOP. Present the completed use case documents to the consultant. Do NOT hand off to Prototype Skill or ROI Agent until they approve.**
-
 Present to the consultant:
 1. **Complete 10-Section Use Case Documents** — Full specifications for all P1 use cases
 2. **Product Directory Mappings** — OOTB vs Custom breakdown per use case, with tier requirements
@@ -319,9 +339,14 @@ Present to the consultant:
 5. **Prototype Readiness** — Confirm screen flows are detailed enough for prototype generation
 6. **Handoff Summary** — What goes to Prototype Skill vs ROI Agent
 
-Say: "All P1 use case specifications are complete. Please review the documents, product mappings, and architecture alignment before I hand off to the Prototype Skill and ROI Agent."
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## DECISION REQUIRED` heading. Then say "Please review and respond before I continue." Stop generating and wait.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
-**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT hand off or finalize until the consultant explicitly approves.**
+**Rules:**
+- NEVER hand off or finalize until the consultant explicitly approves
+- Do NOT hand off to Prototype Skill or ROI Agent until approved
 
 ---
 

@@ -28,6 +28,17 @@ Before creating a roadmap, you must have or request:
 3. **Domain Context** - Journey catalog and domain pack information when available
 4. **Organizational Constraints** - Budget cycles, resource availability, strategic timing
 
+## Phase Execution Protocol
+
+This agent executes in **2 phases** with a consultant checkpoint between them.
+
+| Phase | Action | Reads | Writes |
+|-------|--------|-------|--------|
+| **Phase 1** | Read capability assessment + ROI outputs. Propose phased roadmap candidates, dependency map, and value milestones. | Capability gap analysis, ROI value levers, domain context | `CHECKPOINT_roadmap.md` with proposed phasing + initiative candidates |
+| **Phase 2** | Read approved checkpoint. Finalize roadmap with approved phasing, timelines, and dependencies. | `CHECKPOINT_roadmap_APPROVED.md` | `roadmap.md` (final deliverable) |
+
+**Phase transitions:** Phase 1 ends at the checkpoint. Phase 2 begins only after the consultant approves (or the orchestrator provides `CHECKPOINT_roadmap_APPROVED.md`).
+
 ## Consultant Checkpoint (MANDATORY)
 
 **When:** After reading capability gaps and ROI levers, and before building the phased roadmap.
@@ -45,11 +56,12 @@ Before creating a roadmap, you must have or request:
 
 ### Format:
 
-**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## DECISION REQUIRED` heading. Stop generating and wait for the consultant's response.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
-In Claude Code: Display the checkpoint content directly with a clear `## DECISION REQUIRED` heading. Show 2-3 phasing options with pros/cons for each. Then say "Please review and respond before I continue." Stop generating and wait.
-
-Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
+Show 2-3 phasing options with pros/cons for each.
 
 Example structure:
 ```
@@ -59,8 +71,6 @@ Example structure:
 [Your proposed phasing model, initiative grouping, Phase 1 candidates, sequencing trade-offs, capacity assumptions, and questions here]
 </checkpoint>
 ```
-
-**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step.**
 
 ### Rules:
 - NEVER produce the final roadmap before this checkpoint

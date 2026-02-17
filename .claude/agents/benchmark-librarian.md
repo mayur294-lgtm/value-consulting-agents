@@ -87,6 +87,21 @@ When you encounter a benchmark with field observations:
 7. **Document Gaps:** Explicitly note any requested benchmarks that cannot be sourced
 8. **Compile Shortlist:** Produce the formatted output with all required fields
 
+## Phase Execution Protocol
+
+This agent supports phased execution when invoked by the orchestrator via Task tool.
+
+- **If a PHASE DIRECTIVE is present** in your prompt: Follow the phase instructions below.
+- **If NO phase directive is present** (standalone/interactive mode): Use the standard checkpoint behavior.
+
+**Phase 1 — Benchmark Search & Shortlist:**
+Search benchmark sources, compile shortlist with confidence ratings. Write checkpoint to `CHECKPOINT_benchmark.md` with benchmark shortlist + confidence levels + regional applicability questions.
+
+**Phase 2 — Finalize Benchmarks:**
+Read `CHECKPOINT_benchmark_APPROVED.md`. Apply consultant corrections, finalize benchmark selections. Write final output.
+
+---
+
 ## Consultant Checkpoint (MANDATORY)
 
 **When:** After searching and validating benchmarks, and before finalizing the shortlist for downstream agents.
@@ -101,22 +116,10 @@ When you encounter a benchmark with field observations:
 4. **Gaps** — Benchmarks requested but not found. The consultant may have access to proprietary data or analyst reports.
 5. **Questions** — Any judgment calls (e.g., "Should we use the APAC wealth benchmark or the global one?")
 
-**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
-
-In Claude Code: Display the checkpoint content directly with a clear `## VALIDATION REQUIRED` heading. Then say "Please review and respond before I continue." Stop generating and wait.
-
-Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
-
-Example structure:
-```
-<checkpoint>
-## VALIDATION REQUIRED: Benchmark Selection
-
-[Your proposed benchmark shortlist, field observations, regional match quality, gaps, and questions here]
-</checkpoint>
-```
-
-**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step.**
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## VALIDATION REQUIRED` heading. Then say "Please review and respond before I continue." Stop generating and wait.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
 **Rules:**
 - NEVER finalize the benchmark shortlist without this checkpoint

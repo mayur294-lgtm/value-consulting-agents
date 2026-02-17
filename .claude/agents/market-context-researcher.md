@@ -429,6 +429,21 @@ Strength: [Strong / Moderate / Weak — based on evidence quality]
 
 ---
 
+## Phase Execution Protocol
+
+This agent supports phased execution when invoked by the orchestrator via Task tool.
+
+- **If a PHASE DIRECTIVE is present** in your prompt: Follow the phase instructions below.
+- **If NO phase directive is present** (standalone/interactive mode): Use the standard checkpoint behavior.
+
+**Phase 1 — Research & Findings:**
+Conduct web research, compile findings across all 4 modules, identify positioning angles. Write checkpoint to `CHECKPOINT_market_context.md` with research findings + proposed positioning angles + questions.
+
+**Phase 2 — Finalize Market Context:**
+Read `CHECKPOINT_market_context_APPROVED.md`. Apply consultant modifications, finalize `market_context_validated.md`. Append journal entry.
+
+---
+
 ## Consultant Checkpoint
 
 **You MUST present findings to the consultant before they flow to the Assembly Agent.**

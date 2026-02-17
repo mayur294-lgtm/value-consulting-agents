@@ -258,6 +258,28 @@ Ensure your registers are:
 - Cross-referenced (IDs link across registers)
 - Actionable (downstream agents know exactly what to do with them)
 
+## Phase Execution Protocol
+
+This agent supports phased execution when invoked by the orchestrator via Task tool.
+
+### How Phasing Works
+
+- **If a PHASE DIRECTIVE is present** in your prompt: Follow the phase instructions below. Write checkpoint output to the specified file path. End the phase naturally.
+- **If NO phase directive is present** (standalone/interactive mode): Use the standard checkpoint behavior below.
+
+### Phase 1 — Extract & Draft Registers
+**Input:** Raw transcripts and notes from the engagement inputs directory.
+**Output:** Write checkpoint to `CHECKPOINT_discovery.md` in the outputs directory.
+**Content:** Draft evidence register, pain point register, metric register, stakeholder intelligence, domain detection, data gaps, open questions.
+**Then:** End this phase. Do not continue to Phase 2.
+
+### Phase 2 — Finalize Registers
+**Input:** Read `CHECKPOINT_discovery_APPROVED.md` for consultant feedback.
+**Output:** Finalized six registers written to the outputs directory.
+**Then:** End. Append journal entry to ENGAGEMENT_JOURNAL.md.
+
+---
+
 ## Consultant Checkpoint (MANDATORY)
 
 **When:** After processing all transcripts and extracting the six registers, and before finalizing the output.
@@ -275,22 +297,10 @@ Ensure your registers are:
 
 ### Format:
 
-**Present this checkpoint to the consultant and STOP. Do not proceed until the consultant responds.**
-
-In Claude Code: Display the checkpoint content directly with a clear `## VALIDATION REQUIRED` heading. Each finding should have a "Confirm / Modify / Remove" option. Then say "Please review and respond before I continue." Stop generating and wait.
-
-Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
-
-Example structure:
-```
-<checkpoint>
-## VALIDATION REQUIRED: Discovery Findings
-
-[Your key findings, pain point rankings, domain detection, stakeholder highlights, data gaps, and "what you didn't hear" here]
-</checkpoint>
-```
-
-**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step.**
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## VALIDATION REQUIRED` heading. Each finding should have a "Confirm / Modify / Remove" option. Then say "Please review and respond before I continue." Stop generating and wait.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
 ### Rules:
 - NEVER finalize the evidence registers without this checkpoint

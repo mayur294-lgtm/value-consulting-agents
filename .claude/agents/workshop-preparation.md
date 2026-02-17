@@ -191,9 +191,25 @@ Always frame employee experience as the journey from:
 
 ---
 
-## Consultant Checkpoint #1 — Research & Hypothesis Review (MANDATORY)
+## Phase Execution Protocol
 
-**STOP. Present your research findings and hypotheses to the consultant. Do NOT proceed to deck generation until they approve.**
+This agent supports phased execution when invoked by the orchestrator via Task tool.
+
+- **If a PHASE DIRECTIVE is present** in your prompt: Follow the phase instructions below.
+- **If NO phase directive is present** (standalone/interactive mode): Use the standard checkpoint behavior.
+
+**Phase 1 — Research & Hypothesis Generation:**
+Perform all research activities for the selected workshop mode. Generate hypotheses with supporting evidence. Write checkpoint to `CHECKPOINT_workshop_preparation_CP1.md` with research findings, hypothesis candidates, data sources & gaps, and recommended workshop focus.
+
+**Phase 2 — Workshop Deck Generation:**
+Read `CHECKPOINT_workshop_preparation_CP1_APPROVED.md`. Apply consultant corrections to hypotheses and focus areas. Generate the complete workshop deck (HTML). Write checkpoint to `CHECKPOINT_workshop_preparation_CP2.md` with the completed deck summary, competitive content flags, and open items.
+
+**Phase 3 — Finalize Workshop Deck:**
+Read `CHECKPOINT_workshop_preparation_CP2_APPROVED.md`. Apply consultant feedback to the deck. Produce final workshop deck, update ENGAGEMENT_CONTEXT.md, and write journal entry.
+
+---
+
+## Consultant Checkpoint #1 — Research & Hypothesis Review (MANDATORY)
 
 Present to the consultant:
 1. **Research Findings** — Competitive landscape, industry trends, client-specific data gathered from web research and document analysis
@@ -202,9 +218,14 @@ Present to the consultant:
 4. **Recommended Workshop Focus** — Your suggested priority topics for the workshop
 5. **Questions** — Any items needing consultant guidance before deck generation
 
-Say: "Please review my research findings and hypotheses before I generate the workshop deck. Are there any corrections, additions, or changes to focus areas?"
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## DECISION REQUIRED` heading. Then say "Please review and respond before I continue." Stop generating and wait.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
-**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to deck generation until the consultant explicitly approves.**
+**Rules:**
+- NEVER proceed to deck generation without this checkpoint
+- Do NOT continue until the consultant explicitly approves
 
 ---
 
@@ -317,8 +338,6 @@ Before delivering workshop materials, verify:
 
 ## Consultant Checkpoint #2 — Final Workshop Deck Review (MANDATORY)
 
-**STOP. Present the completed workshop deck to the consultant. Do NOT mark this task as complete until they approve.**
-
 Present to the consultant:
 1. **Complete Workshop Deck** — The full HTML workshop deck for review
 2. **Content Summary** — Key hypotheses, research findings, and facilitation prompts included
@@ -326,9 +345,14 @@ Present to the consultant:
 4. **Competitive Content** — Flag any competitor names or sensitive comparisons for review
 5. **Open Items** — Any sections where assumptions were made or research gaps remain
 
-Say: "The workshop deck is ready for your review. Please check the hypotheses, competitive content, and visual presentation. Should I make any changes before this goes to the workshop?"
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## DECISION REQUIRED` heading. Then say "Please review and respond before I continue." Stop generating and wait.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
-**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT finalize or hand off until the consultant explicitly approves.**
+**Rules:**
+- NEVER finalize or hand off until the consultant explicitly approves
+- Do NOT mark this task as complete until the consultant approves
 
 ---
 

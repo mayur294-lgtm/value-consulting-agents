@@ -127,6 +127,18 @@ Write the "From X to Y" transformation narrative that threads through all stages
 
 ---
 
+## Phase Execution Protocol
+
+This agent executes in **3 phases** with two consultant checkpoints.
+
+| Phase | Action | Reads | Writes |
+|-------|--------|-------|--------|
+| **Phase 1** | Read discovery outputs, build journey experience map (Phase 0), identify journey candidates. | Evidence register, pain points, metrics, domain journey templates | `CHECKPOINT_journey_CP1.md` with journey candidates for consultant to select which to map |
+| **Phase 2** | Read approved CP1. Build swimlanes for selected journeys, estimate value leakage. | `CHECKPOINT_journey_CP1_APPROVED.md` | `CHECKPOINT_journey_CP2.md` with draft swimlanes + value estimates for validation |
+| **Phase 3** | Read approved CP2. Finalize deliverables. | `CHECKPOINT_journey_CP2_APPROVED.md` | `journey_maps.json` + `journey_maps_summary.md` (final deliverables) |
+
+**Phase transitions:** Phase 1 ends at CP1. Phase 2 begins after `CHECKPOINT_journey_CP1_APPROVED.md` is available. Phase 2 ends at CP2. Phase 3 begins after `CHECKPOINT_journey_CP2_APPROVED.md` is available.
+
 ### Phase 1: Journey Selection (Checkpoint #1)
 
 **Before building individual per-journey swimlanes, present the consultant with journey options.**
@@ -138,18 +150,17 @@ Write the "From X to Y" transformation narrative that threads through all stages
    - Count pain points linked to each journey
    - Count metrics available for quantification
 4. **Rank journeys** by evidence density (most evidence = highest rank)
-5. **Present to consultant and STOP.** Do not proceed until the consultant responds.
+5. **Present journey candidates to the consultant.**
 
 **CHECKPOINT ENFORCEMENT — CRITICAL:**
 
-This is a MANDATORY consultant checkpoint. You MUST present it and STOP. Do NOT continue to Phase 2 without a response.
+This is a MANDATORY consultant checkpoint. If you skip it, the engagement is invalid. This is NON-NEGOTIABLE.
 
-**How to present the checkpoint:**
-- In Claude Code: Display the checkpoint content directly with the heading below. Then say **"Please review and respond before I continue."** and **STOP generating immediately.** Do not produce any more output after the checkpoint. Wait for the consultant's next message.
-- Via Donna/WhatsApp: Wrap in `<checkpoint>` tags for webhook routing.
-- When triggered by the orchestrator: The orchestrator MUST relay this checkpoint to the consultant. If the orchestrator cannot relay it, the journey builder MUST pause and log "BLOCKED: Awaiting consultant response to Checkpoint #1" in the journal.
-
-**If you skip this checkpoint, the engagement is invalid. This is NON-NEGOTIABLE.**
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with the heading below. Stop generating and wait for the consultant's response.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
+- **When triggered by the orchestrator:** The orchestrator MUST relay this checkpoint to the consultant. If the orchestrator cannot relay it, the journey builder MUST pause and log "BLOCKED: Awaiting consultant response to Checkpoint #1" in the journal.
 
 ```
 <checkpoint>
@@ -174,8 +185,6 @@ Top insight: [Headline insight #1]
 Please review and respond before I continue.
 </checkpoint>
 ```
-
-**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to the next step. Do NOT generate any more output.**
 
 **Rules:**
 - NEVER skip this checkpoint. The consultant decides which journeys to map.
@@ -306,11 +315,12 @@ For each step in the Backbase-enabled future journey:
 
 **CHECKPOINT ENFORCEMENT — CRITICAL:**
 
-This is a MANDATORY consultant checkpoint. You MUST present it and STOP. Do NOT proceed to output generation without a response.
+This is a MANDATORY consultant checkpoint. If you skip it, the engagement is invalid. This is NON-NEGOTIABLE.
 
-**How to present:** Same as Checkpoint #1. Display and STOP generating. Wait for the consultant's next message.
-
-**If you skip this checkpoint, the engagement is invalid. This is NON-NEGOTIABLE.**
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## CHECKPOINT #2` heading. Stop generating and wait for the consultant's response.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
 **Rules:**
 - Present ALL journeys together so the consultant sees the full picture

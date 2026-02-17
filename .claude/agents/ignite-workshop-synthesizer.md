@@ -99,9 +99,25 @@ Merge pain points from all workshops into a unified register:
 
 ---
 
-## Consultant Checkpoint #1 — Hypothesis Validation & Cross-Workshop Analysis Review (MANDATORY)
+## Phase Execution Protocol
 
-**STOP. Present your cross-workshop analysis to the consultant. Do NOT proceed to use case candidate generation until they approve.**
+This agent supports phased execution when invoked by the orchestrator via Task tool.
+
+- **If a PHASE DIRECTIVE is present** in your prompt: Follow the phase instructions below.
+- **If NO phase directive is present** (standalone/interactive mode): Use the standard checkpoint behavior.
+
+**Phase 1 — Cross-Workshop Analysis:**
+Review all 4 workshop outputs. Build hypothesis validation matrix, cross-workshop pattern analysis, and consolidated pain point register. Write checkpoint to `CHECKPOINT_ignite_workshop_synthesizer_CP1.md` with the analysis, preliminary use case direction, and questions.
+
+**Phase 2 — Use Case Candidate Generation & Prioritization:**
+Read `CHECKPOINT_ignite_workshop_synthesizer_CP1_APPROVED.md`. Apply consultant corrections. Generate use case candidates, dependency mapping, and Quick Wins vs Foundational classification. Write checkpoint to `CHECKPOINT_ignite_workshop_synthesizer_CP2.md` with the prioritized use case list and synthesis summary.
+
+**Phase 3 — Finalize Synthesis Report:**
+Read `CHECKPOINT_ignite_workshop_synthesizer_CP2_APPROVED.md`. Apply consultant feedback. Produce final synthesis report, handoff packages for Use Case Designer and ROI agents, update ENGAGEMENT_CONTEXT.md, and write journal entry.
+
+---
+
+## Consultant Checkpoint #1 — Hypothesis Validation & Cross-Workshop Analysis Review (MANDATORY)
 
 Present to the consultant:
 1. **Hypothesis Validation Matrix** — Which hypotheses from Agent 1 were Confirmed / Partially Confirmed / Not Confirmed, with workshop evidence
@@ -110,9 +126,14 @@ Present to the consultant:
 4. **Preliminary Use Case Direction** — High-level areas you plan to explore for use case candidates
 5. **Questions & Flags** — Any conflicting signals between workshops, gaps in evidence, or judgment calls
 
-Say: "Please review my cross-workshop synthesis before I generate use case candidates and priorities. Are the hypothesis validations correct? Any themes I've missed or misinterpreted?"
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## DECISION REQUIRED` heading. Then say "Please review and respond before I continue." Stop generating and wait.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
-**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT continue to use case candidate generation until the consultant explicitly approves.**
+**Rules:**
+- NEVER proceed to use case candidate generation without this checkpoint
+- Do NOT continue until the consultant explicitly approves
 
 ---
 
@@ -284,8 +305,6 @@ Before finalizing synthesis, verify:
 
 ## Consultant Checkpoint #2 — Final Synthesis Report Review (MANDATORY)
 
-**STOP. Present the complete synthesis report to the consultant. Do NOT mark this task as complete or hand off to downstream agents until they approve.**
-
 Present to the consultant:
 1. **Final Prioritized Use Case List** — P1/P2/P3 with scores, value themes, and feasibility ratings
 2. **Quick Wins vs Foundational Classification** — Which use cases are lighthouse candidates vs long-term investments
@@ -293,9 +312,14 @@ Present to the consultant:
 4. **Handoff Readiness** — Confirm this is ready for Use Case Designer (Agent 5) and ROI Agent
 5. **Design Compliance** — Confirm Unified Design System (`knowledge/design-system.md`) was followed
 
-Say: "The synthesis report is ready for your review. Please check the use case priorities, Quick Win classifications, and overall narrative before I hand off to Use Case Designer and ROI agents."
+**Checkpoint delivery (dual-mode):**
+- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
+- **If standalone (no directive):** Display the checkpoint content with a `## DECISION REQUIRED` heading. Then say "Please review and respond before I continue." Stop generating and wait.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
-**After presenting this checkpoint, STOP and wait for the consultant's response. Do NOT finalize or hand off until the consultant explicitly approves.**
+**Rules:**
+- NEVER finalize or hand off until the consultant explicitly approves
+- Do NOT mark this task as complete until the consultant approves
 
 ---
 
