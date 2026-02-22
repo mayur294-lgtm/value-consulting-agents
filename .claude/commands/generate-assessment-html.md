@@ -219,31 +219,35 @@ renderHeatmap('hm-{{BL}}', caps_hm_{{BL}});
 ### 5.11 ROI Lever Items (Act 7)
 ```html
 <div class="scenario-toggle">
-  <button class="scenario-btn active" onclick="switchScenario('conservative',this)">Conservative</button>
-  <button class="scenario-btn" onclick="switchScenario('base',this)">Base Case</button>
-  <button class="scenario-btn" onclick="switchScenario('aggressive',this)">Aggressive</button>
+  <button class="scenario-btn" onclick="setScenario('conservative',this)">Conservative</button>
+  <button class="scenario-btn active" onclick="setScenario('base',this)">Base</button>
+  <button class="scenario-btn" onclick="setScenario('aspirational',this)">Aspirational</button>
 </div>
 <div class="roi-grid">
-  <div class="roi-card"><div class="roi-card-val">{{NPV}}</div><div class="roi-card-lbl">Net Present Value</div></div>
-  <div class="roi-card"><div class="roi-card-val">{{ROI}}</div><div class="roi-card-lbl">ROI</div></div>
-  <div class="roi-card"><div class="roi-card-val">{{PAYBACK}}</div><div class="roi-card-lbl">Payback Period</div></div>
-  <div class="roi-card"><div class="roi-card-val">{{IRR}}</div><div class="roi-card-lbl">IRR</div></div>
+  <div class="roi-card"><div class="roi-card-val" id="roi-npv">{{NPV}}</div><div class="roi-card-lbl">5-Year NPV</div></div>
+  <div class="roi-card"><div class="roi-card-val" id="roi-return">{{ROI}}</div><div class="roi-card-lbl">5-Year ROI</div></div>
+  <div class="roi-card"><div class="roi-card-val" id="roi-payback">{{PAYBACK}}</div><div class="roi-card-lbl">Payback Period</div></div>
+  <div class="roi-card"><div class="roi-card-val" id="roi-benefits">{{BENEFITS}}</div><div class="roi-card-lbl">5yr Gross Benefits</div></div>
 </div>
-<!-- Individual levers with expandable MECE breakdown -->
-<div style="margin-top:32px;">
-  <div style="border:1px solid var(--border);border-radius:16px;margin-bottom:12px;overflow:hidden;background:var(--card);" data-trace-id="BEN-{{ID}}">
-    <div onclick="this.parentElement.classList.toggle('open')" style="padding:18px 24px;display:flex;align-items:center;gap:12px;cursor:pointer;">
-      <span style="font-size:0.7rem;font-weight:800;color:var(--accent);min-width:28px;">{{NUM}}</span>
-      <span style="font-weight:700;font-size:0.9rem;flex:1;">{{LEVER_NAME}}</span>
-      <span style="font-weight:800;font-size:0.95rem;color:{{COLOR}};min-width:80px;text-align:right;">{{VALUE}}</span>
-      <span style="color:var(--muted);font-size:0.8rem;">&#9660;</span>
-    </div>
-    <div style="max-height:0;overflow:hidden;transition:max-height 0.4s ease;">
-      <div style="padding:0 24px 24px;">
-        <!-- Current → Change → Target MECE boxes + linked capabilities -->
-      </div>
-    </div>
+<!-- Individual levers with expandable MECE breakdown — use .lever-card CSS -->
+<div class="lever-card" data-trace-id="BEN-{{ID}}">
+  <div class="lever-header" onclick="this.parentElement.classList.toggle('open')">
+    <span class="lever-num">{{NUM}}</span>
+    <span class="lever-name">{{LEVER_NAME}}</span>
+    <span class="lever-value" style="color:{{COLOR}};">{{VALUE}}</span>
+    <span class="lever-arrow">&#9660;</span>
   </div>
+  <div class="lever-body"><div class="lever-content">
+    <div class="lever-mece">
+      <div class="lever-mece-box" style="background:#FEF2F2;"><h5 style="color:#DC2626;">Current State</h5>{{CURRENT}}</div>
+      <div class="lever-mece-box" style="background:#FFFBEB;"><h5 style="color:#D97706;">Change Driver</h5>{{CHANGE}}</div>
+      <div class="lever-mece-box" style="background:#F0FDF4;"><h5 style="color:#059669;">Target State</h5>{{TARGET}}</div>
+    </div>
+    <div class="lever-benchmark"><strong>Benchmark:</strong> {{BENCHMARK}}</div>
+    <div class="lever-capabilities">
+      <span class="lever-cap-tag">{{CAP_ID}}</span>
+    </div>
+  </div></div>
 </div>
 ```
 

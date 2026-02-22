@@ -44,7 +44,7 @@
   ║            ACT3_MILESTONE_CARDS, ACTn_ADDITIONAL_CONTENT          ║
   ║  Act 4: ACT4_PERSONAS, ACT4_JX_HEADLINES, ACT4_JX_SVG,           ║
   ║         ACT4_JX_PANELS                                            ║
-  ║  Act 5: ACT5_HEATMAP_DATA (JS array), ACT5_PRIORITY_GAPS         ║
+  ║  Act 5: ACT5_PROBLEM_MAP, ACT5_HEATMAP_DATA (JS), ACT5_PRIORITY  ║
   ║  Act 6: ACT6_TIMELINE, ACT6_PHASE_CARDS                          ║
   ║  Act 7: ACT7_ROI_CARDS, ACT7_BASE_DESC, ACT7_SCENARIO_DATA (JS), ║
   ║         ACT7_FINANCIAL_TABLE, ACT7_VALUE_LEVERS                   ║
@@ -53,7 +53,7 @@
   ║             USECASES_PHONE_PROTOTYPES                             ║
   ╚══════════════════════════════════════════════════════════════════════╝
 -->
-<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════ CSS CUSTOM PROPERTIES ══════════════════════════ */
 :root {
@@ -71,7 +71,7 @@
 /* ══════════════════════════ RESET & BASE ══════════════════════════ */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 15px; }
+body { font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 15px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
 .wrap { max-width: 1360px; margin: 0 auto; padding: 0 48px 100px; margin-left: 260px; }
 h2 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
 h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.2px; }
@@ -80,9 +80,9 @@ h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
 /* ══════════════════════════ LEFT SIDEBAR NAV ══════════════════════════ */
 .sidebar { position: fixed; top: 0; left: 0; width: 250px; height: 100vh; background: #091C35; z-index: 200; display: flex; flex-direction: column; overflow-y: auto; box-shadow: 4px 0 24px rgba(0,0,0,0.12); }
 .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); background: linear-gradient(180deg, rgba(51,102,255,0.08) 0%, transparent 100%); }
-.sidebar-brand-logo { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+.sidebar-brand-logo { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; color: rgba(255,255,255,0.55); margin-bottom: 6px; }
 .sidebar-brand-title { font-size: 1.1rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.3px; line-height: 1.3; }
-.sidebar-brand-sub { font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-top: 4px; }
+.sidebar-brand-sub { font-size: 0.7rem; color: rgba(255,255,255,0.55); margin-top: 4px; }
 .sidebar-nav { flex: 1; padding: 16px 0; }
 .tab-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 24px; font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.55); cursor: pointer; border: none; background: none; white-space: nowrap; transition: all 0.25s ease; font-family: inherit; text-align: left; position: relative; border-left: 3px solid transparent; }
 .tab-btn:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.04); border-left-color: rgba(51,102,255,0.3); }
@@ -144,7 +144,7 @@ h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
 .bento-stat-val { font-size: 3rem; font-weight: 900; letter-spacing: -2px; line-height: 1; }
 .bento-stat-lbl { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; font-weight: 600; }
 .bento-dark { background: #091C35; border-color: #1E293B; color: #FFFFFF; }
-.bento-dark .bento-stat-lbl { color: rgba(255,255,255,0.4); }
+.bento-dark .bento-stat-lbl { color: rgba(255,255,255,0.55); }
 .bento-accent { background: linear-gradient(135deg, #3366FF, #3B82F6); border: none; color: #FFFFFF; }
 .bento-accent .bento-stat-lbl { color: rgba(255,255,255,0.6); }
 
@@ -155,12 +155,12 @@ h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
 .dark-feature-overline { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: #3366FF; margin-bottom: 16px; }
 .dark-feature h3 { font-size: 2.8rem; font-weight: 900; letter-spacing: -2px; line-height: 1.05; color: #FFFFFF; margin-bottom: 12px; }
 .dark-feature h3 span { background: linear-gradient(135deg, #3366FF, #7B61FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.dark-feature-sub { color: rgba(255,255,255,0.4); font-size: 0.9rem; max-width: 520px; line-height: 1.7; margin-bottom: 48px; }
+.dark-feature-sub { color: rgba(255,255,255,0.55); font-size: 0.9rem; max-width: 520px; line-height: 1.7; margin-bottom: 48px; }
 .dark-feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .dark-feature-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 32px 28px; transition: all 0.35s ease; position: relative; overflow: hidden; }
 .dark-feature-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(51,102,255,0.25); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
 .dark-feature-card h4 { font-size: 1rem; font-weight: 700; color: #FFFFFF; margin-bottom: 8px; letter-spacing: -0.3px; }
-.dark-feature-card p { font-size: 0.78rem; color: rgba(255,255,255,0.4); line-height: 1.6; }
+.dark-feature-card p { font-size: 0.78rem; color: rgba(255,255,255,0.55); line-height: 1.6; }
 
 /* ══════════════════════════ CARDS ══════════════════════════ */
 .card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; box-shadow: var(--shadow-sm); transition: all 0.35s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; }
@@ -177,7 +177,7 @@ h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
 .metric-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(51,102,255,0.08); border-color: rgba(51,102,255,0.15); }
 .metric-val { font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 6px; letter-spacing: -1px; color: #FFFFFF; transition: transform 0.3s ease; }
 .metric-card:hover .metric-val { transform: scale(1.05); }
-.metric-lbl { font-size: 0.65rem; color: rgba(255,255,255,0.35); line-height: 1.4; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+.metric-lbl { font-size: 0.65rem; color: rgba(255,255,255,0.55); line-height: 1.4; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
 
 /* ══════════════════════════ PERSONA CARDS ══════════════════════════ */
 .persona-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; cursor: pointer; transition: all 0.35s ease; }
@@ -226,6 +226,47 @@ h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
 .hm-cell .hm-name { font-size: 0.72rem; font-weight: 700; color: var(--text); margin-top: 4px; line-height: 1.3; }
 .hm-detail-panel { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin-top: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); display: none; }
 .hm-detail-panel.visible { display: block; }
+
+/* ══════════════════════════ DISTRIBUTION BAR ══════════════════════════ */
+.dist-bar { display: flex; height: 32px; border-radius: 8px; overflow: hidden; margin: 12px 0; }
+.dist-seg { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: #fff; min-width: 40px; }
+.dist-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+.dist-legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); }
+.dist-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+/* ══════════════════════════ LIFECYCLE PIPELINE ══════════════════════════ */
+.lc-stage { position:relative; cursor:pointer; padding:16px 12px 14px; text-align:center; background:var(--card); border:2px solid var(--border); transition:all 0.35s cubic-bezier(0.4,0,0.2,1); user-select:none; overflow:hidden; }
+.lc-stage:first-child { border-radius:16px 0 0 16px; }
+.lc-stage:last-child { border-radius:0 16px 16px 0; }
+.lc-stage:not(:first-child) { border-left:none; }
+.lc-stage::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--stage-color); opacity:0.3; transition:opacity 0.35s ease, height 0.35s ease; }
+.lc-stage:hover::before { opacity:0.6; }
+.lc-stage:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.06); z-index:2; }
+.lc-stage.active { border-color:var(--stage-color); background:var(--card); box-shadow:0 8px 32px rgba(0,0,0,0.08); z-index:3; transform:translateY(-3px); }
+.lc-stage.active::before { opacity:1; height:5px; }
+.lc-stage .lc-num { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; font-size:0.7rem; font-weight:800; background:rgba(0,0,0,0.04); color:var(--muted); margin-bottom:8px; transition:all 0.35s ease; }
+.lc-stage.active .lc-num { background:var(--stage-color); color:#fff; box-shadow:0 2px 10px rgba(0,0,0,0.15); }
+.lc-stage .lc-icon { font-size:1.4rem; margin-bottom:4px; display:block; filter:grayscale(0.4); transition:filter 0.35s ease; }
+.lc-stage.active .lc-icon { filter:grayscale(0); }
+.lc-stage .lc-title { font-size:0.82rem; font-weight:800; color:var(--text); letter-spacing:-0.3px; margin-bottom:3px; transition:color 0.35s ease; }
+.lc-stage.active .lc-title { color:var(--stage-color); }
+.lc-stage .lc-sub { font-size:0.62rem; color:var(--muted); line-height:1.4; margin-bottom:6px; }
+.lc-stage .lc-stat { display:inline-block; padding:4px 12px; border-radius:8px; font-size:0.68rem; font-weight:700; background:rgba(0,0,0,0.03); color:var(--muted); transition:all 0.35s ease; }
+.lc-stage.active .lc-stat { background:var(--stage-color); color:#fff; }
+.lc-stage:not(:last-child)::after { content:''; position:absolute; right:-11px; top:50%; transform:translateY(-50%); width:0; height:0; border-top:10px solid transparent; border-bottom:10px solid transparent; border-left:10px solid var(--border); z-index:4; transition:border-left-color 0.35s ease; }
+.lc-stage.active:not(:last-child)::after { border-left-color:var(--stage-color); }
+.lc-detail-section { animation:lcSlideIn 0.45s cubic-bezier(0.4,0,0.2,1); }
+@keyframes lcSlideIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+.lc-l1-card { background:var(--card); border:2px solid var(--border); border-radius:16px; padding:24px; cursor:pointer; transition:all 0.3s ease; position:relative; overflow:hidden; }
+.lc-l1-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--stage-color); opacity:0; transition:opacity 0.3s ease; }
+.lc-l1-card:hover { border-color:var(--stage-color); box-shadow:0 8px 24px rgba(0,0,0,0.06); transform:translateY(-2px); }
+.lc-l1-card:hover::before { opacity:0.5; }
+.lc-l1-card.expanded { border-color:var(--stage-color); }
+.lc-l1-card.expanded::before { opacity:1; }
+.lc-l2-zone { overflow:hidden; max-height:0; opacity:0; transition:max-height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease, margin 0.4s ease; margin-top:0; }
+.lc-l2-zone.open { max-height:3000px; opacity:1; margin-top:16px; }
+.lc-cap-card { background:var(--card); border:2px solid var(--border); border-radius:14px; padding:18px; transition:all 0.3s ease; position:relative; overflow:hidden; }
+.lc-cap-card:hover { border-color:var(--cap-color, var(--border)); box-shadow:0 8px 24px rgba(0,0,0,0.06); transform:translateY(-2px); }
 
 /* ══════════════════════════ TIMELINE (ROADMAP) ══════════════════════════ */
 .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; position: relative; }
@@ -284,6 +325,35 @@ h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
 .roi-card-val { font-size: 1.8rem; font-weight: 800; color: var(--accent); transition: transform 0.3s ease; }
 .roi-card:hover .roi-card-val { transform: scale(1.06); }
 .roi-card-lbl { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+/* ══════════════════════════ VALUE LEVER CARDS (EXPANDABLE) ══════════════════════════ */
+.lever-card { border: 1px solid var(--border); border-radius: 16px; margin-bottom: 12px; overflow: hidden; background: var(--card); transition: all 0.35s ease; }
+.lever-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.05); border-color: rgba(51,102,255,0.15); }
+.lever-header { padding: 18px 24px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.2s ease; }
+.lever-header:hover { background: #F8FAFC; }
+.lever-num { font-size: 0.7rem; font-weight: 800; color: var(--accent); min-width: 28px; }
+.lever-name { font-weight: 700; font-size: 0.9rem; flex: 1; }
+.lever-value { font-weight: 800; font-size: 0.95rem; min-width: 80px; text-align: right; }
+.lever-arrow { color: var(--muted); font-size: 0.8rem; transition: transform 0.3s ease; }
+.lever-card.open .lever-arrow { transform: rotate(180deg); }
+.lever-card.open { border-color: rgba(51,102,255,0.2); box-shadow: 0 4px 16px rgba(51,102,255,0.06); }
+.lever-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.lever-card.open .lever-body { max-height: 800px; }
+.lever-content { padding: 0 24px 24px; }
+.lever-mece { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.lever-mece-box { padding: 14px; border-radius: 12px; font-size: 0.8rem; line-height: 1.7; color: var(--muted); }
+.lever-mece-box h5 { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
+.lever-benchmark { background: #F0F4FF; border-radius: 10px; padding: 12px 16px; font-size: 0.8rem; margin-bottom: 12px; }
+.lever-benchmark strong { font-weight: 700; color: var(--accent); }
+.lever-capabilities { display: flex; flex-wrap: wrap; gap: 6px; }
+.lever-cap-tag { padding: 4px 10px; border-radius: 6px; font-size: 0.62rem; font-weight: 700; background: rgba(51,102,255,0.06); color: var(--accent); border: 1px solid rgba(51,102,255,0.12); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ══════════════════════════ PROGRESS BARS (Problem Map) ══════════════════════════ */
+.progress-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.progress-label { min-width: 180px; font-size: 0.8rem; font-weight: 600; }
+.progress-track { flex: 1; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 5px; transition: width 1s ease; }
+.progress-value { min-width: 60px; font-size: 0.8rem; font-weight: 700; color: var(--accent); text-align: right; }
 
 /* ══════════════════════════ SCENARIO TOGGLE ══════════════════════════ */
 .scenario-toggle { display: inline-flex; background: #F1F5F9; border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 24px; }
@@ -502,6 +572,7 @@ h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
   .roi-grid { grid-template-columns: 1fr 1fr; }
   .dark-feature-grid { grid-template-columns: 1fr; }
   .dark-feature { padding: 36px 24px; margin: 32px 0; border-radius: 20px; }
+  .lever-mece { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -639,7 +710,7 @@ h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
     {{ACT4_ADDITIONAL_CONTENT}}
   </div>
 
-  <!-- ── ACT 5: Capability Assessment (enforces interactive heatmap) ── -->
+  <!-- ── ACT 5: Capability Assessment (02e lifecycle pipeline architecture) ── -->
   <div class="panel" id="panel-act5">
     <div class="section-header">
       <div class="overline">Act 5 of 7</div>
@@ -648,17 +719,46 @@ h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
     </div>
     <!-- TRANSFORMATION THREAD: What capabilities the transformation requires -->
     <div class="card" style="margin-bottom:24px;">{{ACT5_TRANSFORMATION_THREAD}}</div>
-    <!-- Heatmap (MANDATORY — rendered by JS) -->
-    <div id="hm-container" class="heatmap-grid"></div>
-    <div id="hm-detail" class="hm-detail-panel">
-      <div id="hm-detail-content"></div>
-      <div id="hm-detail-extended"></div>
+
+    <!-- Hero Stats Row (02e architecture) -->
+    {{ACT5_HERO_STATS}}
+
+    <!-- Dark Feature Banner — structural barrier narrative -->
+    {{ACT5_DARK_FEATURE}}
+
+    <!-- Lifecycle Pipeline -->
+    <div style="margin-bottom:12px;">
+      <div style="font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:var(--muted);margin-bottom:16px;">{{ACT5_PIPELINE_LABEL}}</div>
     </div>
+    <div id="lc-pipeline" style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-bottom:0;position:relative;">
+      <!-- Pipeline stages rendered by JS -->
+    </div>
+    <div id="lc-arrow" style="display:none;margin-bottom:0;position:relative;height:20px;">
+      <div id="lc-arrow-inner" style="position:absolute;top:0;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:14px solid var(--bb-blue);transition:left 0.4s cubic-bezier(0.4,0,0.2,1);"></div>
+    </div>
+    <div id="lc-detail" style="margin-bottom:32px;">
+      <!-- Rendered by JS -->
+    </div>
+
+    <!-- Toggle Full Grid -->
+    <div style="text-align:center;margin-bottom:24px;">
+      <button onclick="toggleFullGrid()" id="full-grid-btn" style="padding:12px 28px;border-radius:12px;border:2px solid var(--border);background:var(--card);font-size:0.82rem;font-weight:700;color:var(--text);cursor:pointer;transition:all 0.3s ease;letter-spacing:-0.2px;" onmouseover="this.style.borderColor='var(--accent)';this.style.boxShadow='0 4px 16px rgba(51,102,255,0.1)';" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none';">Show All {{ACT5_CAP_COUNT}} Capabilities</button>
+    </div>
+    <div id="full-heatmap" style="display:none;margin-top:24px;">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">{{ACT5_DOMAIN_LEGEND}}</div>
+      <div id="hm-container" class="heatmap-grid"></div>
+      <div id="hm-detail" class="hm-detail-panel">
+        <div id="hm-detail-content"></div>
+        <div id="hm-detail-extended"></div>
+      </div>
+    </div>
+
+    <!-- Capability + Lifecycle Data -->
     <script>
       window['caps_hm-container'] = [{{ACT5_HEATMAP_DATA}}];
-      renderHeatmap('hm-container', window['caps_hm-container']);
+      var TNB_CAPS = window['caps_hm-container'];
+      var LIFECYCLE_STAGES = [{{ACT5_LIFECYCLE_STAGES}}];
     </script>
-    {{ACT5_PRIORITY_GAPS}}
   </div>
 
   <!-- ── ACT 6: Delivery Roadmap (enforces timeline) ── -->
@@ -718,8 +818,7 @@ h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
       <p>{{USECASES_DESC}}</p>
     </div>
     <div class="uc-grid">{{USECASES_CARDS}}</div>
-    <h3 style="margin:48px 0 24px;">Prototype Previews</h3>
-    <div class="proto-grid">{{USECASES_PHONE_PROTOTYPES}}</div>
+    {{USECASES_PHONE_PROTOTYPES}}
   </div>
 
 </div>
@@ -755,6 +854,7 @@ document.addEventListener('click', function(e) {
   if (phaseCard) { phaseCard.classList.toggle('open'); }
   var ucCard = e.target.closest('.uc-card');
   if (ucCard && !e.target.closest('a')) { ucCard.classList.toggle('open'); }
+  /* lever-card toggle handled by inline onclick on .lever-header */
 });
 
 /* ── SCROLL REVEAL (IntersectionObserver) ── */
@@ -788,6 +888,7 @@ function renderHeatmap(containerId, caps) {
     html += '<div class="hm-score" style="background:'+scoreColors[c.score]+';">'+c.score+'</div>';
     html += '<div class="hm-id">'+c.id+'</div>';
     html += '<div class="hm-name">'+c.name+'</div>';
+    html += '<div style="font-size:0.6rem;color:var(--muted);margin-top:4px;">'+c.domain+'</div>';
     html += '</div>';
   });
   container.innerHTML = html;
@@ -801,14 +902,202 @@ function selectCell(el, src, idx) {
   if (!cap) return;
   var panel = document.getElementById('hm-detail');
   var content = document.getElementById('hm-detail-content');
-  content.innerHTML = '<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">'+
-    '<div class="score-badge s'+cap.score+'">'+cap.score+'</div>'+
-    '<div><strong style="font-size:1.05rem;">'+cap.id+': '+cap.name+'</strong>'+
-    '<div style="font-size:0.8rem;color:var(--muted);">Domain: '+cap.domain+' | Score: '+scoreLabels[cap.score]+'</div></div></div>'+
-    '<div style="margin-top:8px;"><div class="score-bar" style="width:100%;max-width:300px;"><div class="score-bar-fill" style="width:'+(cap.score/4*100)+'%;background:'+scoreColors[cap.score]+';"></div></div></div>';
+  var extended = document.getElementById('hm-detail-extended');
+  /* Header: score badge + name + value impact */
+  content.innerHTML = '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">'+
+    '<div class="score-badge s'+cap.score+'" style="width:44px;height:44px;font-size:1rem;">'+cap.score+'</div>'+
+    '<div><div style="font-size:1.1rem;font-weight:800;letter-spacing:-0.3px;">'+cap.id+': '+cap.name+'</div>'+
+    '<div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">Domain: '+cap.domain+' &bull; '+scoreLabels[cap.score]+'</div></div>'+
+    (cap.impact ? '<div style="margin-left:auto;text-align:right;"><div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:2px;">Value Impact</div><div style="font-size:0.88rem;font-weight:800;color:#DC2626;">'+cap.impact+'</div></div>' : '')+
+    '</div>'+
+    '<div style="margin-bottom:14px;"><div class="score-bar" style="width:100%;"><div class="score-bar-fill" style="width:'+(cap.score/4*100)+'%;background:'+scoreColors[cap.score]+';"></div></div></div>';
+  /* Extended: assessment detail + F/M/B breakdown */
+  var ext = '';
+  if (cap.desc) {
+    ext += '<div style="background:#F8FAFC;border-radius:12px;padding:16px;margin-bottom:14px;border:1px solid var(--border);"><div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Assessment Detail</div><p style="font-size:0.84rem;color:var(--text);line-height:1.8;">'+cap.desc+'</p></div>';
+  }
+  if (typeof cap.front !== 'undefined') {
+    ext += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">';
+    var fmb = [{lbl:'Front Office',val:cap.front},{lbl:'Middle Office',val:cap.middle},{lbl:'Back Office',val:cap.back}];
+    fmb.forEach(function(item){
+      var c = scoreColors[item.val] || '#94A3B8';
+      ext += '<div style="background:#F8FAFC;border-radius:10px;padding:12px;text-align:center;"><div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px;">'+item.lbl+'</div><div style="font-size:1.4rem;font-weight:800;color:'+c+';">'+item.val+'</div></div>';
+    });
+    ext += '</div>';
+  }
+  extended.innerHTML = ext;
   panel.classList.add('visible');
   panel.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
+
+/* ── LIFECYCLE PIPELINE ENGINE (02e architecture) ── */
+var lcState = { stage: null, l1: null };
+
+function hexToRgb(hex) {
+  var r = parseInt(hex.slice(1,3),16);
+  var g = parseInt(hex.slice(3,5),16);
+  var b = parseInt(hex.slice(5,7),16);
+  return r+','+g+','+b;
+}
+
+function adjustColor(hex, amount) {
+  var r = Math.min(255, Math.max(0, parseInt(hex.slice(1,3),16) + amount));
+  var g = Math.min(255, Math.max(0, parseInt(hex.slice(3,5),16) + amount));
+  var b = Math.min(255, Math.max(0, parseInt(hex.slice(5,7),16) + amount));
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function selectStage(idx) {
+  if (lcState.stage === idx) { lcState.stage = null; lcState.l1 = null; }
+  else { lcState.stage = idx; lcState.l1 = null; }
+  renderLifecycleTree();
+}
+
+function toggleL1(stageIdx, l1Idx) {
+  if (lcState.l1 === l1Idx) { lcState.l1 = null; }
+  else { lcState.l1 = l1Idx; }
+  renderLifecycleTree();
+}
+
+function renderCapCards(caps, stageColor) {
+  var matColors = scoreColors;
+  var matLabels = ['Non-Existent','Ad-Hoc','Developing','Defined','Optimized'];
+  var allCaps = (typeof TNB_CAPS !== 'undefined') ? TNB_CAPS : (window['caps_hm-container'] || []);
+  var html = '';
+  caps.forEach(function(capId) {
+    var cap = allCaps.filter(function(c){ return c.id === capId; })[0];
+    if (!cap) return;
+    var mc = matColors[cap.score];
+    var ml = matLabels[cap.score];
+    html += '<div class="lc-cap-card" style="--cap-color:'+mc+';">';
+    html += '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+mc+';"></div>';
+    html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">';
+    html += '<div style="width:42px;height:42px;border-radius:12px;background:'+mc+';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1.05rem;box-shadow:0 2px 8px rgba(0,0,0,0.15);flex-shrink:0;">'+cap.score+'</div>';
+    html += '<div><div style="font-size:0.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">'+cap.id+'</div>';
+    html += '<div style="font-size:0.85rem;font-weight:800;color:var(--text);letter-spacing:-0.2px;">'+cap.name+'</div></div></div>';
+    html += '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px;">';
+    html += '<span style="font-size:0.6rem;font-weight:700;padding:3px 10px;border-radius:6px;background:rgba('+hexToRgb(mc)+',0.08);color:'+mc+';">'+ml+'</span>';
+    html += '<span style="font-size:0.6rem;font-weight:700;padding:3px 10px;border-radius:6px;background:rgba(0,0,0,0.03);color:var(--muted);">'+cap.domain+'</span>';
+    if (cap.impact) {
+      html += '<span style="font-size:0.6rem;font-weight:700;padding:3px 10px;border-radius:6px;background:rgba(220,38,38,0.06);color:#DC2626;">'+cap.impact+'</span>';
+    }
+    html += '</div>';
+    html += '<p style="font-size:0.76rem;color:var(--muted);line-height:1.6;margin-bottom:6px;"><strong>Evidence:</strong> '+cap.desc.substring(0,200)+(cap.desc.length>200?'...':'')+'</p>';
+    if (typeof cap.front !== 'undefined') {
+      html += '<div style="display:flex;gap:8px;margin-top:8px;">';
+      [{l:'F',v:cap.front},{l:'M',v:cap.middle},{l:'B',v:cap.back}].forEach(function(x){
+        html += '<span style="font-size:0.58rem;font-weight:700;padding:2px 8px;border-radius:4px;background:'+matColors[x.v]+';color:#fff;">'+x.l+':'+x.v+'</span>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+  return html;
+}
+
+function renderLifecycleTree() {
+  var pipeline = document.getElementById('lc-pipeline');
+  var arrow = document.getElementById('lc-arrow');
+  var detail = document.getElementById('lc-detail');
+  if (!pipeline || !arrow || !detail || typeof LIFECYCLE_STAGES === 'undefined' || !LIFECYCLE_STAGES.length) return;
+
+  var pH = '';
+  LIFECYCLE_STAGES.forEach(function(s, i) {
+    var isActive = lcState.stage === i;
+    pH += '<div class="lc-stage'+(isActive ? ' active' : '')+'" style="--stage-color:'+s.color+';" onclick="selectStage('+i+')">';
+    pH += '<div class="lc-num">'+(i+1)+'</div>';
+    pH += '<div class="lc-icon">'+s.icon+'</div>';
+    pH += '<div class="lc-title">'+s.title+'</div>';
+    pH += '<div class="lc-sub">'+s.tagline+'</div>';
+    pH += '<div class="lc-stat">'+s.stat+' '+s.statLabel+'</div>';
+    pH += '</div>';
+  });
+  pipeline.innerHTML = pH;
+
+  if (lcState.stage !== null) {
+    arrow.style.display = 'block';
+    var stageWidth = 100 / LIFECYCLE_STAGES.length;
+    var leftPct = (lcState.stage * stageWidth) + (stageWidth / 2);
+    var arrowEl = document.getElementById('lc-arrow-inner');
+    arrowEl.style.left = 'calc('+leftPct+'% - 14px)';
+    arrowEl.style.borderTopColor = LIFECYCLE_STAGES[lcState.stage].color;
+  } else {
+    arrow.style.display = 'none';
+  }
+
+  if (lcState.stage === null) {
+    detail.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--muted);font-size:0.88rem;">' +
+      '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 12px;display:block;opacity:0.3;"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>' +
+      'Select a lifecycle stage above to explore capability gaps</div>';
+    return;
+  }
+
+  var stage = LIFECYCLE_STAGES[lcState.stage];
+  var sc = stage.color;
+  var scRgb = hexToRgb(sc);
+  var dH = '<div class="lc-detail-section">';
+  dH += '<div style="background:linear-gradient(135deg, '+sc+' 0%, '+adjustColor(sc, 30)+' 100%);border-radius:20px;padding:32px 36px;margin-bottom:24px;position:relative;overflow:hidden;">';
+  dH += '<div style="position:absolute;top:-40px;right:-20px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 70%);pointer-events:none;"></div>';
+  dH += '<div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">';
+  dH += '<div style="font-size:2.2rem;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.2));">'+stage.icon+'</div>';
+  dH += '<div><div style="font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:rgba(255,255,255,0.6);">Stage '+(lcState.stage+1)+'</div>';
+  dH += '<div style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:-0.5px;">'+stage.title+'</div></div>';
+  dH += '<div style="margin-left:auto;text-align:right;"><div style="font-size:2rem;font-weight:900;color:#fff;line-height:1;">'+stage.stat+'</div>';
+  dH += '<div style="font-size:0.68rem;color:rgba(255,255,255,0.65);font-weight:600;">'+stage.statLabel+'</div></div></div>';
+  dH += '<p style="font-size:0.88rem;color:rgba(255,255,255,0.75);line-height:1.7;max-width:640px;">'+stage.statDetail+'</p></div>';
+
+  dH += '<div style="display:flex;flex-direction:column;gap:16px;">';
+  stage.l1s.forEach(function(l1, l1i) {
+    var isExp = lcState.l1 === l1i;
+    var totalCaps = 0;
+    l1.l2s.forEach(function(l2){ totalCaps += l2.caps.length; });
+    dH += '<div>';
+    dH += '<div class="lc-l1-card'+(isExp?' expanded':'')+'" style="--stage-color:'+sc+';" onclick="toggleL1('+lcState.stage+','+l1i+')">';
+    dH += '<div style="display:flex;align-items:center;gap:14px;">';
+    dH += '<div style="width:40px;height:40px;border-radius:12px;background:rgba('+scRgb+',0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.3s ease;'+(isExp?'background:'+sc+';':'') +'">';
+    dH += '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+(isExp?'#fff':sc)+'" stroke-width="2" style="transition:all 0.3s ease;transform:rotate('+(isExp?'90':'0')+'deg);"><path d="M9 18l6-6-6-6"/></svg></div>';
+    dH += '<div style="flex:1;"><div style="font-size:1rem;font-weight:800;color:var(--text);letter-spacing:-0.3px;margin-bottom:3px;">'+l1.label+'</div>';
+    dH += '<div style="font-size:0.78rem;color:var(--muted);line-height:1.5;">'+l1.desc+'</div></div>';
+    dH += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">';
+    dH += '<span style="font-size:0.6rem;font-weight:700;padding:4px 12px;border-radius:8px;background:rgba('+scRgb+',0.08);color:'+sc+';">'+totalCaps+' capabilities</span>';
+    dH += '<span style="font-size:0.6rem;font-weight:700;padding:4px 12px;border-radius:8px;background:rgba(0,0,0,0.03);color:var(--muted);">'+l1.l2s.length+' finding'+(l1.l2s.length>1?'s':'')+'</span>';
+    dH += '</div></div></div>';
+    dH += '<div class="lc-l2-zone'+(isExp?' open':'')+'">';
+    if (isExp) {
+      l1.l2s.forEach(function(l2) {
+        dH += '<div style="background:rgba('+scRgb+',0.02);border:1px solid rgba('+scRgb+',0.1);border-radius:14px;padding:20px 22px;margin-bottom:16px;">';
+        dH += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">';
+        dH += '<div style="width:6px;height:6px;border-radius:50%;background:'+sc+';flex-shrink:0;"></div>';
+        dH += '<div style="font-size:0.92rem;font-weight:800;color:var(--text);letter-spacing:-0.2px;">'+l2.label+'</div></div>';
+        dH += '<p style="font-size:0.8rem;color:var(--muted);line-height:1.65;margin-bottom:16px;padding-left:16px;">'+l2.desc+'</p>';
+        dH += '<div style="padding-left:16px;"><div style="font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">Capability Gaps ('+l2.caps.length+')</div>';
+        dH += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">';
+        dH += renderCapCards(l2.caps, sc);
+        dH += '</div></div></div>';
+      });
+    }
+    dH += '</div></div>';
+  });
+  dH += '</div></div>';
+  detail.innerHTML = dH;
+}
+
+function toggleFullGrid() {
+  var el = document.getElementById('full-heatmap');
+  var btn = document.getElementById('full-grid-btn');
+  var allCaps = (typeof TNB_CAPS !== 'undefined') ? TNB_CAPS : (window['caps_hm-container'] || []);
+  if (el.style.display === 'none') {
+    el.style.display = 'block';
+    btn.textContent = 'Hide Full Grid';
+    renderHeatmap('hm-container', allCaps);
+  } else {
+    el.style.display = 'none';
+    btn.textContent = 'Show All ' + allCaps.length + ' Capabilities';
+  }
+}
+
+/* Initialize lifecycle tree if data exists */
+if (typeof LIFECYCLE_STAGES !== 'undefined' && LIFECYCLE_STAGES.length) { renderLifecycleTree(); }
 
 /* ── TRACEABILITY ENGINE ── */
 document.addEventListener('mouseover', function(e) {
@@ -894,6 +1183,9 @@ document.addEventListener('click', function(e) {
     document.body.appendChild(p);
   }
 })();
+
+/* ── AUTO-INIT: render heatmaps from partial data (data may be in earlier <script> blocks) ── */
+/* Auto-init removed — heatmap grid now behind toggle button; lifecycle pipeline is primary view */
 </script>
 </body>
 </html>

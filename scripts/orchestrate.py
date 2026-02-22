@@ -1490,13 +1490,54 @@ Act 5 title
 Act 5 description
 <!-- ACT5_TRANSFORMATION_THREAD -->
 (theme: "What capabilities the transformation requires")
+<!-- ACT5_HERO_STATS -->
+MANDATORY. Hero stats row matching 02e gold standard. 2-column grid:
+Left: Big average maturity number (e.g. "0.56") with gradient text color using L0/L1 CSS vars, "Average Maturity / 4.0" sublabel.
+Right: Distribution bar (.dist-bar + .dist-seg CSS classes) showing count/percent per maturity level + .dist-legend with dot + label.
+Use this HTML structure:
+<div style="display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:center;margin-bottom:36px;">
+  <div style="text-align:center;"><div style="font-size:3.2rem;font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,var(--L0),var(--L1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;">X.XX</div><div style="font-size:0.72rem;color:var(--muted);font-weight:600;">Average Maturity / 4.0</div></div>
+  <div><div class="dist-bar" style="margin-bottom:8px;"><div class="dist-seg" style="width:NN%;background:var(--L0);">N (NN%)</div>...</div><div class="dist-legend">...</div></div>
+</div>
+Compute averages from capability data. Only show levels that have capabilities.
+<!-- ACT5_DARK_FEATURE -->
+MANDATORY. Dark feature banner showing the cross-cutting structural barrier. Use .dark-feature CSS class.
+Structure: overline + large h3 title (2-line with <br><span>) + subtitle paragraph + 3-column comparison:
+Left: "What Exists" — 4 bullet items showing current infrastructure (blue tones, rgba(51,102,255,...))
+Center: Broken connection (X icon with dashed line)
+Right: "What's Missing" — 4 bullet items showing gaps (red tones, rgba(255,114,98,...), with line-through text)
+Bottom: Quote from evidence in italic with attribution.
+Model the NFIS 02e "Two Organizations, Zero Shared Intelligence" pattern but adapted to this client's structural barrier.
+<!-- ACT5_PIPELINE_LABEL -->
+Short uppercase label for the lifecycle pipeline, e.g. "Member Banking Lifecycle" or "Customer Investment Lifecycle"
+<!-- ACT5_DOMAIN_LEGEND -->
+Domain legend pills — one colored pill badge per capability domain. Use this HTML pattern:
+<span style="display:inline-block;padding:4px 12px;border-radius:8px;font-size:0.68rem;font-weight:700;background:#EFF6FF;color:#1D4ED8;">Customer Lifecycle</span>
+(one per domain, using distinct background/text color pairs)
+<!-- ACT5_CAP_COUNT -->
+Total number of capabilities (integer only, e.g. "16" or "20")
 <!-- ACT5_HEATMAP_DATA -->
 CRITICAL FORMAT: JS object literals separated by commas, NO outer brackets.
-The template wraps this in [...]. Each object MUST have: id, name, domain, score (0-4).
-Optional: gap, finding, recommendation (strings shown in drill-down).
-Example: {{id:"C1.1",name:"Account Origination",domain:"Onboarding",score:1,gap:"No digital account opening",finding:"Paper forms only",recommendation:"Implement Backbase DI onboarding"}},{{id:"C1.2",name:"Funding Automation",domain:"Onboarding",score:0,gap:"Manual ACH only"}}
-<!-- ACT5_PRIORITY_GAPS -->
-Priority gap cards: top 5-8 gaps with severity coloring
+The template wraps this in [...]. Each object MUST have these fields:
+  id (string), name (string), domain (string), score (0-4 integer),
+  front (0-4 integer — front office score), middle (0-4 integer — middle office score),
+  back (0-4 integer — back office score).
+Optional: desc (assessment detail text), impact (value impact string, e.g. "$892K (5yr)").
+The detail panel shows F/M/B breakdown + assessment detail + value impact when clicked.
+Example: {{id:"C1.1",name:"Account Origination",domain:"Onboarding",score:1,front:1,middle:1,back:0,desc:"Account opening workflow lacks digital capabilities",impact:"$892K (5yr)"}},{{id:"C1.2",name:"Funding Automation",domain:"Onboarding",score:0,front:0,middle:0,back:0,desc:"Manual ACH only",impact:"$1.4M (5yr)"}}
+<!-- ACT5_LIFECYCLE_STAGES -->
+CRITICAL FORMAT: JS object literals separated by commas, NO outer brackets.
+The template wraps this in [...]. Each stage object MUST have:
+  id (string), title (string), icon (emoji string), color (hex string from brand palette),
+  tagline (string — short problem statement), stat (string), statLabel (string),
+  statDetail (string — 2-3 sentence explanation),
+  l1s (array of L1 problem objects).
+Each L1 object MUST have: label (string), desc (string), l2s (array of L2 objects).
+Each L2 object MUST have: label (string), desc (string), caps (array of capability ID strings matching ACT5_HEATMAP_DATA ids).
+Create 4-6 lifecycle stages that group capabilities by customer journey phase.
+Map ALL capabilities to exactly one lifecycle stage. Every capability ID must appear in exactly one L2.caps array.
+Stage colors: use brand palette (#3366FF, #EA580C, #059669, #DC2626, #7B2FFF, #FFAC09).
+The template uses var LIFECYCLE_STAGES = [{{ACT5_LIFECYCLE_STAGES}}]; — so output complete JS objects with their own braces.
 
 ═══════════════════════════════════════════════════════════
 PARTIAL_D.html — Acts 6 and 7
@@ -1517,7 +1558,9 @@ Each phase lists: initiatives as bullet points, timeline range, investment estim
 <!-- ACT6_PHASE_CARDS -->
 3 phase summary cards (optional — only if timeline doesn't cover all detail)
 <!-- ACT6_ADDITIONAL_CONTENT -->
-Extra content
+Two sections here:
+1. DECISIONS CARD: A single FULL-WIDTH .card with border-top:3px solid #3366FF. Inside: heading "THREE DECISIONS REQUIRED BEFORE MONTH 1" + 3-column grid of decision boxes (background:#EFF6FF, border-radius:12px, padding:20px). Do NOT wrap in card-grid card-grid-3.
+2. KEY VALUE MILESTONES: A .card with 4-column grid of milestone boxes (Month X → what happens). Use phase-matching colors for backgrounds.
 <!-- ACT7_TITLE -->
 Act 7 title
 <!-- ACT7_DESC -->
@@ -1538,11 +1581,34 @@ Each value MUST have: npv (string), roi (string), payback (string), benefits (st
 Example:
 conservative:{{npv:"-$4.8M",roi:"-55%",payback:">10 yrs",benefits:"$3.1M",desc:"Conservative: low improvement rates across all levers"}},base:{{npv:"-$1.5M",roi:"-12%",payback:"~6.5 yrs",benefits:"$7.7M",desc:"Base: moderate improvements with peer-benchmarked assumptions"}},aspirational:{{npv:"+$3.2M",roi:"+36%",payback:"~4.2 yrs",benefits:"$14.5M",desc:"Aspirational: high conversion rates with full cross-app integration"}}
 <!-- ACT7_FINANCIAL_TABLE -->
-HTML table with 5-year financial projection (Year 0-5 columns, benefit/cost/net rows)
+Wrap the table in: <div class="card reveal" style="margin-bottom:40px;"><h3 style="margin-bottom:20px;">5-Year Financial Model &mdash; Base Scenario</h3><div style="overflow-x:auto;">
+...TABLE HERE...
+</div></div>
+HTML table with 5-year projection (Year 1-5 + 5yr Total columns, benefit lines/cost lines/net row).
 <!-- ACT7_VALUE_LEVERS -->
-Value lever cards in a 3-column grid. Use class="card-grid card-grid-3".
-Each lever card: <div class="card" style="border-top:4px solid #COLOR;"><div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#COLOR;margin-bottom:10px;">Lever N</div><div style="font-size:1.8rem;font-weight:900;color:#COLOR;margin-bottom:6px;">$XM</div><div style="font-weight:600;font-size:0.92rem;margin-bottom:8px;">Lever Name</div><p style="font-size:0.8rem;color:var(--muted);line-height:1.7;font-weight:400;">Description</p><div style="margin-top:12px;background:#F0F4FF;border-radius:8px;padding:10px;font-size:0.75rem;"><span style="font-weight:600;">Key Driver:</span> What drives this lever</div></div>
-Create 5-6 lever cards using brand colors: #3366FF, #EA580C, #7B2FFF, #059669, #DC2626, #FFAC09.
+Start with: <h3 style="margin-bottom:20px;">Value Levers &mdash; Base Scenario (5-Year)</h3>
+EXPANDABLE value lever cards. Users click to see benchmarks and calculation.
+Use the .lever-card CSS classes from the template. Create 5-6 lever cards.
+CRITICAL: Keep expanded content CONCISE. Each MECE box must be 1-2 SHORT sentences (max 25 words). No verbose paragraphs.
+Each lever card follows this structure:
+<div class="lever-card" data-trace-id="BEN-1">
+  <div class="lever-header" onclick="this.parentElement.classList.toggle('open')">
+    <span class="lever-num">01</span>
+    <span class="lever-name">Lever Name</span>
+    <span class="lever-value" style="color:#3366FF;">$X.XM</span>
+    <span class="lever-arrow">&#9660;</span>
+  </div>
+  <div class="lever-body"><div class="lever-content">
+    <div class="lever-mece">
+      <div class="lever-mece-box" style="background:#FEF2F2;"><h5 style="color:#DC2626;">Current State</h5>Short phrase: what happens today</div>
+      <div class="lever-mece-box" style="background:#FFFBEB;"><h5 style="color:#D97706;">Change Driver</h5>Short phrase: what Backbase enables</div>
+      <div class="lever-mece-box" style="background:#F0FDF4;"><h5 style="color:#059669;">Target State</h5>Short phrase: KPI improvement with %</div>
+    </div>
+    <div class="lever-benchmark"><strong>Benchmark:</strong> One-line industry benchmark with source</div>
+    <div class="lever-capabilities"><span class="lever-cap-tag">CAP-ID</span></div>
+  </div></div>
+</div>
+Lever-value colors: #3366FF, #EA580C, #7B2FFF, #059669, #DC2626, #FFAC09.
 
 ═══════════════════════════════════════════════════════════
 PARTIAL_E.html — Journey Maps
@@ -1567,10 +1633,13 @@ Use cases description
 Clickable use case cards:
 <div class="uc-card"><div class="uc-card-header"><span class="uc-icon">💡</span><h4>Use Case Title</h4></div><div class="uc-card-body"><p>Description</p><div class="uc-stat-row"><div class="uc-stat-card"><div class="uc-stat-val">$1.3M</div><div class="uc-stat-lbl">Annual Value</div></div></div></div></div>
 <!-- USECASES_PHONE_PROTOTYPES -->
-OPTIONAL: Phone mockup prototypes. Only include if source data has detailed
-use case flows. If not available, write a brief placeholder comment.
-If included (2-3 max):
+OPTIONAL — only include prototypes if the engagement has detailed use case flow data.
+If not available, write: <!-- no prototypes -->
+If included (2-3 max), wrap them in a heading and grid:
+<h3 style="margin:48px 0 24px;">Prototype Previews</h3>
+<div class="proto-grid">
 <div class="proto-wrap"><div class="proto-phone"><div class="proto-notch"></div><div class="proto-screen"><div style="padding:16px;"><h5 style="font-size:0.85rem;margin-bottom:12px;">Screen Title</h5><div style="background:#F1F5F9;border-radius:8px;padding:12px;margin-bottom:8px;font-size:0.75rem;">Content block</div></div></div></div><div class="proto-caption"><span style="font-weight:600;">Screen Name</span><p style="font-weight:400;">What this screen shows</p></div></div>
+</div>
 
 ═══════════════════════════════════════════════════════════
 
