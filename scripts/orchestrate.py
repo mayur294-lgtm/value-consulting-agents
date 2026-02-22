@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
 """
-Cortex Pipeline Orchestrator V4 — Optimized for <= 45 min pipeline execution.
+Cortex Pipeline Orchestrator — Value Consulting Assessment Pipeline.
 
-Changes from V3:
-- S1: Single-phase Block A in non-interactive mode (eliminates P1 sync barrier)
-- S2: Overlapping stages (Excel starts during Assembly, Roadmap parallel with Excel)
-- S3: Parallel Assembly sharding (2 agents write Acts 1-3 and 4-7 in parallel)
-- S4: Roadmap single-pass in non-interactive mode
-- T1: Discovery finalize max_turns=15
-- T2: Fixed hardcoded express=False bugs
-- T3: HTML generation inline design rules + max_turns=50
-- T4: Per-stage timing summary with costs
+Supports interactive (consultant checkpoints), express, and non-interactive modes.
+Non-interactive mode includes performance optimizations:
+- Single-phase Block A (eliminates P1 sync barrier)
+- Overlapping stages (Roadmap + Excel in parallel)
+- 3-way parallel Assembly sharding (Acts 1-2 / 3-5 / 6-7)
+- Per-agent timeouts and output validation
+- 6-partial HTML generation with template assembly
 
 Usage:
-    python scripts/orchestrate_v4.py <engagement_dir>
-    python scripts/orchestrate_v4.py --express <engagement_dir>
-    python scripts/orchestrate_v4.py --resume-from <step> <engagement_dir>
-    python scripts/orchestrate_v4.py --dry-run <engagement_dir>
-    python scripts/orchestrate_v4.py --non-interactive <engagement_dir>
+    python scripts/orchestrate.py <engagement_dir>
+    python scripts/orchestrate.py --express <engagement_dir>
+    python scripts/orchestrate.py --resume-from <step> <engagement_dir>
+    python scripts/orchestrate.py --dry-run <engagement_dir>
+    python scripts/orchestrate.py --non-interactive <engagement_dir>
 """
 
 import asyncio
@@ -1726,7 +1724,7 @@ async def run_pipeline(
 
     # ── Pipeline header ───────────────────────────────────────────────────
     print(f"\n{C.BOLD}{'═' * 60}{C.RESET}")
-    print(f"{C.BOLD}  CORTEX PIPELINE ORCHESTRATOR V4{C.RESET}")
+    print(f"{C.BOLD}  CORTEX PIPELINE ORCHESTRATOR{C.RESET}")
     print(f"{C.BOLD}{'═' * 60}{C.RESET}")
     print(f"  Engagement: {engagement_dir}")
     print(f"  Domain:     {domain}")
