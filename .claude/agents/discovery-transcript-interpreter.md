@@ -114,21 +114,21 @@ You MUST manage context carefully. Discovery inputs can be large — a single 2-
    ```
 
 2. **Apply these thresholds:**
-   - Under 500 lines → Read the whole file, process normally
-   - 500–1500 lines → Read in 2-3 chunks, extract findings per chunk, consolidate
-   - Over 1500 lines → Use the chunking protocol below
+   - Under 1500 lines → Read the whole file, process normally
+   - 1500–3000 lines → Read in 2-3 chunks, extract findings per chunk, consolidate
+   - Over 3000 lines → Use the chunking protocol below
 
 ### Chunking Protocol for Large Files
 
-When a transcript exceeds 500 lines:
+When a transcript exceeds 1500 lines:
 
-1. **Read in chunks of 400-500 lines:**
+1. **Read in chunks of 1000-1500 lines:**
    ```
-   Read file with offset=0, limit=500
+   Read file with offset=0, limit=1500
    → Extract evidence, pain points, metrics from this chunk
    → Write interim findings to a temp file
 
-   Read file with offset=500, limit=500
+   Read file with offset=1500, limit=1500
    → Extract new evidence from this chunk
    → Append to interim findings
 

@@ -18,23 +18,23 @@ wc -l /path/to/file
 
 | File size | Action |
 |-----------|--------|
-| Under 500 lines | Read the whole file |
-| 500–1500 lines | Read in 2-3 chunks of 500 lines each |
-| Over 1500 lines | Use the full chunking protocol (Rule 2) |
+| Under 1500 lines | Read the whole file |
+| 1500–3000 lines | Read in 2-3 chunks of 1500 lines each |
+| Over 3000 lines | Use the full chunking protocol (Rule 2) |
 
 This applies to EVERYTHING: transcripts, PDFs, old engagement outputs, domain knowledge files, financial data, annual reports.
 
 ## Rule 2: Chunk Large Files
 
-When a file exceeds 500 lines:
+When a file exceeds 1500 lines:
 
-1. **Read in chunks of 400-500 lines:**
+1. **Read in chunks of 1000-1500 lines:**
    ```
-   Read file with offset=0, limit=500
+   Read file with offset=0, limit=1500
    → Process this chunk: extract key findings, data, or relevant content
    → Write extracted findings to disk
 
-   Read file with offset=500, limit=500
+   Read file with offset=1500, limit=1500
    → Process this chunk
    → Append to findings file
 

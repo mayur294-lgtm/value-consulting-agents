@@ -34,10 +34,23 @@
   ║  {{HERO_IMAGE_URL}}   — Unsplash URL for hero image               ║
   ║  {{HERO_FLOATS}}      — Floating glass card divs                  ║
   ║  {{HERO_STATS}}       — hero-stat divs (5 stats)                  ║
-  ║  {{EXEC_CONTENT}}     — Executive Summary panel HTML              ║
-  ║  {{ACT_N_CONTENT}}    — Act 1-7 panel HTML                        ║
-  ║  {{JOURNEY_CONTENT}}  — Future Journey panel HTML                 ║
-  ║  {{USECASES_CONTENT}} — Use Cases panel HTML                      ║
+  ║  PANEL PLACEHOLDERS (V5 — sub-structured per panel):              ║
+  ║  Exec: EXEC_SUMMARY_DESC, EXEC_TRANSFORMATION_STORY,             ║
+  ║        EXEC_BENTO_ITEMS, EXEC_PILLARS, EXEC_METRIC_CARDS,        ║
+  ║        EXEC_DECISION_BOX                                          ║
+  ║  Acts 1-3: ACTn_TITLE, ACTn_DESC, ACTn_TRANSFORMATION_THREAD,    ║
+  ║            ACT1_DARK_FEATURE, ACT1_INSIGHT_CARDS,                 ║
+  ║            ACT2_PILLAR_CARDS, ACT3_LIGHTHOUSE_DETAIL,             ║
+  ║            ACT3_MILESTONE_CARDS, ACTn_ADDITIONAL_CONTENT          ║
+  ║  Act 4: ACT4_PERSONAS, ACT4_JX_HEADLINES, ACT4_JX_SVG,           ║
+  ║         ACT4_JX_PANELS                                            ║
+  ║  Act 5: ACT5_HEATMAP_DATA (JS array), ACT5_PRIORITY_GAPS         ║
+  ║  Act 6: ACT6_TIMELINE, ACT6_PHASE_CARDS                          ║
+  ║  Act 7: ACT7_ROI_CARDS, ACT7_BASE_DESC, ACT7_SCENARIO_DATA (JS), ║
+  ║         ACT7_FINANCIAL_TABLE, ACT7_VALUE_LEVERS                   ║
+  ║  Journey: JOURNEY_DESC, JOURNEY_SWIMLANES                        ║
+  ║  Use Cases: USECASES_TITLE, USECASES_DESC, USECASES_CARDS,       ║
+  ║             USECASES_PHONE_PROTOTYPES                             ║
   ╚══════════════════════════════════════════════════════════════════════╝
 -->
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
@@ -545,21 +558,170 @@ h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
   </div>
 </section>
 
-<!-- ═══════ PANELS ═══════ -->
+<!-- ═══════ PANELS (V5: enforced sub-structures with transformation thread) ═══════ -->
 <div class="wrap">
+
+  <!-- ── EXEC SUMMARY ── -->
   <div class="panel active" id="panel-exec">
-    <!-- EXECUTIVE SUMMARY: Bento grid, metric cards, transformation pillars (dark-feature) -->
-    {{EXEC_CONTENT}}
+    <div class="section-header">
+      <div class="overline">Backbase Value Consulting &bull; {{ASSESSMENT_DATE}}</div>
+      <h2>Executive Summary</h2>
+      <p>{{EXEC_SUMMARY_DESC}}</p>
+    </div>
+    <!-- TRANSFORMATION THREAD: Why we're here -->
+    <div class="card" style="margin-bottom:32px;">
+      {{EXEC_TRANSFORMATION_STORY}}
+    </div>
+    <div class="bento">{{EXEC_BENTO_ITEMS}}</div>
+    <div class="dark-feature">{{EXEC_PILLARS}}</div>
+    <div class="card-grid card-grid-4" style="margin-top:32px;">{{EXEC_METRIC_CARDS}}</div>
+    {{EXEC_DECISION_BOX}}
   </div>
-  <div class="panel" id="panel-act1">{{ACT_1_CONTENT}}</div>
-  <div class="panel" id="panel-act2">{{ACT_2_CONTENT}}</div>
-  <div class="panel" id="panel-act3">{{ACT_3_CONTENT}}</div>
-  <div class="panel" id="panel-act4">{{ACT_4_CONTENT}}</div>
-  <div class="panel" id="panel-act5">{{ACT_5_CONTENT}}</div>
-  <div class="panel" id="panel-act6">{{ACT_6_CONTENT}}</div>
-  <div class="panel" id="panel-act7">{{ACT_7_CONTENT}}</div>
-  <div class="panel" id="panel-journey">{{JOURNEY_CONTENT}}</div>
-  <div class="panel" id="panel-usecases">{{USECASES_CONTENT}}</div>
+
+  <!-- ── ACT 1: Strategic Alignment ── -->
+  <div class="panel" id="panel-act1">
+    <div class="section-header">
+      <div class="overline">Act 1 of 7</div>
+      <h2>{{ACT1_TITLE}}</h2>
+      <p>{{ACT1_DESC}}</p>
+    </div>
+    <!-- TRANSFORMATION THREAD: Why transformation is needed -->
+    <div class="card" style="margin-bottom:24px;">{{ACT1_TRANSFORMATION_THREAD}}</div>
+    <div class="dark-feature">{{ACT1_DARK_FEATURE}}</div>
+    <div class="card-grid card-grid-2" style="margin-top:32px;">{{ACT1_INSIGHT_CARDS}}</div>
+    {{ACT1_ADDITIONAL_CONTENT}}
+  </div>
+
+  <!-- ── ACT 2: The Vision ── -->
+  <div class="panel" id="panel-act2">
+    <div class="section-header">
+      <div class="overline">Act 2 of 7</div>
+      <h2>{{ACT2_TITLE}}</h2>
+      <p>{{ACT2_DESC}}</p>
+    </div>
+    <!-- TRANSFORMATION THREAD: What the transformation looks like -->
+    <div class="card" style="margin-bottom:24px;">{{ACT2_TRANSFORMATION_THREAD}}</div>
+    <div class="card-grid card-grid-3" style="margin-bottom:32px;">{{ACT2_PILLAR_CARDS}}</div>
+    {{ACT2_ADDITIONAL_CONTENT}}
+  </div>
+
+  <!-- ── ACT 3: The Lighthouse ── -->
+  <div class="panel" id="panel-act3">
+    <div class="section-header">
+      <div class="overline">Act 3 of 7</div>
+      <h2>{{ACT3_TITLE}}</h2>
+      <p>{{ACT3_DESC}}</p>
+    </div>
+    <!-- TRANSFORMATION THREAD: How we prove the transformation -->
+    <div class="card" style="margin-bottom:24px;">{{ACT3_TRANSFORMATION_THREAD}}</div>
+    <div class="card" style="margin-bottom:32px;">{{ACT3_LIGHTHOUSE_DETAIL}}</div>
+    <div class="card-grid card-grid-3">{{ACT3_MILESTONE_CARDS}}</div>
+    {{ACT3_ADDITIONAL_CONTENT}}
+  </div>
+
+  <!-- ── ACT 4: Deep-Dive Assessment (enforces journey experience map) ── -->
+  <div class="panel" id="panel-act4">
+    <div class="section-header">
+      <div class="overline">Act 4 of 7</div>
+      <h2>{{ACT4_TITLE}}</h2>
+      <p>{{ACT4_DESC}}</p>
+    </div>
+    <!-- TRANSFORMATION THREAD: Where current system breaks -->
+    <div class="card" style="margin-bottom:24px;">{{ACT4_TRANSFORMATION_THREAD}}</div>
+    <!-- Persona cards -->
+    <div class="card-grid card-grid-2" style="margin-bottom:32px;">{{ACT4_PERSONAS}}</div>
+    <!-- Journey Experience Map (MANDATORY) -->
+    <div class="jx">
+      <div class="jx-headlines">{{ACT4_JX_HEADLINES}}</div>
+      <div class="jx-map">{{ACT4_JX_SVG}}</div>
+      {{ACT4_JX_PANELS}}
+    </div>
+    {{ACT4_ADDITIONAL_CONTENT}}
+  </div>
+
+  <!-- ── ACT 5: Capability Assessment (enforces interactive heatmap) ── -->
+  <div class="panel" id="panel-act5">
+    <div class="section-header">
+      <div class="overline">Act 5 of 7</div>
+      <h2>{{ACT5_TITLE}}</h2>
+      <p>{{ACT5_DESC}}</p>
+    </div>
+    <!-- TRANSFORMATION THREAD: What capabilities the transformation requires -->
+    <div class="card" style="margin-bottom:24px;">{{ACT5_TRANSFORMATION_THREAD}}</div>
+    <!-- Heatmap (MANDATORY — rendered by JS) -->
+    <div id="hm-container" class="heatmap-grid"></div>
+    <div id="hm-detail" class="hm-detail-panel">
+      <div id="hm-detail-content"></div>
+      <div id="hm-detail-extended"></div>
+    </div>
+    <script>
+      window['caps_hm-container'] = [{{ACT5_HEATMAP_DATA}}];
+      renderHeatmap('hm-container', window['caps_hm-container']);
+    </script>
+    {{ACT5_PRIORITY_GAPS}}
+  </div>
+
+  <!-- ── ACT 6: Delivery Roadmap (enforces timeline) ── -->
+  <div class="panel" id="panel-act6">
+    <div class="section-header">
+      <div class="overline">Act 6 of 7</div>
+      <h2>{{ACT6_TITLE}}</h2>
+      <p>{{ACT6_DESC}}</p>
+    </div>
+    <!-- TRANSFORMATION THREAD: How we build the transformation -->
+    <div class="card" style="margin-bottom:24px;">{{ACT6_TRANSFORMATION_THREAD}}</div>
+    <!-- Roadmap timeline (MANDATORY) -->
+    <div class="timeline">{{ACT6_TIMELINE}}</div>
+    <div class="card-grid card-grid-3" style="margin-top:32px;">{{ACT6_PHASE_CARDS}}</div>
+    {{ACT6_ADDITIONAL_CONTENT}}
+  </div>
+
+  <!-- ── ACT 7: Benefits Case (enforces scenario toggle) ── -->
+  <div class="panel" id="panel-act7">
+    <div class="section-header">
+      <div class="overline">Act 7 of 7</div>
+      <h2>{{ACT7_TITLE}}</h2>
+      <p>{{ACT7_DESC}}</p>
+    </div>
+    <!-- TRANSFORMATION THREAD: Why transformation pays for itself -->
+    <div class="card" style="margin-bottom:24px;">{{ACT7_TRANSFORMATION_THREAD}}</div>
+    <!-- Scenario Toggle (MANDATORY) -->
+    <div class="scenario-toggle">
+      <button class="scenario-btn" onclick="setScenario('conservative',this)">Conservative</button>
+      <button class="scenario-btn active" onclick="setScenario('base',this)">Base</button>
+      <button class="scenario-btn" onclick="setScenario('aspirational',this)">Aspirational</button>
+    </div>
+    <div class="roi-grid">{{ACT7_ROI_CARDS}}</div>
+    <div id="scenario-desc" style="margin-top:16px;font-size:0.85rem;color:var(--muted);">{{ACT7_BASE_DESC}}</div>
+    <script>
+      var scenarios = {{{ACT7_SCENARIO_DATA}}};
+    </script>
+    {{ACT7_FINANCIAL_TABLE}}
+    {{ACT7_VALUE_LEVERS}}
+  </div>
+
+  <!-- ── FUTURE JOURNEY (enforces swimlanes) ── -->
+  <div class="panel" id="panel-journey">
+    <div class="section-header">
+      <div class="overline">Future Journey</div>
+      <h2>Future State Journey Maps</h2>
+      <p>{{JOURNEY_DESC}}</p>
+    </div>
+    {{JOURNEY_SWIMLANES}}
+  </div>
+
+  <!-- ── USE CASES (enforces phone prototypes) ── -->
+  <div class="panel" id="panel-usecases">
+    <div class="section-header">
+      <div class="overline">Signature Use Cases</div>
+      <h2>{{USECASES_TITLE}}</h2>
+      <p>{{USECASES_DESC}}</p>
+    </div>
+    <div class="uc-grid">{{USECASES_CARDS}}</div>
+    <h3 style="margin:48px 0 24px;">Prototype Previews</h3>
+    <div class="proto-grid">{{USECASES_PHONE_PROTOTYPES}}</div>
+  </div>
+
 </div>
 
 <script>
@@ -691,6 +853,30 @@ function toggleJourney(journeyId, state, btn) {
   });
   btn.classList.add(state === 'current' ? 'active-current' : 'active-future');
 }
+
+/* ── ROI SCENARIO TOGGLE ── */
+function setScenario(key, btn) {
+  document.querySelectorAll('.scenario-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  var s = scenarios[key];
+  if (!s) return;
+  var npvEl = document.getElementById('roi-npv');
+  var roiEl = document.getElementById('roi-return');
+  var payEl = document.getElementById('roi-payback');
+  var benEl = document.getElementById('roi-benefits');
+  var descEl = document.getElementById('scenario-desc');
+  if (npvEl) { npvEl.textContent = s.npv; npvEl.style.color = s.npv.indexOf('-') === 0 ? '#DC2626' : '#059669'; }
+  if (roiEl) { roiEl.textContent = s.roi; roiEl.style.color = s.roi.indexOf('-') === 0 ? '#DC2626' : '#059669'; }
+  if (payEl) payEl.textContent = s.payback;
+  if (benEl) benEl.textContent = s.benefits;
+  if (descEl) descEl.textContent = s.desc;
+}
+
+/* ── INITIATIVE CARD TOGGLE ── */
+document.addEventListener('click', function(e) {
+  var init = e.target.closest('.initiative-card');
+  if (init) { init.classList.toggle('open'); }
+});
 
 /* ── FLOATING BACKGROUND PARTICLES ── */
 (function initParticles(){

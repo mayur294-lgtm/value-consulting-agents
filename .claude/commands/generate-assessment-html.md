@@ -457,6 +457,31 @@ This component renders the holistic journey experience map: headline insight car
 
 ---
 
+## Transformation Arc Threading (MANDATORY)
+
+Every act panel MUST include a Transformation Thread card that connects
+the act's content to the overarching transformation arc. The thread
+uses the transformation arc phrase from the assessment report.
+
+| Act | Thread Focus | Card Content |
+|-----|-------------|--------------|
+| Exec | Overview | "Why we're here" — the arc phrase + 1-sentence framing |
+| Act 1 | Why needed | How disconnected frontlines drive the need for transformation |
+| Act 2 | What it looks like | The vision of the unified frontline |
+| Act 3 | How we prove it | Phase 1 as proof of the transformation thesis |
+| Act 4 | Where it breaks | Journey pain points as evidence of the broken state |
+| Act 5 | What it requires | Capability gaps mapped to transformation pillars |
+| Act 6 | How we build it | Roadmap phases as transformation milestones |
+| Act 7 | Why it pays off | ROI as financial validation of the transformation |
+
+**Format:** A card with gradient-text overline "TRANSFORMATION ARC", the arc
+phrase as `<h3>`, and 2-3 sentences connecting the act's theme to the arc.
+
+**Template placeholders:** The HTML template has `{{ACTN_TRANSFORMATION_THREAD}}`
+placeholders in each panel. Fill these with the transformation thread card HTML.
+
+---
+
 ## Traceability Enforcement
 
 ### Trace ID Convention
@@ -628,7 +653,11 @@ If `journey_maps.json` contains a `journeys[]` array: parse journey data and bui
 Top 3 use cases: phone-frame mockups with key screens.
 
 ### Step 9: Assemble from Partials
-Read the template file from Step 0. Then read each partial file from `outputs/partials/` and inject its content into the corresponding `{{PLACEHOLDER}}` marker. Do NOT rewrite the CSS or JS — use the template's CSS and JS exactly as-is. Save as `{engagement_code}_Consolidated_Assessment_Interactive.html`. Delete the `outputs/partials/` directory after successful assembly.
+Read the template file from Step 0. Then read each partial file from `outputs/partials/` and inject its content into the corresponding `{{PLACEHOLDER}}` marker.
+
+**CRITICAL:** When assembling from partials, the final file MUST use the template's CSS and JS EXACTLY as-is. The partials only contain the HTML content that replaces `{{PLACEHOLDER}}` markers. Do NOT regenerate CSS or JavaScript. Do NOT redesign the layout. The template already has all interactive components (heatmap, scenario toggle, journey switcher, scroll reveal, traceability hover, particles). You are only filling in the data.
+
+Also write the final assembled file to `outputs/assessment_dashboard.html`. Delete the `outputs/partials/` directory after successful assembly.
 
 ### Step 10: Validate
 Run through the Quality Checklist below.
