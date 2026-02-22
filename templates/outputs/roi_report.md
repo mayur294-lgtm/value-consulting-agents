@@ -168,9 +168,9 @@ Annual Savings = ([X] - [Y]) × $[Z] = $[Total]
 
 | Scenario | Key Variables | NPV | Payback | IRR | Recommendation |
 |----------|---------------|-----|---------|-----|----------------|
-| **Best Case** | Benefits +25%, Costs -15%, Timeline -10% | $[X] | [Y] mo | [Z]% | Strong Go |
-| **Likely Case** | Base assumptions | $[X] | [Y] mo | [Z]% | Go |
-| **Worst Case** | Benefits -25%, Costs +25%, Timeline +50% | $[X] | [Y] mo | [Z]% | Conditional Go |
+| **Conservative** | Benefits -25%, Costs +25%, Timeline +50% | $[X] | [Y] mo | [Z]% | Conditional Go |
+| **Base** | Base assumptions | $[X] | [Y] mo | [Z]% | Go |
+| **Aspirational** | Benefits +25%, Costs -15%, Timeline -10% | $[X] | [Y] mo | [Z]% | Strong Go |
 
 ### Key Variable Sensitivity
 

@@ -1571,13 +1571,14 @@ Act 7 description
 CRITICAL: 4 dynamic ROI cards with specific IDs that setScenario() updates.
 Use these EXACT CSS classes (roi-card, NOT metric-card):
 <div class="roi-card"><div class="roi-card-val" id="roi-npv">-$1.5M</div><div class="roi-card-lbl">5-Year NPV</div></div><div class="roi-card"><div class="roi-card-val" id="roi-return">-12%</div><div class="roi-card-lbl">5-Year ROI</div></div><div class="roi-card"><div class="roi-card-val" id="roi-payback">~6.5 yrs</div><div class="roi-card-lbl">Payback Period</div></div><div class="roi-card"><div class="roi-card-val" id="roi-benefits">$7.7M</div><div class="roi-card-lbl">5yr Gross Benefits</div></div>
-Set initial values to the BASE scenario numbers. The parent roi-grid div is already in the template.
+Set initial values to the BASE scenario numbers from roi_config.json → scenarios.base. The parent roi-grid div is already in the template.
 <!-- ACT7_BASE_DESC -->
-Plain text description of the base scenario (1-2 sentences). NOT HTML.
+Plain text description of the base scenario (1-2 sentences). NOT HTML. Use roi_config.json → scenarios.base.desc.
 <!-- ACT7_SCENARIO_DATA -->
 CRITICAL FORMAT: A JS object (NO var keyword, NO semicolon — the template wraps it).
 Must have exactly 3 keys: conservative, base, aspirational.
 Each value MUST have: npv (string), roi (string), payback (string), benefits (string), desc (string).
+SOURCE: Copy values DIRECTLY from roi_config.json → "scenarios" object. Do NOT re-derive from markdown tables.
 Example:
 conservative:{{npv:"-$4.8M",roi:"-55%",payback:">10 yrs",benefits:"$3.1M",desc:"Conservative: low improvement rates across all levers"}},base:{{npv:"-$1.5M",roi:"-12%",payback:"~6.5 yrs",benefits:"$7.7M",desc:"Base: moderate improvements with peer-benchmarked assumptions"}},aspirational:{{npv:"+$3.2M",roi:"+36%",payback:"~4.2 yrs",benefits:"$14.5M",desc:"Aspirational: high conversion rates with full cross-app integration"}}
 <!-- ACT7_FINANCIAL_TABLE -->
@@ -1589,6 +1590,7 @@ HTML table with 5-year projection (Year 1-5 + 5yr Total columns, benefit lines/c
 Start with: <h3 style="margin-bottom:20px;">Value Levers &mdash; Base Scenario (5-Year)</h3>
 EXPANDABLE value lever cards. Users click to see benchmarks and calculation.
 Use the .lever-card CSS classes from the template. Create 5-6 lever cards.
+SOURCE: Use roi_config.json → "lever_summary" array for lever names, values, MECE text, benchmarks, and capability IDs. Do NOT invent MECE content — it is authored by the ROI agent.
 CRITICAL: Keep expanded content CONCISE. Each MECE box must be 1-2 SHORT sentences (max 25 words). No verbose paragraphs.
 Each lever card follows this structure:
 <div class="lever-card" data-trace-id="BEN-1">

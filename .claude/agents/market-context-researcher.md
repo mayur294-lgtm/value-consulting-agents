@@ -225,6 +225,26 @@ Impact: Without annual report data, the Top-Down / Bottom-Up Bridge cannot be pr
 
 **CRITICAL:** This failure flag must appear prominently in the market context brief. Do NOT silently skip Module 1 — the consultant must know the data is missing so they can provide it manually.
 
+#### Step 8: Module 1 Completion Checklist (MANDATORY — verify before proceeding)
+
+Before moving to Module 2, confirm EVERY item. Write this checklist into your output:
+
+```
+## Module 1 Completion Verification
+- [ ] WebSearch attempted: "[institution name] annual report [latest year]" → [FOUND/NOT FOUND]
+- [ ] WebSearch attempted: "[institution name] financial statements" → [FOUND/NOT FOUND]
+- [ ] WebSearch attempted: "[institution name] investor presentation [latest year]" → [FOUND/NOT FOUND]
+- [ ] Institution type identified: [Public bank / Credit union / Mutual / Other]
+- [ ] If CU: NCUA call report searched → [FOUND/NOT FOUND]
+- [ ] If CU: "[CU name] statement of financial condition" searched → [FOUND/NOT FOUND]
+- [ ] Key financial metrics extracted: [YES — list count / NO — failure flag written]
+- [ ] Top-Down / Bottom-Up Correlation table produced: [YES / NO — explain why]
+- [ ] Revenue Bridge table produced: [YES / NO — explain why]
+- [ ] If NO to any extraction: Failure Flag (Step 7) written: [YES]
+```
+
+**Rule:** If any search was NOT attempted, go back and attempt it NOW before proceeding. The NFIS retrospective showed that skipping annual report searches silently — without even attempting them — is the single most damaging gap in the pipeline. The correlation table is what gives Act 1 and Act 7 their strategic weight.
+
 ---
 
 ### MODULE 2: Outside-In CX Research

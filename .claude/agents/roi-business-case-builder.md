@@ -441,6 +441,47 @@ generator.generate("outputs/roi_model.xlsx")
 
 > **IMPORTANT — Config field names:** The Excel generator reads `assumptions_register` and `data_gaps_for_validation` as the canonical top-level keys. The generator also accepts `assumptions` and `data_gaps` as fallbacks, but always prefer the canonical names for new configs.
 
+### Scenario Summary (REQUIRED in config)
+
+The `scenarios` key provides a top-level summary that the HTML dashboard reads directly for the scenario toggle. This avoids the HTML agent having to parse markdown tables.
+
+```json
+"scenarios": {
+    "conservative": {"npv": "-$4.8M", "roi": "-55%", "payback": ">10 yrs", "benefits": "$3.1M", "desc": "Conservative: low improvement rates across all levers"},
+    "base": {"npv": "-$1.5M", "roi": "-12%", "payback": "~6.5 yrs", "benefits": "$7.7M", "desc": "Base: moderate improvements with peer-benchmarked assumptions"},
+    "aspirational": {"npv": "+$3.2M", "roi": "+36%", "payback": "~4.2 yrs", "benefits": "$14.5M", "desc": "Aspirational: high conversion rates with full cross-app integration"}
+}
+```
+
+**Rules:** Use EXACTLY these scenario keys: `conservative`, `base`, `aspirational`. Each MUST have: `npv` (string with $), `roi` (string with %), `payback` (string), `benefits` (string with $), `desc` (one-sentence description).
+
+### Lever Summary (REQUIRED in config)
+
+The `lever_summary` array provides a structured view of each lever for the HTML dashboard's expandable lever cards. This ensures the MECE framing (Current State / Change Driver / Target State) is authored by the ROI agent — not improvised by the HTML agent.
+
+```json
+"lever_summary": [
+    {
+        "id": "L1",
+        "name": "Digital Account Opening",
+        "value_5yr": "$2.4M",
+        "color": "#3366FF",
+        "current_state": "45-min branch process, 60% drop-off",
+        "change_driver": "Backbase Digital Onboarding with pre-populated KYC",
+        "target_state": "12-min digital process, 35% higher conversion",
+        "benchmark": "DBS: 90% digital onboarding, <10 min (Annual Report 2024)",
+        "capability_ids": ["CAP-ACQ-003", "CAP-ACQ-005"]
+    }
+]
+```
+
+**Rules:**
+- One entry per lever (5-8 levers typical)
+- `current_state`, `change_driver`, `target_state` — each MAX 20 words. These appear in small MECE boxes.
+- `benchmark` — one line with source
+- `capability_ids` — array of capability IDs from the capability assessment
+- `color` — hex color for the lever value display. Rotate through: `#3366FF`, `#EA580C`, `#7B2FFF`, `#059669`, `#DC2626`, `#FFAC09`
+
 ### Bank Profile Section (REQUIRED in config)
 
 The `bank_profile` section in the config JSON populates the **Bank Profile** sheet in the Excel model. This sheet provides executives with a single-page view of the bank's identity, key financial metrics, and data confidence.
@@ -563,10 +604,10 @@ The table below is a **fallback only** — use ramp_up_models.md to derive engag
 |----------|--------|--------|--------|--------|--------|--------|
 | Conservative | Implementation | 10% | 60% | 80% | 90% | 100% |
 | Conservative | Effectiveness | 10% | 25% | 45% | 70% | 85% |
-| Moderate | Implementation | 20% | 70% | 80% | 100% | 100% |
-| Moderate | Effectiveness | 15% | 35% | 60% | 85% | 100% |
-| Aggressive | Implementation | 30% | 80% | 90% | 100% | 100% |
-| Aggressive | Effectiveness | 20% | 45% | 70% | 90% | 100% |
+| Base | Implementation | 20% | 70% | 80% | 100% | 100% |
+| Base | Effectiveness | 15% | 35% | 60% | 85% | 100% |
+| Aspirational | Implementation | 30% | 80% | 90% | 100% | 100% |
+| Aspirational | Effectiveness | 20% | 45% | 70% | 90% | 100% |
 
 Benefits are calculated as: `Baseline Impact × Implementation % × Effectiveness %`
 
@@ -649,7 +690,28 @@ After computing all scenarios, compare results against domain benchmarks from `k
 
 **Only proceed to final output after consultant confirms direction.** A senior consultant would never deliver a weak business case without discussing options first.
 
-### 7. "What Would Change the Decision?" Section
+### 7. Phase-Mapped Value Activation (REQUIRED)
+
+The Assembly Agent needs a "value staircase" showing which levers activate at which roadmap phase. Cross-reference the roadmap (if available) to produce this table in roi_report.md:
+
+```
+## Phase-Mapped Value Activation
+
+| Phase | Timeline | Levers Activated | Annual Value at Phase End | Cumulative Benefits |
+|-------|----------|-----------------|--------------------------|---------------------|
+| Phase 1: Foundation | M1-M6 | L1 (Onboarding), L7 (Servicing) | $0.8M | $0.8M |
+| Phase 2: Growth | M7-M18 | L2 (Lending), L5 (Cross-sell) | $2.1M | $2.9M |
+| Phase 3: Scale | M19-M30 | L3 (Retention), L6 (IT Savings) | $3.4M | $6.3M |
+
+Payback occurs during Phase 2 (Month 14) when cumulative benefits cross $X.XM investment.
+```
+
+**Rules:**
+- If roadmap.md exists, read it and map levers to phases based on capability dependencies
+- If roadmap.md doesn't exist yet (ROI runs in parallel), use the implementation timeline from Step 5 to create a reasonable phase mapping
+- The assembler uses this table directly in Act 7 for "Progressive Value Realization"
+
+### 8. "What Would Change the Decision?" Section
 
 Explicitly state:
 - Conditions that would make this a No Go
