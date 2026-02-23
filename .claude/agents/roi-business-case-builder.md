@@ -348,7 +348,7 @@ Scenario Data → Model Inputs → Lever Sheets → Cashflows → Results Dashbo
 | Instructions | Static | Cell color legends, sheet descriptions |
 | Table of Contents | Static | Sheet listing by layer |
 | Scenario Data | INPUT | 3-column table: Conservative / Moderate / Aggressive curves and impacts |
-| Model Inputs | INPUT | **All editable parameters** — scenario dropdown (1/2/3), INDEX formulas for scenario-dependent values, lever inputs with confidence coloring, investment schedule |
+| Model Inputs | INPUT | **All editable parameters** — active scenario label (read-only; dropdown is on Cashflows), INDEX formulas for scenario-dependent values, lever inputs with confidence coloring, Baseline Annual as live formula, Annual Benefit as `=Baseline × backbase_impact`, investment schedule |
 | Servicing Detail | CALC | Task-level dual-dimension formulas: Vol Saving = Baseline × Vol Deflection, Time Saving = Remaining Vol × Time × Time Reduction × Rate |
 | Lever: {name} | CALC | One sheet per value lever group — driver formulas reference Model Inputs, year-by-year = Benefit × impl_curve × eff_curve |
 | Cashflows | CALC | Cross-sheet formulas referencing lever sheet totals, `=NPV()`, `=IFERROR(IRR(...))`, payback via nested `IF()` |
@@ -356,7 +356,7 @@ Scenario Data → Model Inputs → Lever Sheets → Cashflows → Results Dashbo
 | Assumptions | Static | Assumptions register with sources |
 | Data Gaps | Static | Items requiring client validation |
 
-**Scenario switching:** Model Inputs cell C5 has a dropdown (1=Conservative, 2=Moderate, 3=Aggressive). All scenario-dependent values use `=INDEX('Scenario Data'!C{row}:E{row}, 1, ScenarioIndex)`. Changing the dropdown recalculates everything.
+**Scenario switching:** Cashflows sheet cell C5 has the dropdown (1=Conservative, 2=Moderate, 3=Aggressive). Model Inputs and Journey Analysis sheets display the active scenario name as a **read-only label** — do not place a second dropdown there. All scenario-dependent values use `=INDEX('Scenario Data'!C{row}:E{row}, 1, ScenarioIndex)`. Changing the Cashflows dropdown recalculates everything.
 
 **Named ranges:** ScenarioIndex, DiscountRate, License_Y1..Y5, Impl_Y1..Y5
 
@@ -386,7 +386,18 @@ config = {
             "category": "customer_onboarding",
             "evidence_ids": ["E1", "E3"],
             "revenue_drivers": {
-                "digital_casa": { "name": "Digital CASA Conversion", "potential_annual_benefit": 600000, "confidence": "medium" }
+                "digital_casa": {
+                    "name": "Digital CASA Conversion",
+                    "baseline_formula": "{volume_per_month} * 12 * {revenue_per_customer}",
+                    "baseline_annual": 600000,
+                    "potential_annual_benefit": 480000,
+                    "confidence": "medium",
+                    "inputs": {
+                        "volume_per_month": { "value": 1000, "unit": "customers/month", "source": "CLIENT DATA", "confidence": "HIGH", "assumption": "Average monthly CASA applications in current state" },
+                        "revenue_per_customer": { "value": 50, "unit": "USD/customer/year", "source": "BENCHMARK", "confidence": "MEDIUM", "assumption": "Average first-year revenue per new CASA customer" },
+                        "backbase_impact": { "value": 0.80, "unit": "percentage", "source": "BENCHMARK", "confidence": "MEDIUM", "assumption": "Backbase Digital Onboarding captures 80% of baseline opportunity through improved conversion" }
+                    }
+                }
             },
             "cost_drivers": {},
             "servicing_analysis": null
@@ -436,10 +447,17 @@ config = {
 }
 
 generator = ROIModelGenerator(config)
-generator.generate("outputs/roi_model.xlsx")
+generator.generate("outputs/2602_Zenith_Nigeria_ROI_Model.xlsx")
 ```
 
+> **IMPORTANT — Output file naming:** Always use the convention `YYMM_[CLIENT_CODE]_ROI_Model.xlsx` where `YYMM` is the year+month of generation (e.g. `2602` = February 2026) and `CLIENT_CODE` is the engagement directory prefix (e.g. `Zenith_Nigeria`). Example: `outputs/2602_Zenith_Nigeria_ROI_Model.xlsx`.
+
 > **IMPORTANT — Config field names:** The Excel generator reads `assumptions_register` and `data_gaps_for_validation` as the canonical top-level keys. The generator also accepts `assumptions` and `data_gaps` as fallbacks, but always prefer the canonical names for new configs.
+
+> **IMPORTANT — Driver config requirements (formula-based model):** Every driver that contributes to Journey Analysis and Cashflows MUST include:
+> 1. **`baseline_formula`** — a template string using `{key}` tokens matching input keys, e.g. `"{volume_per_month} * 12 * {revenue_per_customer}"`. The generator substitutes `{key}` with the driver's corresponding Excel cell ref to create a live formula chain. Without this field, Model Inputs and Journey Analysis show static hardcoded values instead of formulas.
+> 2. **`baseline_annual` > 0** — the numeric result of evaluating the baseline formula. A zero baseline produces a zero Annual Benefit regardless of Backbase impact — the lever contributes nothing to the model. For pure-opportunity drivers (where the baseline IS the opportunity), set `baseline_annual` to the opportunity value and `backbase_impact = 1.0`.
+> 3. **`backbase_impact` as an input key** — with a `value` between 0 and 1. This is multiplied against Baseline in both Model Inputs (`Annual Benefit = Baseline × backbase_impact`) and Journey Analysis. Without it, the Annual Benefit row cannot be formula-driven.
 
 ### Scenario Summary (REQUIRED in config)
 
@@ -794,6 +812,9 @@ Before finalizing any ROI report, verify:
 - [ ] Regional benchmark rules followed
 - [ ] Handoff package prepared for downstream agents
 - [ ] Executive summary enables decision without reading full report
+- [ ] All in-scope drivers have `baseline_annual > 0` (zero baseline = zero benefit in Excel model, regardless of Backbase impact)
+- [ ] All in-scope drivers have `baseline_formula` defined with `{key}` tokens matching their input keys
+- [ ] All in-scope drivers have `backbase_impact` as an input key (required for `Annual Benefit = Baseline × backbase_impact` formula chain)
 
 ## Consultant Checkpoint #2 — Business Case Review (MANDATORY)
 
