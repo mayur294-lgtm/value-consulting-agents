@@ -21,12 +21,15 @@ Usage:
 import asyncio
 import argparse
 import glob
+import hashlib
 import json
 import os
 import re
 import subprocess
 import sys
 import time
+import urllib.request
+import urllib.error
 from datetime import datetime, timezone
 
 # Ensure output appears immediately even without PYTHONUNBUFFERED
@@ -1919,6 +1922,11 @@ async def run_pipeline(
         if not passed:
             log("  Pipeline completed with validation warnings.", C.YELLOW)
 
+    # ── Step 7: Knowledge Harvest (silent, non-blocking) ─────────────────
+    log_step("7", "KNOWLEDGE HARVEST")
+    engagement_id = engagement_dir.name
+    await step_harvest(engagement_dir, outputs_dir, engagement_id)
+
     # ── T4: Summary with timing + costs ──────────────────────────────────
     total_time, total_cost = _print_pipeline_summary(timings, pipeline_start)
 
@@ -1951,6 +1959,178 @@ async def run_pipeline(
             f.write(timing_entry)
 
     print()
+
+
+# ─── Knowledge Harvest ────────────────────────────────────────────────────────
+
+def _harvest_outputs_hash(outputs_dir: Path) -> str:
+    """Hash key output files to detect changes since last harvest."""
+    files = ["roi_config.json", "evidence_register.md", "journey_maps.json",
+             "capability_assessment.md", "roi_report.md"]
+    h = hashlib.sha256()
+    for fname in files:
+        f = outputs_dir / fname
+        if f.exists():
+            h.update(f.read_bytes())
+    return h.hexdigest()[:16]
+
+
+def _load_env_file(cortex_dir: Path) -> dict:
+    """Load .env file from cortex root into a dict (does not override os.environ)."""
+    env = {}
+    env_path = cortex_dir / ".env"
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, _, v = line.partition("=")
+                env[k.strip()] = v.strip()
+    return env
+
+
+def _git_push_harvest(branch: str, token: str, cortex_dir: Path, engagement_id: str) -> bool:
+    """Commit knowledge/ changes and push harvest branch using the harvest token."""
+    remote_url = f"https://x-access-token:{token}@github.com/mayur294-lgtm/value-consulting-agents.git"
+    env = {**os.environ, "GIT_AUTHOR_NAME": "Cortex Harvester",
+           "GIT_AUTHOR_EMAIL": "harvest@cortex.ai",
+           "GIT_COMMITTER_NAME": "Cortex Harvester",
+           "GIT_COMMITTER_EMAIL": "harvest@cortex.ai"}
+
+    def run(cmd):
+        return subprocess.run(cmd, cwd=cortex_dir, capture_output=True, text=True, env=env)
+
+    # Create and switch to harvest branch from current main
+    run(["git", "fetch", "origin", "main", "--quiet"])
+    run(["git", "checkout", "-B", branch, "origin/main"])
+
+    # Stage only knowledge/ and EXTRACTION_REGISTRY.md
+    run(["git", "add", "knowledge/"])
+
+    status = run(["git", "status", "--porcelain"])
+    if not status.stdout.strip():
+        return False  # Nothing to commit
+
+    msg = f"harvest: {engagement_id} → knowledge (auto)"
+    result = run(["git", "commit", "-m", msg])
+    if result.returncode != 0:
+        return False
+
+    push = run(["git", "push", remote_url, f"{branch}:{branch}", "--quiet"])
+    return push.returncode == 0
+
+
+def _open_harvest_pr(branch: str, token: str, engagement_id: str, summary: str) -> str:
+    """Open a GitHub PR for the harvest branch. Returns PR URL."""
+    payload = json.dumps({
+        "title": f"harvest: {engagement_id} knowledge update",
+        "head": branch,
+        "base": "main",
+        "body": (
+            f"## Auto-harvest: `{engagement_id}`\n\n"
+            f"{summary}\n\n"
+            "_Generated automatically by Cortex pipeline. Review and merge to update shared knowledge base._\n\n"
+            "🤖 Auto-opened by `orchestrate.py`"
+        ),
+    }).encode()
+
+    req = urllib.request.Request(
+        "https://api.github.com/repos/mayur294-lgtm/value-consulting-agents/pulls",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read())
+            return data.get("html_url", "")
+    except Exception:
+        return ""
+
+
+async def step_harvest(engagement_dir: Path, outputs_dir: Path, engagement_id: str):
+    """
+    Post-pipeline knowledge harvest — runs silently after validation.
+    - Skips if CORTEX_HARVEST_TOKEN is not set (prints one-time setup hint)
+    - Skips if outputs haven't changed since last harvest
+    - Runs knowledge-harvester agent to extract anonymised learnings
+    - Pushes harvest/* branch and opens PR via GitHub API
+    """
+    cortex_dir = REPO_ROOT
+
+    # Load token from .env or environment
+    env_vars = _load_env_file(cortex_dir)
+    token = os.environ.get("CORTEX_HARVEST_TOKEN") or env_vars.get("CORTEX_HARVEST_TOKEN")
+
+    if not token:
+        log("  ℹ️  Auto-harvest not set up. Run once to enable:", C.YELLOW)
+        log("      ./scripts/setup-harvest.sh <token>", C.YELLOW)
+        log("  Get token from team 1Password → 'Cortex Harvest Token'", C.DIM)
+        return
+
+    # Check if outputs changed since last harvest
+    hash_file = engagement_dir / ".harvest_state"
+    current_hash = _harvest_outputs_hash(outputs_dir)
+    if hash_file.exists() and hash_file.read_text().strip() == current_hash:
+        log("  ✓ Knowledge up to date — no changes since last harvest", C.GREEN)
+        return
+
+    log("  🧠 Harvesting knowledge from engagement outputs...", C.CYAN)
+
+    harvest_prompt = f"""You are running an automatic knowledge harvest after a pipeline run.
+
+Engagement directory: {engagement_dir}
+Outputs directory: {outputs_dir}
+Engagement ID: {engagement_id}
+
+Your task:
+1. Read the key output files: evidence_register.md, roi_config.json, journey_maps.json, capability_assessment.md, roi_report.md (read only what exists)
+2. Read knowledge/learnings/EXTRACTION_REGISTRY.md to understand what's already been harvested
+3. Extract NEW learnings not already in the registry:
+   - Benchmarks → append to knowledge/domains/{{domain}}/benchmarks.md
+   - Journey patterns → write to knowledge/learnings/journey_maps/{{engagement_id}}.md
+   - ROI patterns → append to knowledge/learnings/roi_models/ (new file if novel lever type)
+   - Pain point patterns → append to knowledge/learnings/pain_points/{{domain}}_patterns.md
+4. Anonymise everything: replace client name with [Client-{{domain}}-{{region}}-{{year}}]
+5. Update knowledge/learnings/EXTRACTION_REGISTRY.md — add row to Auto-Harvest Log with today's date
+6. Write a 3-5 line plain-text harvest summary (what was added/updated) to {engagement_dir}/.harvest_summary.txt
+
+Follow knowledge/standards/benchmark_evolution.md append-only rules.
+Do NOT modify any existing benchmark values — only append new ones.
+"""
+
+    result = await run_agent(
+        "knowledge-harvester", harvest_prompt, engagement_dir,
+        label="Harvest", max_turns=25,
+    )
+
+    # Read summary written by agent
+    summary_file = engagement_dir / ".harvest_summary.txt"
+    summary = summary_file.read_text().strip() if summary_file.exists() else "Knowledge updated."
+
+    # Push harvest branch and open PR
+    branch = f"harvest/{engagement_id}-{datetime.now().strftime('%Y%m%d')}"
+    log(f"  📤 Pushing harvest branch: {branch}", C.CYAN)
+
+    pushed = _git_push_harvest(branch, token, cortex_dir, engagement_id)
+    if not pushed:
+        log("  ⚠  Nothing new to push (knowledge already up to date)", C.YELLOW)
+        hash_file.write_text(current_hash)
+        return
+
+    pr_url = _open_harvest_pr(branch, token, engagement_id, summary)
+
+    # Save hash so next run skips if nothing changes
+    hash_file.write_text(current_hash)
+
+    if pr_url:
+        log(f"  ✅ Harvest PR opened: {pr_url}", C.GREEN)
+    else:
+        log(f"  ✅ Harvest branch pushed: {branch} (PR creation failed — open manually)", C.YELLOW)
 
 
 # ─── CLI ──────────────────────────────────────────────────────────────────────
