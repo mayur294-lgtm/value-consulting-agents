@@ -211,6 +211,12 @@ class ROIModelGenerator:
     def generate(self, output_path: str):
         """Generate the complete formula-based ROI Excel model."""
         self._normalize_config()
+
+        # Pre-declare sc_cell — Cashflows sheet places the dropdown at exactly C5.
+        # This allows Model Inputs and Journey Analysis (written before Cashflows)
+        # to reference the Cashflows scenario selector without a two-pass approach.
+        self.sc_cell = "'Cashflows'!$C$5"
+
         self._create_styles()
 
         if 'Sheet' in self.wb.sheetnames:
@@ -502,10 +508,10 @@ class ROIModelGenerator:
         ws = self.wb.create_sheet("Model Inputs", self.sheet_index)
         self.sheet_index += 1
 
-        for col, w in [('A', 5), ('B', 40), ('C', 20), ('D', 12), ('E', 50), ('F', 20)]:
+        for col, w in [('A', 5), ('B', 40), ('C', 20), ('D', 12), ('E', 45), ('F', 25)]:
             ws.column_dimensions[col].width = w
 
-        self.cell_map['model_inputs'] = {'groups': {}, 'investment': {}, 'curves': {}}
+        self.cell_map['model_inputs'] = {'groups': {}, 'investment': {}, 'curves': {}, 'impacts': {}}
 
         ws['B2'] = "Model Inputs"
         ws['B2'].font = Font(bold=True, size=18, color=self.COLORS['primary'])
@@ -513,32 +519,24 @@ class ROIModelGenerator:
         ws['B3'].font = Font(italic=True, size=10)
 
         row = 5
-        # Scenario Selector
-        ws[f'B{row}'] = "SCENARIO SELECTOR"
-        ws[f'B{row}'].font = Font(bold=True, size=12, color=self.COLORS['primary'])
-        row += 1
-        ws[f'B{row}'] = "Active Scenario (1=Conservative, 2=Moderate, 3=Aggressive)"
-        # Default: map selected_scenario to index
-        sc_map = {'conservative': 1, 'moderate': 2, 'aggressive': 3}
-        default_sc = sc_map.get(self.config.get('selected_scenario', 'Moderate').lower(), 2)
-        ws.cell(row=row, column=3, value=default_sc)
-        ws.cell(row=row, column=3).fill = PatternFill("solid", fgColor=self.COLORS['editable'])
-        ws.cell(row=row, column=3).font = Font(bold=True, size=14)
-        # Add dropdown validation
-        dv = DataValidation(type="list", formula1='"1,2,3"', allow_blank=False)
-        dv.error = "Select 1 (Conservative), 2 (Moderate), or 3 (Aggressive)"
-        dv.errorTitle = "Invalid Scenario"
-        ws.add_data_validation(dv)
-        dv.add(ws.cell(row=row, column=3))
-        self.cell_map['model_inputs']['scenario_row'] = row
-        sc_cell = f"'Model Inputs'!$C${row}"
+        # Active Scenario — read-only label referencing Cashflows dropdown
+        ws[f'B{row}'] = "Active Scenario"
+        ws[f'B{row}'].font = Font(bold=True, size=11, color=self.COLORS['primary'])
+        sc_label_formula = (
+            f"=IF({self.sc_cell}=1,\"Conservative\","
+            f"IF({self.sc_cell}=2,\"Moderate\",\"Aggressive\"))"
+        )
+        ws.cell(row=row, column=3, value=sc_label_formula)
+        ws.cell(row=row, column=3).font = Font(bold=True, size=11, color=self.COLORS['positive'])
+        ws[f'D{row}'] = "(Change scenario on Cashflows sheet)"
+        ws[f'D{row}'].font = Font(italic=True, size=9)
 
         row += 2
         # Basic Information
         ws[f'B{row}'] = "BASIC INFORMATION"
         ws[f'B{row}'].font = Font(bold=True, size=12, color=self.COLORS['primary'])
         row += 1
-        self._write_header_row(ws, row, ['Input', 'Value', 'Conf.', 'Source'])
+        self._write_header_row(ws, row, ['Input', 'Value', 'Conf.', 'Assumption/Comment', 'Source'])
         row += 1
 
         basic = self.config.get('basic_information', {})
@@ -583,62 +581,6 @@ class ROIModelGenerator:
         ws.cell(row=row, column=3).fill = PatternFill("solid", fgColor=self.COLORS['editable'])
         self.cell_map['model_inputs']['yoy_growth'] = f'C{row}'
 
-        # Active Curves (INDEX from Scenario Data)
-        row += 2
-        ws[f'B{row}'] = "ACTIVE CURVES (auto-selected from scenario)"
-        ws[f'B{row}'].font = Font(bold=True, size=12, color=self.COLORS['primary'])
-        row += 1
-        ws[f'B{row}'] = "These cells use INDEX formulas — they update when you change the scenario selector above."
-        ws[f'B{row}'].font = Font(italic=True, size=9)
-        row += 1
-
-        sd_curves = self.cell_map['scenario_data']['curves']
-        for cat in sorted(sd_curves.keys()):
-            ws[f'B{row}'] = f"{cat.replace('_', ' ').title()} — Implementation"
-            ws[f'B{row}'].font = Font(bold=True)
-            self.cell_map['model_inputs']['curves'].setdefault(cat, {})
-            row += 1
-            impl_start = sd_curves[cat]['impl_start']
-            for yr in range(5):
-                ws.cell(row=row, column=2, value=f"  Year {yr + 1}")
-                sd_row = impl_start + yr
-                formula = f"=INDEX('Scenario Data'!$C${sd_row}:$E${sd_row},1,{sc_cell})"
-                ws.cell(row=row, column=3, value=formula)
-                ws.cell(row=row, column=3).number_format = '0%'
-                self.cell_map['model_inputs']['curves'][cat][f'impl_y{yr+1}'] = f'C{row}'
-                row += 1
-
-            ws[f'B{row}'] = f"{cat.replace('_', ' ').title()} — Effectiveness"
-            ws[f'B{row}'].font = Font(bold=True)
-            row += 1
-            eff_start = sd_curves[cat]['eff_start']
-            for yr in range(5):
-                ws.cell(row=row, column=2, value=f"  Year {yr + 1}")
-                sd_row = eff_start + yr
-                formula = f"=INDEX('Scenario Data'!$C${sd_row}:$E${sd_row},1,{sc_cell})"
-                ws.cell(row=row, column=3, value=formula)
-                ws.cell(row=row, column=3).number_format = '0%'
-                self.cell_map['model_inputs']['curves'][cat][f'eff_y{yr+1}'] = f'C{row}'
-                row += 1
-            row += 1
-
-        # Active Backbase Impacts (INDEX from Scenario Data)
-        row += 1
-        ws[f'B{row}'] = "ACTIVE BACKBASE IMPACTS (auto-selected from scenario)"
-        ws[f'B{row}'].font = Font(bold=True, size=12, color=self.COLORS['primary'])
-        row += 1
-
-        sd_impacts = self.cell_map['scenario_data']['impacts']
-        self.cell_map['model_inputs']['impacts'] = {}
-        for impact_key in sorted(sd_impacts.keys()):
-            ws.cell(row=row, column=2, value=impact_key.replace('_', ' ').title())
-            sd_row = sd_impacts[impact_key]
-            formula = f"=INDEX('Scenario Data'!$C${sd_row}:$E${sd_row},1,{sc_cell})"
-            ws.cell(row=row, column=3, value=formula)
-            ws.cell(row=row, column=3).number_format = '0.0%'
-            self.cell_map['model_inputs']['impacts'][impact_key] = f'C{row}'
-            row += 1
-
         # Lever Group Inputs
         row += 2
         ws[f'B{row}'] = "LEVER GROUP INPUTS"
@@ -674,21 +616,37 @@ class ROIModelGenerator:
                         ws.cell(row=row, column=3).fill = PatternFill("solid", fgColor=self.COLORS['editable'])
                     self._apply_confidence_coloring(ws, ws.cell(row=row, column=3), inp_data)
                     ws.cell(row=row, column=4, value=inp_data.get('confidence', 'LOW'))
-                    ws.cell(row=row, column=5, value=str(inp_data.get('source', ''))[:80])
+                    ws.cell(row=row, column=5, value=str(inp_data.get('assumption', '')))
                     ws.cell(row=row, column=5).font = Font(size=9)
+                    ws.cell(row=row, column=6, value=str(inp_data.get('source', '')))
+                    ws.cell(row=row, column=6).font = Font(size=9)
                     driver_inputs[inp_key] = f'C{row}'
                     self.cell_map['model_inputs']['groups'][group_key]['inputs'][f'{drv_key}__{inp_key}'] = f'C{row}'
                     row += 1
 
-                # Store baseline and benefit for this driver
+                # Baseline Annual — formula if template exists, else hardcoded
                 ws.cell(row=row, column=2, value="    Baseline Annual")
-                ws.cell(row=row, column=3, value=driver.get('baseline_annual', 0))
-                ws.cell(row=row, column=3).number_format = '$#,##0'
-                self.cell_map['model_inputs']['groups'][group_key]['drivers'][f'{drv_key}__baseline'] = f'C{row}'
+                formula_tpl = driver.get('baseline_formula', '')
+                if formula_tpl:
+                    excel_formula = '=' + formula_tpl
+                    for key, cell_ref in driver_inputs.items():
+                        excel_formula = excel_formula.replace(f'{{{key}}}', cell_ref)
+                    ws.cell(row=row, column=3, value=excel_formula)
+                else:
+                    ws.cell(row=row, column=3, value=driver.get('baseline_annual', 0))
+                ws.cell(row=row, column=3).number_format = '#,##0'
+                baseline_cell = f'C{row}'
+                self.cell_map['model_inputs']['groups'][group_key]['drivers'][f'{drv_key}__baseline'] = baseline_cell
                 row += 1
+
+                # Annual Benefit (Steady State) — Baseline × backbase_impact
                 ws.cell(row=row, column=2, value="    Annual Benefit (Steady State)")
-                ws.cell(row=row, column=3, value=driver.get('potential_annual_benefit', 0))
-                ws.cell(row=row, column=3).number_format = '$#,##0'
+                backbase_cell = driver_inputs.get('backbase_impact')
+                if backbase_cell and formula_tpl:
+                    ws.cell(row=row, column=3, value=f'={baseline_cell}*{backbase_cell}')
+                else:
+                    ws.cell(row=row, column=3, value=driver.get('potential_annual_benefit', 0))
+                ws.cell(row=row, column=3).number_format = '#,##0'
                 ws.cell(row=row, column=3).font = Font(bold=True, color=self.COLORS['positive'])
                 self.cell_map['model_inputs']['groups'][group_key]['drivers'][f'{drv_key}__benefit'] = f'C{row}'
                 row += 1
@@ -699,6 +657,7 @@ class ROIModelGenerator:
                 ws[f'B{row}'] = f"  {driver.get('name', drv_key)}"
                 ws[f'B{row}'].font = Font(bold=True, size=10)
                 row += 1
+                driver_inputs = {}
                 for inp_key, inp_data in driver.get('inputs', {}).items():
                     ws.cell(row=row, column=2, value=f"    {inp_key.replace('_', ' ').title()}")
                     if inp_key == 'backbase_impact':
@@ -713,19 +672,37 @@ class ROIModelGenerator:
                         ws.cell(row=row, column=3).fill = PatternFill("solid", fgColor=self.COLORS['editable'])
                     self._apply_confidence_coloring(ws, ws.cell(row=row, column=3), inp_data)
                     ws.cell(row=row, column=4, value=inp_data.get('confidence', 'LOW'))
-                    ws.cell(row=row, column=5, value=str(inp_data.get('source', ''))[:80])
+                    ws.cell(row=row, column=5, value=str(inp_data.get('assumption', '')))
                     ws.cell(row=row, column=5).font = Font(size=9)
+                    ws.cell(row=row, column=6, value=str(inp_data.get('source', '')))
+                    ws.cell(row=row, column=6).font = Font(size=9)
+                    driver_inputs[inp_key] = f'C{row}'
                     self.cell_map['model_inputs']['groups'][group_key]['inputs'][f'{drv_key}__{inp_key}'] = f'C{row}'
                     row += 1
 
+                # Baseline Annual — formula if template exists, else hardcoded
                 ws.cell(row=row, column=2, value="    Baseline Annual")
-                ws.cell(row=row, column=3, value=driver.get('baseline_annual', 0))
-                ws.cell(row=row, column=3).number_format = '$#,##0'
-                self.cell_map['model_inputs']['groups'][group_key]['drivers'][f'{drv_key}__baseline'] = f'C{row}'
+                formula_tpl = driver.get('baseline_formula', '')
+                if formula_tpl:
+                    excel_formula = '=' + formula_tpl
+                    for key, cell_ref in driver_inputs.items():
+                        excel_formula = excel_formula.replace(f'{{{key}}}', cell_ref)
+                    ws.cell(row=row, column=3, value=excel_formula)
+                else:
+                    ws.cell(row=row, column=3, value=driver.get('baseline_annual', 0))
+                ws.cell(row=row, column=3).number_format = '#,##0'
+                baseline_cell = f'C{row}'
+                self.cell_map['model_inputs']['groups'][group_key]['drivers'][f'{drv_key}__baseline'] = baseline_cell
                 row += 1
+
+                # Annual Benefit (Steady State) — Baseline × backbase_impact
                 ws.cell(row=row, column=2, value="    Annual Benefit (Steady State)")
-                ws.cell(row=row, column=3, value=driver.get('potential_annual_benefit', 0))
-                ws.cell(row=row, column=3).number_format = '$#,##0'
+                backbase_cell = driver_inputs.get('backbase_impact')
+                if backbase_cell and formula_tpl:
+                    ws.cell(row=row, column=3, value=f'={baseline_cell}*{backbase_cell}')
+                else:
+                    ws.cell(row=row, column=3, value=driver.get('potential_annual_benefit', 0))
+                ws.cell(row=row, column=3).number_format = '#,##0'
                 ws.cell(row=row, column=3).font = Font(bold=True, color=self.COLORS['positive'])
                 self.cell_map['model_inputs']['groups'][group_key]['drivers'][f'{drv_key}__benefit'] = f'C{row}'
                 row += 1
@@ -733,8 +710,24 @@ class ROIModelGenerator:
 
             row += 1  # space between groups
 
-        # Investment
+        # Active Backbase Impacts (INDEX from Scenario Data)
         row += 1
+        ws[f'B{row}'] = "ACTIVE BACKBASE IMPACTS (auto-selected from scenario)"
+        ws[f'B{row}'].font = Font(bold=True, size=12, color=self.COLORS['primary'])
+        row += 1
+
+        sd_impacts = self.cell_map['scenario_data']['impacts']
+        for impact_key in sorted(sd_impacts.keys()):
+            ws.cell(row=row, column=2, value=impact_key.replace('_', ' ').title())
+            sd_row = sd_impacts[impact_key]
+            formula = f"=INDEX('Scenario Data'!$C${sd_row}:$E${sd_row},1,{self.sc_cell})"
+            ws.cell(row=row, column=3, value=formula)
+            ws.cell(row=row, column=3).number_format = '0.0%'
+            self.cell_map['model_inputs']['impacts'][impact_key] = f'C{row}'
+            row += 1
+
+        # Investment
+        row += 2
         ws[f'B{row}'] = "INVESTMENT"
         ws[f'B{row}'].font = Font(bold=True, size=12, color=self.COLORS['primary'])
         row += 1
@@ -768,6 +761,45 @@ class ROIModelGenerator:
             self.cell_map['model_inputs']['investment'][f'impl_y{yr+1}'] = f'C{row}'
             row += 1
 
+        # Active Curves (INDEX from Scenario Data)
+        row += 2
+        ws[f'B{row}'] = "ACTIVE CURVES (auto-selected from scenario)"
+        ws[f'B{row}'].font = Font(bold=True, size=12, color=self.COLORS['primary'])
+        row += 1
+        ws[f'B{row}'] = "These cells use INDEX formulas — they update when you change the scenario on the Cashflows sheet."
+        ws[f'B{row}'].font = Font(italic=True, size=9)
+        row += 1
+
+        sd_curves = self.cell_map['scenario_data']['curves']
+        for cat in sorted(sd_curves.keys()):
+            ws[f'B{row}'] = f"{cat.replace('_', ' ').title()} — Implementation"
+            ws[f'B{row}'].font = Font(bold=True)
+            self.cell_map['model_inputs']['curves'].setdefault(cat, {})
+            row += 1
+            impl_start = sd_curves[cat]['impl_start']
+            for yr in range(5):
+                ws.cell(row=row, column=2, value=f"  Year {yr + 1}")
+                sd_row = impl_start + yr
+                formula = f"=INDEX('Scenario Data'!$C${sd_row}:$E${sd_row},1,{self.sc_cell})"
+                ws.cell(row=row, column=3, value=formula)
+                ws.cell(row=row, column=3).number_format = '0%'
+                self.cell_map['model_inputs']['curves'][cat][f'impl_y{yr+1}'] = f'C{row}'
+                row += 1
+
+            ws[f'B{row}'] = f"{cat.replace('_', ' ').title()} — Effectiveness"
+            ws[f'B{row}'].font = Font(bold=True)
+            row += 1
+            eff_start = sd_curves[cat]['eff_start']
+            for yr in range(5):
+                ws.cell(row=row, column=2, value=f"  Year {yr + 1}")
+                sd_row = eff_start + yr
+                formula = f"=INDEX('Scenario Data'!$C${sd_row}:$E${sd_row},1,{self.sc_cell})"
+                ws.cell(row=row, column=3, value=formula)
+                ws.cell(row=row, column=3).number_format = '0%'
+                self.cell_map['model_inputs']['curves'][cat][f'eff_y{yr+1}'] = f'C{row}'
+                row += 1
+            row += 1
+
     def _find_impact_ref(self, inp_data, driver, group_key):
         """Try to find the matching impact reference in the active impacts section."""
         impacts = self.cell_map.get('model_inputs', {}).get('impacts', {})
@@ -783,24 +815,41 @@ class ROIModelGenerator:
     # ── Journey Analysis Sheet (all lever groups in one sheet) ───────
 
     def _create_journey_analysis_sheet(self):
-        """Create a single Journey Analysis sheet with all lever groups."""
+        """Create Journey Analysis sheet showing full formula chain per driver:
+        Input factors (from Model Inputs) → Baseline formula → Backbase Impact → Annual Benefit.
+        """
         ws = self.wb.create_sheet("Journey Analysis", self.sheet_index)
         self.sheet_index += 1
-        self.lever_sheet_names = {}  # All groups now reference this single sheet
+        self.lever_sheet_names = {}
 
-        for col, w in [('A', 5), ('B', 40), ('C', 18)]:
+        for col, w in [('A', 5), ('B', 45), ('C', 20), ('D', 25)]:
             ws.column_dimensions[col].width = w
 
-        ws['B1'] = "Journey Analysis — Annual Steady-State Benefits"
+        ws['B1'] = "Journey Analysis — Benefit Calculation Chain"
         ws['B1'].font = Font(bold=True, size=18, color=self.COLORS['primary'])
 
-        ws['B3'] = "Each lever shows Revenue Generation and Cost Reduction drivers with annual benefit at full effectiveness."
+        # Active Scenario — read-only reference to Cashflows dropdown
+        ws['B2'] = "Active Scenario:"
+        ws['B2'].font = Font(bold=True, size=11, color=self.COLORS['primary'])
+        sc_label_formula = (
+            f"=IF({self.sc_cell}=1,\"Conservative\","
+            f"IF({self.sc_cell}=2,\"Moderate\",\"Aggressive\"))"
+        )
+        ws['C2'] = sc_label_formula
+        ws['C2'].font = Font(bold=True, size=11, color=self.COLORS['positive'])
+        ws['D2'] = "(Change on Cashflows sheet)"
+        ws['D2'].font = Font(italic=True, size=9)
+
+        ws['B3'] = ("Each lever: input factors → Baseline (formula) → × Backbase Impact → Annual Benefit. "
+                    "Change scenario on Cashflows to update scenario-linked impacts.")
         ws['B3'].font = Font(italic=True, size=10)
 
         self.cell_map.setdefault('lever_sheets', {})
-        row = 5
+        mi_groups = self.cell_map.get('model_inputs', {}).get('groups', {})
+        mi_impacts = self.cell_map.get('model_inputs', {}).get('impacts', {})
 
-        group_total_rows = []  # Track each group's total row for the grand total
+        row = 5
+        group_total_rows = []
 
         for group_key in self.group_order:
             group = self.lever_groups[group_key]
@@ -818,49 +867,127 @@ class ROIModelGenerator:
 
             benefit_cells = []
 
+            def _write_driver_chain(drv_key, driver, driver_type_label):
+                """Write the full formula chain for one driver. Returns the annual benefit cell ref."""
+                nonlocal row
+
+                # Driver sub-header
+                ws.cell(row=row, column=2, value=f"  {driver.get('name', drv_key)}")
+                ws.cell(row=row, column=2).font = Font(bold=True, size=10,
+                                                       color=self.COLORS['positive'] if driver_type_label == 'Revenue'
+                                                       else self.COLORS['primary'])
+                ws.cell(row=row, column=4, value=driver_type_label)
+                ws.cell(row=row, column=4).font = Font(italic=True, size=9)
+                row += 1
+
+                # Column headers for this driver's factor block
+                self._write_header_row(ws, row, ['Factor', 'Value', 'Unit'])
+                row += 1
+
+                # Input factor rows — reference Model Inputs cells
+                # Skip 'backbase_impact' here; it gets its own dedicated row below
+                mi_driver_inputs = mi_groups.get(group_key, {}).get('inputs', {})
+                ja_driver_inputs = {}
+                for inp_key, inp_data in driver.get('inputs', {}).items():
+                    if inp_key == 'backbase_impact':
+                        continue  # handled separately in the Backbase Impact row
+                    mi_cell = mi_driver_inputs.get(f'{drv_key}__{inp_key}')
+                    ws.cell(row=row, column=2, value=f"    {inp_key.replace('_', ' ').title()}")
+                    if mi_cell:
+                        ws.cell(row=row, column=3, value=f"='Model Inputs'!{mi_cell}")
+                    else:
+                        ws.cell(row=row, column=3, value=inp_data.get('value', 0))
+                    # Format numbers: %, currency, or plain
+                    val = inp_data.get('value', 0)
+                    unit = inp_data.get('unit', '')
+                    if isinstance(val, float) and val < 1 and 'percentage' in unit.lower():
+                        ws.cell(row=row, column=3).number_format = '0.0%'
+                    elif isinstance(val, (int, float)) and abs(val) >= 1000:
+                        ws.cell(row=row, column=3).number_format = '#,##0'
+                    ws.cell(row=row, column=4, value=inp_data.get('unit', ''))
+                    ws.cell(row=row, column=4).font = Font(size=9)
+                    ja_driver_inputs[inp_key] = f'C{row}'
+                    row += 1
+
+                # Baseline row — formula if template exists
+                ws.cell(row=row, column=2, value="    Baseline")
+                ws.cell(row=row, column=2).font = Font(bold=True)
+                formula_tpl = driver.get('baseline_formula', '')
+                if formula_tpl:
+                    excel_formula = '=' + formula_tpl
+                    for key, cell_ref in ja_driver_inputs.items():
+                        excel_formula = excel_formula.replace(f'{{{key}}}', cell_ref)
+                    ws.cell(row=row, column=3, value=excel_formula)
+                else:
+                    # Fall back to referencing Model Inputs baseline cell
+                    mi_baseline = mi_groups.get(group_key, {}).get('drivers', {}).get(f'{drv_key}__baseline')
+                    if mi_baseline:
+                        ws.cell(row=row, column=3, value=f"='Model Inputs'!{mi_baseline}")
+                    else:
+                        ws.cell(row=row, column=3, value=driver.get('baseline_annual', 0))
+                ws.cell(row=row, column=3).number_format = '#,##0'
+                ws.cell(row=row, column=3).font = Font(bold=True)
+                ws.cell(row=row, column=4, value=self.config.get('currency', 'NGN') + '/year')
+                ws.cell(row=row, column=4).font = Font(size=9)
+                baseline_row = row
+                row += 1
+
+                # Backbase Impact row — look up the Model Inputs cell directly
+                ws.cell(row=row, column=2, value="    Backbase Impact")
+                ws.cell(row=row, column=2).font = Font(bold=True)
+                mi_bi_cell = mi_driver_inputs.get(f'{drv_key}__backbase_impact')
+                if mi_bi_cell:
+                    # Check if this cell is an INDEX formula (scenario-linked via Active Backbase Impacts)
+                    if mi_bi_cell in mi_impacts.values():
+                        ws.cell(row=row, column=3, value=f"='Model Inputs'!{mi_bi_cell}")
+                    else:
+                        ws.cell(row=row, column=3, value=f"='Model Inputs'!{mi_bi_cell}")
+                else:
+                    ws.cell(row=row, column=3, value=1.0)
+                ws.cell(row=row, column=3).number_format = '0.0%'
+                ws.cell(row=row, column=3).font = Font(bold=True)
+                ws.cell(row=row, column=4, value="% of baseline captured by Backbase")
+                ws.cell(row=row, column=4).font = Font(size=9, italic=True)
+                backbase_row = row
+                row += 1
+
+                # Annual Benefit row
+                ws.cell(row=row, column=2, value="    Annual Benefit")
+                ws.cell(row=row, column=2).font = Font(bold=True, size=11)
+                ws.cell(row=row, column=3, value=f"=C{baseline_row}*C{backbase_row}")
+                ws.cell(row=row, column=3).number_format = '#,##0'
+                ws.cell(row=row, column=3).font = Font(bold=True, size=11, color=self.COLORS['positive'])
+                ws.cell(row=row, column=4, value=self.config.get('currency', 'NGN') + '/year (scenario-adjusted)')
+                ws.cell(row=row, column=4).font = Font(size=9, color=self.COLORS['positive'])
+                benefit_cell = f'C{row}'
+                row += 2  # blank line between drivers
+                return benefit_cell
+
             # Revenue Drivers
             rev_drivers = group.get('revenue_drivers', {})
             if rev_drivers:
                 ws[f'B{row}'] = "Revenue Generation"
                 ws[f'B{row}'].font = Font(bold=True, size=11, color=self.COLORS['positive'])
                 row += 1
-                self._write_header_row(ws, row, ['Driver', 'Annual Benefit'])
-                row += 1
                 for drv_key, driver in rev_drivers.items():
-                    ws.cell(row=row, column=2, value=f"  {driver.get('name', drv_key)}")
-                    benefit_ref = self.cell_map['model_inputs']['groups'][group_key]['drivers'].get(f'{drv_key}__benefit')
-                    if benefit_ref:
-                        ws.cell(row=row, column=3, value=f"='Model Inputs'!{benefit_ref}")
-                    else:
-                        ws.cell(row=row, column=3, value=driver.get('potential_annual_benefit', 0))
-                    ws.cell(row=row, column=3).number_format = '$#,##0'
-                    benefit_cells.append(f'C{row}')
-                    row += 1
+                    cell = _write_driver_chain(drv_key, driver, 'Revenue')
+                    benefit_cells.append(cell)
 
             # Cost Drivers
             cost_drivers = group.get('cost_drivers', {})
             if cost_drivers:
                 ws[f'B{row}'] = "Cost Reduction"
-                ws[f'B{row}'].font = Font(bold=True, size=11, color=self.COLORS['positive'])
-                row += 1
-                self._write_header_row(ws, row, ['Driver', 'Annual Benefit'])
+                ws[f'B{row}'].font = Font(bold=True, size=11, color=self.COLORS['primary'])
                 row += 1
                 for drv_key, driver in cost_drivers.items():
-                    ws.cell(row=row, column=2, value=f"  {driver.get('name', drv_key)}")
-                    benefit_ref = self.cell_map['model_inputs']['groups'][group_key]['drivers'].get(f'{drv_key}__benefit')
-                    if benefit_ref:
-                        ws.cell(row=row, column=3, value=f"='Model Inputs'!{benefit_ref}")
-                    else:
-                        ws.cell(row=row, column=3, value=driver.get('potential_annual_benefit', 0))
-                    ws.cell(row=row, column=3).number_format = '$#,##0'
-                    benefit_cells.append(f'C{row}')
-                    row += 1
+                    cell = _write_driver_chain(drv_key, driver, 'Cost')
+                    benefit_cells.append(cell)
 
             # Servicing reference (if this group has servicing_analysis)
             servicing = group.get('servicing_analysis')
             if servicing:
                 ws[f'B{row}'] = "Servicing Cost Avoidance"
-                ws[f'B{row}'].font = Font(bold=True, size=11, color=self.COLORS['positive'])
+                ws[f'B{row}'].font = Font(bold=True, size=11, color=self.COLORS['primary'])
                 row += 1
                 ws.cell(row=row, column=2, value="  Servicing Total (see Servicing Detail sheet)")
                 svc_ref = self.cell_map.get('servicing_grand_total')
@@ -868,7 +995,7 @@ class ROIModelGenerator:
                     ws.cell(row=row, column=3, value=f"='Servicing Detail'!{svc_ref}")
                 else:
                     ws.cell(row=row, column=3, value=group.get('totals', {}).get('total_cost_saved', 0))
-                ws.cell(row=row, column=3).number_format = '$#,##0'
+                ws.cell(row=row, column=3).number_format = '#,##0'
                 benefit_cells.append(f'C{row}')
                 row += 1
 
@@ -878,24 +1005,24 @@ class ROIModelGenerator:
             ws.cell(row=row, column=2).font = Font(bold=True, size=11)
             if benefit_cells:
                 ws.cell(row=row, column=3, value=f"={'+'.join(benefit_cells)}")
-            ws.cell(row=row, column=3).number_format = '$#,##0'
+            ws.cell(row=row, column=3).number_format = '#,##0'
             ws.cell(row=row, column=3).font = Font(bold=True, size=11, color=self.COLORS['positive'])
 
             self.cell_map['lever_sheets'][group_key]['annual_total'] = f'C{row}'
             group_total_rows.append(f'C{row}')
-            row += 3  # spacing between groups
+            row += 3
 
-        # Grand Total across all groups
+        # Grand Total
         ws[f'B{row}'] = "GRAND TOTAL — ALL LEVERS"
         ws[f'B{row}'].font = Font(bold=True, size=14)
         row += 1
-        self._write_header_row(ws, row, ['', 'Annual Benefit (Steady State)'])
+        self._write_header_row(ws, row, ['', 'Annual Benefit', ''])
         row += 1
-        ws.cell(row=row, column=2, value="Total Annual Benefit")
+        ws.cell(row=row, column=2, value="Total Annual Benefit (Scenario-Adjusted, Steady State)")
         ws.cell(row=row, column=2).font = Font(bold=True, size=12)
         if group_total_rows:
             ws.cell(row=row, column=3, value=f"={'+'.join(group_total_rows)}")
-        ws.cell(row=row, column=3).number_format = '$#,##0'
+        ws.cell(row=row, column=3).number_format = '#,##0'
         ws.cell(row=row, column=3).font = Font(bold=True, size=14, color=self.COLORS['positive'])
         self.cell_map['journey_analysis_grand_total'] = f'C{row}'
 
@@ -1195,15 +1322,43 @@ class ROIModelGenerator:
         ws['B1'] = "5 Year Cashflows & ROI"
         ws['B1'].font = Font(bold=True, size=18, color=self.COLORS['primary'])
 
-        ws['B3'] = "All values are live formulas. Change scenario on Model Inputs to update."
+        ws['B3'] = "All values are live formulas. Change the scenario below — Journey Analysis and Cashflows update automatically."
         ws['B3'].font = Font(italic=True, size=10)
 
-        # ── Year-by-year headers ──
-        row = 5
-        self._write_header_row(ws, row, ['', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Total'])
+        # ── Scenario Selector ──
+        # IMPORTANT: self.sc_cell is pre-declared as "'Cashflows'!$C$5" in generate().
+        # The dropdown MUST be placed at row 5, column 3 to match that reference.
+        row = 4
+        ws[f'B{row}'] = "SCENARIO SELECTOR"
+        ws[f'B{row}'].font = Font(bold=True, size=12, color=self.COLORS['primary'])
+        row += 1  # row = 5
+        ws[f'B{row}'] = "Active Scenario (1=Conservative, 2=Moderate, 3=Aggressive)"
+        sc_map = {'conservative': 1, 'moderate': 2, 'aggressive': 3}
+        default_sc = sc_map.get(self.config.get('selected_scenario', 'Moderate').lower(), 2)
+        ws.cell(row=row, column=3, value=default_sc)
+        ws.cell(row=row, column=3).fill = PatternFill("solid", fgColor=self.COLORS['editable'])
+        ws.cell(row=row, column=3).font = Font(bold=True, size=14)
+        dv = DataValidation(type="list", formula1='"1,2,3"', allow_blank=False)
+        dv.error = "Select 1 (Conservative), 2 (Moderate), or 3 (Aggressive)"
+        dv.errorTitle = "Invalid Scenario"
+        ws.add_data_validation(dv)
+        dv.add(ws.cell(row=row, column=3))
+        self.cell_map.setdefault('cashflows', {})
+        self.cell_map['cashflows']['scenario_row'] = row  # row = 5, matching self.sc_cell = "'Cashflows'!$C$5"
+        row += 1  # row = 6
+        ws[f'B{row}'] = (
+            f"=IF(C5=1,\"Conservative — slower adoption, cautious assumptions\","
+            f"IF(C5=2,\"Moderate — base case, phased rollout\",\"Aggressive — fast adoption, full benefit\"))"
+        )
+        ws[f'B{row}'].font = Font(italic=True, size=10, color=self.COLORS['positive'])
 
-        # ── Cash Inflows ──
-        row = 7
+        row += 2  # blank row, then year headers at row 8
+
+        # ── Year-by-year headers ──
+        self._write_header_row(ws, row, ['', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Total'])
+        row += 1
+
+        # ── Cash Inflows ── (row continues from year headers above)
         ws[f'B{row}'] = "CASH INFLOWS (Benefits)"
         ws[f'B{row}'].font = Font(bold=True, color=self.COLORS['positive'])
         row += 1
@@ -1651,8 +1806,9 @@ class ROIModelGenerator:
         """Define workbook-level named ranges for key cells."""
         mi = self.cell_map.get('model_inputs', {})
 
+        cf_scenario_row = self.cell_map.get('cashflows', {}).get('scenario_row', 5)
         ranges = {
-            'ScenarioIndex': f"'Model Inputs'!$C${mi.get('scenario_row', 6)}",
+            'ScenarioIndex': f"'Cashflows'!$C${cf_scenario_row}",
             'DiscountRate': f"'Model Inputs'!${mi.get('discount_rate', 'C20')}",
         }
 
