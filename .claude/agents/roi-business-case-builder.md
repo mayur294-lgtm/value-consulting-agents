@@ -456,8 +456,28 @@ generator.generate("outputs/2602_Zenith_Nigeria_ROI_Model.xlsx")
 
 > **IMPORTANT — Driver config requirements (formula-based model):** Every driver that contributes to Journey Analysis and Cashflows MUST include:
 > 1. **`baseline_formula`** — a template string using `{key}` tokens matching input keys, e.g. `"{volume_per_month} * 12 * {revenue_per_customer}"`. The generator substitutes `{key}` with the driver's corresponding Excel cell ref to create a live formula chain. Without this field, Model Inputs and Journey Analysis show static hardcoded values instead of formulas.
-> 2. **`baseline_annual` > 0** — the numeric result of evaluating the baseline formula. A zero baseline produces a zero Annual Benefit regardless of Backbase impact — the lever contributes nothing to the model. For pure-opportunity drivers (where the baseline IS the opportunity), set `baseline_annual` to the opportunity value and `backbase_impact = 1.0`.
-> 3. **`backbase_impact` as an input key** — with a `value` between 0 and 1. This is multiplied against Baseline in both Model Inputs (`Annual Benefit = Baseline × backbase_impact`) and Journey Analysis. Without it, the Annual Benefit row cannot be formula-driven.
+> 2. **`baseline_annual` > 0** — the numeric result of evaluating the baseline formula. A zero baseline produces a zero Annual Benefit regardless of Backbase impact — the lever contributes nothing to the model.
+> 3. **`backbase_impact` as an input key** — with a `value` between **0.10 and 0.60**. This is multiplied against Baseline in both Model Inputs (`Annual Benefit = Baseline × backbase_impact`) and Journey Analysis. Without it, the Annual Benefit row cannot be formula-driven.
+>
+> **CRITICAL — Backbase Impact Caps (NEVER exceed 0.60):**
+> The `backbase_impact` represents the percentage of the baseline opportunity that Backbase realistically captures. Use these benchmarks:
+>
+> | Lever Type | Typical Range | Max Allowed | Rationale |
+> |-----------|--------------|-------------|-----------|
+> | Digital Onboarding / Origination | 0.25 – 0.40 | 0.50 | Not all drop-offs are recoverable; some are credit-related |
+> | Loan / Product Origination | 0.20 – 0.35 | 0.45 | Application abandonment has non-digital causes |
+> | Member/Customer Retention | 0.10 – 0.20 | 0.30 | Churn has structural causes beyond digital experience |
+> | Cross-sell / Product Penetration | 0.15 – 0.25 | 0.35 | Adoption depends on product fit, not just digital channel |
+> | Contact Center Cost Avoidance | 0.25 – 0.40 | 0.50 | Self-service deflection has a ceiling |
+> | Branch Cost Avoidance | 0.15 – 0.30 | 0.40 | Many branch visits are relationship-driven |
+> | Employee Enablement / Productivity | 0.10 – 0.20 | 0.30 | Tool efficiency gains are partial |
+> | IT Platform Consolidation | 0.30 – 0.50 | 0.60 | Most directly tied to platform replacement |
+> | AI/ML Personalization | 0.10 – 0.20 | 0.30 | Revenue uplift from personalization is incremental |
+> | Back Office Automation | 0.10 – 0.20 | 0.30 | Not all processes can be automated |
+>
+> **NEVER set backbase_impact to 1.0.** A value of 1.0 means "Backbase captures 100% of the baseline" which is never realistic. Even for pure digital transformation plays, the realistic capture rate is 30-50%.
+>
+> **Reasonableness check:** After computing all levers, verify that total annual benefit < 10% of client annual revenue. If it exceeds this threshold, review and reduce impact percentages — the model is likely too aggressive. For a $1B revenue institution, total annual benefit should typically be $30-80M, not $200M+.
 
 ### Scenario Summary (REQUIRED in config)
 
@@ -815,6 +835,9 @@ Before finalizing any ROI report, verify:
 - [ ] All in-scope drivers have `baseline_annual > 0` (zero baseline = zero benefit in Excel model, regardless of Backbase impact)
 - [ ] All in-scope drivers have `baseline_formula` defined with `{key}` tokens matching their input keys
 - [ ] All in-scope drivers have `backbase_impact` as an input key (required for `Annual Benefit = Baseline × backbase_impact` formula chain)
+- [ ] **NO `backbase_impact` value exceeds 0.60** — values above 0.60 are unrealistic and will be capped by the Excel generator
+- [ ] **Total annual benefit < 10% of client annual revenue** — if exceeded, review baselines and impacts for inflated assumptions
+- [ ] **No single lever's annual benefit exceeds 5% of client revenue** — flag outliers for consultant review
 
 ## Consultant Checkpoint #2 — Business Case Review (MANDATORY)
 

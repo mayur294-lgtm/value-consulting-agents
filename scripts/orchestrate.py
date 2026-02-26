@@ -134,6 +134,76 @@ def _sum_costs(results) -> float:
     return total
 
 
+MAX_BACKBASE_IMPACT = 0.60
+
+def _validate_roi_config(config_path: Path):
+    """Validate roi_config.json for unreasonable values. Caps impacts and warns."""
+    if not config_path.exists():
+        return
+    try:
+        config = json.loads(config_path.read_text())
+    except Exception as e:
+        log(f"  ⚠ Could not parse roi_config.json: {e}", C.YELLOW)
+        return
+
+    warnings = []
+    modified = False
+    total_benefit = 0
+    client_revenue = config.get('bank_profile', {}).get('total_revenue', 0)
+
+    groups = config.get('value_lever_groups', config.get('journeys', {}))
+    for group_key, group in groups.items():
+        for driver_type in ('revenue_drivers', 'cost_drivers'):
+            for drv_key, driver in group.get(driver_type, {}).items():
+                bi = driver.get('inputs', {}).get('backbase_impact', {})
+                val = bi.get('value', 0)
+                if isinstance(val, (int, float)) and val > MAX_BACKBASE_IMPACT:
+                    warnings.append(
+                        f"    {drv_key}: backbase_impact {val:.0%} → capped to {MAX_BACKBASE_IMPACT:.0%}"
+                    )
+                    bi['value'] = MAX_BACKBASE_IMPACT
+                    modified = True
+                baseline = driver.get('baseline_annual', 0)
+                benefit = baseline * bi.get('value', 0.30)
+                total_benefit += benefit
+
+    # Cap scenario-level impacts
+    for sc_name, sc in config.get('scenarios', {}).items():
+        if not isinstance(sc, dict):
+            continue
+        for imp_key, imp_val in sc.get('backbase_impacts', {}).items():
+            if isinstance(imp_val, (int, float)) and imp_val > MAX_BACKBASE_IMPACT:
+                warnings.append(
+                    f"    Scenario '{sc_name}' impact '{imp_key}': {imp_val:.0%} → capped to {MAX_BACKBASE_IMPACT:.0%}"
+                )
+                sc['backbase_impacts'][imp_key] = MAX_BACKBASE_IMPACT
+                modified = True
+
+    investment = config.get('total_investment', 0)
+    if investment > 0 and total_benefit > 0:
+        five_yr_roi = (total_benefit * 5 - investment) / investment * 100
+        if five_yr_roi > 500:
+            warnings.append(
+                f"    5-year ROI = {five_yr_roi:.0f}% — exceeds 500% threshold, review baselines"
+            )
+
+    if client_revenue > 0 and total_benefit > client_revenue * 0.10:
+        warnings.append(
+            f"    Total annual benefit ${total_benefit:,.0f} exceeds 10% of client revenue ${client_revenue:,.0f}"
+        )
+
+    if warnings:
+        log("  ⚠ ROI VALIDATION WARNINGS:", C.YELLOW)
+        for w in warnings:
+            log(w, C.YELLOW)
+
+    if modified:
+        config_path.write_text(json.dumps(config, indent=2, ensure_ascii=False))
+        log(f"  ✓ roi_config.json updated — impacts capped at {MAX_BACKBASE_IMPACT:.0%}", C.GREEN)
+    elif not warnings:
+        log("  ✓ roi_config.json passed reasonableness checks", C.GREEN)
+
+
 # ─── Resilient Query Wrapper ──────────────────────────────────────────────────
 
 async def _resilient_query(prompt: str, options: ClaudeAgentOptions, label: str):
@@ -875,6 +945,9 @@ REQUIRED OUTPUT FILES:
     assert_file_exists(outputs_dir / "capability_assessment.md", "Capability")
     assert_file_exists(outputs_dir / "roi_report.md", "ROI")
     assert_file_exists(outputs_dir / "roi_config.json", "ROI")
+
+    # ── ROI Reasonableness Gate ───────────────────────────────────────────
+    _validate_roi_config(outputs_dir / "roi_config.json")
 
     for f, name in [
         ("journey_maps.json", "Journey Builder"),

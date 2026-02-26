@@ -206,11 +206,68 @@ class ROIModelGenerator:
                 return list(curves.keys())[0]
         return curve_cat
 
+    # ── Config Validation ─────────────────────────────────────────────
+
+    MAX_BACKBASE_IMPACT = 0.60
+    FALLBACK_BACKBASE_IMPACT = 0.30
+
+    def _validate_and_cap_impacts(self):
+        """Cap backbase_impact values at MAX and warn on anomalies."""
+        warnings = []
+        total_benefit = 0
+        client_revenue = self.config.get('bank_profile', {}).get('total_revenue', 0)
+
+        for group_key, group in self.lever_groups.items():
+            for driver_type in ('revenue_drivers', 'cost_drivers'):
+                for drv_key, driver in group.get(driver_type, {}).items():
+                    inputs = driver.get('inputs', {})
+                    bi = inputs.get('backbase_impact', {})
+                    val = bi.get('value', 0)
+                    if val > self.MAX_BACKBASE_IMPACT:
+                        old_val = val
+                        bi['value'] = self.MAX_BACKBASE_IMPACT
+                        warnings.append(
+                            f"  ⚠ {drv_key}: backbase_impact {old_val:.0%} → capped to {self.MAX_BACKBASE_IMPACT:.0%}"
+                        )
+                    baseline = driver.get('baseline_annual', 0)
+                    benefit = baseline * bi.get('value', self.FALLBACK_BACKBASE_IMPACT)
+                    total_benefit += benefit
+                    if client_revenue > 0 and benefit > client_revenue * 0.10:
+                        warnings.append(
+                            f"  ⚠ {drv_key}: annual benefit ${benefit:,.0f} exceeds 10% of client revenue — review baseline"
+                        )
+
+        # Also cap scenario-level backbase_impacts
+        for sc_name, sc in self.config.get('scenarios', {}).items():
+            for imp_key, imp_val in sc.get('backbase_impacts', {}).items():
+                if isinstance(imp_val, (int, float)) and imp_val > self.MAX_BACKBASE_IMPACT:
+                    old_val = imp_val
+                    sc['backbase_impacts'][imp_key] = self.MAX_BACKBASE_IMPACT
+                    warnings.append(
+                        f"  ⚠ Scenario '{sc_name}' impact '{imp_key}': {old_val:.0%} → capped to {self.MAX_BACKBASE_IMPACT:.0%}"
+                    )
+
+        investment = self.config.get('total_investment', 0)
+        if investment > 0 and total_benefit > 0:
+            five_yr_roi = (total_benefit * 5 - investment) / investment * 100
+            if five_yr_roi > 500:
+                warnings.append(
+                    f"  ⚠ REASONABLENESS CHECK: 5-year ROI = {five_yr_roi:.0f}% — review all baselines and impacts"
+                )
+
+        if warnings:
+            print("ROI Validation Warnings:")
+            for w in warnings:
+                print(w)
+
+        return warnings
+
     # ── Main Generate ─────────────────────────────────────────────────
 
     def generate(self, output_path: str):
         """Generate the complete formula-based ROI Excel model."""
         self._normalize_config()
+        self._validate_and_cap_impacts()
 
         # Pre-declare sc_cell — Cashflows sheet places the dropdown at exactly C5.
         # This allows Model Inputs and Journey Analysis (written before Cashflows)
@@ -943,7 +1000,9 @@ class ROIModelGenerator:
                     else:
                         ws.cell(row=row, column=3, value=f"='Model Inputs'!{mi_bi_cell}")
                 else:
-                    ws.cell(row=row, column=3, value=1.0)
+                    ws.cell(row=row, column=3, value=0.30)
+                    ws.cell(row=row, column=5, value="⚠ FALLBACK — scenario linkage missing, defaulted to 30%")
+                    ws.cell(row=row, column=5).font = Font(size=9, color='FF4444', italic=True)
                 ws.cell(row=row, column=3).number_format = '0.0%'
                 ws.cell(row=row, column=3).font = Font(bold=True)
                 ws.cell(row=row, column=4, value="% of baseline captured by Backbase")
