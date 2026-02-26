@@ -187,9 +187,9 @@ def _validate_roi_config(config_path: Path):
                 f"    5-year ROI = {five_yr_roi:.0f}% — exceeds 500% threshold, review baselines"
             )
 
-    if client_revenue > 0 and total_benefit > client_revenue * 0.10:
+    if client_revenue > 0 and total_benefit > client_revenue * 0.05:
         warnings.append(
-            f"    Total annual benefit ${total_benefit:,.0f} exceeds 10% of client revenue ${client_revenue:,.0f}"
+            f"    Total annual benefit ${total_benefit:,.0f} exceeds 5% of client revenue ${client_revenue:,.0f}"
         )
 
     if warnings:

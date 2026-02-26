@@ -232,9 +232,9 @@ class ROIModelGenerator:
                     baseline = driver.get('baseline_annual', 0)
                     benefit = baseline * bi.get('value', self.FALLBACK_BACKBASE_IMPACT)
                     total_benefit += benefit
-                    if client_revenue > 0 and benefit > client_revenue * 0.10:
+                    if client_revenue > 0 and benefit > client_revenue * 0.02:
                         warnings.append(
-                            f"  ⚠ {drv_key}: annual benefit ${benefit:,.0f} exceeds 10% of client revenue — review baseline"
+                            f"  ⚠ {drv_key}: annual benefit ${benefit:,.0f} exceeds 2% of client revenue — review baseline"
                         )
 
         # Also cap scenario-level backbase_impacts

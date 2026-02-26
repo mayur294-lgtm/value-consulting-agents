@@ -457,27 +457,60 @@ generator.generate("outputs/2602_Zenith_Nigeria_ROI_Model.xlsx")
 > **IMPORTANT — Driver config requirements (formula-based model):** Every driver that contributes to Journey Analysis and Cashflows MUST include:
 > 1. **`baseline_formula`** — a template string using `{key}` tokens matching input keys, e.g. `"{volume_per_month} * 12 * {revenue_per_customer}"`. The generator substitutes `{key}` with the driver's corresponding Excel cell ref to create a live formula chain. Without this field, Model Inputs and Journey Analysis show static hardcoded values instead of formulas.
 > 2. **`baseline_annual` > 0** — the numeric result of evaluating the baseline formula. A zero baseline produces a zero Annual Benefit regardless of Backbase impact — the lever contributes nothing to the model.
-> 3. **`backbase_impact` as an input key** — with a `value` between **0.10 and 0.60**. This is multiplied against Baseline in both Model Inputs (`Annual Benefit = Baseline × backbase_impact`) and Journey Analysis. Without it, the Annual Benefit row cannot be formula-driven.
+> 3. **`backbase_impact` as an input key** — with a `value` between **0.05 and 0.60**. This is multiplied against Baseline in both Model Inputs (`Annual Benefit = Baseline × backbase_impact`) and Journey Analysis. Without it, the Annual Benefit row cannot be formula-driven.
 >
-> **CRITICAL — Backbase Impact Caps (NEVER exceed 0.60):**
-> The `backbase_impact` represents the percentage of the baseline opportunity that Backbase realistically captures. Use these benchmarks:
+> **CRITICAL — Gap-Based Impact Methodology (MANDATORY):**
 >
-> | Lever Type | Typical Range | Max Allowed | Rationale |
-> |-----------|--------------|-------------|-----------|
-> | Digital Onboarding / Origination | 0.25 – 0.40 | 0.50 | Not all drop-offs are recoverable; some are credit-related |
-> | Loan / Product Origination | 0.20 – 0.35 | 0.45 | Application abandonment has non-digital causes |
-> | Member/Customer Retention | 0.10 – 0.20 | 0.30 | Churn has structural causes beyond digital experience |
-> | Cross-sell / Product Penetration | 0.15 – 0.25 | 0.35 | Adoption depends on product fit, not just digital channel |
-> | Contact Center Cost Avoidance | 0.25 – 0.40 | 0.50 | Self-service deflection has a ceiling |
-> | Branch Cost Avoidance | 0.15 – 0.30 | 0.40 | Many branch visits are relationship-driven |
-> | Employee Enablement / Productivity | 0.10 – 0.20 | 0.30 | Tool efficiency gains are partial |
-> | IT Platform Consolidation | 0.30 – 0.50 | 0.60 | Most directly tied to platform replacement |
-> | AI/ML Personalization | 0.10 – 0.20 | 0.30 | Revenue uplift from personalization is incremental |
-> | Back Office Automation | 0.10 – 0.20 | 0.30 | Not all processes can be automated |
+> The `backbase_impact` is NOT a fixed percentage. It must be **derived from the client's current state vs. industry best-in-class**, using this formula:
 >
-> **NEVER set backbase_impact to 1.0.** A value of 1.0 means "Backbase captures 100% of the baseline" which is never realistic. Even for pure digital transformation plays, the realistic capture rate is 30-50%.
+> ```
+> backbase_impact = Gap × Capture Rate
 >
-> **Reasonableness check:** After computing all levers, verify that total annual benefit < 10% of client annual revenue. If it exceeds this threshold, review and reduce impact percentages — the model is likely too aggressive. For a $1B revenue institution, total annual benefit should typically be $30-80M, not $200M+.
+> Where:
+>   Gap = (Best-in-Class - Client Current) / Best-in-Class
+>   Capture Rate = conservative estimate of how much of the gap Backbase can close (typically 0.30 – 0.50)
+> ```
+>
+> **Step-by-step for each lever:**
+>
+> 1. **Measure Client Current** — from questionnaire data, transcript evidence, or financial statements
+> 2. **Look up Best-in-Class** — from `knowledge/domains/{domain}/benchmarks.md` and `knowledge/domains/{domain}/roi_levers.md`. If domain benchmarks are unavailable, use MCP Infobank or web search for published benchmarks.
+> 3. **Compute the Gap** — as a fraction of best-in-class
+> 4. **Apply Capture Rate** — Backbase can realistically close 30-50% of the gap (not all of it — behavior change, adoption curves, non-digital factors limit capture)
+> 5. **Document the calculation** — in the `backbase_impact` assumption field, show: "Client current: X, Best-in-class: Y, Gap: Z%, Capture rate: W%, Impact: Z×W = N%"
+>
+> **Worked examples:**
+>
+> | Lever | Client Current | Best-in-Class | Gap | Capture Rate | backbase_impact |
+> |-------|---------------|---------------|-----|-------------|-----------------|
+> | Digital Onboarding (completion) | 74% completion | 92% (DBS) | 20% | 0.40 | **0.08** |
+> | Loan Origination (abandonment) | 30% abandonment | 15% abandonment | 50% | 0.35 | **0.18** |
+> | Customer Retention (churn) | 4.5% churn | 1.5% churn | 67% | 0.30 | **0.20** |
+> | Self-service rate | 65% | 92% (neobanks) | 29% | 0.45 | **0.13** |
+> | Products per customer | 1.5 | 2.5 | 40% | 0.35 | **0.14** |
+> | Contact center digital deflection | 20% deflected | 60% deflected | 67% | 0.40 | **0.27** |
+> | Branch digital migration | 10% digital | 50% digital | 80% | 0.30 | **0.24** |
+> | IT platforms replaced | 0 consolidated | 3 replaced | direct | 0.45 | **0.45** |
+>
+> **When client current state data is missing:**
+> - Use the "Average" column from `knowledge/domains/{domain}/benchmarks.md` as the client proxy
+> - Flag it as LOW confidence in the assumption
+> - Note: "Client current assumed at industry average — validate with client data"
+>
+> **When best-in-class benchmarks are unavailable:**
+> - Use the domain `roi_levers.md` "Aggressive" column as a proxy for best-in-class
+> - Search MCP Infobank for Backbase customer case studies with published metrics
+> - Flag as LOW confidence
+>
+> **Hard safety net (enforced by Excel generator):**
+> - `backbase_impact` is capped at 0.60 by the Excel generator regardless of gap calculation
+> - **NEVER set backbase_impact to 1.0** — a value of 1.0 means "Backbase captures 100% of the baseline" which is never realistic
+> - If the gap-based formula produces a value > 0.50, double-check the best-in-class source and reduce the capture rate
+>
+> **Reasonableness checks (MANDATORY after computing all levers):**
+> 1. Total annual benefit (steady state) MUST be < 5% of client annual revenue. If it exceeds 5%, re-examine the top 3 levers — likely the baselines or impacts are inflated.
+> 2. No single lever's annual benefit should exceed 2% of client revenue.
+> 3. If a lever's `backbase_impact` exceeds 0.30, document a specific justification citing the benchmark source.
 
 ### Scenario Summary (REQUIRED in config)
 
@@ -835,9 +868,11 @@ Before finalizing any ROI report, verify:
 - [ ] All in-scope drivers have `baseline_annual > 0` (zero baseline = zero benefit in Excel model, regardless of Backbase impact)
 - [ ] All in-scope drivers have `baseline_formula` defined with `{key}` tokens matching their input keys
 - [ ] All in-scope drivers have `backbase_impact` as an input key (required for `Annual Benefit = Baseline × backbase_impact` formula chain)
+- [ ] **Every `backbase_impact` is derived from gap-based methodology** — shows Client Current, Best-in-Class, Gap, Capture Rate in the assumption field
 - [ ] **NO `backbase_impact` value exceeds 0.60** — values above 0.60 are unrealistic and will be capped by the Excel generator
-- [ ] **Total annual benefit < 10% of client annual revenue** — if exceeded, review baselines and impacts for inflated assumptions
-- [ ] **No single lever's annual benefit exceeds 5% of client revenue** — flag outliers for consultant review
+- [ ] **Any `backbase_impact` above 0.30 has documented justification** citing benchmark source
+- [ ] **Total annual benefit < 5% of client annual revenue** — if exceeded, re-examine top 3 levers for inflated baselines or impacts
+- [ ] **No single lever's annual benefit exceeds 2% of client revenue** — flag outliers for consultant review
 
 ## Consultant Checkpoint #2 — Business Case Review (MANDATORY)
 

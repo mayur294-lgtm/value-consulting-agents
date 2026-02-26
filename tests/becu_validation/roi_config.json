@@ -1,0 +1,326 @@
+{
+  "client_name": "BECU",
+  "date": "2026-02-26",
+  "currency": "USD",
+  "analysis_years": 5,
+  "discount_rate": 0.10,
+  "selected_scenario": "Moderate",
+  "total_investment": 20000000,
+  "bank_profile": {
+    "name": "BECU (Boeing Employees' Credit Union)",
+    "type": "Credit Union",
+    "region": "Pacific Northwest, USA",
+    "total_members": 1500000,
+    "total_assets": 29364400000,
+    "total_deposits": 25761300000,
+    "total_revenue": 1310700000,
+    "total_loans": 20271600000,
+    "total_fte": 3200,
+    "branch_count": 68,
+    "core_banking": "Fiserv DNA",
+    "nps": 66.99,
+    "digital_enrollment_rate": 0.68,
+    "active_digital_users": 1020000,
+    "member_churn_rate": 0.045,
+    "member_growth_rate": 0.04,
+    "avg_revenue_per_member": 874
+  },
+  "investment_schedule": {
+    "year_0": 12000000,
+    "year_1": 5000000,
+    "year_2": 2000000,
+    "year_3": 1000000,
+    "year_4": 0,
+    "total": 20000000,
+    "confidence": "LOW",
+    "source": "ESTIMATE — no Backbase pricing provided"
+  },
+  "backbase_loading": {
+    "implementation_curve": [0.15, 0.50, 0.80, 0.95, 1.0],
+    "effectiveness_curve": [0.20, 0.50, 0.75, 0.90, 1.0],
+    "yoy_growth": [0.04, 0.04, 0.04, 0.04, 0.04],
+    "curves": {
+      "acquisition": {
+        "implementation": [0.20, 0.60, 0.85, 0.95, 1.0],
+        "effectiveness": [0.30, 0.55, 0.80, 0.95, 1.0]
+      },
+      "servicing": {
+        "implementation": [0.15, 0.50, 0.80, 0.95, 1.0],
+        "effectiveness": [0.20, 0.50, 0.75, 0.90, 1.0]
+      },
+      "retention": {
+        "implementation": [0.0, 0.30, 0.60, 0.80, 1.0],
+        "effectiveness": [0.0, 0.25, 0.55, 0.80, 1.0]
+      },
+      "penetration": {
+        "implementation": [0.10, 0.40, 0.70, 0.90, 1.0],
+        "effectiveness": [0.15, 0.40, 0.65, 0.85, 1.0]
+      },
+      "default": {
+        "implementation": [0.15, 0.50, 0.80, 0.95, 1.0],
+        "effectiveness": [0.20, 0.50, 0.75, 0.90, 1.0]
+      }
+    }
+  },
+  "scenarios": {
+    "conservative": {
+      "implementation_curve": [0.10, 0.35, 0.60, 0.80, 0.90],
+      "effectiveness_curve": [0.15, 0.35, 0.55, 0.70, 0.85],
+      "backbase_impacts": {
+        "membership_conversion": 0.15,
+        "loan_conversion": 0.12,
+        "churn_reduction": 0.08,
+        "cross_sell_uplift": 0.10,
+        "call_deflection": 0.20,
+        "branch_deflection": 0.12,
+        "employee_productivity": 0.08,
+        "it_consolidation": 0.25
+      },
+      "curves": {
+        "default": {
+          "implementation": [0.10, 0.35, 0.60, 0.80, 0.90],
+          "effectiveness": [0.15, 0.35, 0.55, 0.70, 0.85]
+        }
+      }
+    },
+    "moderate": {
+      "implementation_curve": [0.20, 0.55, 0.80, 0.95, 1.0],
+      "effectiveness_curve": [0.25, 0.50, 0.75, 0.90, 1.0],
+      "backbase_impacts": {
+        "membership_conversion": 0.30,
+        "loan_conversion": 0.25,
+        "churn_reduction": 0.15,
+        "cross_sell_uplift": 0.20,
+        "call_deflection": 0.35,
+        "branch_deflection": 0.22,
+        "employee_productivity": 0.15,
+        "it_consolidation": 0.45
+      },
+      "curves": {
+        "default": {
+          "implementation": [0.20, 0.55, 0.80, 0.95, 1.0],
+          "effectiveness": [0.25, 0.50, 0.75, 0.90, 1.0]
+        }
+      }
+    },
+    "aggressive": {
+      "implementation_curve": [0.30, 0.70, 0.90, 1.0, 1.0],
+      "effectiveness_curve": [0.35, 0.60, 0.85, 0.95, 1.0],
+      "backbase_impacts": {
+        "membership_conversion": 0.45,
+        "loan_conversion": 0.35,
+        "churn_reduction": 0.20,
+        "cross_sell_uplift": 0.30,
+        "call_deflection": 0.50,
+        "branch_deflection": 0.35,
+        "employee_productivity": 0.25,
+        "it_consolidation": 0.55
+      },
+      "curves": {
+        "default": {
+          "implementation": [0.30, 0.70, 0.90, 1.0, 1.0],
+          "effectiveness": [0.35, 0.60, 0.85, 0.95, 1.0]
+        }
+      }
+    }
+  },
+  "value_lever_groups": {
+    "digital_membership": {
+      "group_name": "L1 — Digital Membership Origination",
+      "category": "customer_onboarding",
+      "lifecycle_stage": "acquire",
+      "totals": { "group_total": 13530000 },
+      "revenue_drivers": {
+        "membership_conversion": {
+          "name": "Digital Membership Conversion Uplift",
+          "type": "revenue_uplift",
+          "baseline_annual": 45105540,
+          "potential_annual_benefit": 13531662,
+          "baseline_formula": "{app_starts_annual} * {abandonment_rate} * {avg_revenue_per_member}",
+          "inputs": {
+            "app_starts_annual": { "value": 197738, "unit": "applications/year", "source": "CLIENT DATA (Jeff — Digital originations 2025)", "confidence": "HIGH", "assumption": "Digital account opening starts in 2025" },
+            "abandonment_rate": { "value": 0.261, "unit": "percentage", "source": "CLIENT DATA (Jeff — 2025 data)", "confidence": "HIGH", "assumption": "26.1% of digital membership applications are abandoned" },
+            "avg_revenue_per_member": { "value": 874, "unit": "USD/member/year", "source": "DERIVED (NII + Non-Interest Income / 1.5M members)", "confidence": "HIGH", "assumption": "Average revenue per member derived from Q4 2025 financials" },
+            "backbase_impact": { "value": 0.30, "unit": "percentage", "source": "BENCHMARK", "confidence": "MEDIUM", "assumption": "Backbase Digital Onboarding recovers 30% of abandoned applications through streamlined KYC, pre-population, and mobile-first UX" }
+          }
+        }
+      },
+      "cost_drivers": {}
+    },
+    "digital_lending": {
+      "group_name": "L2 — Digital Loan Origination",
+      "category": "customer_onboarding",
+      "lifecycle_stage": "acquire",
+      "totals": { "group_total": 3952500 },
+      "revenue_drivers": {
+        "loan_conversion": {
+          "name": "Digital Loan Conversion Uplift",
+          "type": "revenue_uplift",
+          "baseline_annual": 15827150,
+          "potential_annual_benefit": 3956788,
+          "baseline_formula": "{loan_starts_annual} * {abandonment_rate} * {avg_loan_revenue}",
+          "inputs": {
+            "loan_starts_annual": { "value": 104813, "unit": "applications/year", "source": "CLIENT DATA (Jeff — 2025 data)", "confidence": "HIGH", "assumption": "Digital loan application starts in 2025" },
+            "abandonment_rate": { "value": 0.302, "unit": "percentage", "source": "CLIENT DATA (Jeff — 2025 data)", "confidence": "HIGH", "assumption": "30.2% of digital loan applications are abandoned" },
+            "avg_loan_revenue": { "value": 500, "unit": "USD/loan/year", "source": "ESTIMATE", "confidence": "LOW", "assumption": "Average first-year revenue per loan (interest margin). Loan portfolio $20.3B / ~400K active loans × NIM ~3% ÷ weighted avg life" },
+            "backbase_impact": { "value": 0.25, "unit": "percentage", "source": "BENCHMARK", "confidence": "MEDIUM", "assumption": "Backbase Lending Origination recovers 25% of abandoned loan applications through pre-qualification, document upload, and real-time decisioning" }
+          }
+        }
+      },
+      "cost_drivers": {}
+    },
+    "member_retention": {
+      "group_name": "L3 — Member Retention",
+      "category": "loyalty_retention",
+      "lifecycle_stage": "retain",
+      "totals": { "group_total": 8842500 },
+      "revenue_drivers": {
+        "churn_reduction": {
+          "name": "Churn Reduction via Digital Engagement",
+          "type": "revenue_uplift",
+          "baseline_annual": 58950000,
+          "potential_annual_benefit": 8842500,
+          "baseline_formula": "{total_members} * {churn_rate} * {avg_revenue_per_member}",
+          "inputs": {
+            "total_members": { "value": 1500000, "unit": "members", "source": "CLIENT DATA (BECU 2024 Annual Report)", "confidence": "HIGH", "assumption": "Total retail members" },
+            "churn_rate": { "value": 0.045, "unit": "percentage", "source": "CLIENT DATA", "confidence": "MEDIUM", "assumption": "4.5% annual member attrition rate" },
+            "avg_revenue_per_member": { "value": 874, "unit": "USD/member/year", "source": "DERIVED", "confidence": "HIGH", "assumption": "From Q4 2025 financials" },
+            "backbase_impact": { "value": 0.15, "unit": "percentage", "source": "BENCHMARK", "confidence": "LOW", "assumption": "Backbase reduces churn by 15% through improved digital engagement, financial wellness tools, and proactive retention campaigns. Churn has structural causes (relocation, life events) so digital can only address a portion." }
+          }
+        }
+      },
+      "cost_drivers": {}
+    },
+    "cross_sell": {
+      "group_name": "L4 — Cross-sell & Product Penetration",
+      "category": "product_penetration",
+      "lifecycle_stage": "expand",
+      "totals": { "group_total": 5242800 },
+      "revenue_drivers": {
+        "cross_sell_uplift": {
+          "name": "Product Penetration Uplift",
+          "type": "revenue_uplift",
+          "baseline_annual": 26214000,
+          "potential_annual_benefit": 5242800,
+          "baseline_formula": "{total_revenue_annual} * {penetration_uplift_pct}",
+          "inputs": {
+            "total_revenue_annual": { "value": 1310700000, "unit": "USD/year", "source": "CLIENT DATA (Q4 2025 Statement)", "confidence": "HIGH", "assumption": "Total annual revenue (NII + non-interest income)" },
+            "penetration_uplift_pct": { "value": 0.02, "unit": "percentage", "source": "BENCHMARK", "confidence": "LOW", "assumption": "2% revenue uplift from improved cross-sell. Conservative: only 30% CC penetration, 9% auto loan, 1% investment — significant room for digital product bundling" },
+            "backbase_impact": { "value": 0.20, "unit": "percentage", "source": "BENCHMARK", "confidence": "LOW", "assumption": "Backbase Digital Engage NBA engine and onboarding cross-sell captures 20% of addressable product penetration opportunity" }
+          }
+        }
+      },
+      "cost_drivers": {}
+    },
+    "contact_center": {
+      "group_name": "L5 — Contact Center Cost Avoidance",
+      "category": "servicing",
+      "lifecycle_stage": "retain",
+      "totals": { "group_total": 2240000 },
+      "revenue_drivers": {},
+      "cost_drivers": {
+        "call_deflection": {
+          "name": "Digital Self-Service Call Deflection",
+          "type": "cost_avoidance",
+          "baseline_annual": 6396960,
+          "potential_annual_benefit": 2238936,
+          "baseline_formula": "{deflectable_calls_annual} * {aht_hours} * {loaded_hourly_rate}",
+          "inputs": {
+            "deflectable_calls_annual": { "value": 1126128, "unit": "calls/year", "source": "DERIVED", "confidence": "MEDIUM", "assumption": "39.2% of 2.87M annual calls are deflectable (Deposit Servicing 22,592 + Banking Access 21,068 + Balance Inquiries 12,282 + Transfers 6,482 = 62,424/mo × 12 + Debit Servicing 11,441 × 12 = ~887K + Online Banking 10,555 × 12 = ~127K → ~1.13M)" },
+            "aht_hours": { "value": 0.1206, "unit": "hours", "source": "CLIENT DATA", "confidence": "HIGH", "assumption": "Overall AHT 434 seconds = 0.1206 hours" },
+            "loaded_hourly_rate": { "value": 46.15, "unit": "USD/hour", "source": "CLIENT DATA", "confidence": "HIGH", "assumption": "Fully loaded blended hourly rate for contact center agents" },
+            "backbase_impact": { "value": 0.35, "unit": "percentage", "source": "BENCHMARK", "confidence": "MEDIUM", "assumption": "Backbase self-service deflects 35% of deflectable calls through digital servicing, account maintenance, and FAQ self-service. Chatbot currently at 56.5% containment on 58.6K sessions — Backbase Engage extends this to transactional self-service." }
+          }
+        }
+      }
+    },
+    "branch_efficiency": {
+      "group_name": "L6 — Branch Cost Avoidance",
+      "category": "servicing",
+      "lifecycle_stage": "retain",
+      "totals": { "group_total": 1952000 },
+      "revenue_drivers": {},
+      "cost_drivers": {
+        "branch_deflection": {
+          "name": "Digital Migration of Branch Servicing",
+          "type": "cost_avoidance",
+          "baseline_annual": 8874000,
+          "potential_annual_benefit": 1952280,
+          "baseline_formula": "{deflectable_visits_annual} * {handle_time_hours} * {loaded_hourly_rate}",
+          "inputs": {
+            "deflectable_visits_annual": { "value": 750000, "unit": "visits/year", "source": "DERIVED", "confidence": "MEDIUM", "assumption": "50% of 1.5M annual branch visits are deflectable (account inquiries 101K/mo × 12 = 1.21M, minus complex ones). Account inquiries are largest branch visit category." },
+            "handle_time_hours": { "value": 0.2567, "unit": "hours", "source": "CLIENT DATA", "confidence": "HIGH", "assumption": "15:25 average service time = 0.2567 hours" },
+            "loaded_hourly_rate": { "value": 46.15, "unit": "USD/hour", "source": "ESTIMATE", "confidence": "MEDIUM", "assumption": "Using same loaded rate as contact center; branch FTE may differ" },
+            "backbase_impact": { "value": 0.22, "unit": "percentage", "source": "BENCHMARK", "confidence": "MEDIUM", "assumption": "Backbase digital servicing migrates 22% of deflectable branch visits to self-service. Conservative — many branch visits are relationship-driven (12% new account, 8% loans)." }
+          }
+        }
+      }
+    },
+    "employee_enablement": {
+      "group_name": "L7 — Employee Enablement",
+      "category": "rm_productivity",
+      "lifecycle_stage": "retain",
+      "totals": { "group_total": 1824000 },
+      "revenue_drivers": {},
+      "cost_drivers": {
+        "employee_productivity": {
+          "name": "Employee Productivity via Unified Workbench",
+          "type": "cost_avoidance",
+          "baseline_annual": 12162768,
+          "potential_annual_benefit": 1824415,
+          "baseline_formula": "{branch_fte} * {loaded_hourly_rate} * {annual_hours} * {productivity_gain_pct}",
+          "inputs": {
+            "branch_fte": { "value": 632.7, "unit": "FTE", "source": "CLIENT DATA (Retail Workforce Team)", "confidence": "HIGH", "assumption": "Branch employees as of year end 2025" },
+            "loaded_hourly_rate": { "value": 46.15, "unit": "USD/hour", "source": "ESTIMATE", "confidence": "MEDIUM", "assumption": "Blended loaded hourly rate" },
+            "annual_hours": { "value": 2080, "unit": "hours/year", "source": "STANDARD", "confidence": "HIGH", "assumption": "Standard 40hr/week × 52 weeks" },
+            "productivity_gain_pct": { "value": 0.20, "unit": "percentage", "source": "BENCHMARK", "confidence": "LOW", "assumption": "20% productivity gain from eliminating 30-50 app context switches (pain point: 30-50 applications per transaction), providing unified Member 360 view (currently unavailable), and reducing 12-week new hire training time" },
+            "backbase_impact": { "value": 0.15, "unit": "percentage", "source": "BENCHMARK", "confidence": "LOW", "assumption": "Backbase Employee Workbench captures 15% of productivity gain. Unified interface replaces multi-app workflow but behavioral change and adoption limit early impact." }
+          }
+        }
+      }
+    },
+    "it_consolidation": {
+      "group_name": "L8 — IT Platform Consolidation",
+      "category": "other",
+      "lifecycle_stage": "other",
+      "totals": { "group_total": 1350000 },
+      "revenue_drivers": {},
+      "cost_drivers": {
+        "it_consolidation": {
+          "name": "Legacy Platform Decommission",
+          "type": "cost_avoidance",
+          "baseline_annual": 3000000,
+          "potential_annual_benefit": 1350000,
+          "baseline_formula": "{platforms_replaced} * {avg_annual_platform_cost}",
+          "inputs": {
+            "platforms_replaced": { "value": 3, "unit": "platforms", "source": "CLIENT DATA (IT-App Rationalization)", "confidence": "HIGH", "assumption": "Corillian (Replace), MX Mobile (Replace), Mulesoft ESB (Retire → Azure APIM)" },
+            "avg_annual_platform_cost": { "value": 1000000, "unit": "USD/year/platform", "source": "ESTIMATE", "confidence": "LOW", "assumption": "Average annual cost per platform (license + maintenance + integration support). No actual license costs provided in questionnaire — CRITICAL DATA GAP." },
+            "backbase_impact": { "value": 0.45, "unit": "percentage", "source": "BENCHMARK", "confidence": "MEDIUM", "assumption": "Backbase replaces Corillian and MX directly (high capture), Mulesoft ESB partially replaced by Backbase integration layer. 45% reflects that some costs persist during parallel-run period." }
+          }
+        }
+      }
+    }
+  },
+  "assumptions_register": [
+    { "id": "A1", "assumption": "Total members remain at ~1.5M for baseline year", "value": "1,500,000", "source": "BECU 2024 Annual Report", "confidence": "HIGH", "impact": "HIGH", "validation": "Confirm with 2025 membership data" },
+    { "id": "A2", "assumption": "Average revenue per member = $874", "value": "$874", "source": "Derived: ($1,094.5M NII + $216.3M non-interest) / 1.5M members", "confidence": "HIGH", "impact": "HIGH", "validation": "Validated from Q4 2025 financial statement" },
+    { "id": "A3", "assumption": "Member churn rate = 4.5%", "value": "4.5%", "source": "CLIENT DATA", "confidence": "MEDIUM", "impact": "HIGH", "validation": "Confirm with membership analytics team" },
+    { "id": "A4", "assumption": "Digital onboarding abandonment rate = 26.1%", "value": "26.1%", "source": "CLIENT DATA (Jeff — 2025)", "confidence": "HIGH", "impact": "HIGH", "validation": "Confirmed from 2025 data" },
+    { "id": "A5", "assumption": "Loan application abandonment rate = 30.2%", "value": "30.2%", "source": "CLIENT DATA (Jeff — 2025)", "confidence": "HIGH", "impact": "MEDIUM", "validation": "Confirmed from 2025 data" },
+    { "id": "A6", "assumption": "Contact center AHT = 434 seconds", "value": "434 sec", "source": "CLIENT DATA — Member Services 2025", "confidence": "HIGH", "impact": "MEDIUM", "validation": "Confirmed" },
+    { "id": "A7", "assumption": "Loaded hourly rate = $46.15/hr", "value": "$46.15", "source": "CLIENT DATA", "confidence": "HIGH", "impact": "MEDIUM", "validation": "Fully loaded cost confirmed" },
+    { "id": "A8", "assumption": "Investment estimate = $20M", "value": "$20M", "source": "ESTIMATE — no Backbase pricing", "confidence": "LOW", "impact": "CRITICAL", "validation": "MUST validate with Backbase pricing team before presenting" },
+    { "id": "A9", "assumption": "Average loan revenue = $500/loan/year", "value": "$500", "source": "ESTIMATE", "confidence": "LOW", "impact": "HIGH", "validation": "Derive from actual loan portfolio yield data" },
+    { "id": "A10", "assumption": "IT platform cost = $1M/platform/year", "value": "$1M", "source": "ESTIMATE", "confidence": "LOW", "impact": "MEDIUM", "validation": "BECU IT team must provide actual Corillian/MX/Mulesoft costs" },
+    { "id": "A11", "assumption": "Discount rate = 10%", "value": "10%", "source": "Standard WACC for credit unions", "confidence": "HIGH", "impact": "MEDIUM", "validation": "Confirm with BECU CFO" },
+    { "id": "A12", "assumption": "4% YoY member growth rate", "value": "4%", "source": "BECU 2024 Annual Report", "confidence": "HIGH", "impact": "LOW", "validation": "Confirmed from annual report" }
+  ],
+  "data_gaps_for_validation": [
+    { "gap": "Backbase implementation pricing", "priority": "CRITICAL", "impact": "Determines break-even and ROI", "recommended_action": "Obtain pricing from Backbase sales team" },
+    { "gap": "Actual platform license costs (Corillian, MX, Mulesoft)", "priority": "HIGH", "impact": "L8 IT Consolidation lever accuracy", "recommended_action": "Request from BECU IT procurement" },
+    { "gap": "Back office FTE count and hourly rates", "priority": "MEDIUM", "impact": "Potential additional cost avoidance lever", "recommended_action": "Request from operations team" },
+    { "gap": "Products per member (cross-sell ratio)", "priority": "MEDIUM", "impact": "L4 cross-sell baseline accuracy", "recommended_action": "Request from analytics team" },
+    { "gap": "Average loan revenue/yield per loan type", "priority": "HIGH", "impact": "L2 loan origination lever accuracy", "recommended_action": "Derive from loan portfolio yield analysis" },
+    { "gap": "Activation rates (30-day, 90-day)", "priority": "MEDIUM", "impact": "Could add activation lever", "recommended_action": "Request from digital team" }
+  ]
+}
