@@ -664,7 +664,11 @@ class ROIModelGenerator:
                         # Find matching impact key and reference it
                         impact_ref = self._find_impact_ref(inp_data, driver, group_key)
                         if impact_ref:
-                            ws.cell(row=row, column=3, value=f"='Model Inputs'!{impact_ref}")
+                            # INDEX formula string → just prepend '='; cell ref → prefix sheet name
+                            if impact_ref.startswith('INDEX('):
+                                ws.cell(row=row, column=3, value=f"={impact_ref}")
+                            else:
+                                ws.cell(row=row, column=3, value=f"='Model Inputs'!{impact_ref}")
                         else:
                             ws.cell(row=row, column=3, value=inp_data.get('value', 0))
                             ws.cell(row=row, column=3).fill = PatternFill("solid", fgColor=self.COLORS['editable'])
@@ -720,7 +724,10 @@ class ROIModelGenerator:
                     if inp_key == 'backbase_impact':
                         impact_ref = self._find_impact_ref(inp_data, driver, group_key)
                         if impact_ref:
-                            ws.cell(row=row, column=3, value=f"='Model Inputs'!{impact_ref}")
+                            if impact_ref.startswith('INDEX('):
+                                ws.cell(row=row, column=3, value=f"={impact_ref}")
+                            else:
+                                ws.cell(row=row, column=3, value=f"='Model Inputs'!{impact_ref}")
                         else:
                             ws.cell(row=row, column=3, value=inp_data.get('value', 0))
                             ws.cell(row=row, column=3).fill = PatternFill("solid", fgColor=self.COLORS['editable'])
@@ -793,12 +800,38 @@ class ROIModelGenerator:
         license_data = investment.get('license', {})
         impl_data = investment.get('implementation', {})
 
+        # Normalize list format → dict format (agent template used lists historically)
+        if isinstance(license_data, list):
+            license_data = {f'year_{i+1}': v for i, v in enumerate(license_data)}
+        if isinstance(impl_data, list):
+            impl_data = {f'year_{i+1}': v for i, v in enumerate(impl_data)}
+
+        # Fallback: read from investment_schedule if license/implementation not provided
+        if not any(license_data.get(f'year_{i+1}', 0) for i in range(5)) and \
+           not any(impl_data.get(f'year_{i+1}', 0) for i in range(5)):
+            sched = self.config.get('investment_schedule', {})
+            if sched:
+                print("⚠ investment.license/implementation not found — deriving from investment_schedule "
+                      "(80% implementation / 20% license split). Update config with exact breakdown.")
+                # investment_schedule uses year_0 (pre-go-live) through year_4.
+                # Map to year_1..5 in the Excel (year_0 cost is rolled into Year 1).
+                yr0 = sched.get('year_0', 0)
+                for i in range(5):
+                    # Excel Year 1 = pre-go-live (year_0) + first operational year (year_1)
+                    # Excel Year N (N>1) = schedule year_N
+                    combined = (yr0 + sched.get('year_1', 0)) if i == 0 else sched.get(f'year_{i+1}', 0)
+                    impl_data[f'year_{i+1}'] = combined * 0.8
+                    license_data[f'year_{i+1}'] = combined * 0.2
+            else:
+                print("⚠ No investment data found (investment.license/implementation or investment_schedule). "
+                      "Investment will show as $0. Update the config before presenting to a client.")
+
         ws[f'B{row}'] = "License"
         ws[f'B{row}'].font = Font(bold=True)
         row += 1
         for yr in range(5):
             ws.cell(row=row, column=2, value=f"  Year {yr + 1}")
-            val = license_data.get(f'year_{yr+1}', 1000000)
+            val = license_data.get(f'year_{yr+1}', 0)
             ws.cell(row=row, column=3, value=val)
             ws.cell(row=row, column=3).number_format = '$#,##0'
             ws.cell(row=row, column=3).fill = PatternFill("solid", fgColor=self.COLORS['editable'])
@@ -811,7 +844,7 @@ class ROIModelGenerator:
         row += 1
         for yr in range(5):
             ws.cell(row=row, column=2, value=f"  Year {yr + 1}")
-            val = impl_data.get(f'year_{yr+1}', 500000)
+            val = impl_data.get(f'year_{yr+1}', 0)
             ws.cell(row=row, column=3, value=val)
             ws.cell(row=row, column=3).number_format = '$#,##0'
             ws.cell(row=row, column=3).fill = PatternFill("solid", fgColor=self.COLORS['editable'])
@@ -858,15 +891,47 @@ class ROIModelGenerator:
             row += 1
 
     def _find_impact_ref(self, inp_data, driver, group_key):
-        """Try to find the matching impact reference in the active impacts section."""
-        impacts = self.cell_map.get('model_inputs', {}).get('impacts', {})
-        # Try exact match based on driver name or common patterns
+        """Return a formula that resolves to the scenario-switched backbase_impact value.
+
+        Priority:
+        1. Explicit 'impact_key' in inp_data — direct, unambiguous mapping.
+        2. model_inputs.impacts — already-written Model Inputs INDEX cell (only populated
+           if Active Backbase Impacts was built before this driver, which is not the default
+           order; kept as a fallback for future restructuring).
+        3. scenario_data.impacts — build an INDEX formula directly over the Scenario Data
+           sheet, which is always available since that sheet is written before Model Inputs.
+        4. Value-match fallback — matches by moderate-scenario impact value (unreliable when
+           two drivers share the same value; kept for backward compat).
+
+        Returns a cell reference string like 'C42' (Model Inputs) or an Excel formula string
+        like "INDEX('Scenario Data'!$C$15:$E$15,1,'Cashflows'!$C$5)".
+        Callers must prefix with '=' and distinguish between the two using startswith('INDEX').
+        """
         val = inp_data.get('value', 0)
-        # Check all impacts for a matching value in the moderate scenario
         mod_impacts = self.config.get('scenarios', {}).get('moderate', {}).get('backbase_impacts', {})
+        sd_impacts = self.cell_map.get('scenario_data', {}).get('impacts', {})
+        mi_impacts = self.cell_map.get('model_inputs', {}).get('impacts', {})
+
+        # 1. Explicit impact_key field in the config
+        explicit_key = inp_data.get('impact_key')
+        if explicit_key:
+            if explicit_key in mi_impacts:
+                return mi_impacts[explicit_key]
+            if explicit_key in sd_impacts:
+                sd_row = sd_impacts[explicit_key]
+                return f"INDEX('Scenario Data'!$C${sd_row}:$E${sd_row},1,{self.sc_cell})"
+
+        # 2. Already-built Model Inputs cell (populated if section order is changed in future)
         for imp_key, imp_val in mod_impacts.items():
-            if abs(imp_val - val) < 0.001 and imp_key in impacts:
-                return impacts[imp_key]
+            if abs(imp_val - val) < 0.001 and imp_key in mi_impacts:
+                return mi_impacts[imp_key]
+
+        # 3. Build INDEX formula directly over Scenario Data (always available)
+        for imp_key, imp_val in mod_impacts.items():
+            if abs(imp_val - val) < 0.001 and imp_key in sd_impacts:
+                sd_row = sd_impacts[imp_key]
+                return f"INDEX('Scenario Data'!$C${sd_row}:$E${sd_row},1,{self.sc_cell})"
+
         return None
 
     # ── Journey Analysis Sheet (all lever groups in one sheet) ───────

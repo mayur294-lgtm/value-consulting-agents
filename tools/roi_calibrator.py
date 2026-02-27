@@ -173,14 +173,32 @@ def compute_roi_metrics(config: dict) -> dict:
     yoy = config.get("backbase_loading", {}).get("yoy_growth", [0.08] * 5)
     discount = config.get("discount_rate", 0.10)
 
-    journeys = config.get("journeys", {})
+    # Support both 'value_lever_groups' (new format) and 'journeys' (legacy)
+    lever_groups = config.get("value_lever_groups", config.get("journeys", {}))
     total_steady = 0
-    for j in journeys.values():
-        total_steady += j.get("totals", {}).get("journey_total", 0)
+    for group in lever_groups.values():
+        totals = group.get("totals", {})
+        # New format uses group_total; old format uses journey_total
+        total_steady += totals.get("group_total", totals.get("journey_total", 0))
 
+    # Support both investment schemas
     investment = config.get("investment", {})
     license_d = investment.get("license", {})
     impl_d = investment.get("implementation", {})
+    if not license_d and not impl_d:
+        sched = config.get("investment_schedule", {})
+        if sched:
+            yr0 = sched.get("year_0", 0)
+            license_d = {}
+            impl_d = {}
+            for i in range(5):
+                combined = (yr0 + sched.get("year_1", 0)) if i == 0 else sched.get(f"year_{i+1}", 0)
+                impl_d[f"year_{i+1}"] = combined * 0.8
+                license_d[f"year_{i+1}"] = combined * 0.2
+        elif config.get("total_investment"):
+            flat = config["total_investment"] / 5
+            impl_d = {f"year_{i+1}": flat * 0.8 for i in range(5)}
+            license_d = {f"year_{i+1}": flat * 0.2 for i in range(5)}
 
     yearly_inflows = []
     yearly_outflows = []
@@ -297,9 +315,13 @@ class ROICalibrator:
             self._check_investment_calibration()
             self._check_cost_avoidance_reframing()
             self._check_missing_standard_levers()
+        elif roi > high:
+            self._check_investment_adequacy()
+            self._check_benefit_ceiling()
+            self._check_scenario_differentiation()
 
-            # Sort by impact descending
-            self.proposals.sort(key=lambda p: p.estimated_annual_impact, reverse=True)
+        # Sort by impact descending
+        self.proposals.sort(key=lambda p: p.estimated_annual_impact, reverse=True)
 
         assessment["proposals"] = [p.to_dict() for p in self.proposals]
         assessment["projected_roi_with_all"] = self._projected_roi_all()
@@ -318,7 +340,7 @@ class ROICalibrator:
                 bl.update(p.config_patch.get("backbase_loading", {}))
                 config_copy["backbase_loading"] = bl
             if p.category == "investment_calibration" and p.config_patch:
-                config_copy["investment"] = p.config_patch.get("investment", config_copy["investment"])
+                config_copy["investment"] = p.config_patch.get("investment", config_copy.get("investment", {}))
 
         # Add extra steady state to a dummy journey
         current_steady = self.metrics["total_steady_state"]
@@ -332,6 +354,15 @@ class ROICalibrator:
         inv = config_copy.get("investment", {})
         lic_d = inv.get("license", {})
         imp_d = inv.get("implementation", {})
+        if not lic_d and not imp_d:
+            sched = config_copy.get("investment_schedule", {})
+            if sched:
+                yr0 = sched.get("year_0", 0)
+                lic_d, imp_d = {}, {}
+                for i in range(5):
+                    combined = (yr0 + sched.get("year_1", 0)) if i == 0 else sched.get(f"year_{i+1}", 0)
+                    imp_d[f"year_{i+1}"] = combined * 0.8
+                    lic_d[f"year_{i+1}"] = combined * 0.2
 
         total_ben = sum(new_steady * impl[yr] * eff[yr] * (1 + yoy[yr]) for yr in range(5))
         total_inv = sum(lic_d.get(f"year_{yr+1}", 0) + imp_d.get(f"year_{yr+1}", 0) for yr in range(5))
@@ -740,6 +771,160 @@ class ROICalibrator:
                 benchmark_source=f"Standard {self.segment} lever template",
             ))
 
+    # ── Above-Range Checkers ──────────────────────────────────────
+
+    def _check_investment_adequacy(self):
+        """Flag investment underestimation that is inflating ROI above range."""
+        m = self.metrics
+        low, high = self.benchmark["roi_range"]
+        total_benefits = m["total_benefits_5yr"]
+        total_investment = m["total_investment_5yr"]
+
+        if total_investment == 0:
+            self.proposals.append(ExpansionProposal(
+                lever_name="Investment Data Missing — ROI Undefined",
+                category="investment_calibration",
+                estimated_annual_impact=0,
+                justification=(
+                    "No investment data found in config. investment.license and "
+                    "investment.implementation are both empty, and investment_schedule is absent. "
+                    "ROI is mathematically undefined (division by zero). "
+                    "Add investment breakdown to config before presenting to client."
+                ),
+                confidence="HIGH",
+                benchmark_source="Config validation",
+                data_inputs_needed=["investment.license", "investment.implementation"],
+            ))
+            return
+
+        # What investment is required to land at the high-end of the benchmark range?
+        required_investment = total_benefits / (1 + high / 100)
+
+        if total_investment < required_investment * 0.6:
+            self.proposals.append(ExpansionProposal(
+                lever_name="Investment Appears Underestimated — Inflating ROI",
+                category="investment_calibration",
+                estimated_annual_impact=0,
+                justification=(
+                    f"At ${total_benefits:,.0f} in 5-year benefits, a defensible "
+                    f"{high}% ROI ({self.segment} upper bound) requires ~${required_investment:,.0f} "
+                    f"in investment. Current investment is ${total_investment:,.0f} "
+                    f"({total_investment / required_investment * 100:.0f}% of required). "
+                    f"Verify investment schedule with Backbase pricing — license and implementation "
+                    f"fees may be missing or consolidated into an incorrect schema key. "
+                    f"Typical {self.segment} platform investment: $8M–$20M over 5 years."
+                ),
+                confidence="HIGH",
+                benchmark_source=f"{self.segment} benchmark, Backbase pricing reference",
+                data_inputs_needed=["investment.license per year", "investment.implementation per year"],
+                config_patch=self._build_investment_patch(required_investment),
+            ))
+
+    def _check_benefit_ceiling(self):
+        """Flag drivers whose steady-state benefit exceeds a credible ceiling."""
+        bp = self.config.get("bank_profile", {})
+        bi = bp.get("basic_information", {})
+
+        rev_entry = bi.get("total_annual_revenue", bi.get("annual_revenue", {}))
+        if isinstance(rev_entry, dict):
+            total_revenue = rev_entry.get("value", 0)
+        else:
+            total_revenue = rev_entry or 0
+
+        if not total_revenue:
+            return  # Cannot check without revenue baseline
+
+        lever_groups = self.config.get("value_lever_groups", self.config.get("journeys", {}))
+        ceiling_pct = 0.05  # 5% of total revenue per driver
+
+        for group_key, group in lever_groups.items():
+            group_name = group.get("group_name", group_key)
+            for drv_type in ("revenue_drivers", "cost_drivers"):
+                for drv_key, driver in group.get(drv_type, {}).items():
+                    benefit = driver.get("potential_annual_benefit", 0)
+                    if benefit > total_revenue * ceiling_pct:
+                        self.proposals.append(ExpansionProposal(
+                            lever_name=f"Benefit Ceiling Exceeded: {driver.get('name', drv_key)}",
+                            category="benefit_recalibration",
+                            estimated_annual_impact=0,
+                            justification=(
+                                f"Driver '{driver.get('name', drv_key)}' in '{group_name}' shows "
+                                f"${benefit:,.0f}/yr — {benefit / total_revenue * 100:.1f}% of total "
+                                f"bank revenue (${total_revenue:,.0f}). Single-lever benefits above "
+                                f"{ceiling_pct * 100:.0f}% of total revenue are rarely credible. "
+                                f"Check whether the baseline is anchored to the whole bank rather "
+                                f"than the addressable digital pool. Consider reducing the capture "
+                                f"rate assumption or splitting into sub-levers."
+                            ),
+                            confidence="HIGH",
+                            benchmark_source="Credibility ceiling: 5% of total revenue per lever",
+                            data_inputs_needed=["addressable_pool_size", "digital_penetration_rate"],
+                        ))
+
+    def _check_scenario_differentiation(self):
+        """Flag when conservative/aggressive backbase_impacts are too close to moderate."""
+        scenarios = self.config.get("scenarios", {})
+        if not scenarios:
+            return
+
+        mod_impacts = scenarios.get("moderate", {}).get("backbase_impacts", {})
+        con_impacts = scenarios.get("conservative", {}).get("backbase_impacts", {})
+        agg_impacts = scenarios.get("aggressive", {}).get("backbase_impacts", {})
+
+        if not mod_impacts or not con_impacts:
+            return
+
+        shared_keys = set(mod_impacts) & set(con_impacts)
+        if not shared_keys:
+            return
+
+        mod_avg = sum(mod_impacts[k] for k in shared_keys) / len(shared_keys)
+        con_avg = sum(con_impacts[k] for k in shared_keys) / len(shared_keys)
+
+        if mod_avg == 0:
+            return
+
+        con_ratio = con_avg / mod_avg
+
+        if con_ratio > 0.85:
+            self.proposals.append(ExpansionProposal(
+                lever_name="Scenario Differentiation Insufficient — Conservative ≈ Moderate",
+                category="scenario_calibration",
+                estimated_annual_impact=0,
+                justification=(
+                    f"Conservative average backbase_impact ({con_avg:.3f}) is "
+                    f"{con_ratio * 100:.0f}% of moderate ({mod_avg:.3f}). "
+                    f"When scenarios are this close the Excel scenario selector produces "
+                    f"near-identical ROI numbers for all three — which undermines the model. "
+                    f"Conservative impacts should be ~40–60% of moderate; "
+                    f"aggressive should be ~130–160% of moderate. "
+                    f"Review scenarios.conservative.backbase_impacts in the config."
+                ),
+                confidence="HIGH",
+                benchmark_source="Scenario differentiation standard: conservative ≈ 0.5× moderate",
+            ))
+
+        if agg_impacts:
+            agg_shared = set(mod_impacts) & set(agg_impacts)
+            if agg_shared:
+                agg_avg = sum(agg_impacts[k] for k in agg_shared) / len(agg_shared)
+                agg_ratio = agg_avg / mod_avg
+                if agg_ratio < 1.15:
+                    self.proposals.append(ExpansionProposal(
+                        lever_name="Scenario Differentiation Insufficient — Aggressive ≈ Moderate",
+                        category="scenario_calibration",
+                        estimated_annual_impact=0,
+                        justification=(
+                            f"Aggressive average backbase_impact ({agg_avg:.3f}) is only "
+                            f"{agg_ratio * 100:.0f}% of moderate ({mod_avg:.3f}). "
+                            f"Aggressive scenario should be materially higher than moderate "
+                            f"(typically 130–160%). "
+                            f"Review scenarios.aggressive.backbase_impacts in the config."
+                        ),
+                        confidence="HIGH",
+                        benchmark_source="Scenario differentiation standard: aggressive ≈ 1.45× moderate",
+                    ))
+
     # ── Report Generation ─────────────────────────────────────────
 
     def generate_report(self) -> str:
@@ -771,12 +956,25 @@ class ROICalibrator:
 
         proposals = assessment.get("proposals", [])
         if not proposals:
-            lines.append("No expansion proposals needed — ROI is within expected range.")
+            status = assessment["status"]
+            if status == "ABOVE_RANGE":
+                low, high = self.benchmark["roi_range"]
+                lines.append(f"ROI is above the {high}% upper bound but automated checks did not flag specific issues.")
+                lines.append("Recommended: manually review benefit baselines and capture rate assumptions.")
+            else:
+                lines.append("No calibration actions needed — ROI is within expected range.")
         else:
-            gap = assessment["gap_to_lower_bound"]
-            lines.append(f"GAP TO LOWER BOUND: {gap:.0f} percentage points")
+            status = assessment["status"]
+            if status == "ABOVE_RANGE":
+                low, high = self.benchmark["roi_range"]
+                excess = round(assessment["current_roi"] - high)
+                lines.append(f"ROI ABOVE RANGE: {excess:.0f} percentage points above upper bound ({high}%)")
+                lines.append("Model needs downward recalibration before presenting to client.")
+            else:
+                gap = assessment["gap_to_lower_bound"]
+                lines.append(f"GAP TO LOWER BOUND: {gap:.0f} percentage points")
             lines.append("")
-            lines.append("PROPOSED EXPANSIONS (ranked by impact)")
+            lines.append("CALIBRATION ACTIONS (ranked by impact)")
             lines.append("=" * 70)
 
             for i, p in enumerate(proposals, 1):
