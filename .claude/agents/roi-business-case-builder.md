@@ -372,13 +372,23 @@ config = {
     "discount_rate": 0.12,
     "selected_scenario": "Moderate",
     "scenarios": {
-        "conservative": { "curves": { "acquisition": {"implementation": [...], "effectiveness": [...]}, ... } },
-        "moderate":     { "curves": { ... } },
-        "aggressive":   { "curves": { ... } }
+        "conservative": {
+            "backbase_impacts": { "lever_key_1": 0.15, "lever_key_2": 0.10, "..." : "..." },
+            "curves": { "acquisition": {"implementation": [0.10, 0.35, 0.60, 0.80, 0.90], "effectiveness": [0.15, 0.35, 0.55, 0.70, 0.85]}, "...": {} }
+        },
+        "moderate": {
+            "backbase_impacts": { "lever_key_1": 0.30, "lever_key_2": 0.20, "...": "..." },
+            "curves": { "acquisition": {"implementation": [0.15, 0.50, 0.80, 0.95, 1.0], "effectiveness": [0.20, 0.50, 0.75, 0.90, 1.0]}, "...": {} }
+        },
+        "aggressive": {
+            "backbase_impacts": { "lever_key_1": 0.45, "lever_key_2": 0.30, "...": "..." },
+            "curves": { "acquisition": {"implementation": [0.20, 0.60, 0.90, 1.0, 1.0], "effectiveness": [0.25, 0.55, 0.80, 0.95, 1.0]}, "...": {} }
+        }
     },
     "investment": {
-        "license": [1200000, 1200000, 1200000, 1200000, 1200000],
-        "implementation": [2000000, 400000, 400000, 400000, 400000]
+        "license": {"year_1": 1200000, "year_2": 1200000, "year_3": 1200000, "year_4": 1200000, "year_5": 1200000},
+        "implementation": {"year_1": 8000000, "year_2": 2000000, "year_3": 500000, "year_4": 0, "year_5": 0},
+        "notes": "Source: ESTIMATE — validate with Backbase pricing team."
     },
     "value_lever_groups": {
         "customer_onboarding": {

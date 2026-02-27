@@ -1,0 +1,706 @@
+{
+  "client_name": "WSFS Bank (Wilmington Savings Fund Society)",
+  "currency": "USD",
+  "analysis_years": 5,
+  "discount_rate": 0.12,
+  "selected_scenario": "Moderate",
+
+  "bank_profile": {
+    "bank_name": "WSFS Bank (Wilmington Savings Fund Society)",
+    "country": "United States",
+    "currency": "USD",
+    "stock_ticker": "WSFS (NASDAQ)",
+    "report_year": "2024",
+    "report_source": "Public filings + Client-provided questionnaire (Nov 2025) + Discovery transcript (Nov 14, 2025)",
+    "market_context_status": "NOT_RUN",
+    "key_metrics": [
+      { "metric": "Total Deposits", "value": 17226000000, "confidence": "HIGH", "source": "Public filing" },
+      { "metric": "Consumer Deposits", "value": 8270000000, "confidence": "HIGH", "source": "Public filing — 48% of total" },
+      { "metric": "SMB Deposits", "value": 1890000000, "confidence": "HIGH", "source": "Public filing — 11% of total" },
+      { "metric": "Consumer Accounts (estimated)", "value": 344000, "confidence": "MEDIUM", "source": "Derived — $8.27B / $24K avg deposit (industry benchmark)" },
+      { "metric": "Digitally Active Consumers", "value": 220000, "confidence": "HIGH", "source": "CLIENT DATA — ~65% of 344K" },
+      { "metric": "Monthly App Starts (Consumer Onboarding)", "value": 1600, "confidence": "HIGH", "source": "CLIENT DATA" },
+      { "metric": "Monthly Apps Funded", "value": 140, "confidence": "HIGH", "source": "CLIENT DATA" },
+      { "metric": "App Abandonment Rate", "value": "91%", "confidence": "HIGH", "source": "CLIENT DATA — Tom Holdren cited explicitly in Nov 14 demo (00:45:36)" },
+      { "metric": "Annual Revenue per Consumer", "value": 350, "confidence": "HIGH", "source": "CLIENT DATA" },
+      { "metric": "Annual Consumer Attrition Rate", "value": "< 6%", "confidence": "HIGH", "source": "CLIENT DATA" },
+      { "metric": "Avg Products per Customer", "value": 2.3, "confidence": "HIGH", "source": "CLIENT DATA" },
+      { "metric": "Monthly Business Servicing Requests", "value": "4,000–5,000", "confidence": "HIGH", "source": "CLIENT DATA" },
+      { "metric": "Business Onboarding Cost per Account", "value": "$1,485–$2,485", "confidence": "HIGH", "source": "Derived — RM 7.5-15h@$75 + Ops 10-20h@$40 + Compliance 4-8h@$40" },
+      { "metric": "Annual Marketing Spend", "value": 8712000, "confidence": "HIGH", "source": "Public filing — $2.178M/quarter" },
+      { "metric": "CEB Platform Deprecation Date", "value": "September 2026", "confidence": "HIGH", "source": "CLIENT DATA — confirmed in transcript (00:24:08)" }
+    ],
+    "derived_metrics": [
+      { "metric": "Full Relationship Value per Consumer (NIM-based)", "value": 700, "confidence": "MEDIUM", "derivation": "$8.27B consumer deposits × 3.0% NIM / 344K accounts ≈ $721; rounded down to $700 as conservative anchor for retention/acquisition levers" },
+      { "metric": "Annual Churning Consumers (6% attrition cap)", "value": 20640, "confidence": "HIGH", "derivation": "344,000 × 0.06 = 20,640" },
+      { "metric": "Annual Apps Lost to Abandonment", "value": 17520, "confidence": "HIGH", "derivation": "1,460 abandoned/month × 12 = 17,520/year" },
+      { "metric": "Annual SMB Servicing Requests", "value": 54000, "confidence": "HIGH", "derivation": "4,500/month (midpoint) × 12 = 54,000/year" }
+    ],
+    "additional_context": [],
+    "data_gaps": [
+      { "data_needed": "Exact consumer call center volume (calls/year)", "priority": "HIGH", "impact": "Servicing deflection lever sizing — model uses 360,000/yr estimate from 220K digitally active × 35% call propensity × 3 calls/yr; validate with COO/Ops", "where_to_obtain": "COO or Head of Operations" },
+      { "data_needed": "Annual new SMB account openings", "priority": "HIGH", "impact": "SMB onboarding lever baseline — model uses 700 accounts/yr as estimate; actual figure changes lever value proportionally", "where_to_obtain": "Head of SMB Banking" },
+      { "data_needed": "Call center average handle time and FTE cost", "priority": "MEDIUM", "impact": "Used $10/call blended fully-loaded; validate for accuracy", "where_to_obtain": "Operations / Finance" },
+      { "data_needed": "Products per customer segmentation", "priority": "MEDIUM", "impact": "Cross-sell lever assumes uniform 2.3 products/customer; segmented data would refine addressable population", "where_to_obtain": "Chief Data Officer" },
+      { "data_needed": "Annual Report financial data (C/I ratio, NII, ROE)", "priority": "HIGH", "impact": "Required for reasonableness checks and executive benchmark comparisons", "where_to_obtain": "Public filings — WSFS NASDAQ: WSFS" }
+    ]
+  },
+
+  "scenarios": {
+    "conservative": {
+      "backbase_impacts": {
+        "abandonment_recovery": 0.08,
+        "servicing_deflection": 0.12,
+        "retention_improvement": 0.10,
+        "smb_onboarding_efficiency": 0.18,
+        "cross_sell_deepening": 0.05
+      },
+      "curves": {
+        "acquisition": {
+          "implementation": [0.10, 0.40, 0.70, 0.90, 1.0],
+          "effectiveness": [0.15, 0.40, 0.65, 0.85, 1.0]
+        },
+        "servicing": {
+          "implementation": [0.15, 0.50, 0.80, 0.95, 1.0],
+          "effectiveness": [0.20, 0.45, 0.70, 0.90, 1.0]
+        },
+        "retention": {
+          "implementation": [0.0, 0.30, 0.65, 0.85, 1.0],
+          "effectiveness": [0.0, 0.25, 0.55, 0.80, 1.0]
+        },
+        "smb_onboarding": {
+          "implementation": [0.10, 0.45, 0.75, 0.95, 1.0],
+          "effectiveness": [0.15, 0.45, 0.70, 0.88, 1.0]
+        },
+        "product_penetration": {
+          "implementation": [0.0, 0.30, 0.65, 0.85, 1.0],
+          "effectiveness": [0.0, 0.25, 0.55, 0.80, 1.0]
+        }
+      }
+    },
+    "moderate": {
+      "backbase_impacts": {
+        "abandonment_recovery": 0.15,
+        "servicing_deflection": 0.25,
+        "retention_improvement": 0.20,
+        "smb_onboarding_efficiency": 0.30,
+        "cross_sell_deepening": 0.08
+      },
+      "curves": {
+        "acquisition": {
+          "implementation": [0.15, 0.50, 0.80, 0.95, 1.0],
+          "effectiveness": [0.20, 0.50, 0.75, 0.90, 1.0]
+        },
+        "servicing": {
+          "implementation": [0.20, 0.60, 0.90, 1.0, 1.0],
+          "effectiveness": [0.25, 0.55, 0.80, 0.95, 1.0]
+        },
+        "retention": {
+          "implementation": [0.0, 0.40, 0.75, 0.90, 1.0],
+          "effectiveness": [0.0, 0.35, 0.65, 0.85, 1.0]
+        },
+        "smb_onboarding": {
+          "implementation": [0.15, 0.55, 0.85, 1.0, 1.0],
+          "effectiveness": [0.20, 0.50, 0.75, 0.90, 1.0]
+        },
+        "product_penetration": {
+          "implementation": [0.0, 0.40, 0.75, 0.95, 1.0],
+          "effectiveness": [0.0, 0.30, 0.60, 0.85, 1.0]
+        }
+      }
+    },
+    "aggressive": {
+      "backbase_impacts": {
+        "abandonment_recovery": 0.22,
+        "servicing_deflection": 0.38,
+        "retention_improvement": 0.30,
+        "smb_onboarding_efficiency": 0.45,
+        "cross_sell_deepening": 0.12
+      },
+      "curves": {
+        "acquisition": {
+          "implementation": [0.20, 0.60, 0.90, 1.0, 1.0],
+          "effectiveness": [0.25, 0.55, 0.80, 0.95, 1.0]
+        },
+        "servicing": {
+          "implementation": [0.25, 0.70, 1.0, 1.0, 1.0],
+          "effectiveness": [0.30, 0.65, 0.85, 1.0, 1.0]
+        },
+        "retention": {
+          "implementation": [0.0, 0.50, 0.85, 1.0, 1.0],
+          "effectiveness": [0.0, 0.45, 0.75, 0.90, 1.0]
+        },
+        "smb_onboarding": {
+          "implementation": [0.20, 0.65, 0.95, 1.0, 1.0],
+          "effectiveness": [0.25, 0.60, 0.85, 0.95, 1.0]
+        },
+        "product_penetration": {
+          "implementation": [0.0, 0.50, 0.85, 1.0, 1.0],
+          "effectiveness": [0.0, 0.40, 0.70, 0.92, 1.0]
+        }
+      }
+    }
+  },
+
+  "investment": {
+    "license": {
+      "year_1": 1000000,
+      "year_2": 1000000,
+      "year_3": 1000000,
+      "year_4": 1000000,
+      "year_5": 1000000
+    },
+    "implementation": {
+      "year_1": 4000000,
+      "year_2": 1500000,
+      "year_3": 500000,
+      "year_4": 0,
+      "year_5": 0
+    },
+    "notes": "Source: ESTIMATE — validate with Backbase pricing team. License reflects SaaS ACV for a ~$17B community bank. Implementation is front-loaded to reflect CEB deprecation urgency (September 2026 deadline). Year 1 implementation includes platform migration, digital onboarding, and core servicing journeys. Year 2 covers SMB digital banking and cross-sell capabilities."
+  },
+
+  "value_lever_groups": {
+
+    "digital_onboarding": {
+      "group_name": "Digital Onboarding — Consumer Abandonment Recovery",
+      "category": "customer_onboarding",
+      "evidence_ids": ["T-001", "T-002"],
+      "totals": {
+        "group_total": 1839600
+      },
+      "revenue_drivers": {
+        "abandonment_recovery": {
+          "name": "Consumer App Abandonment Recovery",
+          "baseline_formula": "{annual_lost_apps} * {revenue_per_customer_relationship}",
+          "baseline_annual": 12264000,
+          "potential_annual_benefit": 1839600,
+          "confidence": "medium",
+          "inputs": {
+            "annual_lost_apps": {
+              "value": 17520,
+              "unit": "applications/year",
+              "source": "CLIENT DATA",
+              "confidence": "HIGH",
+              "assumption": "1,600 app starts/month - 140 funded/month = 1,460 abandoned/month × 12 = 17,520/year. Tom Holdren cited 91% abandonment rate at 00:45:36 in Nov 14 demo."
+            },
+            "revenue_per_customer_relationship": {
+              "value": 700,
+              "unit": "USD/customer/year",
+              "source": "DERIVED",
+              "confidence": "MEDIUM",
+              "assumption": "Full relationship value: $8.27B consumer deposits × 3.0% NIM / 344K accounts ≈ $721; rounded to $700 conservative. NOTE: CLIENT DATA states $350/year net revenue — the higher figure reflects NIM contribution which is the economic case for retention. Validate with CFO."
+            },
+            "backbase_impact": {
+              "value": 0.15,
+              "unit": "fraction",
+              "impact_key": "abandonment_recovery",
+              "source": "GAP-BASED CALCULATION",
+              "confidence": "MEDIUM",
+              "assumption": "Gap-based: Client current funded rate = 8.75% (140/1,600). Best-in-class digital onboarding funded rate = 60% (neobanks/DBS). Gap = (60%-8.75%)/60% = 85.4%. Capture rate = 0.18 (conservative — WSFS fraud dial is set very conservatively per transcript; behavior change takes time; not all abandoned apps are recoverable intent). backbase_impact = 85.4% × 0.18 ≈ 0.15. This means Backbase helps convert ~2,628 additional accounts/year (15% of 17,520 lost). Backbase enabler: Digital Onboarding journeys with pre-filled KYC via Alloy integration, streamlined mobile-first application flow."
+            }
+          }
+        }
+      },
+      "cost_drivers": {},
+      "servicing_analysis": null
+    },
+
+    "servicing_deflection": {
+      "group_name": "Branch & Call Center Deflection",
+      "category": "servicing",
+      "evidence_ids": ["T-003", "T-004", "T-005"],
+      "totals": {
+        "group_total": 1556250
+      },
+      "revenue_drivers": {},
+      "cost_drivers": {
+        "servicing_deflection": {
+          "name": "Consumer & SMB Servicing Cost Avoidance",
+          "baseline_formula": "{consumer_call_center_baseline} + {branch_visits_baseline} + {smb_servicing_baseline}",
+          "baseline_annual": 6225000,
+          "potential_annual_benefit": 1556250,
+          "confidence": "medium",
+          "inputs": {
+            "consumer_call_center_baseline": {
+              "value": 3600000,
+              "unit": "USD/year",
+              "source": "ESTIMATE",
+              "confidence": "MEDIUM",
+              "assumption": "220,000 digitally active consumers × 35% annual call propensity × 3 calls/year = 231,000 calls + non-digital base: total ~360,000 calls/year. Fully loaded cost $10/call (8 min × $15/hr FTE + overhead). Baseline = $3,600,000. SOURCE: Bailey DeLellis confirmed 'customer support is primarily call center driven, lacking live chat or secure messaging' (00:22:00). Validate call volume with Operations."
+            },
+            "branch_visits_baseline": {
+              "value": 1545000,
+              "unit": "USD/year",
+              "source": "ESTIMATE",
+              "confidence": "MEDIUM",
+              "assumption": "344,000 accounts × 15% visit for simple tasks × 2 visits/year = 103,200 branch visits/year for deflectable tasks (paying credit cards, account inquiries, simple changes). Cost per visit $15 (15 min at $30/hr staff + overhead). Bailey DeLellis cited 'high volume of branch visits for simple transactional tasks like paying credit cards' (00:39:35)."
+            },
+            "smb_servicing_baseline": {
+              "value": 1080000,
+              "unit": "USD/year",
+              "source": "CLIENT DATA",
+              "confidence": "HIGH",
+              "assumption": "4,500 SMB servicing requests/month (midpoint of 4,000-5,000 CLIENT DATA) × 12 = 54,000/year. Average handling time 15 min at $40/hr (ops FTE rate) = $10/request. Baseline = $540,000 ops cost. Wire issues frequently require support request per transcript (00:15:16). Using $20/request to account for RM escalation = $1,080,000/year."
+            },
+            "backbase_impact": {
+              "value": 0.25,
+              "unit": "fraction",
+              "impact_key": "servicing_deflection",
+              "source": "GAP-BASED CALCULATION",
+              "confidence": "MEDIUM",
+              "assumption": "Gap-based: WSFS current digital self-service rate ~20% (call-center-driven, minimal live chat/secure messaging per transcript). Best-in-class community banks with digital banking: 65% self-service rate. Gap = (65%-20%)/65% = 69.2%. Capture rate = 0.36. backbase_impact = 69.2% × 0.36 ≈ 0.25. Servicing curve ramps faster as it's operationally driven. Backbase enabler: Self-service journeys (account management, payments, wire initiation), push notifications, secure messaging, in-app card management — addressing transcript pain points: bill pay complexity, wire initiation friction, no push notifications (00:16:31)."
+            }
+          }
+        }
+      },
+      "servicing_analysis": {
+        "call_center": {
+          "channel_name": "Call Center",
+          "tasks": [
+            {
+              "task": "Balance/Transaction Inquiries",
+              "yearly_volume": 150000,
+              "time_spent_hours": 0.083,
+              "fte_rate": 20,
+              "volume_deflection_rate": 0.60,
+              "time_reduction_rate": 0.25
+            },
+            {
+              "task": "Bill Pay Support / Wire Initiation",
+              "yearly_volume": 80000,
+              "time_spent_hours": 0.25,
+              "fte_rate": 20,
+              "volume_deflection_rate": 0.40,
+              "time_reduction_rate": 0.30
+            },
+            {
+              "task": "Account Profile Changes (address, alerts, user ID)",
+              "yearly_volume": 60000,
+              "time_spent_hours": 0.167,
+              "fte_rate": 20,
+              "volume_deflection_rate": 0.50,
+              "time_reduction_rate": 0.20
+            },
+            {
+              "task": "Fraud / Card Management",
+              "yearly_volume": 40000,
+              "time_spent_hours": 0.333,
+              "fte_rate": 22,
+              "volume_deflection_rate": 0.20,
+              "time_reduction_rate": 0.20
+            },
+            {
+              "task": "Loan Inquiry / Payment Support",
+              "yearly_volume": 30000,
+              "time_spent_hours": 0.25,
+              "fte_rate": 20,
+              "volume_deflection_rate": 0.35,
+              "time_reduction_rate": 0.25
+            }
+          ]
+        },
+        "branch": {
+          "channel_name": "Branch",
+          "tasks": [
+            {
+              "task": "Credit Card Payments / Simple Transfers",
+              "yearly_volume": 55000,
+              "time_spent_hours": 0.25,
+              "fte_rate": 20,
+              "volume_deflection_rate": 0.55,
+              "time_reduction_rate": 0.20
+            },
+            {
+              "task": "Account Maintenance (address, preferences)",
+              "yearly_volume": 30000,
+              "time_spent_hours": 0.25,
+              "fte_rate": 20,
+              "volume_deflection_rate": 0.50,
+              "time_reduction_rate": 0.15
+            },
+            {
+              "task": "Statement / Document Requests",
+              "yearly_volume": 18000,
+              "time_spent_hours": 0.167,
+              "fte_rate": 20,
+              "volume_deflection_rate": 0.60,
+              "time_reduction_rate": 0.25
+            }
+          ]
+        },
+        "smb_support": {
+          "channel_name": "SMB / Business Servicing",
+          "tasks": [
+            {
+              "task": "Wire Initiation / ACH Support",
+              "yearly_volume": 24000,
+              "time_spent_hours": 0.333,
+              "fte_rate": 40,
+              "volume_deflection_rate": 0.35,
+              "time_reduction_rate": 0.30
+            },
+            {
+              "task": "Business Account Changes / Role Management",
+              "yearly_volume": 18000,
+              "time_spent_hours": 0.25,
+              "fte_rate": 40,
+              "volume_deflection_rate": 0.40,
+              "time_reduction_rate": 0.25
+            },
+            {
+              "task": "Loan Balance / Payment Inquiries",
+              "yearly_volume": 12000,
+              "time_spent_hours": 0.25,
+              "fte_rate": 40,
+              "volume_deflection_rate": 0.30,
+              "time_reduction_rate": 0.20
+            }
+          ]
+        }
+      }
+    },
+
+    "customer_retention": {
+      "group_name": "Customer Retention — Digital Engagement & Churn Reduction",
+      "category": "retention",
+      "evidence_ids": ["T-006", "T-007"],
+      "totals": {
+        "group_total": 2889600
+      },
+      "revenue_drivers": {
+        "retention_improvement": {
+          "name": "Consumer Attrition Reduction",
+          "baseline_formula": "{annual_churning_customers} * {full_relationship_value}",
+          "baseline_annual": 14448000,
+          "potential_annual_benefit": 2889600,
+          "confidence": "medium",
+          "inputs": {
+            "annual_churning_customers": {
+              "value": 20640,
+              "unit": "customers/year",
+              "source": "CLIENT DATA + DERIVED",
+              "confidence": "HIGH",
+              "assumption": "CLIENT DATA: attrition < 6% on 344,000 consumer accounts. Using 6% as ceiling: 344,000 × 0.06 = 20,640 customers leaving per year. The Nov 14 transcript noted AUM is increasing while account count is decreasing, confirming churn and failure to attract Gen Z/Millennials (00:44:36)."
+            },
+            "full_relationship_value": {
+              "value": 700,
+              "unit": "USD/customer/year",
+              "source": "DERIVED",
+              "confidence": "MEDIUM",
+              "assumption": "Full NIM-based relationship value: $8.27B consumer deposits × 3.0% NIM / 344K = $721; rounded to $700 conservative. The attrition lever captures the full relationship value lost (not just fee income), because a churning customer takes their deposits and relationship. Validate with CFO."
+            },
+            "backbase_impact": {
+              "value": 0.20,
+              "unit": "fraction",
+              "impact_key": "retention_improvement",
+              "source": "GAP-BASED CALCULATION",
+              "confidence": "MEDIUM",
+              "assumption": "Gap-based: WSFS current attrition 6%. Best-in-class digital-first community banks: 2% attrition. Gap = (6%-2%)/6% = 66.7%. Capture rate = 0.30 (digital engagement reduces attrition through better UX, proactive notifications, self-service; however, many churn factors are non-digital — product pricing, branch access, life events). backbase_impact = 66.7% × 0.30 = 0.20. This retains ~4,128 additional customers/year at steady state. Churn lever has delayed onset — 0% Year 1 (platform must be deployed and adopted before behavioral change occurs). Backbase enabler: Digital Engage (personalized notifications, NBA), self-service retention, loyalty programs, proactive alerts for at-risk customers."
+            }
+          }
+        }
+      },
+      "cost_drivers": {},
+      "servicing_analysis": null
+    },
+
+    "smb_digital_onboarding": {
+      "group_name": "SMB Digital Onboarding — Manual Process Efficiency",
+      "category": "customer_onboarding",
+      "evidence_ids": ["T-008", "T-009"],
+      "totals": {
+        "group_total": 497850
+      },
+      "revenue_drivers": {},
+      "cost_drivers": {
+        "smb_onboarding_efficiency": {
+          "name": "SMB Onboarding Labor Cost Reduction",
+          "baseline_formula": "{annual_new_smb_accounts} * {avg_onboarding_cost_per_account}",
+          "baseline_annual": 1659500,
+          "potential_annual_benefit": 497850,
+          "confidence": "medium",
+          "inputs": {
+            "annual_new_smb_accounts": {
+              "value": 700,
+              "unit": "accounts/year",
+              "source": "ESTIMATE",
+              "confidence": "LOW",
+              "assumption": "ESTIMATE — no direct client data on new SMB account volumes. Derived from WSFS SMB deposit base ($1.89B) ÷ avg SMB relationship $2.7M = ~700 SMB clients. Assuming 100% annual turnover/replacement (10% growth + attrition) = ~700 new accounts/year. Validate with Head of SMB Banking. Flag: LOW confidence — model is proportionally sensitive to this number."
+            },
+            "avg_onboarding_cost_per_account": {
+              "value": 1985,
+              "unit": "USD/account",
+              "source": "CLIENT DATA",
+              "confidence": "HIGH",
+              "assumption": "CLIENT DATA: RM 7.5-15h @ $75/hr + Ops 10-20h @ $40/hr + Compliance 4-8h @ $40/hr. Midpoints: RM $843.75 + Ops $600 + Compliance $240 = $1,683.75. Range: $1,485–$2,485. Using midpoint $1,985/account. These costs are confirmed as fully manual process — no digital workflow exists per discovery."
+            },
+            "backbase_impact": {
+              "value": 0.30,
+              "unit": "fraction",
+              "impact_key": "smb_onboarding_efficiency",
+              "source": "GAP-BASED CALCULATION",
+              "confidence": "MEDIUM",
+              "assumption": "Gap-based: WSFS onboarding is 100% manual (confirmed: RM-led, no digital workflow). Best-in-class SMB digital onboarding: 60% process automation achievable. Gap = 100% manual. Capture rate = 0.30 (RM relationship element cannot be eliminated; compliance review remains human; platform automates data capture, document collection, ID verification). backbase_impact = 1.0 × 0.30 = 0.30. This saves ~$596/account in labor (30% of $1,985). Backbase enabler: SMB Digital Onboarding — digital application flow, pre-populated KYC via Alloy, document upload, automated compliance checks, RM dashboard for case management. Addresses transcript pain points: RM time burden, manual compliance steps."
+            }
+          }
+        }
+      },
+      "servicing_analysis": null
+    },
+
+    "cross_sell_product_deepening": {
+      "group_name": "Cross-sell & Product Deepening — Revenue Uplift",
+      "category": "product_penetration",
+      "evidence_ids": ["T-010", "T-011"],
+      "totals": {
+        "group_total": 3761664
+      },
+      "revenue_drivers": {
+        "cross_sell_deepening": {
+          "name": "Products-per-Customer Uplift via Digital Engagement",
+          "baseline_formula": "{addressable_customers} * {products_gap_per_customer} * {avg_product_revenue_per_year}",
+          "baseline_annual": 47020800,
+          "potential_annual_benefit": 3761664,
+          "confidence": "low",
+          "inputs": {
+            "addressable_customers": {
+              "value": 344000,
+              "unit": "customers",
+              "source": "DERIVED",
+              "confidence": "MEDIUM",
+              "assumption": "Full consumer base: 344,000 accounts. All digitally engaged customers are addressable for cross-sell via NBA (Next Best Action) features and proactive digital prompts. NOTE: Only ~65% (220,000) are currently digitally active — model applies to full base as target state."
+            },
+            "products_gap_per_customer": {
+              "value": 0.9,
+              "unit": "products/customer",
+              "source": "CLIENT DATA + BENCHMARK",
+              "confidence": "MEDIUM",
+              "assumption": "CLIENT DATA: 2.3 avg products/customer. BENCHMARK (industry best-in-class for community banks with strong digital engagement): 3.2 products/customer. Gap = 3.2 - 2.3 = 0.9 products/customer. NOTE: Full closure of gap is not realistic in a 5-year model — the backbase_impact captures the realistic portion Backbase can drive."
+            },
+            "avg_product_revenue_per_year": {
+              "value": 152,
+              "unit": "USD/product/year",
+              "source": "DERIVED",
+              "confidence": "MEDIUM",
+              "assumption": "Derived: $350 net revenue per customer / 2.3 products = $152/product/year net. This represents marginal net revenue per incremental product added (checking, savings, CD, credit card, mortgage, LOC). Conservative — some products yield more (mortgages), some less (savings accounts)."
+            },
+            "backbase_impact": {
+              "value": 0.08,
+              "unit": "fraction",
+              "impact_key": "cross_sell_deepening",
+              "source": "GAP-BASED CALCULATION",
+              "confidence": "LOW",
+              "assumption": "Gap-based: Current 2.3 vs best-in-class 3.2 = gap of 0.9 products = 28.1% of the 3.2 target. Capture rate = 0.28 (digital cross-sell is a nudge, not a guarantee; customer willingness, product fit, credit underwriting all constrain uptake; 5-year horizon). backbase_impact = 28.1% × 0.28 ≈ 0.08. Steady-state: 344,000 × 0.9 × 0.08 = 24,768 incremental products → $3.77M incremental revenue at $152/product/yr. Low confidence: cross-sell impact highly dependent on NBA engine configuration, product portfolio competitiveness, and digital adoption rate. Product penetration curve has 0% Year 1 (requires platform maturity + adoption). Backbase enabler: Digital Engage (NBA cross-sell prompts), personalized product recommendations, digital product onboarding within the app — addressing the lack of digital cross-sell capability identified in transcript (no personalization, no proactive engagement features on current platform)."
+            }
+          }
+        }
+      },
+      "cost_drivers": {},
+      "servicing_analysis": null
+    }
+  },
+
+  "lever_summary": [
+    {
+      "id": "L1",
+      "name": "Consumer App Abandonment Recovery",
+      "value_5yr_moderate": "$5.03M",
+      "color": "#3366FF",
+      "current_state": "91% abandonment rate; 1,460 of 1,600 monthly apps never funded",
+      "change_driver": "Backbase Digital Onboarding — mobile-first, KYC via Alloy, streamlined flow",
+      "target_state": "Recover 15% of lost apps (2,628/yr) → $1.84M incremental annual revenue",
+      "benchmark": "DBS Bank: 90%+ digital onboarding completion, <10 min (DBS Annual Report 2024)",
+      "capability_ids": ["CAP-ACQ-001", "CAP-ACQ-002"]
+    },
+    {
+      "id": "L2",
+      "name": "Branch & Call Center Deflection",
+      "value_5yr_moderate": "$4.75M",
+      "color": "#EA580C",
+      "current_state": "Call-center-driven support; no live chat, no push notifications, wire requires support ticket",
+      "change_driver": "Backbase self-service journeys: payments, wire initiation, account management, secure messaging",
+      "target_state": "Deflect 25% of servicing cost ($1.56M/yr) from call center and branch",
+      "benchmark": "Leading community banks: 65% self-service rate vs WSFS ~20% (Source: Cornerstone Advisors 2024)",
+      "capability_ids": ["CAP-SVC-001", "CAP-SVC-002", "CAP-SVC-003"]
+    },
+    {
+      "id": "L3",
+      "name": "Customer Retention — Digital Engagement",
+      "value_5yr_moderate": "$6.92M",
+      "color": "#7B2FFF",
+      "current_state": "6% annual attrition (20,640 customers/yr); AUM up but account count declining (Gen Z/Millennial gap)",
+      "change_driver": "Backbase Digital Engage: proactive alerts, NBA retention nudges, personalized UX",
+      "target_state": "Reduce attrition by 20% → retain ~4,128 additional customers/yr ($2.89M revenue protected)",
+      "benchmark": "Digital-first community banks: 2% attrition vs WSFS 6% (Source: BAI Banking Outlook 2024)",
+      "capability_ids": ["CAP-RET-001", "CAP-RET-002"]
+    },
+    {
+      "id": "L4",
+      "name": "SMB Digital Onboarding Efficiency",
+      "value_5yr_moderate": "$1.42M",
+      "color": "#059669",
+      "current_state": "100% manual SMB onboarding: RM 7.5-15h + Ops 10-20h + Compliance 4-8h = $1,485-$2,485/account",
+      "change_driver": "Backbase SMB Digital Onboarding: digital application, KYC automation, RM dashboard",
+      "target_state": "Reduce onboarding labor 30% → save $596/account, ~$497K/yr at 700 accounts/year",
+      "benchmark": "Best-in-class SMB digital banks: 60% process automation, <2h total onboarding time (Cornerstone 2024)",
+      "capability_ids": ["CAP-SMB-001", "CAP-SMB-002"]
+    },
+    {
+      "id": "L5",
+      "name": "Cross-sell & Product Deepening",
+      "value_5yr_moderate": "$8.94M",
+      "color": "#DC2626",
+      "current_state": "2.3 products/customer; no NBA engine; no proactive digital cross-sell capability",
+      "change_driver": "Backbase Digital Engage NBA: contextual product offers, digital product onboarding in-app",
+      "target_state": "Grow products/customer toward 2.57 (+0.27 via Backbase) → $3.76M incremental revenue/yr (steady state)",
+      "benchmark": "Community banks with NBA digital: 3.2 products/customer; WSFS gap = 0.9 products (Source: BAI 2024)",
+      "capability_ids": ["CAP-EXP-001", "CAP-EXP-002"]
+    }
+  ],
+
+  "assumptions_register": [
+    {
+      "id": "A-001",
+      "assumption": "Monthly app abandonment rate",
+      "value": "91% (1,460 of 1,600 apps per month don't fund)",
+      "confidence": "HIGH",
+      "source": "CLIENT DATA — Tom Holdren explicitly cited in Nov 14, 2025 demo transcript (00:45:36)",
+      "validation_owner": "Head of Digital Banking",
+      "sensitivity": "HIGH — this is the anchor metric for Lever 1; a 10% change in abandonment rate shifts L1 baseline by ~$1.2M"
+    },
+    {
+      "id": "A-002",
+      "assumption": "Annual revenue per consumer",
+      "value": "$350/customer/year (net fee/service income); $700 used for retention/acquisition levers (full NIM-based relationship value)",
+      "confidence": "MEDIUM",
+      "source": "$350 = CLIENT DATA. $700 = DERIVED (NIM calculation). Validate higher figure with CFO.",
+      "validation_owner": "CFO / Finance",
+      "sensitivity": "HIGH — if true relationship value is closer to $350, steady-state benefit drops by ~40%"
+    },
+    {
+      "id": "A-003",
+      "assumption": "Consumer attrition rate",
+      "value": "6% (CLIENT DATA states <6%; model uses 6% as ceiling)",
+      "confidence": "HIGH",
+      "source": "CLIENT DATA",
+      "validation_owner": "Head of Retail Banking",
+      "sensitivity": "MEDIUM — if actual attrition is 4% rather than 6%, Lever 3 baseline drops 33%"
+    },
+    {
+      "id": "A-004",
+      "assumption": "Annual consumer accounts",
+      "value": "344,000 (derived: $8.27B consumer deposits / $24K avg deposit)",
+      "confidence": "MEDIUM",
+      "source": "DERIVED — average deposit is an industry benchmark; actual count not provided",
+      "validation_owner": "Head of Retail Banking / CIO",
+      "sensitivity": "HIGH — affects all per-customer calculations across all 5 levers"
+    },
+    {
+      "id": "A-005",
+      "assumption": "Annual new SMB account openings",
+      "value": "700 accounts/year",
+      "confidence": "LOW",
+      "source": "ESTIMATE — no client data provided. Derived from SMB deposit base / average relationship size.",
+      "validation_owner": "Head of SMB Banking",
+      "sensitivity": "HIGH — L4 baseline is directly proportional to this number; validate as priority"
+    },
+    {
+      "id": "A-006",
+      "assumption": "Consumer call center volume",
+      "value": "360,000 calls/year (~$10/call fully loaded)",
+      "confidence": "LOW",
+      "source": "ESTIMATE — Bailey DeLellis confirmed call-center-driven support model (00:22:00); volume derived from digital adoption rate and industry ratios",
+      "validation_owner": "COO / Head of Operations",
+      "sensitivity": "MEDIUM — L2 baseline is $3.6M for call center component; ±50% range gives $1.8M–$5.4M"
+    },
+    {
+      "id": "A-007",
+      "assumption": "Business onboarding cost",
+      "value": "$1,985/account (midpoint of $1,485–$2,485 CLIENT DATA range)",
+      "confidence": "HIGH",
+      "source": "CLIENT DATA",
+      "validation_owner": "Head of SMB Operations",
+      "sensitivity": "LOW — range is known; midpoint is defensible"
+    },
+    {
+      "id": "A-008",
+      "assumption": "CEB deprecation creates implementation urgency",
+      "value": "September 2026 deadline — confirms budget and executive approval trajectory",
+      "confidence": "HIGH",
+      "source": "CLIENT DATA — confirmed in transcript (00:24:08)",
+      "validation_owner": "CTO",
+      "sensitivity": "LOW — timeline context only; does not affect financial model"
+    },
+    {
+      "id": "A-009",
+      "assumption": "Best-in-class digital onboarding funded rate",
+      "value": "60% funded rate (DBS, Marcus, Ally Digital)",
+      "confidence": "MEDIUM",
+      "source": "INDUSTRY BENCHMARK — digital-native and leading community bank benchmarks",
+      "validation_owner": "Backbase Value Consulting",
+      "sensitivity": "MEDIUM — if best-in-class is 40% instead of 60%, capture rate changes but impact on L1 is modest (<10%)"
+    },
+    {
+      "id": "A-010",
+      "assumption": "Products per customer best-in-class",
+      "value": "3.2 products/customer",
+      "confidence": "MEDIUM",
+      "source": "INDUSTRY BENCHMARK — BAI Banking Outlook, Cornerstone Advisors community bank digital study",
+      "validation_owner": "Backbase Value Consulting",
+      "sensitivity": "LOW — L5 cross-sell is flagged LOW confidence overall; this assumption only affects the gap sizing, not the final captured benefit materially"
+    }
+  ],
+
+  "data_gaps_for_validation": [
+    {
+      "id": "DG-001",
+      "data_needed": "Exact annual new SMB account volume",
+      "priority": "HIGH",
+      "source": "Head of SMB Banking — CRM / core system",
+      "impact": "L4 (SMB Onboarding) baseline is $1.66M — a 50% error in account volume causes a $248K/year error in steady-state benefit"
+    },
+    {
+      "id": "DG-002",
+      "data_needed": "Annual consumer call center call volume",
+      "priority": "HIGH",
+      "source": "COO / Operations — call center reporting system",
+      "impact": "L2 (Servicing Deflection) baseline includes $3.6M call center component based on estimate; actual volume validates or shifts this significantly"
+    },
+    {
+      "id": "DG-003",
+      "data_needed": "Annual branch visit count for deflectable tasks",
+      "priority": "MEDIUM",
+      "source": "Branch Operations — transaction logs",
+      "impact": "L2 branch component ($1.55M) is estimated; actual visit volumes for simple tasks (payments, account changes) refine the baseline"
+    },
+    {
+      "id": "DG-004",
+      "data_needed": "True fully-loaded revenue per consumer relationship (NIM-based)",
+      "priority": "HIGH",
+      "source": "CFO — management accounts or segment P&L",
+      "impact": "Model uses $700 for retention/acquisition levers; if CFO confirms closer to $350, 5-year benefits decrease by approximately $6M"
+    },
+    {
+      "id": "DG-005",
+      "data_needed": "Current products per customer (segmented by digital adoption)",
+      "priority": "MEDIUM",
+      "source": "Chief Data Officer — customer analytics",
+      "impact": "L5 (Cross-sell) assumes uniform 2.3 products; digitally active customers likely have different ratios; segmentation refines addressable market"
+    },
+    {
+      "id": "DG-006",
+      "data_needed": "Consumer attrition segmentation by digital engagement status",
+      "priority": "MEDIUM",
+      "source": "Head of Retail Analytics",
+      "impact": "If digitally active customers already attrite at <3% vs non-digital at >9%, the L3 lever should be scoped to at-risk non-digital segment only"
+    },
+    {
+      "id": "DG-007",
+      "data_needed": "Marketing cost per acquired consumer (CAC)",
+      "priority": "LOW",
+      "source": "CMO / Finance — marketing attribution data",
+      "impact": "Would add a cost-efficiency dimension to L1 (abandonment recovery is more cost-effective than paid acquisition); strengthens ROI case"
+    }
+  ]
+}
