@@ -28,6 +28,7 @@ import {
 } from '../data/api';
 import { ProvenanceChip } from '../components/common/Provenance';
 import { applyFloor, getFloor } from '../data/provenanceFloors';
+import { pulseToMarkdown as pulseToMarkdownExport, pulseToHtml as pulseToHtmlExport } from '../utils/pulseExport';
 
 // ─────────────────────────────────────────────────────────────────
 // Helpers
@@ -512,14 +513,27 @@ export default function PulsePage() {
 
   const handleExport = (format) => {
     if (!pulse) return;
-    const filename = `${decodedKey}_${pulse.period}_pulse.${format === 'json' ? 'json' : 'md'}`;
-    let content;
+    const safeBank = String(decodedKey).replace(/[^a-z0-9_-]+/gi, '_');
+    let content, mime, ext;
     if (format === 'json') {
       content = JSON.stringify(pulse, null, 2);
+      mime = 'application/json';
+      ext = 'json';
+    } else if (format === 'html') {
+      // B4 — HTML export designed for sharing with leadership. Self-contained,
+      // print-friendly, every claim retains tier+grade+publisher inline.
+      content = pulseToHtmlExport(pulse);
+      mime = 'text/html';
+      ext = 'html';
     } else {
-      content = pulseToMarkdown(pulse);
+      // Enriched markdown — drift + patterns rendered alongside synthesis,
+      // lint warnings surfaced before each section's claims.
+      content = pulseToMarkdownExport(pulse);
+      mime = 'text/markdown';
+      ext = 'md';
     }
-    const blob = new Blob([content], { type: format === 'json' ? 'application/json' : 'text/markdown' });
+    const filename = `${safeBank}_${pulse.period}_pulse.${ext}`;
+    const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = filename; a.click();
@@ -596,11 +610,15 @@ export default function PulsePage() {
                 {confirming && <Loader2 size={10} className="animate-spin" />} <CheckCircle size={10} /> Confirm
               </button>
             )}
-            <button onClick={() => handleExport('md')} title="Download as Markdown"
+            <button onClick={() => handleExport('html')} title="Download as HTML — designed for sharing with leadership"
+              className="px-2 py-1 bg-blue-600 text-white text-[10px] font-bold rounded hover:bg-blue-700">
+              ⬇ HTML (share)
+            </button>
+            <button onClick={() => handleExport('md')} title="Download as Markdown — drift + patterns inline"
               className="px-2 py-1 bg-white border border-slate-200 text-slate-700 text-[10px] font-bold rounded hover:bg-slate-50">
               ⬇ MD
             </button>
-            <button onClick={() => handleExport('json')} title="Download as JSON"
+            <button onClick={() => handleExport('json')} title="Download as JSON (full payload)"
               className="px-2 py-1 bg-white border border-slate-200 text-slate-700 text-[10px] font-bold rounded hover:bg-slate-50">
               ⬇ JSON
             </button>
@@ -641,44 +659,4 @@ export default function PulsePage() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────
-// Markdown exporter — Sprint 1 Day 5 (inlined, simple)
-// ─────────────────────────────────────────────────────────────────
-
-function pulseToMarkdown(pulse) {
-  const lines = [];
-  lines.push(`# ${pulse.bank_name} — Quarterly Pulse · ${pulse.period}`);
-  lines.push('');
-  lines.push(`**Period**: ${pulse.period_starts_at} → ${pulse.period_ends_at}  `);
-  lines.push(`**Generated**: ${formatDate(pulse.generated_at)}  `);
-  lines.push(`**Freshness**: ${pulse.freshness?.overall}  `);
-  if (pulse.confirmed_by_ae_at) {
-    lines.push(`**Confirmed by**: ${pulse.confirmed_by_ae} on ${formatDate(pulse.confirmed_by_ae_at)}  `);
-  }
-  lines.push(`**Source records**: ${pulse.metrics?.total_source_records || 0}  `);
-  lines.push('');
-
-  for (const [key, sec] of Object.entries(pulse.sections || {})) {
-    lines.push(`## ${SECTION_LABELS[key] || key}`);
-    lines.push(`*Freshness: ${sec.freshness}*`);
-    lines.push('');
-    lines.push(sec.synthesis || '_(no synthesis)_');
-    lines.push('');
-    lines.push(`**Diff vs previous**: ${sec.diff_vs_previous}`);
-    lines.push('');
-    if (sec.source_records?.length) {
-      lines.push('**Sources:**');
-      sec.source_records.forEach(s => {
-        const tier = TIER_LABELS[s.confidence_tier] || 'Estimated';
-        const link = s.source_url ? `[${s.label || s.source_url}](${s.source_url})` : (s.label || '(no link)');
-        // Sprint 3: include grade + publisher in markdown export for downstream auditability
-        const gradeChip = s.source_grade ? ` · grade ${s.source_grade}` : '';
-        const pubChip = s.publisher_name ? ` · ${s.publisher_name}` : '';
-        lines.push(`- [T${s.confidence_tier} · ${tier}${gradeChip}] ${link} — ${s.source_type}${pubChip}${s.source_date ? ' · ' + formatDate(s.source_date) : ''}`);
-      });
-    }
-    lines.push('');
-  }
-
-  return lines.join('\n');
-}
+// pulseToMarkdown / pulseToHtml moved to ../utils/pulseExport.js (B4)

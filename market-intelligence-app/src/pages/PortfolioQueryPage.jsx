@@ -18,11 +18,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Loader2, Plus, X, Save, Trash2, Play, Sparkles, ChevronRight, BookmarkPlus, Bookmark,
+  Loader2, Plus, X, Save, Trash2, Play, Sparkles, ChevronRight, BookmarkPlus, Bookmark, MessageSquare, Wand2,
 } from 'lucide-react';
 import {
   runPortfolioQuery, getPortfolioQueryExamples,
   listPortfolioSavedViews, createPortfolioSavedView, deletePortfolioSavedView,
+  translatePortfolioQuery,
 } from '../data/api';
 
 const PREDICATE_DEFS = [
@@ -222,6 +223,10 @@ export default function PortfolioQueryPage() {
   const [savedViews, setSavedViews] = useState([]);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [newViewName, setNewViewName] = useState('');
+  // B3 — natural-language → predicate JSON state
+  const [nlInput, setNlInput] = useState('');
+  const [translating, setTranslating] = useState(false);
+  const [nlResult, setNlResult] = useState(null); // { explanation, warnings, error? }
 
   useEffect(() => {
     getPortfolioQueryExamples().then(d => setExamples(d?.examples || {})).catch(() => {});
@@ -247,6 +252,28 @@ export default function PortfolioQueryPage() {
   const loadSavedView = (view) => {
     setPredicates(view.filter?.predicates || []);
     setResults(null);
+  };
+
+  // B3 — translate natural-language input → predicate JSON, then load into builder
+  // The user always reviews/edits before clicking Run. Same query, same answer, always.
+  const translate = async () => {
+    if (!nlInput.trim()) return;
+    setTranslating(true);
+    setNlResult(null);
+    try {
+      const r = await translatePortfolioQuery(nlInput.trim());
+      if (r.ok) {
+        setPredicates(r.filter?.predicates || []);
+        setResults(null);
+        setNlResult({ explanation: r.explanation, warnings: r.warnings || [] });
+      } else {
+        setNlResult({ error: r.error, warnings: r.warnings || [] });
+      }
+    } catch (err) {
+      setNlResult({ error: err.message || 'Translation failed' });
+    } finally {
+      setTranslating(false);
+    }
   };
 
   const run = async () => {
@@ -283,6 +310,54 @@ export default function PortfolioQueryPage() {
           Compose structured filters across signals, meeting facts, patterns, drift, and pulse changes.
           Each result shows which predicates matched. Deterministic — same query, same answer, always.
         </p>
+      </div>
+
+      {/* B3 — Natural-language input. LLM maps phrasing → predicates. User reviews
+           before running. The deterministic engine still runs the actual query. */}
+      <div className="mb-4 p-3 border border-blue-200 bg-blue-50 rounded">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Wand2 size={12} className="text-blue-700" />
+          <span className="text-[11px] font-bold text-blue-900 uppercase tracking-wider">Ask in plain English</span>
+          <span className="text-[10px] text-blue-700 font-normal">— translates to structured predicates you can review before running</span>
+        </div>
+        <div className="flex items-stretch gap-2">
+          <input
+            value={nlInput}
+            onChange={e => setNlInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !translating) translate(); }}
+            placeholder='e.g. "Swedish banks where a CFO is deteriorating on budget" · "banks with a high-grade urgent signal in the last 30 days"'
+            className="flex-1 text-[12px] border border-blue-300 rounded px-2.5 py-1.5 bg-white focus:outline-none focus:border-blue-500"
+          />
+          <button
+            onClick={translate}
+            disabled={translating || !nlInput.trim()}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-[11px] font-bold rounded"
+          >
+            {translating ? <Loader2 size={11} className="animate-spin" /> : <MessageSquare size={11} />}
+            Translate
+          </button>
+        </div>
+        {nlResult?.explanation && (
+          <div className="mt-2 text-[11px] text-blue-900">
+            <strong>Parsed as:</strong> {nlResult.explanation}
+            {nlResult.warnings?.length > 0 && (
+              <div className="mt-1 text-amber-800">
+                <strong>Warnings:</strong> {nlResult.warnings.join(' · ')}
+              </div>
+            )}
+            <div className="mt-1 text-blue-700 text-[10px] italic">
+              Predicates loaded into the builder below. Review and edit, then click Run query.
+            </div>
+          </div>
+        )}
+        {nlResult?.error && (
+          <div className="mt-2 text-[11px] text-rose-800 bg-rose-50 border border-rose-200 rounded px-2 py-1.5">
+            <strong>Couldn't translate:</strong> {nlResult.error}
+            {nlResult.warnings?.length > 0 && (
+              <div className="mt-0.5 text-[10px]">{nlResult.warnings.join(' · ')}</div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Quick-start: examples + saved views */}

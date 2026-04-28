@@ -304,6 +304,8 @@ export const getPortfolioQueryExamples = () => request('/api/portfolio/query/exa
 export const listPortfolioSavedViews = () => request('/api/portfolio/saved-views');
 export const createPortfolioSavedView = (data) => request('/api/portfolio/saved-views', { method: 'POST', body: JSON.stringify(data) });
 export const deletePortfolioSavedView = (id) => request(`/api/portfolio/saved-views/${encodeURIComponent(id)}`, { method: 'DELETE' });
+// B3 — NL → predicate JSON (advisory; user reviews before running)
+export const translatePortfolioQuery = (query) => request('/api/portfolio/query/translate', { method: 'POST', body: JSON.stringify({ query }), timeout: 45000 });
 
 export const getPortfolioChangeFeed = (opts = {}) => {
   const params = new URLSearchParams();

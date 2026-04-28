@@ -27,6 +27,8 @@ import { analyzeLandingZones, isLandingZoneAgentAvailable } from '../fetchers/la
 import { generateDiscoveryStoryline, isDiscoveryStorylineAvailable } from '../fetchers/discoveryStorylineAgent.mjs';
 import { generateValueHypothesisForMeeting, isValueHypothesisAvailable } from '../fetchers/valueHypothesisAgent.mjs';
 import { refreshCountryIntelligence, isCountryIntelAvailable } from '../fetchers/countryIntelAgent.mjs';
+import { BACKBASE_2026_CONTEXT } from '../lib/backbaseContext.mjs';
+import { getValidatedFactsBlockForBank } from '../lib/strategicInsights.mjs';
 import { jsonResponse, parseBody, createRateLimiter } from './helpers.mjs';
 
 // Rate limit: max 20 AI requests per minute (generous for normal use, blocks runaways)
@@ -148,7 +150,15 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
   }
 
   // ── POST /api/research/meeting-prep ──
+  // B2 SOFT-DEPRECATED (Strategic Repositioning brief): generates prose-style
+  // 5-minute meeting briefs that compete directly with Claude-in-a-chat.
+  // Replacement: AE uses the structured Pulse, Stakeholder Intelligence panel,
+  // and per-bank ChangeFeed to assemble their own context. Hard delete 2026-05-28.
   if (path === '/api/research/meeting-prep' && req.method === 'POST') {
+    res.setHeader('Deprecation', 'true');
+    res.setHeader('Sunset', 'Wed, 28 May 2026 00:00:00 GMT');
+    res.setHeader('Link', '</docs/strategic-repositioning>; rel="deprecation"');
+    console.warn('[deprecated] /api/research/meeting-prep called — Nova does not generate prose-style meeting briefs. Use Pulse + Stakeholder Intelligence panel instead. Hard delete scheduled 2026-05-28.');
     if (!aiRateCheck(res)) return true;
     if (!isMeetingPrepAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured. Meeting prep requires AI.' });
@@ -395,7 +405,15 @@ Return ONLY valid JSON. No markdown code fences. No preamble. No explanation.
   }
 
   // ── POST /api/research/executive-brief — AI-synthesized narrative briefing ──
+  // B2 SOFT-DEPRECATED (Strategic Repositioning brief): generates prospect-facing
+  // narrative briefs — exactly the prose drift Nova should not produce. AEs use
+  // the Pulse HTML export for leadership shares (carries source provenance) and
+  // Claude-in-a-chat for any narrative writing they need. Hard delete 2026-05-28.
   if (path === '/api/research/executive-brief' && req.method === 'POST') {
+    res.setHeader('Deprecation', 'true');
+    res.setHeader('Sunset', 'Wed, 28 May 2026 00:00:00 GMT');
+    res.setHeader('Link', '</docs/strategic-repositioning>; rel="deprecation"');
+    console.warn('[deprecated] /api/research/executive-brief called — Nova does not generate narrative briefs. Use Pulse HTML export for source-cited leadership shares. Hard delete scheduled 2026-05-28.');
     if (!aiRateCheck(res)) return true;
     if (!isClaudeAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured.' });
@@ -418,7 +436,9 @@ Return ONLY valid JSON. No markdown code fences. No preamble. No explanation.
 
     console.log(`📋 AI Executive Brief: ${bankRow.bank_name}`);
 
-    const systemPrompt = `You are a senior Value Consultant at Backbase preparing an executive briefing for a sales meeting with a bank. Write a concise, narrative-style intelligence brief that a consultant would actually send before a customer call.
+    const systemPrompt = `You are a senior Value Consultant at Backbase, the AI-native Banking OS / AI-Powered Banking Platform vendor, preparing an executive briefing for a sales meeting with a bank. Write a concise, narrative-style intelligence brief that a consultant would actually send before a customer call.
+
+${BACKBASE_2026_CONTEXT}
 
 WRITING STYLE:
 - Write in the first person plural ("we", "our opportunity")
@@ -447,10 +467,13 @@ Specific next steps — who to contact, what to lead with, what to avoid.
 
 Return the brief as plain text with ## headings. Do NOT wrap in JSON or code blocks.`;
 
+    // Pack C: validated-facts injection (acknowledged signals)
+    const validatedFactsBlock = getValidatedFactsBlockForBank(db, bankKey);
+
     const userPrompt = `Bank: ${bankRow.bank_name} (${bankRow.country})
 Score: ${bankRow.tagline || ''}
 
-Overview: ${(bd.overview || '').substring(0, 500)}
+${validatedFactsBlock ? validatedFactsBlock + '\n\n' : ''}Overview: ${(bd.overview || '').substring(0, 500)}
 
 Financials: ${bd.operational_profile ? JSON.stringify(bd.operational_profile) : 'Not available'}
 
@@ -516,9 +539,20 @@ Recommended Approach: ${bd.recommended_approach || 'Not defined'}`;
 
     console.log(`📋 Account Plan Doc: ${bankRow.bank_name}`);
 
-    const systemPrompt = `You are a senior Value Consultant at Backbase building an account plan for ${bankRow.bank_name}. You have access to all intelligence about this bank. Your job is to populate each section of the account plan with specific, accurate, non-generic content derived from the bank data provided. Never use placeholder text. Every field must be populated with real insight.
+    // Strategic Repositioning Sprint 0.4 — schema refactored to remove prose.
+    // REMOVED: `pov_summary` (2-3 sentence narrative POV — drifted toward
+    //          editorial commentary), `business_overview.description`
+    //          (2-3 paragraph generic company description — the brief
+    //          explicitly calls this out as commodity Wikipedia-dump content).
+    // ADDED:   `pov_anchors` (structured points), `business_overview.key_facts`
+    //          (fact rows with sources). Same intelligence, no prose.
+    const systemPrompt = `You are Nova, assembling a STRUCTURED account plan for ${bankRow.bank_name}. This is internal AE intelligence, not a prospect-facing document. Every field must be populated with specific, sourced facts — never placeholder text, never generic commentary, never prose narrative.
 
-Return ONLY valid JSON matching the schema below. No markdown fences. No preamble.
+${BACKBASE_2026_CONTEXT}
+
+When mapping value to capabilities, use current product names: Banking OS, APA (Agentic Process Automation), CLO (Customer Lifetime Orchestrator), and segment OSes (Wealth OS, Commercial OS, Small Business OS, Private Banking OS, Retail OS). Reference the three commercial entry points (Conversational Banking, Agentic Servicing, Agentic Onboarding & Origination) where they fit the deal stage.
+
+Return ONLY valid JSON matching the schema below. No markdown fences. No preamble. NO PROSE NARRATIVE FIELDS.
 
 {
   "account_snapshot": {
@@ -539,7 +573,9 @@ Return ONLY valid JSON matching the schema below. No markdown fences. No preambl
     "commercial": { "onboarding": bool, "servicing": bool, "loan_origination": bool, "investing": bool, "assist_engage": bool },
     "wealth": { "onboarding": bool, "servicing": bool, "loan_origination": bool, "investing": bool, "assist_engage": bool }
   },
-  "pov_summary": "2-3 sentence strategic point of view",
+  "pov_anchors": [
+    { "anchor": "string — one specific dimension where the bank's situation creates a Backbase opening", "evidence": "string — the specific signal, fact, or data point this anchor rests on", "why_now": "string — what makes this a 2026 priority not 2027", "source": "bank_data|inferred" }
+  ],
   "key_kpis": [
     { "label": "string", "current": "string", "benchmark": "string", "gap": "string", "source": "bank_data|estimated" }
   ],
@@ -551,7 +587,9 @@ Return ONLY valid JSON matching the schema below. No markdown fences. No preambl
     { "category": "Value Consulting|Solutions Engineering|Field Marketing|Alliance Partner|Fintech Add-on", "activity": "string", "month": "Jan|Feb|...|Dec", "status": "planned|confirmed|completed" }
   ],
   "business_overview": {
-    "description": "string — 2-3 paragraph bank overview",
+    "key_facts": [
+      { "fact": "string — discrete factual claim", "source": "string — where this came from", "source_date": "YYYY-MM-DD or empty", "confidence_tier": 1, "category": "scale|operations|strategy|technology|leadership|risk" }
+    ],
     "today_vs_ambition": [
       { "dimension": "string", "today": "string", "ambition": "string" }
     ]
@@ -574,17 +612,23 @@ Return ONLY valid JSON matching the schema below. No markdown fences. No preambl
 
 RULES:
 - strategic_initiatives: Map EVERY pain point from the bank data to a strategic initiative. Do not skip any pain points — if the bank has 5 pain points, produce 5 strategic initiatives. Each initiative must trace back to a specific pain point from the data.
+- pov_anchors: 3-5 STRUCTURED anchors. Each anchor is one specific dimension where the bank's situation creates a Backbase opening. NO prose narrative. NO editorial commentary. NO multi-sentence summaries. Just discrete anchors with evidence + why-now + source.
+- business_overview.key_facts: 5-8 discrete factual claims about the bank, each with a source and confidence tier. NO prose paragraph descriptions. If a fact lacks a source, mark confidence_tier = 3 (estimated). Categories: scale, operations, strategy, technology, leadership, risk.
 - landing_zones: set true ONLY for zones where the bank data shows genuine fit
 - roadmap: 3-5 initiatives phased realistically across H1/H2 periods
 - engagement_plan: 8-12 activities across all categories, spread across months. Each activity that references a person MUST use a real name from the Key People list provided.
 - stakeholder_map: assign ONLY real persons from the provided Key People list. For "external_allies", use partner firms mentioned in the Competition/Vendors data (e.g., system integrators, consulting partners). Do NOT assign internal bank employees to external_allies — that category is for outside partners, consultants, and SI firms who could support the deal. If no partners are known, set external_allies to an empty array.
 - key_kpis: 4-6 KPIs. For each KPI, add a "source" field: "bank_data" if the current value comes from the provided operational profile or CX data, or "estimated" if you inferred it. Example: { "label": "Cost-to-Income", "current": "46%", "benchmark": "40%", "gap": "6%", "source": "bank_data" }. NEVER present an estimated value as if it came from the bank's data.
-- confidence_flags: high = based on verified data, medium = inferred from partial data, low = estimated`;
+- confidence_flags: high = based on verified data, medium = inferred from partial data, low = estimated
+- ABSOLUTE: NO prose narrative anywhere. No "story arc," no "executive summary," no editorial framing. If you find yourself writing a paragraph of prose, stop and convert it into structured fields.`;
+
+    // Pack C: validated-facts injection
+    const validatedFactsBlockAP = getValidatedFactsBlockForBank(db, bankKey);
 
     const userPrompt = `Bank: ${bankRow.bank_name} (${bankRow.country})
 Manual inputs: ${JSON.stringify(manualInputs || {})}
 
-Bank Overview: ${(bd.overview || '').substring(0, 800)}
+${validatedFactsBlockAP ? validatedFactsBlockAP + '\n\n' : ''}Bank Overview: ${(bd.overview || '').substring(0, 800)}
 Operational Profile: ${JSON.stringify(bd.operational_profile || {})}
 Digital Strategy: ${typeof bd.digital_strategy === 'string' ? bd.digital_strategy.substring(0, 400) : ''}
 Strategic Initiatives: ${typeof bd.strategic_initiatives === 'string' ? bd.strategic_initiatives.substring(0, 400) : ''}
@@ -778,7 +822,11 @@ Generate the complete account plan JSON now.`;
 
     console.log(`⚔️ Battlecard: ${competitor} at ${bankRow.bank_name}`);
 
-    const systemPrompt = `You are a senior competitive strategist at Backbase. Generate a battlecard for competing against ${competitor} at ${bankRow.bank_name}.
+    const systemPrompt = `You are a senior competitive strategist at Backbase, the AI-native Banking OS / AI-Powered Banking Platform vendor. Generate a battlecard for competing against ${competitor} at ${bankRow.bank_name}.
+
+${BACKBASE_2026_CONTEXT}
+
+Position our advantages using current product framing — Banking OS as the Control Plane above cores, APA + CLO + segment OSes (Wealth OS / Commercial OS / Small Business OS / Private Banking OS / Retail OS), Decision Token governance, Elastic Operations outcome, and the three commercial entry points (Conversational Banking, Agentic Servicing, Agentic Onboarding & Origination).
 
 Return ONLY valid JSON:
 {
@@ -794,9 +842,12 @@ Return ONLY valid JSON:
 
 Be specific to THIS bank. Generic competitive talking points are useless. Reference the bank's actual pain points and how each competitor's approach fails to address them.`;
 
+    // Pack C: validated-facts injection
+    const validatedFactsBlockBC = getValidatedFactsBlockForBank(db, bankKey);
+
     const userPrompt = `Bank: ${bankRow.bank_name}
 Competitor: ${competitor}
-Bank pain points: ${(bd.pain_points || []).map(p => p.title + ': ' + p.detail).join('\n')}
+${validatedFactsBlockBC ? '\n' + validatedFactsBlockBC + '\n' : ''}Bank pain points: ${(bd.pain_points || []).map(p => p.title + ': ' + p.detail).join('\n')}
 Current vendors: ${comp ? `Core: ${comp.core_banking}, Digital: ${comp.digital_platform}, Vendors: ${(comp.key_vendors || []).join(', ')}` : 'Unknown'}
 Vendor risk: ${comp?.vendor_risk || 'Unknown'}
 ${outcomes.length > 0 ? 'Win/loss history against this competitor:\n' + outcomes.map(o => `${o.outcome}: ${o.lessons_learned || 'No notes'}`).join('\n') : ''}`;
@@ -848,8 +899,23 @@ ${outcomes.length > 0 ? 'Win/loss history against this competitor:\n' + outcomes
     return true;
   }
 
-  // ── POST /api/research/meeting-deck — Generate 5-slide meeting presentation ──
+  // ── POST /api/research/meeting-deck — DEPRECATED 2026-04 ──
+  // Strategic Repositioning Sprint 0.2: Nova does not produce prospect-facing
+  // presentation decks. Brief forbids "POV one-pagers, narrative decks,
+  // persuasive collateral."
+  //
+  // Endpoint stays alive for 30 days (until 2026-05-28) for any in-flight
+  // integration. Returns deprecation headers + console warning. Hard delete
+  // after 2026-05-28.
+  //
+  // Replacement: AEs take the structured intelligence (MeetingPrepBrief
+  // strategicPriorities, attendees, topicInsights) and build their own deck
+  // in PowerPoint/Keynote/Claude-in-a-chat.
   if (path === '/api/research/meeting-deck' && req.method === 'POST') {
+    res.setHeader('Deprecation', 'true');
+    res.setHeader('Sunset', 'Wed, 28 May 2026 00:00:00 GMT');
+    res.setHeader('Link', '</docs/strategic-repositioning>; rel="deprecation"');
+    console.warn('[deprecated] /api/research/meeting-deck called — Nova does not produce prospect-facing decks. Hard delete scheduled 2026-05-28.');
     if (!aiRateCheck(res)) return true;
     if (!isClaudeAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured.' });
@@ -866,7 +932,11 @@ ${outcomes.length > 0 ? 'Win/loss history against this competitor:\n' + outcomes
 
     console.log(`🎬 Meeting deck: ${bankRow.bank_name}`);
 
-    const systemPrompt = `You are a senior Value Consultant at Backbase creating a 5-slide meeting deck for a client meeting at ${bankRow.bank_name}. Each slide must be specific, insightful, and demonstrate deep understanding of the bank.
+    const systemPrompt = `You are a senior Value Consultant at Backbase, the AI-native Banking OS / AI-Powered Banking Platform vendor, creating a 5-slide meeting deck for a client meeting at ${bankRow.bank_name}. Each slide must be specific, insightful, and demonstrate deep understanding of the bank.
+
+${BACKBASE_2026_CONTEXT}
+
+Use current product framing throughout: Banking OS, APA, CLO, segment OSes (Wealth/Commercial/Small Business/Private Banking/Retail OS); Operational Layers (Nexus/Sentinel/Grand Central/Process Studio/Agent Studio/Intelligence); proof-point ranges (30-40% cost-to-serve, 50-90% faster execution, 3x productivity, 2-4x growth); and the three commercial entry points where they fit the meeting's purpose.
 
 Return ONLY valid JSON with this structure:
 {
@@ -893,8 +963,12 @@ Each bullet must be specific to THIS bank. No generic fintech platitudes.`;
       ? `Attendees: ${attendees.map(a => `${a.name || 'Unknown'} (${a.role || a.roleKey || 'Unknown role'})`).join(', ')}`
       : '';
 
+    // Pack C: validated-facts injection
+    const validatedFactsBlockMD = getValidatedFactsBlockForBank(db, bankKey);
+
     const userPrompt = `Bank: ${bankRow.bank_name} (${bankRow.country})
 ${attendeeContext}
+${validatedFactsBlockMD ? '\n' + validatedFactsBlockMD : ''}
 ${topics?.length > 0 ? 'Topics: ' + topics.join(', ') : ''}
 
 Bank overview: ${(bd.overview || '').substring(0, 400)}
@@ -921,6 +995,39 @@ Recent signals: ${(bd.signals || []).slice(0, 3).map(s => s.signal).join(', ')}`
   // ══════════════════════════════════════════════════════════════
   // INTELLIGENCE LAYER — Play Generation + Deal Twin Recalculation
   // ══════════════════════════════════════════════════════════════
+
+  // ── POST /api/deals/:dealId/plays/regenerate-stale — Prepare stale plays for re-generation ──
+  // Finds all active plays in the deal that have ≥1 stale output, deletes the stale outputs,
+  // and returns the play IDs the client should sequentially POST to /generate.
+  // (We don't AI-generate here because it would block for minutes; the client orchestrates
+  //  the loop and shows per-play progress.)
+  const bulkRegenMatch = path.match(/^\/api\/deals\/([^/]+)\/plays\/regenerate-stale$/);
+  if (bulkRegenMatch && req.method === 'POST') {
+    const dealId = decodeURIComponent(bulkRegenMatch[1]);
+    const stalePlays = db.prepare(`
+      SELECT DISTINCT dp.id, dp.play_type
+      FROM deal_plays dp
+      JOIN play_outputs po ON po.play_id = dp.id
+      WHERE dp.deal_id = ? AND dp.status = 'active' AND po.confidence_tier = 'stale'
+      ORDER BY dp.created_at ASC
+    `).all(dealId);
+
+    let deletedCount = 0;
+    const deleteStmt = db.prepare("DELETE FROM play_outputs WHERE play_id = ? AND confidence_tier = 'stale'");
+    for (const p of stalePlays) {
+      const r = deleteStmt.run(p.id);
+      deletedCount += r.changes;
+    }
+
+    jsonResponse(res, 200, {
+      plays_to_regenerate: stalePlays.map(p => ({ play_id: p.id, play_type: p.play_type })),
+      stale_outputs_deleted: deletedCount,
+      message: stalePlays.length === 0
+        ? 'No stale plays found.'
+        : `Cleared ${deletedCount} stale outputs. Call /generate for each play_id to refresh.`,
+    });
+    return true;
+  }
 
   // ── POST /api/deals/:dealId/plays/:playId/generate — AI-generate play outputs ──
   const playGenMatch = path.match(/^\/api\/deals\/([^/]+)\/plays\/([^/]+)\/generate$/);
@@ -977,7 +1084,11 @@ Recent signals: ${(bd.signals || []).slice(0, 3).map(s => s.signal).join(', ')}`
     // Play-type-specific system prompts (enhanced with spec templates)
     const PLAY_PROMPTS = {
       discovery: {
-        system: `You are Nova, a B2B sales intelligence assistant for Backbase value consultants. You generate highly specific, research-backed discovery guides — never generic sales questions. Every question must reference something specific we know about the bank or stakeholder. Questions should uncover information gaps, validate hypotheses, and advance the deal.`,
+        system: `You are Nova, a B2B sales intelligence assistant for Backbase value consultants. Backbase is the AI-native Banking OS / AI-Powered Banking Platform vendor.
+
+${BACKBASE_2026_CONTEXT}
+
+You generate highly specific, research-backed discovery guides — never generic sales questions. Every question must reference something specific we know about the bank or stakeholder. Questions should uncover information gaps, validate hypotheses, and advance the deal. Frame Backbase value using current product names (Banking OS, APA, CLO, segment OSes) and the three commercial entry points.`,
         instruction: `Generate discovery outputs:
 1. A DISCOVERY GUIDE with 3-5 specific questions per stakeholder. Each question must:
    - Reference something specific we know about the bank or stakeholder
@@ -988,7 +1099,11 @@ Recent signals: ${(bd.signals || []).slice(0, 3).map(s => s.signal).join(', ')}`
 4. HYPOTHESES TO VALIDATE — 3-5 assumptions we're making that need confirmation`,
       },
       value: {
-        system: `You are Nova, building a business case framework for a Backbase deal. Every value claim must be connected to a specific stakeholder priority confirmed in meetings or inferred from bank data. Use conservative estimates.`,
+        system: `You are Nova, building a business case framework for a Backbase deal. Backbase is the AI-native Banking OS / AI-Powered Banking Platform vendor.
+
+${BACKBASE_2026_CONTEXT}
+
+Every value claim must be connected to a specific stakeholder priority confirmed in meetings or inferred from bank data. Use conservative estimates and cite proof-point ranges (30-40% cost-to-serve, 50-90% faster execution, 3x productivity, 2-4x growth) when they apply. Map drivers to current product names (Banking OS, APA, CLO, segment OSes).`,
         instruction: `Generate value outputs:
 1. A VALUE FRAMEWORK with:
    - Value drivers mapped to specific stakeholders who care about them
@@ -1000,7 +1115,11 @@ Recent signals: ${(bd.signals || []).slice(0, 3).map(s => s.signal).join(', ')}`
 ${crossPlayCtx ? '\nINSIGHTS FROM DISCOVERY PLAY:\n' + crossPlayCtx : ''}`,
       },
       competitive: {
-        system: `You are Nova, generating deal-specific competitive intelligence. Not generic battlecards — specific to what THIS bank cares about and what THIS competitor's weaknesses are in this context.`,
+        system: `You are Nova, generating deal-specific competitive intelligence for Backbase, the AI-native Banking OS / AI-Powered Banking Platform vendor.
+
+${BACKBASE_2026_CONTEXT}
+
+Not generic battlecards — specific to what THIS bank cares about and what THIS competitor's weaknesses are in this context. Anchor differentiation to current Backbase product framing: Banking OS as Control Plane above cores, APA + CLO + segment OSes, Decision Token governance, Elastic Operations outcome.`,
         instruction: `Generate competitive outputs:
 1. COMPETITIVE BRIEF — deal-specific positioning: where we win, where we need to address concerns, recommended framing for each stakeholder
 2. OBJECTION MAP — anticipated objections based on competitive context, each tied to a specific stakeholder concern, with recommended responses
@@ -1008,17 +1127,42 @@ ${crossPlayCtx ? '\nINSIGHTS FROM DISCOVERY PLAY:\n' + crossPlayCtx : ''}`,
 4. LANDMINE QUESTIONS — 2-3 questions to ask the bank that subtly expose competitor weaknesses
 ${comp ? '' : '\nNOTE: No specific competitors identified. Analyze based on common competitive patterns for this bank segment. Flag that competitor-specific intelligence would improve this analysis.'}`,
       },
+      // Strategic Repositioning Sprint 0.3 — proposal play refactored from
+      // "narrative generator" to "deal-readiness intelligence assembler."
+      // The brief forbids prose proposal collateral. The play now produces
+      // STRUCTURED INTELLIGENCE the AE uses to build the proposal in their
+      // own writing tool of choice.
+      //
+      // REMOVED outputs: PROPOSAL NARRATIVE, EXECUTIVE SUMMARY DRAFT.
+      // KEPT outputs:    RISK REGISTER, PER-STAKEHOLDER PROOF POINTS.
+      // ADDED outputs:   BUYER-READINESS MATRIX, OPEN-CRITERIA REGISTER,
+      //                  PRE-PROPOSAL CHECKLIST.
       proposal: {
-        system: `You are Nova, synthesizing an entire deal's intelligence into a proposal. You have access to outputs from discovery, value, and competitive plays. Your job is to weave these into a coherent narrative that wins the deal.`,
-        instruction: `Generate proposal outputs by synthesizing ALL available intelligence:
-1. PROPOSAL NARRATIVE — the story arc: what's the bank's challenge, why now, why Backbase, what's the expected outcome. Structure: executive hook, context setting, solution mapping, proof points, commercial framework, next steps
-2. EXECUTIVE SUMMARY DRAFT — ready-to-refine 1-page summary connecting challenges to solution to outcomes
-3. RISK REGISTER — what could derail this deal (stakeholder gaps, competitive threats, timing risks, missing information) with mitigation actions
-4. PER-STAKEHOLDER PROOF POINTS — for each key decision-maker, the single strongest argument and evidence
-${crossPlayCtx ? '\nFROM OTHER PLAYS:\n' + crossPlayCtx : ''}`,
+        system: `You are Nova, assembling deal-readiness intelligence for the AE who is preparing to write a proposal. You do NOT write the proposal narrative — that is the AE's job. Your output is the structured set of facts, gaps, and risks they need to write a defensible proposal.
+
+${BACKBASE_2026_CONTEXT}
+
+You have access to outputs from discovery, value, and competitive plays. Surface what is known, what is unknown, and what the AE must validate before sending a proposal. Use current product framing where relevant (Banking OS, APA, CLO, segment OSes), but do NOT compose persuasive prose.`,
+        instruction: `Generate STRUCTURED proposal-readiness intelligence (no prose narrative — return JSON-friendly structured data):
+
+1. BUYER-READINESS MATRIX — for each named decision-maker: { name, role, position (champion/coach/blocker/skeptic/unknown), readiness_state (engaged/aware/cold), open_question, evidence }. Be honest about "unknown" — guesses without evidence are blockers, not readiness.
+
+2. OPEN-CRITERIA REGISTER — what the bank's evaluation criteria actually are (only what we have evidence for from discovery), and what's still unknown. Each criterion: { criterion, status (validated/inferred/unknown), source }.
+
+3. RISK REGISTER — what could derail this deal: stakeholder gaps, competitive threats, timing risks, missing information. Each risk: { risk, severity (high/medium/low), mitigation_action, owner }.
+
+4. PER-STAKEHOLDER PROOF POINTS — for each key decision-maker: the single strongest evidence point we can cite to them, with source. Format: { stakeholder, proof_point, source, source_date, confidence_tier }.
+
+5. PRE-PROPOSAL CHECKLIST — the discrete validation gates the AE should close before sending a proposal: { gate, status (closed/open), action_to_close }. Examples: "Power-map confirmed with champion," "Pricing benchmark validated," "Reference customer matched."
+
+DO NOT produce: executive summary prose, story-arc narrative, persuasive copy, or any text addressed to a prospect. The AE writes those.${crossPlayCtx ? '\n\nFROM OTHER PLAYS:\n' + crossPlayCtx : ''}`,
       },
       expansion: {
-        system: `You are Nova, analyzing expansion opportunities for an existing Backbase customer.`,
+        system: `You are Nova, analyzing expansion opportunities for an existing Backbase customer. Backbase is the AI-native Banking OS / AI-Powered Banking Platform vendor.
+
+${BACKBASE_2026_CONTEXT}
+
+Map expansion paths to current product additions (e.g., adding APA on top of Banking OS, adopting CLO, layering a segment OS like Wealth OS / Commercial OS / Small Business OS / Private Banking OS / Retail OS, or unlocking a new commercial entry point — Conversational Banking, Agentic Servicing, Agentic Onboarding & Origination).`,
         instruction: `Generate expansion outputs:
 1. EXPANSION MAP — current product footprint vs. available Backbase capabilities, prioritized by fit and timing
 2. UPSELL BUSINESS CASE — specific to the expansion opportunity, using customer's own metrics where available
@@ -1388,8 +1532,25 @@ Score each dimension 0-100:
     return true;
   }
 
-  // ── POST /api/research/email-draft — Generate personalized email draft ──
+  // ── POST /api/research/email-draft — DEPRECATED 2026-04 ──
+  // Strategic Repositioning Sprint 0: Nova does not draft prospect-facing
+  // outreach copy. The brief is explicit: "Nova does not generate, draft,
+  // template, or assist with executive-to-executive correspondence ... Nova
+  // does not draft connection requests, comment templates, DMs, or
+  // multi-touch outreach copy."
+  //
+  // Endpoint stays alive for 30 days (until 2026-05-28) so any in-flight
+  // integration doesn't 404. Returns deprecation headers + a console
+  // warning. Hard delete after 2026-05-28.
+  //
+  // Replacement: AEs use the structured intelligence (PersonSignalsPanel,
+  // mentioned_stakeholders cross-link, MEDDICC role, signal action_points)
+  // and write their own outreach in Claude-in-a-chat or by hand.
   if (path === '/api/research/email-draft' && req.method === 'POST') {
+    res.setHeader('Deprecation', 'true');
+    res.setHeader('Sunset', 'Wed, 28 May 2026 00:00:00 GMT');
+    res.setHeader('Link', '</docs/strategic-repositioning>; rel="deprecation"');
+    console.warn('[deprecated] /api/research/email-draft called — Nova does not generate prospect-facing outreach copy. Hard delete scheduled 2026-05-28.');
     if (!aiRateCheck(res)) return true;
     if (!isClaudeAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured.' });
@@ -1437,7 +1598,7 @@ Score each dimension 0-100:
 
     console.log(`📧 Email draft: ${emailType} to ${recipientName} at ${bankRow.bank_name} (stage: ${dealStage})`);
 
-    const systemPrompt = `You are a senior Value Consultant at Backbase writing a professional email. You write like a real person — no corporate jargon, no filler, no "I hope this email finds you well." Every sentence earns its place.
+    const systemPrompt = `You are a senior Value Consultant at Backbase, the AI-native Banking OS / AI-Powered Banking Platform vendor, writing a professional email. You write like a real person — no corporate jargon, no filler, no "I hope this email finds you well." Every sentence earns its place. When referencing Backbase capabilities, use current product names (Banking OS, APA, CLO, segment OSes) — never the older "engagement banking platform" framing.
 
 ${typeInstruction}
 
@@ -1535,9 +1696,11 @@ Reference customers: ${(vs?.reference_customers || []).slice(0, 2).map(r => r.na
 
     console.log(`📋 Account plan (${type}): ${bankName}`);
 
-    let systemPrompt = `You are a senior Value Consultant at Backbase, a fintech platform company.
-You are helping a sales team manage a complex B2B deal with ${bankName}.
-You reason like an experienced enterprise software salesperson combined with a strategy consultant.
+    let systemPrompt = `You are a senior Value Consultant at Backbase, the AI-native Banking OS / AI-Powered Banking Platform vendor.
+
+${BACKBASE_2026_CONTEXT}
+
+You are helping a sales team manage a complex B2B deal with ${bankName}. You reason like an experienced enterprise software salesperson combined with a strategy consultant. Use current product framing throughout (Banking OS, APA, CLO, segment OSes; the three commercial entry points).
 Return ONLY valid JSON. No markdown fences. No preamble. No explanation.`;
 
     let userPrompt = '';
@@ -1702,7 +1865,7 @@ Return ONLY valid JSON. No markdown code fences. Schema:
 
     console.log(`\n🎯 Power map generation: ${bankKey} (${personsRows.length} persons)...`);
     try {
-      const raw = await callClaude(systemPrompt, userMessage, { maxTokens: 4096, timeout: 60000 });
+      const raw = await callClaude(systemPrompt, userMessage, { maxTokens: 4096, timeout: 120000 });
       const jsonStr = raw.replace(/```json\n?|\n?```/g, '').trim();
       const result = JSON.parse(jsonStr);
 
@@ -1713,8 +1876,46 @@ Return ONLY valid JSON. No markdown code fences. Schema:
         id, bankKey, JSON.stringify(result), persona
       );
 
-      console.log(`   ✅ Power map complete: ${result.contacts?.length || 0} contacts mapped`);
-      jsonResponse(res, 200, { result });
+      // ── Sync per-contact assignments back to persons table ──
+      // The power_maps row is the AI-generated cache; persons.* columns hold the
+      // consultant-editable overrides. We write the AI assignments to persons so
+      // the stakeholder map matrix renders with MEDDICC roles, influence scores,
+      // and engagement positions out of the box. Consultants can still override
+      // any field via the PersonIntelCard.
+      let synced = 0;
+      try {
+        const updateStmt = db.prepare(`
+          UPDATE persons
+          SET meddicc_roles = ?, influence_score = ?, engagement_status = ?, support_status = ?,
+              updated_at = datetime('now')
+          WHERE bank_key = ? AND canonical_name = ?
+        `);
+        for (const contact of (result.contacts || [])) {
+          const meddiccArr = Array.isArray(contact.meddicc_roles) ? contact.meddicc_roles : [];
+          // Derive support_status from MEDDICC + engagement signals
+          const meddiccLower = meddiccArr.map(r => String(r).toLowerCase());
+          let supportStatus;
+          if (meddiccLower.includes('champion')) supportStatus = 'champion';
+          else if (contact.engagement_status === 'blocker' || meddiccLower.includes('competition')) supportStatus = 'blocker';
+          else if (contact.engagement_status === 'engaged') supportStatus = 'supporter';
+          else supportStatus = 'neutral';
+          const r = updateStmt.run(
+            JSON.stringify(meddiccArr),
+            contact.influence_score ?? null,
+            contact.engagement_status || 'neutral',
+            supportStatus,
+            bankKey,
+            contact.canonical_name
+          );
+          if (r.changes > 0) synced++;
+        }
+      } catch (syncErr) {
+        // Sync failure shouldn't fail the whole request — power_maps row is still cached
+        console.error(`   ⚠️  Power map → persons sync error: ${syncErr.message}`);
+      }
+
+      console.log(`   ✅ Power map complete: ${result.contacts?.length || 0} contacts mapped, ${synced} synced to persons`);
+      jsonResponse(res, 200, { result, synced_to_persons: synced });
     } catch (err) {
       console.error(`   ❌ Power map failed: ${err.message}`);
       jsonResponse(res, 500, { error: 'Power map generation failed: ' + err.message });
@@ -1818,12 +2019,16 @@ Return ONLY valid JSON. No markdown code fences. Schema:
     const ctx = loadBankContext(bankKey);
     if (!ctx) { jsonResponse(res, 404, { error: 'Bank not found' }); return true; }
 
-    const systemPrompt = `You are a senior strategic value consultant for Backbase (engagement banking platform).
+    const systemPrompt = `You are a senior strategic value consultant for Backbase, the AI-native Banking OS / AI-Powered Banking Platform vendor.
+
+${BACKBASE_2026_CONTEXT}
+
 You produce strategic account analyses for banking deals. Your outputs must be:
 - EVIDENCE-BASED: cite specific data points from the inputs
 - ACTIONABLE: every recommendation leads to a concrete next step
 - STRATEGIC: think like a McKinsey partner, not a sales rep
 - HONEST: flag gaps, risks, and competing interests openly
+- POSITIONED: reference Banking OS / APA / CLO / segment-specific OSes by name when relevant; cite Operational Layers (Nexus, Sentinel, Grand Central, Process Studio, Agent Studio, Intelligence) and proof-point ranges (30-40% cost-to-serve, 50-90% faster execution, 3x productivity, 2-4x growth) where they sharpen the argument
 
 Output ONLY valid JSON matching the requested schema. No markdown fences, no commentary.`;
 
@@ -1832,9 +2037,13 @@ Output ONLY valid JSON matching the requested schema. No markdown fences, no com
     ).join('\n');
     const signalSummary = ctx.signals.slice(0, 5).map(s => `- ${s.title}`).join('\n');
 
+    // Pack C: pull consultant-acknowledged signals as VALIDATED FACTS.
+    // Empty string when nothing acknowledged — clean prompt either way.
+    const validatedFactsBlock = getValidatedFactsBlockForBank(db, bankKey);
+
     const userPrompt = `Generate a Strategic Account Snapshot for ${ctx.bank_name} (${ctx.country}).
 
-BANK CONTEXT:
+${validatedFactsBlock ? validatedFactsBlock + '\n\n' : ''}BANK CONTEXT:
 Overview: ${(ctx.bank.overview || '').substring(0, 1500)}
 Strategic Initiatives: ${typeof ctx.bank.strategic_initiatives === 'string' ? ctx.bank.strategic_initiatives.substring(0, 800) : JSON.stringify(ctx.bank.strategic_initiatives || {}).substring(0, 800)}
 Pain Points: ${(ctx.bank.pain_points || []).slice(0, 5).map(p => p.title || p).join('; ')}
@@ -1886,23 +2095,28 @@ Every bullet must be SPECIFIC to ${ctx.bank_name}, not generic advice.`;
     const ctx = loadBankContext(bankKey);
     if (!ctx) { jsonResponse(res, 404, { error: 'Bank not found' }); return true; }
 
-    const systemPrompt = `You are a senior banking strategy consultant. Given a bank's annual report content,
-strategic initiatives, and observable signals, you derive:
+    const systemPrompt = `You are a senior banking strategy consultant working alongside Backbase, the AI-native Banking OS / AI-Powered Banking Platform vendor. Given a bank's annual report content, strategic initiatives, and observable signals, you derive:
 1) Concrete strategic objectives (what outcomes they're driving toward)
 2) Key initiatives required to execute each objective (reverse-engineered from the objective)
 3) Backbase capability mapping (which Backbase products address each initiative)
 
+${BACKBASE_2026_CONTEXT}
+
 CRITICAL RULES:
 - Mark each initiative's confidence as "from_report" (explicitly stated) or "ai_inferred" (logical inference)
 - Cite evidence — the text snippet that supports each claim, or "Inferred" if pure reasoning
-- Backbase capabilities should be SPECIFIC (e.g., "Digital Banking Platform with API orchestration", not just "Backbase")
+- Backbase capabilities should be SPECIFIC and use current product names — e.g., "Banking OS with Grand Central connectivity", "APA for Wealth (Agentic Process Automation)", "CLO (Customer Lifetime Orchestrator)", "Wealth OS / Commercial OS / Small Business OS / Private Banking OS / Retail OS" — NOT generic "Backbase platform" or "engagement banking"
+- Reference Operational Layers (Nexus, Sentinel, Grand Central, Process Studio, Agent Studio, Intelligence) where they sharpen the mapping
 - If data is thin, produce fewer high-quality objectives rather than padding
 
 Output ONLY valid JSON.`;
 
+    // Pack C: validated-facts injection
+    const validatedFactsBlockSO = getValidatedFactsBlockForBank(db, bankKey);
+
     const userPrompt = `Analyze strategic objectives for ${ctx.bank_name} (${ctx.country}).
 
-ANNUAL REPORT / OVERVIEW:
+${validatedFactsBlockSO ? validatedFactsBlockSO + '\n\n' : ''}ANNUAL REPORT / OVERVIEW:
 ${(ctx.bank.overview || '').substring(0, 2000)}
 
 STATED STRATEGIC INITIATIVES:

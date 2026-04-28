@@ -17,6 +17,7 @@ import { getStakeholderDrift, getDriftByStakeholder, getBankDriftRollup } from '
 import { getPatternsForBank, runCrossReferenceForBank } from '../lib/crossReferenceEngine.mjs';
 import { getChangeFeed, getChangeFeedCounts } from '../lib/changeFeed.mjs';
 import { runPortfolioQuery, EXAMPLE_QUERIES } from '../lib/portfolioQuery.mjs';
+import { translateQuery as translateNLQuery } from '../lib/portfolioQueryNL.mjs';
 
 // ── Qualification Score Calculator (mirrors client-side calcScoreFromData) ──
 const QUAL_WEIGHTS = {
@@ -1530,6 +1531,21 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
   // ── GET /api/portfolio/query/examples — pre-built sample queries
   if (path === '/api/portfolio/query/examples' && req.method === 'GET') {
     jsonResponse(res, 200, { examples: EXAMPLE_QUERIES });
+    return true;
+  }
+
+  // ── POST /api/portfolio/query/translate — B3: NL → predicate JSON
+  // Body: { query: "Swedish banks with a deteriorating CFO" }
+  // Returns: { ok, filter, explanation, warnings } — filter is then run through
+  // the existing /api/portfolio/query endpoint by the UI (deterministic engine).
+  if (path === '/api/portfolio/query/translate' && req.method === 'POST') {
+    const body = await parseBody(req);
+    if (!body?.query) {
+      jsonResponse(res, 400, { ok: false, error: 'query is required' });
+      return true;
+    }
+    const result = await translateNLQuery(body.query);
+    jsonResponse(res, result.ok ? 200 : 400, result);
     return true;
   }
 

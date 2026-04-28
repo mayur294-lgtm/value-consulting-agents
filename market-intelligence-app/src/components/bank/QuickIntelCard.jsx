@@ -26,10 +26,14 @@ const STAGE_LABELS = {
 function OverflowMenu({ bankKey, bankName, onQuickPrep, onBriefing, onPresentation, onDashboard, onIntel }) {
   const [open, setOpen] = useState(false);
 
+  // B2 — Soft-deprecated (Strategic Repositioning brief): "5-Min Prep",
+  // "Executive Brief", and "Presentation" generate prose competing directly
+  // with Claude-in-a-chat. Removed from the menu surface; underlying API
+  // endpoints remain alive (with Sunset headers from earlier sessions) for
+  // any in-flight workflow. Use the structured Pulse export (HTML) for
+  // leadership shares instead — it carries source provenance the prose
+  // surfaces could not.
   const items = [
-    { label: '5-Min Prep', icon: Clock, action: onQuickPrep },
-    { label: 'Executive Brief', icon: FileText, action: onBriefing },
-    { label: 'Presentation', icon: Presentation, action: onPresentation },
     { label: 'Dashboard', icon: LayoutDashboard, action: onDashboard },
     { label: 'Add Intel', icon: Plus, action: onIntel },
   ];
