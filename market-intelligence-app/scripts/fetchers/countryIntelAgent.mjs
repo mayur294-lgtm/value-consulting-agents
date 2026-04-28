@@ -67,6 +67,15 @@ async function fetchSectionNews(countryName, sections) {
     regulatory_environment: [`${countryName} banking regulation 2025`, `${countryName} central bank PSD2 open banking`],
     market_news: [`${countryName} bank acquisition merger 2025`, `${countryName} digital transformation banking`],
     customer_needs: [`${countryName} customer banking survey`, `${countryName} digital banking adoption customers`],
+    // Prose-field sections (post-source-traceability migration). Each fetches
+    // current news so the agent can cite actual sources for the summary,
+    // not just rely on background knowledge.
+    banking_sector: [`${countryName} banking sector overview 2026`, `${countryName} largest banks market share`],
+    demographics: [`${countryName} population banking demographics 2026`, `${countryName} financial inclusion demographics`],
+    digital_banking: [`${countryName} digital banking adoption 2026`, `${countryName} mobile banking penetration`],
+    consumer_segments: [`${countryName} retail banking customer segments`, `${countryName} affluent mass-market banking`],
+    spending_trends: [`${countryName} consumer spending trends 2026`, `${countryName} card payments e-commerce`],
+    backbase_opportunities: [`Backbase ${countryName} banking`, `${countryName} digital engagement platform`],
   };
   const out = {};
   for (const section of sections) {
@@ -165,6 +174,39 @@ function buildUserPrompt(countryName, existingData, sections, sectionNews = {}) 
 - behavioral_shifts: array of 3-4 items, each with: shift, trend_direction (accelerating/steady/slowing), implication, source_url (optional)
 - sources: array of every news article you cited, each with { id, url, source, title, date }
 - last_refreshed: current ISO timestamp`,
+
+    // ─── Prose-field sections (post-source-traceability migration) ───
+    // Each emits {summary, sources, last_refreshed} — same shape as structured
+    // sections but with a single paragraph plus citation list.
+    banking_sector: `Generate the "banking_sector" section with:
+- summary: 3-5 sentence overview of the banking sector — name the major banks, market structure, recent consolidation, sector-wide pressures (cite [N] markers for facts from the news block)
+- sources: array of every news article you cited, each with { id, url, source, title, date }
+- last_refreshed: current ISO timestamp`,
+
+    demographics: `Generate the "demographics" section with:
+- summary: 3-5 sentence overview of population, age structure, banking inclusion, financial literacy — cite [N] when sourcing from news
+- sources: array of every news article you cited, each with { id, url, source, title, date }
+- last_refreshed: current ISO timestamp`,
+
+    digital_banking: `Generate the "digital_banking" section with:
+- summary: 3-5 sentence overview of digital banking landscape — adoption rates, leading apps/players, mobile-first behavior, recent launches (cite [N] markers)
+- sources: array of every news article you cited, each with { id, url, source, title, date }
+- last_refreshed: current ISO timestamp`,
+
+    consumer_segments: `Generate the "consumer_segments" section with:
+- summary: 3-5 sentence overview of customer segments banks target (retail, mass-affluent, SME, wealth, etc.) — what each cares about, segment sizes if available (cite [N] markers)
+- sources: array of every news article you cited, each with { id, url, source, title, date }
+- last_refreshed: current ISO timestamp`,
+
+    spending_trends: `Generate the "spending_trends" section with:
+- summary: 3-5 sentence overview of consumer spending behavior — card vs cash, e-commerce share, contactless adoption, recent inflation/cost-of-living impact (cite [N] markers)
+- sources: array of every news article you cited, each with { id, url, source, title, date }
+- last_refreshed: current ISO timestamp`,
+
+    backbase_opportunities: `Generate the "backbase_opportunities" section with:
+- summary: 3-5 sentence overview of where Backbase has competitive opportunity in this country — bank pain points Backbase addresses, displacement candidates, recent local Backbase wins/news (cite [N] markers when available)
+- sources: array of every news article you cited, each with { id, url, source, title, date }
+- last_refreshed: current ISO timestamp`,
   };
 
   // Build the per-section numbered news context Claude can cite as [N]
@@ -189,7 +231,7 @@ function buildUserPrompt(countryName, existingData, sections, sectionNews = {}) 
   const existingContext = existingData ? `
 Existing country context:
 - Tagline: ${existingData.tagline || 'N/A'}
-- Banking sector: ${(existingData.banking_sector || '').substring(0, 500)}
+- Banking sector: ${(typeof existingData.banking_sector === 'string' ? existingData.banking_sector : (existingData.banking_sector?.summary || '')).substring(0, 500)}
 - Top banks: ${(existingData.top_banks || []).map(b => b.name).join(', ')}
 ` : '';
 
@@ -336,6 +378,14 @@ function computeSourceCoverage(sec) {
       total += sec[k].length;
       sourced += sec[k].filter(item => item.source_url).length;
     }
+  }
+  // Prose sections (banking_sector, demographics, etc.) — coverage = whether
+  // the section has at least one source attached. Single-paragraph fields
+  // don't have item arrays, so we count the section itself as 1 claim.
+  const isProse = !claimArrays.some(k => Array.isArray(sec[k])) && typeof sec.summary === 'string';
+  if (isProse) {
+    total = 1;
+    sourced = Array.isArray(sec.sources) && sec.sources.length > 0 ? 1 : 0;
   }
   if (total === 0) return null;
   return { total, sourced, pct: Math.round(sourced / total * 100) };

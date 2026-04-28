@@ -38,6 +38,7 @@ import MarketTrends from './MarketTrends';
 import CustomerNeedsPanel from './CustomerNeedsPanel';
 import CountryRefreshButton from './CountryRefreshButton';
 import { SearchFallbackLink } from '../common/SourceLink';
+import { normalizeProseField, uniqueSourceUrls } from '../../utils/proseField';
 
 /**
  * Source coverage chip — surfaces the % of fact-claims in a section that
@@ -138,6 +139,61 @@ function Subsection({ title, children, footer = null }) {
 }
 
 /**
+ * ProseSection — renders a normalized prose field with its sources inline.
+ * If the field is the new {summary, sources, last_refreshed} shape:
+ *   • Renders the summary paragraph
+ *   • Shows a coverage chip (or "Curated reference" badge if no sources)
+ *   • Lists the source URLs as clickable citations at the foot
+ *   • Shows last_refreshed timestamp
+ *
+ * If the field is a legacy raw string:
+ *   • Renders the string
+ *   • Shows the "Curated reference" badge
+ *   • Shows the search fallback link to verify online
+ *
+ * Either way the AE always has an action affordance.
+ */
+function ProseSection({ title, value, country, fallbackQuery, fallbackLabel }) {
+  const norm = normalizeProseField(value);
+  if (!norm.summary) return null;
+  const sources = uniqueSourceUrls(norm.sources);
+
+  return (
+    <div className="mb-3 last:mb-0">
+      <div className="flex items-center gap-2 mb-1.5">
+        <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">{title}</h4>
+        {norm.isSourced ? (
+          <SourceCoverageChip coverage={norm.coverage || { sourced: sources.length, total: sources.length, pct: 100 }} />
+        ) : (
+          <CuratedReferenceBadge />
+        )}
+        {norm.last_refreshed && (
+          <span className="text-[9px] text-slate-500">refreshed {String(norm.last_refreshed).slice(0, 10)}</span>
+        )}
+      </div>
+      <div className="text-[12px] text-slate-700 leading-relaxed">{norm.summary}</div>
+      {sources.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider self-center">Sources:</span>
+          {sources.map((s, i) => (
+            <a key={i} href={s.url} target="_blank" rel="noopener noreferrer"
+               className="inline-flex items-center gap-0.5 text-[9px] text-blue-700 hover:underline px-1.5 py-0.5 bg-blue-50 rounded border border-blue-100"
+               title={s.title || s.url}>
+              <ExternalLink size={9} /> {s.source || 'source'} {s.date && `· ${String(s.date).slice(0, 7)}`}
+            </a>
+          ))}
+        </div>
+      )}
+      {!norm.isSourced && fallbackQuery && (
+        <div className="mt-1.5">
+          <SearchFallbackLink query={fallbackQuery} label={fallbackLabel || 'Verify online'} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * Two-column grid for short paragraphs. Falls back to single column on narrow.
  */
 function TwoCol({ children }) {
@@ -164,10 +220,11 @@ export default function CountryProfileTab({ country, data, sw, onRefreshed }) {
       {/* Refresh + freshness banner — surfaces source-traceability state */}
       <div className="mb-3 flex items-center justify-between gap-3 p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
         <div className="text-[11px] text-slate-700">
-          Country profile mixes <strong>structured intelligence</strong> (regulatory, market trends, customer needs,
-          fintech landscape — auto-refreshable, source-traceable) with <strong>curated reference content</strong>
-          (banking sector, demographics, segments, spending — manually maintained). Click Refresh to pull latest
-          news + sources for the structured sections.
+          All country profile sections are now <strong>refreshable + source-traceable</strong>. Sourced sections
+          show a <strong>shield chip</strong> with coverage % (X/Y fact-claims with source URLs). Sections still
+          on legacy curated text show a <strong>"Curated reference" badge</strong> until refreshed. Click Refresh
+          to pull latest news + sources for the structured sections; for full prose-field refresh use the CLI
+          <code className="bg-white px-1 mx-1 rounded">npm run refresh-countries:prose</code>.
         </div>
         <div className="shrink-0">
           <CountryRefreshButton countryName={country} data={data} onRefreshed={onRefreshed} />
@@ -192,22 +249,14 @@ export default function CountryProfileTab({ country, data, sw, onRefreshed }) {
         ))}
       </div>
 
-      {/* ───── Cluster 1: Macro Context (curated reference) ───── */}
+      {/* ───── Cluster 1: Macro Context (now refreshable prose) ───── */}
       <div id="cluster-macro">
-        <Cluster title="Macro Context" icon={Globe} tone="slate" defaultOpen={true} curated={true}>
+        <Cluster title="Macro Context" icon={Globe} tone="slate" defaultOpen={true}>
           <TwoCol>
-            {data.banking_sector && (
-              <Subsection title="Banking Sector"
-                footer={<SearchFallbackLink query={`${country} banking sector overview 2026`} label="Search latest sector reports" />}>
-                <p>{data.banking_sector}</p>
-              </Subsection>
-            )}
-            {data.demographics && (
-              <Subsection title="Demographics"
-                footer={<SearchFallbackLink query={`${country} banking demographics population`} label="Search demographic data" />}>
-                <p>{data.demographics}</p>
-              </Subsection>
-            )}
+            <ProseSection title="Banking Sector" value={data.banking_sector} country={country}
+              fallbackQuery={`${country} banking sector overview 2026`} fallbackLabel="Search latest sector reports" />
+            <ProseSection title="Demographics" value={data.demographics} country={country}
+              fallbackQuery={`${country} banking demographics population`} fallbackLabel="Search demographic data" />
           </TwoCol>
         </Cluster>
       </div>
@@ -232,12 +281,8 @@ export default function CountryProfileTab({ country, data, sw, onRefreshed }) {
           count={cnCount + (data.digital_banking ? 1 : 0) || null}
           coverage={data.customer_needs?._source_coverage}
           lastRefreshed={data.customer_needs?.last_refreshed}>
-          {data.digital_banking && (
-            <Subsection title="Digital Banking"
-              footer={<SearchFallbackLink query={`${country} digital banking adoption 2026`} label="Search digital banking news" />}>
-              <p>{data.digital_banking}</p>
-            </Subsection>
-          )}
+          <ProseSection title="Digital Banking" value={data.digital_banking} country={country}
+            fallbackQuery={`${country} digital banking adoption 2026`} fallbackLabel="Search digital banking news" />
           {data.customer_needs && (
             <Subsection title="Customer Needs · Adoption · Pain Points · Behavioral Shifts">
               <CustomerNeedsPanel data={data.customer_needs} countryName={country} />
@@ -259,18 +304,10 @@ export default function CountryProfileTab({ country, data, sw, onRefreshed }) {
             </Subsection>
           )}
           <TwoCol>
-            {data.consumer_segments && (
-              <Subsection title="Consumer Segments"
-                footer={<SearchFallbackLink query={`${country} consumer banking segments`} label="Search segment data" />}>
-                <p>{data.consumer_segments}</p>
-              </Subsection>
-            )}
-            {data.spending_trends && (
-              <Subsection title="Spending Trends"
-                footer={<SearchFallbackLink query={`${country} consumer spending trends 2026`} label="Search spending data" />}>
-                <p>{data.spending_trends}</p>
-              </Subsection>
-            )}
+            <ProseSection title="Consumer Segments" value={data.consumer_segments} country={country}
+              fallbackQuery={`${country} consumer banking segments`} fallbackLabel="Search segment data" />
+            <ProseSection title="Spending Trends" value={data.spending_trends} country={country}
+              fallbackQuery={`${country} consumer spending trends 2026`} fallbackLabel="Search spending data" />
           </TwoCol>
         </Cluster>
       </div>
@@ -289,17 +326,13 @@ export default function CountryProfileTab({ country, data, sw, onRefreshed }) {
         </Cluster>
       </div>
 
-      {/* ───── Cluster 6: Backbase Angle (curated reference) ───── */}
+      {/* ───── Cluster 6: Backbase Angle (now refreshable) ───── */}
       <div id="cluster-backbase">
         <Cluster title="Backbase Angle · Signals + Market Strengths/Gaps" icon={Zap} tone="emerald" defaultOpen={true}
-          count={(swotStrengths + swotWeaknesses) || null}
-          curated={true}>
-          {data.backbase_opportunities && (
-            <Subsection title="Backbase Signals & Opportunities"
-              footer={<SearchFallbackLink query={`Backbase ${country} banking opportunity 2026`} label="Verify Backbase signals online" />}>
-              <p>{data.backbase_opportunities}</p>
-            </Subsection>
-          )}
+          count={(swotStrengths + swotWeaknesses) || null}>
+          <ProseSection title="Backbase Signals & Opportunities" value={data.backbase_opportunities} country={country}
+            fallbackQuery={`Backbase ${country} banking opportunity 2026`} fallbackLabel="Verify Backbase signals online" />
+
           {sw && (
             <Subsection title="Market SWOT — Strengths & Gaps">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
