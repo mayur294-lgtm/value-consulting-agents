@@ -528,6 +528,64 @@ function initSchema(db) {
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     );
+
+    -- ── AE↔VC bridge tables (post-B-series) ──
+    -- engagements: tracks VC engagement state per bank. State machine:
+    --   none → scoping → discovery → assessment → delivered → closed
+    -- One bank can have multiple engagements over time (e.g., assessment + later upgrade).
+    CREATE TABLE IF NOT EXISTS engagements (
+      id TEXT PRIMARY KEY,
+      bank_key TEXT NOT NULL REFERENCES banks(key) ON DELETE CASCADE,
+      engagement_type TEXT NOT NULL,  -- 'value_assessment' | 'ignite_inspire' | 'upgrade' | 'roi_only' | 'other'
+      state TEXT NOT NULL DEFAULT 'scoping',  -- scoping | discovery | assessment | delivered | closed
+      title TEXT,
+      kickoff_date TEXT,
+      target_close_date TEXT,
+      vc_lead TEXT,                   -- VC consultant name (free text)
+      ae_lead TEXT,                   -- AE name (free text)
+      handoff_snapshot_json TEXT,     -- snapshot of Nova intel at AE→VC handoff
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      closed_at TEXT,
+      outcome TEXT                    -- 'won' | 'lost' | 'no_decision' | null while open
+    );
+    CREATE INDEX IF NOT EXISTS idx_engagements_bank ON engagements(bank_key);
+    CREATE INDEX IF NOT EXISTS idx_engagements_state ON engagements(state);
+
+    -- engagement_artifacts: deliverables produced by VC engagements (ROI, capability,
+    -- roadmap, presentation, etc.). When VC publishes a deliverable, deliverableIngest
+    -- agent registers it here and emits a Nova signal.
+    CREATE TABLE IF NOT EXISTS engagement_artifacts (
+      id TEXT PRIMARY KEY,
+      engagement_id TEXT NOT NULL REFERENCES engagements(id) ON DELETE CASCADE,
+      bank_key TEXT NOT NULL,
+      artifact_type TEXT NOT NULL,    -- 'roi' | 'capability_assessment' | 'roadmap' | 'presentation' | 'other'
+      title TEXT NOT NULL,
+      summary TEXT,
+      content_url TEXT,               -- file path or URL to artifact
+      content_format TEXT,            -- 'html' | 'xlsx' | 'pdf' | 'md' | 'json'
+      key_findings_json TEXT,         -- structured findings (e.g., ROI scenarios, capability gaps)
+      published_at TEXT DEFAULT (datetime('now')),
+      published_by TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_artifacts_engagement ON engagement_artifacts(engagement_id);
+    CREATE INDEX IF NOT EXISTS idx_artifacts_bank ON engagement_artifacts(bank_key);
+
+    -- bank_notes: shared comment thread per bank, visible to both AE and VC.
+    -- Lightweight collaboration layer — not a full conversation system, just a
+    -- way for AE and VC to leave context for each other.
+    CREATE TABLE IF NOT EXISTS bank_notes (
+      id TEXT PRIMARY KEY,
+      bank_key TEXT NOT NULL REFERENCES banks(key) ON DELETE CASCADE,
+      author TEXT NOT NULL,           -- name + role e.g. "Oumaima (AE)" or "Mariam (VC)"
+      author_role TEXT,               -- 'ae' | 'vc' | 'other' (for filtering)
+      body TEXT NOT NULL,
+      pinned INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_bank_notes_bank ON bank_notes(bank_key);
+    CREATE INDEX IF NOT EXISTS idx_bank_notes_pinned ON bank_notes(pinned);
   `);
 
   // Seed initial review periods — Q1 + Q2 2026 + Q3 + Q4 2026.
