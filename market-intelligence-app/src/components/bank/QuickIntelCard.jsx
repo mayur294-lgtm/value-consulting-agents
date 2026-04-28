@@ -169,13 +169,18 @@ export default function QuickIntelCard({
       )}
 
       {/* Row 4: Primary actions */}
-      <div className="flex items-center gap-2 pt-2 border-t border-border">
+      <div className="flex items-center gap-2 pt-2 border-t border-border flex-wrap">
         <Button variant="primary" onClick={onPrepMeeting}>
           Prepare for Meeting
         </Button>
         <Link to={`/account-plan/${encodeURIComponent(bankKey)}`}>
           <Button variant="secondary">
             Account Plan
+          </Button>
+        </Link>
+        <Link to={`/bank/${encodeURIComponent(bankKey)}/pulse`}>
+          <Button variant="secondary">
+            Quarterly Pulse
           </Button>
         </Link>
       </div>

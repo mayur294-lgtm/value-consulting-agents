@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, BarChart3, Search, Star, Heart, MessageSquare, ChevronLeft, ChevronRight, Moon, Sun, Settings } from 'lucide-react';
+import { Home, BarChart3, Search, Star, Heart, MessageSquare, ChevronLeft, ChevronRight, Moon, Sun, Settings, Zap, Filter } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useRecentBanks } from '../../hooks/useRecentBanks';
 import { scoreColor } from '../../data/scoring';
@@ -8,6 +8,10 @@ import { scoreColor } from '../../data/scoring';
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/pipeline', icon: BarChart3, label: 'Pipeline' },
+  // Sprint 4 — portfolio change feed (what changed across all banks)
+  { path: '/changes', icon: Zap, label: 'Changes' },
+  // Sprint 5 — composable portfolio queries (find banks matching filters)
+  { path: '/query', icon: Filter, label: 'Query' },
 ];
 
 const TOOL_ITEMS = [

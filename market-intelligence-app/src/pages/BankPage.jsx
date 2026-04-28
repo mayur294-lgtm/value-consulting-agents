@@ -34,6 +34,7 @@ import CascadeProgressBar from '../components/bank/CascadeProgressBar';
 import WhatsChangedCard from '../components/bank/WhatsChangedCard';
 import WhatsChangedSummary from '../components/bank/WhatsChangedSummary';
 import ChangeFeed from '../components/common/ChangeFeed';
+import BankStakeholderIntelPanel from '../components/bank/BankStakeholderIntelPanel';
 import { PrepareTab, PositionTab, QualifyTab, MeetingHistoryTab, PeopleTab, AccountPlanTab } from '../components/bank/tabs';
 import { MeetingProvider, useMeeting } from '../context/MeetingContext';
 import { useLandingZoneMatrix, useDiscoveryStoryline } from '../hooks/useData';
@@ -516,7 +517,10 @@ function BankPageContent({ bankKey: key }) {
       </div>
       <WhatsChangedSummary bankKey={key} />
       <WhatsChangedCard bankKey={key} />
-      <BankChangeFeedToggle bankKey={key} />
+      {/* Sprint 2 surfacing — meeting intelligence promoted to first-class section */}
+      <BankStakeholderIntelPanel bankKey={key} />
+      {/* Sprint 4 surfacing — unified change feed expanded by default with event count */}
+      <BankChangeFeed bankKey={key} />
       {!hasLiveData && (
         <div className="p-3 bg-surface-2 border border-border rounded-lg text-xs text-fg-muted mb-3 flex items-start gap-2">
           <span className="text-base leading-none">💡</span>
@@ -625,27 +629,15 @@ function BankPageContent({ bankKey: key }) {
 }
 
 /**
- * Sprint 4.4 — collapsible Sprint-4 change feed on the bank profile.
- * Hidden by default so it doesn't compete with the existing what-changed
- * cards above; expanded reveals the unified 6-stream feed with filters.
+ * Sprint 4 surfacing — unified change feed on the bank profile.
+ * Default-expanded so AEs see the 6-stream feed without having to dig.
+ * Wraps the reusable ChangeFeed component which already handles filters,
+ * counts, sort, and lookback selection internally.
  */
-function BankChangeFeedToggle({ bankKey }) {
-  const [open, setOpen] = useState(false);
+function BankChangeFeed({ bankKey }) {
   return (
-    <div className="mb-3">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded text-[11px] font-bold text-slate-700 transition-colors"
-      >
-        <span>{open ? '▾' : '▸'}</span>
-        <span>Unified change feed</span>
-        <span className="text-[10px] text-slate-500 font-normal">(signals · meetings · patterns · pulse diffs · drift · edits)</span>
-      </button>
-      {open && (
-        <div className="mt-2">
-          <ChangeFeed bankKey={bankKey} />
-        </div>
-      )}
+    <div className="mb-4">
+      <ChangeFeed bankKey={bankKey} />
     </div>
   );
 }
