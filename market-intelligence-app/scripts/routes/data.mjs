@@ -24,6 +24,14 @@ import {
   getComputedOpportunities, getRegionEngagementSummary,
 } from '../lib/regionAggregator.mjs';
 import { generateRegionPulse } from '../lib/regionPulse.mjs';
+import {
+  listEngagements, getEngagement, createEngagement, transitionEngagement,
+  registerArtifact, listArtifacts, getBankEngagementSummary,
+} from '../lib/engagementTracker.mjs';
+import { buildHandoffSnapshot, snapshotToMarkdown } from '../lib/engagementBridge.mjs';
+import { ingestDeliverable } from '../lib/deliverableIngest.mjs';
+import { ingestTranscript } from '../lib/transcriptIngestor.mjs';
+import { ingestEmailThread } from '../lib/emailThreadParser.mjs';
 
 // ── Qualification Score Calculator (mirrors client-side calcScoreFromData) ──
 const QUAL_WEIGHTS = {
@@ -1620,6 +1628,189 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
       ...(priorPeriod ? { priorPeriodId: priorPeriod } : {}),
     });
     jsonResponse(res, 200, pulse || { error: 'No banks in scope' });
+    return true;
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // AE↔VC bridge endpoints (Wave 2)
+  // ──────────────────────────────────────────────────────────────────
+
+  // GET /api/engagements?bank_key=...&open_only=1
+  if (path === '/api/engagements' && req.method === 'GET') {
+    const bankKey = url.searchParams.get('bank_key');
+    const openOnly = url.searchParams.get('open_only') === '1';
+    const state = url.searchParams.get('state');
+    jsonResponse(res, 200, { engagements: listEngagements(db, { bankKey, state, openOnly }) });
+    return true;
+  }
+
+  // GET /api/banks/:key/engagement-summary — at-a-glance state per bank
+  match = path.match(/^\/api\/banks\/([^/]+)\/engagement-summary$/);
+  if (match && req.method === 'GET') {
+    const bankKey = decodeURIComponent(match[1]);
+    jsonResponse(res, 200, getBankEngagementSummary(db, bankKey));
+    return true;
+  }
+
+  // POST /api/engagements — create
+  if (path === '/api/engagements' && req.method === 'POST') {
+    const body = await parseBody(req);
+    try {
+      const eng = createEngagement(db, body);
+      jsonResponse(res, 201, eng);
+    } catch (err) {
+      jsonResponse(res, 400, { error: err.message });
+    }
+    return true;
+  }
+
+  // POST /api/engagements/:id/transition — change state
+  match = path.match(/^\/api\/engagements\/([^/]+)\/transition$/);
+  if (match && req.method === 'POST') {
+    const id = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    try {
+      const eng = transitionEngagement(db, id, body.state, { outcome: body.outcome });
+      jsonResponse(res, 200, eng);
+    } catch (err) {
+      jsonResponse(res, 400, { error: err.message });
+    }
+    return true;
+  }
+
+  // GET /api/engagements/:id — detail + artifacts
+  match = path.match(/^\/api\/engagements\/([^/]+)$/);
+  if (match && req.method === 'GET') {
+    const id = decodeURIComponent(match[1]);
+    const eng = getEngagement(db, id);
+    if (!eng) { jsonResponse(res, 404, { error: 'Not found' }); return true; }
+    const artifacts = listArtifacts(db, { engagementId: id });
+    jsonResponse(res, 200, { ...eng, artifacts });
+    return true;
+  }
+
+  // POST /api/engagements/:id/artifacts — register a deliverable
+  match = path.match(/^\/api\/engagements\/([^/]+)\/artifacts$/);
+  if (match && req.method === 'POST') {
+    const id = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    try {
+      const artifact = registerArtifact(db, { engagement_id: id, ...body });
+      jsonResponse(res, 201, artifact);
+    } catch (err) {
+      jsonResponse(res, 400, { error: err.message });
+    }
+    return true;
+  }
+
+  // POST /api/engagements/:id/ingest — ingest a deliverable file
+  match = path.match(/^\/api\/engagements\/([^/]+)\/ingest$/);
+  if (match && req.method === 'POST') {
+    const id = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    try {
+      const artifact = ingestDeliverable(db, { engagement_id: id, ...body });
+      jsonResponse(res, 201, artifact);
+    } catch (err) {
+      jsonResponse(res, 400, { error: err.message });
+    }
+    return true;
+  }
+
+  // GET /api/banks/:key/handoff-snapshot — generate snapshot (read-only, doesn't persist)
+  match = path.match(/^\/api\/banks\/([^/]+)\/handoff-snapshot$/);
+  if (match && req.method === 'GET') {
+    const bankKey = decodeURIComponent(match[1]);
+    const period = url.searchParams.get('period') || '2026-Q2';
+    const format = url.searchParams.get('format') || 'json';
+    try {
+      const snap = buildHandoffSnapshot(db, bankKey, { period });
+      if (format === 'markdown') {
+        res.setHeader('Content-Type', 'text/markdown');
+        res.end(snapshotToMarkdown(snap));
+      } else {
+        jsonResponse(res, 200, snap);
+      }
+    } catch (err) {
+      jsonResponse(res, 400, { error: err.message });
+    }
+    return true;
+  }
+
+  // POST /api/banks/:key/handoff — formal AE→VC handoff: creates engagement + persists snapshot
+  match = path.match(/^\/api\/banks\/([^/]+)\/handoff$/);
+  if (match && req.method === 'POST') {
+    const bankKey = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    try {
+      const snapshot = buildHandoffSnapshot(db, bankKey, { period: body.period || '2026-Q2' });
+      const engagement = createEngagement(db, {
+        bank_key: bankKey,
+        engagement_type: body.engagement_type || 'value_assessment',
+        title: body.title || `${snapshot.bank.name} — ${body.engagement_type || 'value_assessment'}`,
+        ae_lead: body.ae_lead || null,
+        vc_lead: body.vc_lead || null,
+        kickoff_date: body.kickoff_date || new Date().toISOString().slice(0, 10),
+        target_close_date: body.target_close_date || null,
+        handoff_snapshot: snapshot,
+      });
+      jsonResponse(res, 201, { engagement, snapshot_size: JSON.stringify(snapshot).length });
+    } catch (err) {
+      jsonResponse(res, 400, { error: err.message });
+    }
+    return true;
+  }
+
+  // ── Meeting intel input (Wave 3) ──
+  // POST /api/banks/:key/ingest-transcript
+  match = path.match(/^\/api\/banks\/([^/]+)\/ingest-transcript$/);
+  if (match && req.method === 'POST') {
+    const bankKey = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    try {
+      const result = await ingestTranscript(db, { bank_key: bankKey, ...body });
+      jsonResponse(res, 201, result);
+    } catch (err) {
+      jsonResponse(res, 400, { error: err.message });
+    }
+    return true;
+  }
+  // POST /api/banks/:key/ingest-email
+  match = path.match(/^\/api\/banks\/([^/]+)\/ingest-email$/);
+  if (match && req.method === 'POST') {
+    const bankKey = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    try {
+      const result = await ingestEmailThread(db, { bank_key: bankKey, ...body });
+      jsonResponse(res, 201, result);
+    } catch (err) {
+      jsonResponse(res, 400, { error: err.message });
+    }
+    return true;
+  }
+
+  // ── Bank notes (shared AE+VC comment thread) ──
+  match = path.match(/^\/api\/banks\/([^/]+)\/notes$/);
+  if (match && req.method === 'GET') {
+    const bankKey = decodeURIComponent(match[1]);
+    const notes = db.prepare(`SELECT * FROM bank_notes WHERE bank_key = ? ORDER BY pinned DESC, created_at DESC`).all(bankKey);
+    jsonResponse(res, 200, { notes });
+    return true;
+  }
+  if (match && req.method === 'POST') {
+    const bankKey = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    if (!body.body || !body.author) { jsonResponse(res, 400, { error: 'body and author required' }); return true; }
+    const id = crypto.randomUUID();
+    db.prepare(`INSERT INTO bank_notes (id, bank_key, author, author_role, body, pinned) VALUES (?, ?, ?, ?, ?, ?)`)
+      .run(id, bankKey, body.author, body.author_role || 'other', body.body, body.pinned ? 1 : 0);
+    jsonResponse(res, 201, { id, bank_key: bankKey });
+    return true;
+  }
+  match = path.match(/^\/api\/notes\/([^/]+)$/);
+  if (match && req.method === 'DELETE') {
+    db.prepare('DELETE FROM bank_notes WHERE id = ?').run(decodeURIComponent(match[1]));
+    jsonResponse(res, 200, { deleted: true });
     return true;
   }
 

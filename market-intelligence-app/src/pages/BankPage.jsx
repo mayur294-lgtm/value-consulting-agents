@@ -35,6 +35,8 @@ import WhatsChangedCard from '../components/bank/WhatsChangedCard';
 import WhatsChangedSummary from '../components/bank/WhatsChangedSummary';
 import ChangeFeed from '../components/common/ChangeFeed';
 import BankStakeholderIntelPanel from '../components/bank/BankStakeholderIntelPanel';
+import BankEngagementPanel from '../components/bank/BankEngagementPanel';
+import BankNotesPanel from '../components/bank/BankNotesPanel';
 import { PrepareTab, PositionTab, QualifyTab, MeetingHistoryTab, PeopleTab, AccountPlanTab } from '../components/bank/tabs';
 import { MeetingProvider, useMeeting } from '../context/MeetingContext';
 import { useLandingZoneMatrix, useDiscoveryStoryline } from '../hooks/useData';
@@ -517,10 +519,14 @@ function BankPageContent({ bankKey: key }) {
       </div>
       <WhatsChangedSummary bankKey={key} />
       <WhatsChangedCard bankKey={key} />
+      {/* Wave 2 — VC engagement panel + shared notes (AE↔VC bridge) */}
+      <BankEngagementPanel bankKey={key} bankName={data.bank_name} />
       {/* Sprint 2 surfacing — meeting intelligence promoted to first-class section */}
       <BankStakeholderIntelPanel bankKey={key} />
-      {/* Sprint 4 surfacing — unified change feed expanded by default with event count */}
+      {/* Sprint 4 surfacing — unified change feed expanded by default */}
       <BankChangeFeed bankKey={key} />
+      {/* Wave 2 — shared AE+VC comments thread */}
+      <BankNotesPanel bankKey={key} />
       {!hasLiveData && (
         <div className="p-3 bg-surface-2 border border-border rounded-lg text-xs text-fg-muted mb-3 flex items-start gap-2">
           <span className="text-base leading-none">💡</span>

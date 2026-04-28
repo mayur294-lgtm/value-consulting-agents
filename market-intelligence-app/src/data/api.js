@@ -326,6 +326,43 @@ export const fetchRegionChangeFeed = (kind, identifier, opts = {}) => {
   const qs = params.toString();
   return request(`/api/${kind}/${encodeURIComponent(identifier)}/change-feed${qs ? `?${qs}` : ''}`);
 };
+// ── AE↔VC Bridge (Wave 2) ──
+export const listEngagements = (opts = {}) => {
+  const params = new URLSearchParams();
+  if (opts.bankKey) params.set('bank_key', opts.bankKey);
+  if (opts.openOnly) params.set('open_only', '1');
+  if (opts.state) params.set('state', opts.state);
+  const qs = params.toString();
+  return request(`/api/engagements${qs ? `?${qs}` : ''}`);
+};
+export const getBankEngagementSummary = (bankKey) => request(`/api/banks/${encodeURIComponent(bankKey)}/engagement-summary`);
+export const getEngagement = (id) => request(`/api/engagements/${encodeURIComponent(id)}`);
+export const createEngagement = (data) => request('/api/engagements', { method: 'POST', body: JSON.stringify(data) });
+export const transitionEngagement = (id, state, outcome = null) =>
+  request(`/api/engagements/${encodeURIComponent(id)}/transition`, { method: 'POST', body: JSON.stringify({ state, outcome }) });
+export const registerArtifact = (engagementId, data) =>
+  request(`/api/engagements/${encodeURIComponent(engagementId)}/artifacts`, { method: 'POST', body: JSON.stringify(data) });
+export const ingestDeliverable = (engagementId, data) =>
+  request(`/api/engagements/${encodeURIComponent(engagementId)}/ingest`, { method: 'POST', body: JSON.stringify(data) });
+export const handoffBank = (bankKey, data) =>
+  request(`/api/banks/${encodeURIComponent(bankKey)}/handoff`, { method: 'POST', body: JSON.stringify(data) });
+export const fetchHandoffSnapshot = (bankKey, opts = {}) => {
+  const params = new URLSearchParams();
+  if (opts.period) params.set('period', opts.period);
+  if (opts.format) params.set('format', opts.format);
+  const qs = params.toString();
+  return request(`/api/banks/${encodeURIComponent(bankKey)}/handoff-snapshot${qs ? `?${qs}` : ''}`);
+};
+// Wave 3 — meeting intel input
+export const ingestTranscript = (bankKey, data) =>
+  request(`/api/banks/${encodeURIComponent(bankKey)}/ingest-transcript`, { method: 'POST', body: JSON.stringify(data), timeout: 90000 });
+export const ingestEmailThread = (bankKey, data) =>
+  request(`/api/banks/${encodeURIComponent(bankKey)}/ingest-email`, { method: 'POST', body: JSON.stringify(data), timeout: 90000 });
+
+export const fetchBankNotes = (bankKey) => request(`/api/banks/${encodeURIComponent(bankKey)}/notes`);
+export const createBankNote = (bankKey, data) => request(`/api/banks/${encodeURIComponent(bankKey)}/notes`, { method: 'POST', body: JSON.stringify(data) });
+export const deleteBankNote = (id) => request(`/api/notes/${encodeURIComponent(id)}`, { method: 'DELETE' });
+
 export const fetchRegionPulse = (kind, identifier, opts = {}) => {
   const params = new URLSearchParams();
   if (opts.period) params.set('period', opts.period);

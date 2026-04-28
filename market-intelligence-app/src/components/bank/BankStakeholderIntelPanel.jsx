@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { getStakeholderDrift, getBankPatterns } from '../../data/api';
 import { ProvenanceChip } from '../common/Provenance';
+import MeetingIntelInputModal from './MeetingIntelInputModal';
+import { Plus } from 'lucide-react';
 
 const TOPIC_LABEL = {
   budget: 'Budget', vendors: 'Vendors', timeline: 'Timeline', politics: 'Politics',
@@ -147,8 +149,9 @@ export default function BankStakeholderIntelPanel({ bankKey }) {
   const [drift, setDrift] = useState([]);
   const [patterns, setPatterns] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showLogModal, setShowLogModal] = useState(false);
 
-  useEffect(() => {
+  const refresh = () => {
     if (!bankKey) return;
     setLoading(true);
     Promise.all([
@@ -160,7 +163,9 @@ export default function BankStakeholderIntelPanel({ bankKey }) {
         setPatterns(p?.patterns || []);
       })
       .finally(() => setLoading(false));
-  }, [bankKey]);
+  };
+
+  useEffect(refresh, [bankKey]);
 
   const totalCount = drift.length + patterns.length;
 
@@ -177,8 +182,21 @@ export default function BankStakeholderIntelPanel({ bankKey }) {
             · {patterns.length} corroborated pattern{patterns.length === 1 ? '' : 's'}
           </span>
         </div>
-        {loading && <Loader2 size={11} className="animate-spin text-slate-500" />}
+        <div className="flex items-center gap-2">
+          {loading && <Loader2 size={11} className="animate-spin text-slate-500" />}
+          <button onClick={() => setShowLogModal(true)}
+            className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-50 rounded">
+            <Plus size={10} /> Log meeting / email
+          </button>
+        </div>
       </div>
+      {showLogModal && (
+        <MeetingIntelInputModal
+          bankKey={bankKey}
+          onClose={() => setShowLogModal(false)}
+          onSaved={() => { setShowLogModal(false); refresh(); }}
+        />
+      )}
 
       {!loading && totalCount === 0 && (
         <div className="p-4 text-[11px] text-slate-600">
