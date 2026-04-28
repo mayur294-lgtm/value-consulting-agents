@@ -7,6 +7,7 @@ import TabBar from '../components/common/TabBar';
 import Section from '../components/common/Section';
 import BarChart from '../components/charts/BarChart';
 import RegionIntelDashboard from '../components/common/RegionIntelDashboard';
+import RegionProfileTab from '../components/common/RegionProfileTab';
 
 export default function MarketPage() {
   const { marketKey } = useParams();
@@ -139,40 +140,11 @@ export default function MarketPage() {
     </div>
   );
 
-  /* ─── CONTEXT TAB ─── */
-  const ContextTab = () => (
-    <div className="space-y-4">
-      {/* Market narrative — condensed */}
-      <div className="p-4 bg-surface border border-border rounded-xl">
-        <p className="text-sm text-fg-subtle leading-relaxed">
-          {data.market_overview.split('\n').map((p, i) => <span key={i}>{p}<br /><br /></span>)}
-        </p>
-      </div>
-
-      {/* Market opportunity themes */}
-      <div>
-        <h3 className="text-xs font-bold text-fg-muted uppercase tracking-wide mb-2">Key Market Opportunities</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {data.key_opportunities.map((o, i) => (
-            <div key={i} className="p-3 bg-primary-700/5 border border-primary-700/10 rounded-lg">
-              <div className="font-bold text-xs text-primary-700 mb-1">{o.title}</div>
-              <div className="text-[11px] text-fg-muted leading-relaxed">{o.detail}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* B2-style soft-deprecation: the 5 static reference sections (Banking
-          Landscape, Regulations, Digital Maturity, Consumer Behavior, Vendor
-          Competitive Landscape) were dense prose nobody read. Removed in
-          favor of the data-driven Intelligence tab. */}
-      <div className="p-3 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-900">
-        <strong>Reference sections deprecated.</strong> The static prose blocks (Banking Landscape, Regulations,
-        Digital Maturity, Consumer Behavior, Vendor Competitive Landscape) have been retired.
-        For market intelligence with source provenance, use the <strong>🧠 Intelligence</strong> tab.
-      </div>
-    </div>
-  );
+  // Context tab now uses the structured RegionProfileTab — same cluster
+  // pattern as CountryProfileTab so users get consistent UX across region
+  // and country pages. All previously-deprecated reference content is
+  // restored, just better organized.
+  const ContextTab = () => <RegionProfileTab regionName={meta.name} data={data} />;
 
   return (
     <div className="animate-fade-in-up">

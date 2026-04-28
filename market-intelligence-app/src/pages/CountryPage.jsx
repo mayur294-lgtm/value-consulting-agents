@@ -18,6 +18,7 @@ import CustomerNeedsPanel from '../components/country/CustomerNeedsPanel';
 import CountryRefreshButton from '../components/country/CountryRefreshButton';
 import { SearchFallbackLink } from '../components/common/SourceLink';
 import RegionIntelDashboard from '../components/common/RegionIntelDashboard';
+import CountryProfileTab from '../components/country/CountryProfileTab';
 
 export default function CountryPage() {
   const { countryName } = useParams();
@@ -309,11 +310,9 @@ export default function CountryPage() {
         ))}
       </div>
 
-      {/* B2-style soft-deprecation: the previous 4 reference tabs (Fintech,
-          Regulatory, Trends, Intel) were dense static prose without
-          provenance. Replaced by the data-driven Intelligence tab, which
-          surfaces the same intelligence with sources every claim traces to.
-          Target tab stays — it's the bank-filter UI, structurally useful. */}
+      {/* Three-tab layout: live intelligence (default), bank-filter UI,
+          curated country profile (all reference content reorganized into
+          6 thematic clusters with visual accents). */}
       <TabBar id="country-tabs" sticky tabs={[
         {
           label: '🧠 Intelligence',
@@ -325,29 +324,8 @@ export default function CountryPage() {
           content: <TargetTab />,
         },
         {
-          label: '🗄️ Reference (deprecated)',
-          content: (
-            <div className="space-y-3">
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-900">
-                <strong>Reference content deprecated.</strong> The static prose tabs (Fintech Landscape,
-                Regulatory, Trends, SWOT/Intel) carried no source provenance and weren't kept fresh.
-                Use the <strong>🧠 Intelligence</strong> tab for data-driven intelligence with traceable sources.
-                These reference panels are kept here temporarily for transition; they will be removed in a future release.
-              </div>
-              <details>
-                <summary className="cursor-pointer text-[11px] text-slate-600 hover:text-slate-900 font-bold py-1">
-                  Show legacy reference content
-                </summary>
-                <div className="mt-3 space-y-4 opacity-70">
-                  <FintechLandscapeGrid data={data.fintech_landscape} countryName={country} />
-                  <RegulatoryPanel data={data.regulatory_environment} countryName={country} />
-                  <MarketTrends data={data.market_news} countryName={country} />
-                  <CustomerNeedsPanel data={data.customer_needs} countryName={country} />
-                  <IntelTab />
-                </div>
-              </details>
-            </div>
-          ),
+          label: '📚 Country Profile',
+          content: <CountryProfileTab country={country} data={data} sw={sw} />,
         },
       ]} />
     </div>
