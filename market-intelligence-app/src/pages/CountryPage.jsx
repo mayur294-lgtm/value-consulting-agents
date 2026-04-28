@@ -13,9 +13,11 @@ import { useCompare } from '../context/CompareContext';
 import BarChart from '../components/charts/BarChart';
 import FintechLandscapeGrid from '../components/country/FintechLandscapeGrid';
 import RegulatoryPanel from '../components/country/RegulatoryPanel';
-import MarketTrends from '../components/country/MarketTrends';
+import MarketTrends, { SectionSourcesFooter } from '../components/country/MarketTrends';
 import CustomerNeedsPanel from '../components/country/CustomerNeedsPanel';
 import CountryRefreshButton from '../components/country/CountryRefreshButton';
+import { SearchFallbackLink } from '../components/common/SourceLink';
+import RegionIntelDashboard from '../components/common/RegionIntelDashboard';
 
 export default function CountryPage() {
   const { countryName } = useParams();
@@ -239,15 +241,49 @@ export default function CountryPage() {
           <h3 className="text-xs font-bold text-fg-muted uppercase tracking-wide mb-2">Backbase Signals</h3>
           <div className="p-4 bg-primary-700/5 border border-primary-700/10 rounded-xl">
             <p className="text-xs text-fg-subtle leading-relaxed">{data.backbase_opportunities}</p>
+            <div className="mt-2">
+              <SearchFallbackLink
+                query={`Backbase ${country} banking opportunity`}
+                label="Verify Backbase signals online"
+              />
+            </div>
           </div>
         </div>
       )}
-      {/* Country context sections */}
-      {data.demographics && <Section title="Demographics"><p className="text-sm text-fg-subtle leading-relaxed">{data.demographics}</p></Section>}
-      {data.banking_sector && <Section title="Banking Sector"><p className="text-sm text-fg-subtle leading-relaxed">{data.banking_sector}</p></Section>}
-      {data.digital_banking && <Section title="Digital Banking" defaultOpen={false}><p className="text-sm text-fg-subtle leading-relaxed">{data.digital_banking}</p></Section>}
-      {data.consumer_segments && <Section title="Consumer Segments" defaultOpen={false}><p className="text-sm text-fg-subtle leading-relaxed">{data.consumer_segments}</p></Section>}
-      {data.spending_trends && <Section title="Spending Trends" defaultOpen={false}><p className="text-sm text-fg-subtle leading-relaxed">{data.spending_trends}</p></Section>}
+      {/* Country context sections — each with a "verify online" search fallback link */}
+      {data.demographics && (
+        <Section title="Demographics">
+          <p className="text-sm text-fg-subtle leading-relaxed">{data.demographics}</p>
+          <div className="mt-2"><SearchFallbackLink query={`${country} banking demographics population`} label="Search latest demographic data" /></div>
+        </Section>
+      )}
+      {data.banking_sector && (
+        <Section title="Banking Sector">
+          <p className="text-sm text-fg-subtle leading-relaxed">{data.banking_sector}</p>
+          <div className="mt-2"><SearchFallbackLink query={`${country} banking sector overview`} label="Search latest sector reports" /></div>
+        </Section>
+      )}
+      {data.digital_banking && (
+        <Section title="Digital Banking" defaultOpen={false}>
+          <p className="text-sm text-fg-subtle leading-relaxed">{data.digital_banking}</p>
+          <div className="mt-2"><SearchFallbackLink query={`${country} digital banking adoption`} label="Search digital banking news" /></div>
+        </Section>
+      )}
+      {data.consumer_segments && (
+        <Section title="Consumer Segments" defaultOpen={false}>
+          <p className="text-sm text-fg-subtle leading-relaxed">{data.consumer_segments}</p>
+          <div className="mt-2"><SearchFallbackLink query={`${country} consumer banking segments`} label="Search segment data" /></div>
+        </Section>
+      )}
+      {data.spending_trends && (
+        <Section title="Spending Trends" defaultOpen={false}>
+          <p className="text-sm text-fg-subtle leading-relaxed">{data.spending_trends}</p>
+          <div className="mt-2"><SearchFallbackLink query={`${country} consumer spending trends 2026`} label="Search spending data" /></div>
+        </Section>
+      )}
+
+      {/* Aggregated sources for the whole country (top-level) */}
+      <SectionSourcesFooter sources={data.sources || []} label={`All sources for ${country}`} />
     </div>
   );
 
@@ -273,37 +309,45 @@ export default function CountryPage() {
         ))}
       </div>
 
-      {/* 5-tab layout */}
+      {/* B2-style soft-deprecation: the previous 4 reference tabs (Fintech,
+          Regulatory, Trends, Intel) were dense static prose without
+          provenance. Replaced by the data-driven Intelligence tab, which
+          surfaces the same intelligence with sources every claim traces to.
+          Target tab stays — it's the bank-filter UI, structurally useful. */}
       <TabBar id="country-tabs" sticky tabs={[
+        {
+          label: '🧠 Intelligence',
+          content: <RegionIntelDashboard kind="countries" identifier={country} label={country} />,
+        },
         {
           label: '🎯 Target',
           badge: prospects.length || null,
           content: <TargetTab />,
         },
         {
-          label: '🏗️ Fintech',
-          badge: fintechCategories || null,
-          content: <FintechLandscapeGrid data={data.fintech_landscape} countryName={country} />,
-        },
-        {
-          label: '📜 Regulatory',
-          badge: regulationCount || null,
-          content: <RegulatoryPanel data={data.regulatory_environment} countryName={country} />,
-        },
-        {
-          label: '📰 Trends',
-          badge: trendCount || null,
+          label: '🗄️ Reference (deprecated)',
           content: (
-            <div className="space-y-6">
-              <MarketTrends data={data.market_news} countryName={country} />
-              <CustomerNeedsPanel data={data.customer_needs} countryName={country} />
+            <div className="space-y-3">
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-900">
+                <strong>Reference content deprecated.</strong> The static prose tabs (Fintech Landscape,
+                Regulatory, Trends, SWOT/Intel) carried no source provenance and weren't kept fresh.
+                Use the <strong>🧠 Intelligence</strong> tab for data-driven intelligence with traceable sources.
+                These reference panels are kept here temporarily for transition; they will be removed in a future release.
+              </div>
+              <details>
+                <summary className="cursor-pointer text-[11px] text-slate-600 hover:text-slate-900 font-bold py-1">
+                  Show legacy reference content
+                </summary>
+                <div className="mt-3 space-y-4 opacity-70">
+                  <FintechLandscapeGrid data={data.fintech_landscape} countryName={country} />
+                  <RegulatoryPanel data={data.regulatory_environment} countryName={country} />
+                  <MarketTrends data={data.market_news} countryName={country} />
+                  <CustomerNeedsPanel data={data.customer_needs} countryName={country} />
+                  <IntelTab />
+                </div>
+              </details>
             </div>
           ),
-        },
-        {
-          label: '📊 Intel',
-          badge: sw ? 'dot' : null,
-          content: <IntelTab />,
         },
       ]} />
     </div>

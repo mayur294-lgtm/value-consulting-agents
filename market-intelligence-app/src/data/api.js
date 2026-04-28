@@ -307,6 +307,33 @@ export const deletePortfolioSavedView = (id) => request(`/api/portfolio/saved-vi
 // B3 — NL → predicate JSON (advisory; user reviews before running)
 export const translatePortfolioQuery = (query) => request('/api/portfolio/query/translate', { method: 'POST', body: JSON.stringify({ query }), timeout: 45000 });
 
+// ── Region/Country aggregations (post-B-series) ──
+// `kind` is 'regions' or 'countries'; `identifier` is market key or country name.
+export const fetchRegionIntel = (kind, identifier, opts = {}) => {
+  const params = new URLSearchParams();
+  if (opts.period) params.set('period', opts.period);
+  if (opts.priorPeriod) params.set('prior_period', opts.priorPeriod);
+  const qs = params.toString();
+  return request(`/api/${kind}/${encodeURIComponent(identifier)}/intel${qs ? `?${qs}` : ''}`);
+};
+export const fetchRegionChangeFeed = (kind, identifier, opts = {}) => {
+  const params = new URLSearchParams();
+  if (opts.lookback != null)        params.set('lookback', String(opts.lookback));
+  if (opts.sort)                    params.set('sort', opts.sort);
+  if (opts.minSignificance != null) params.set('min_significance', String(opts.minSignificance));
+  if (opts.limit != null)           params.set('limit', String(opts.limit));
+  if (opts.include?.length)         params.set('include', opts.include.join(','));
+  const qs = params.toString();
+  return request(`/api/${kind}/${encodeURIComponent(identifier)}/change-feed${qs ? `?${qs}` : ''}`);
+};
+export const fetchRegionPulse = (kind, identifier, opts = {}) => {
+  const params = new URLSearchParams();
+  if (opts.period) params.set('period', opts.period);
+  if (opts.priorPeriod) params.set('prior_period', opts.priorPeriod);
+  const qs = params.toString();
+  return request(`/api/${kind}/${encodeURIComponent(identifier)}/pulse${qs ? `?${qs}` : ''}`);
+};
+
 export const getPortfolioChangeFeed = (opts = {}) => {
   const params = new URLSearchParams();
   if (opts.lookback != null)        params.set('lookback', String(opts.lookback));

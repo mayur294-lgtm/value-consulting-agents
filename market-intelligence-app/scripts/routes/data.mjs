@@ -18,6 +18,12 @@ import { getPatternsForBank, runCrossReferenceForBank } from '../lib/crossRefere
 import { getChangeFeed, getChangeFeedCounts } from '../lib/changeFeed.mjs';
 import { runPortfolioQuery, EXAMPLE_QUERIES } from '../lib/portfolioQuery.mjs';
 import { translateQuery as translateNLQuery } from '../lib/portfolioQueryNL.mjs';
+import {
+  getBanksForRegion, getBanksForCountry,
+  getRegionPatterns, getRegionGradeDistribution, getRegionDriftHeatmap,
+  getComputedOpportunities, getRegionEngagementSummary,
+} from '../lib/regionAggregator.mjs';
+import { generateRegionPulse } from '../lib/regionPulse.mjs';
 
 // ── Qualification Score Calculator (mirrors client-side calcScoreFromData) ──
 const QUAL_WEIGHTS = {
@@ -1531,6 +1537,89 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
   // ── GET /api/portfolio/query/examples — pre-built sample queries
   if (path === '/api/portfolio/query/examples' && req.method === 'GET') {
     jsonResponse(res, 200, { examples: EXAMPLE_QUERIES });
+    return true;
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // Region + country aggregations (post-B-series). Both surfaces share the
+  // same library — region resolves bank list via market.data.countries[],
+  // country resolves via direct LIKE-tolerant match. The helper below picks
+  // the right resolver based on URL pattern.
+  // ──────────────────────────────────────────────────────────────────
+
+  function resolveBankSet(kind, identifier) {
+    if (kind === 'regions') return { banks: getBanksForRegion(db, identifier), label: identifier };
+    if (kind === 'countries') return { banks: getBanksForCountry(db, identifier), label: identifier };
+    return { banks: [], label: identifier };
+  }
+
+  // GET /api/regions/:key/intel  OR  /api/countries/:name/intel
+  // Returns a single composite payload for the page (one round-trip).
+  // Intentionally combines aggregations to minimize UI fetches.
+  match = path.match(/^\/api\/(regions|countries)\/([^/]+)\/intel$/);
+  if (match && req.method === 'GET') {
+    const kind = match[1];
+    const identifier = decodeURIComponent(match[2]);
+    const { banks } = resolveBankSet(kind, identifier);
+    const bankKeys = banks.map(b => b.key);
+    const period = url.searchParams.get('period') || '2026-Q2';
+    const priorPeriod = url.searchParams.get('prior_period') || (period === '2026-Q2' ? '2026-Q1' : '2026-Q1');
+    const opps = getComputedOpportunities(db, bankKeys, { withinDays: 60 });
+    const grade_distribution = getRegionGradeDistribution(db, bankKeys);
+    const top_patterns = getRegionPatterns(db, bankKeys, { limit: 8, minConfidence: 'medium' });
+    const drift_heatmap = getRegionDriftHeatmap(db, bankKeys).slice(0, 10);
+    const engagement = getRegionEngagementSummary(db, bankKeys, { from: priorPeriod, to: period });
+    jsonResponse(res, 200, {
+      kind,
+      identifier,
+      banks: banks.map(b => ({ key: b.key, bank_name: b.bank_name, country: b.country })),
+      bank_count: banks.length,
+      computed_opportunities: opps,
+      grade_distribution,
+      top_patterns,
+      drift_heatmap,
+      engagement_summary: engagement,
+    });
+    return true;
+  }
+
+  // GET /api/regions/:key/change-feed  OR  /api/countries/:name/change-feed
+  // Forwards to getChangeFeed with bankKeys filter pre-resolved server-side.
+  match = path.match(/^\/api\/(regions|countries)\/([^/]+)\/change-feed$/);
+  if (match && req.method === 'GET') {
+    const kind = match[1];
+    const identifier = decodeURIComponent(match[2]);
+    const { banks } = resolveBankSet(kind, identifier);
+    const bankKeys = banks.map(b => b.key);
+    const lookback = parseInt(url.searchParams.get('lookback') || '30', 10);
+    const sort = url.searchParams.get('sort') || 'significance';
+    const minSig = parseInt(url.searchParams.get('min_significance') || '0', 10);
+    const limit = parseInt(url.searchParams.get('limit') || '100', 10);
+    const include = url.searchParams.get('include')?.split(',').filter(Boolean);
+    const opts = { bankKeys, lookbackDays: lookback, sort, minSignificance: minSig, limit };
+    if (include?.length) opts.include = include;
+    const events = getChangeFeed(db, opts);
+    const counts = getChangeFeedCounts(db, { bankKeys, lookbackDays: lookback });
+    jsonResponse(res, 200, { kind, identifier, bank_count: bankKeys.length, lookback_days: lookback, counts, events });
+    return true;
+  }
+
+  // GET /api/regions/:key/pulse  OR  /api/countries/:name/pulse?period=2026-Q2
+  // Returns the aggregated region/country pulse (Tier 2).
+  match = path.match(/^\/api\/(regions|countries)\/([^/]+)\/pulse$/);
+  if (match && req.method === 'GET') {
+    const kind = match[1];
+    const identifier = decodeURIComponent(match[2]);
+    const { banks } = resolveBankSet(kind, identifier);
+    const bankKeys = banks.map(b => b.key);
+    const period = url.searchParams.get('period') || '2026-Q2';
+    const priorPeriod = url.searchParams.get('prior_period');
+    const pulse = generateRegionPulse(db, {
+      bankKeys, periodId: period,
+      regionLabel: identifier,
+      ...(priorPeriod ? { priorPeriodId: priorPeriod } : {}),
+    });
+    jsonResponse(res, 200, pulse || { error: 'No banks in scope' });
     return true;
   }
 

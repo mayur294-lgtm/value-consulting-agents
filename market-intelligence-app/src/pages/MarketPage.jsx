@@ -6,6 +6,7 @@ import { LoadingState, ErrorState } from '../components/common/DataState';
 import TabBar from '../components/common/TabBar';
 import Section from '../components/common/Section';
 import BarChart from '../components/charts/BarChart';
+import RegionIntelDashboard from '../components/common/RegionIntelDashboard';
 
 export default function MarketPage() {
   const { marketKey } = useParams();
@@ -161,32 +162,15 @@ export default function MarketPage() {
         </div>
       </div>
 
-      {/* All reference sections — collapsible */}
-      {data.banking_landscape && (
-        <Section title="Banking Landscape" defaultOpen={false}>
-          <p className="text-sm text-fg-subtle leading-relaxed">{data.banking_landscape}</p>
-        </Section>
-      )}
-      {data.regulations && (
-        <Section title="Regulatory Environment" defaultOpen={false}>
-          <p className="text-sm text-fg-subtle leading-relaxed">{data.regulations}</p>
-        </Section>
-      )}
-      {data.digital_maturity && (
-        <Section title="Digital Maturity" defaultOpen={false}>
-          <p className="text-sm text-fg-subtle leading-relaxed">{data.digital_maturity}</p>
-        </Section>
-      )}
-      {data.consumer_behavior && (
-        <Section title="Consumer Behavior" defaultOpen={false}>
-          <p className="text-sm text-fg-subtle leading-relaxed">{data.consumer_behavior}</p>
-        </Section>
-      )}
-      {data.competitive_landscape && (
-        <Section title="Vendor Competitive Landscape" defaultOpen={false}>
-          <p className="text-sm text-fg-subtle leading-relaxed">{data.competitive_landscape}</p>
-        </Section>
-      )}
+      {/* B2-style soft-deprecation: the 5 static reference sections (Banking
+          Landscape, Regulations, Digital Maturity, Consumer Behavior, Vendor
+          Competitive Landscape) were dense prose nobody read. Removed in
+          favor of the data-driven Intelligence tab. */}
+      <div className="p-3 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-900">
+        <strong>Reference sections deprecated.</strong> The static prose blocks (Banking Landscape, Regulations,
+        Digital Maturity, Consumer Behavior, Vendor Competitive Landscape) have been retired.
+        For market intelligence with source provenance, use the <strong>🧠 Intelligence</strong> tab.
+      </div>
     </div>
   );
 
@@ -213,8 +197,13 @@ export default function MarketPage() {
         ))}
       </div>
 
-      {/* Task-based tabs */}
+      {/* Task-based tabs — Intelligence is the default landing, replacing the
+          static reference Context as the page's primary surface. */}
       <TabBar id="market-tabs" sticky tabs={[
+        {
+          label: '🧠 Intelligence',
+          content: <RegionIntelDashboard kind="regions" identifier={marketKey} label={meta.name} />,
+        },
         {
           label: '🎯 Prioritize',
           badge: totalProspects || null,

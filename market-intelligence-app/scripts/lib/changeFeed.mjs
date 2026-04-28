@@ -55,13 +55,31 @@ function withinLookback(dateStr, cutoffISO) {
   return String(dateStr).slice(0, 19) >= cutoffISO.slice(0, 19);
 }
 
+/**
+ * Build a SQL fragment for bank scoping. Supports three modes:
+ *   - bankKey: single bank      → "<col> = ?"
+ *   - bankKeys: array of banks  → "<col> IN (?, ?, ?)"
+ *   - neither:                  → no clause (portfolio-wide)
+ *
+ * Region/country pages pass bankKeys; bank pages pass bankKey; portfolio
+ * surfaces pass neither. Single helper, used by every stream loader.
+ */
+function bankScopeClause(col, { bankKey, bankKeys }) {
+  if (bankKey) return { sql: `${col} = ?`, params: [bankKey] };
+  if (Array.isArray(bankKeys) && bankKeys.length > 0) {
+    return { sql: `${col} IN (${bankKeys.map(() => '?').join(',')})`, params: [...bankKeys] };
+  }
+  return { sql: null, params: [] };
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // Stream 1: NEW_SIGNAL
 // ──────────────────────────────────────────────────────────────────────
-function loadSignalEvents(db, { bankKey, cutoffISO, limit = 50 }) {
+function loadSignalEvents(db, { bankKey, bankKeys, cutoffISO, limit = 50 }) {
   const where = ['COALESCE(is_demo, 0) = 0'];
   const params = [];
-  if (bankKey) { where.push('deal_id = ?'); params.push(bankKey); }
+  const scope = bankScopeClause('deal_id', { bankKey, bankKeys });
+  if (scope.sql) { where.push(scope.sql); params.push(...scope.params); }
   if (cutoffISO) { where.push('detected_at >= ?'); params.push(cutoffISO); }
   const rows = db.prepare(`
     SELECT id, deal_id AS bank_key, signal_category, signal_event, title, description,
@@ -116,10 +134,11 @@ function loadSignalEvents(db, { bankKey, cutoffISO, limit = 50 }) {
 // ──────────────────────────────────────────────────────────────────────
 // Stream 2: NEW_MEETING_FACT
 // ──────────────────────────────────────────────────────────────────────
-function loadMeetingFactEvents(db, { bankKey, cutoffISO, attributedOnly = true, limit = 50 }) {
+function loadMeetingFactEvents(db, { bankKey, bankKeys, cutoffISO, attributedOnly = true, limit = 50 }) {
   const where = [];
   const params = [];
-  if (bankKey) { where.push('mf.bank_key = ?'); params.push(bankKey); }
+  const scope = bankScopeClause('mf.bank_key', { bankKey, bankKeys });
+  if (scope.sql) { where.push(scope.sql); params.push(...scope.params); }
   if (cutoffISO) { where.push('mf.meeting_date >= ?'); params.push(cutoffISO.slice(0, 10)); }
   if (attributedOnly) where.push('mf.speaker_person_id IS NOT NULL');
   const sql = `
@@ -166,10 +185,11 @@ function loadMeetingFactEvents(db, { bankKey, cutoffISO, attributedOnly = true, 
 // ──────────────────────────────────────────────────────────────────────
 // Stream 3: NEW_PATTERN
 // ──────────────────────────────────────────────────────────────────────
-function loadPatternEvents(db, { bankKey, cutoffISO, minConfidence = 'medium', limit = 30 }) {
+function loadPatternEvents(db, { bankKey, bankKeys, cutoffISO, minConfidence = 'medium', limit = 30 }) {
   const where = [];
   const params = [];
-  if (bankKey) { where.push('pm.bank_key = ?'); params.push(bankKey); }
+  const scope = bankScopeClause('pm.bank_key', { bankKey, bankKeys });
+  if (scope.sql) { where.push(scope.sql); params.push(...scope.params); }
   if (cutoffISO) { where.push('pm.detected_at >= ?'); params.push(cutoffISO); }
   const order = { high: 0, medium: 1, low: 2 };
   const allowedConfs = ['high', 'medium', 'low'].filter(c => order[c] <= order[minConfidence]);
@@ -247,12 +267,13 @@ function loadPatternEvents(db, { bankKey, cutoffISO, minConfidence = 'medium', l
 // ──────────────────────────────────────────────────────────────────────
 // Stream 4: PULSE_DIFF — section-level deltas between consecutive pulses
 // ──────────────────────────────────────────────────────────────────────
-function loadPulseDiffEvents(db, { bankKey, cutoffISO, limit = 20 }) {
+function loadPulseDiffEvents(db, { bankKey, bankKeys, cutoffISO, limit = 20 }) {
   // Pulses already store diff_summary in payload; we surface only diffs
   // generated since cutoffISO (using pulse.generated_at).
   const where = [];
   const params = [];
-  if (bankKey) { where.push('account_id = ?'); params.push(bankKey); }
+  const scope = bankScopeClause('account_id', { bankKey, bankKeys });
+  if (scope.sql) { where.push(scope.sql); params.push(...scope.params); }
   if (cutoffISO) { where.push('generated_at >= ?'); params.push(cutoffISO); }
   const rows = db.prepare(`
     SELECT id, account_id AS bank_key, period_id, payload_json, generated_at
@@ -298,12 +319,13 @@ function loadPulseDiffEvents(db, { bankKey, cutoffISO, limit = 20 }) {
 // ──────────────────────────────────────────────────────────────────────
 // Stream 5: STAKEHOLDER_DRIFT — sentiment ladder transitions
 // ──────────────────────────────────────────────────────────────────────
-function loadStakeholderDriftEvents(db, { bankKey, cutoffISO }) {
+function loadStakeholderDriftEvents(db, { bankKey, bankKeys, cutoffISO }) {
   // We compute drift cells whose latest fact falls within the lookback window.
   // The trend label itself is the event headline.
   const where = ['mf.speaker_person_id IS NOT NULL'];
   const params = [];
-  if (bankKey) { where.push('mf.bank_key = ?'); params.push(bankKey); }
+  const scope = bankScopeClause('mf.bank_key', { bankKey, bankKeys });
+  if (scope.sql) { where.push(scope.sql); params.push(...scope.params); }
   if (cutoffISO) { where.push('mf.meeting_date >= ?'); params.push(cutoffISO.slice(0, 10)); }
   // Only emit drift events when a stakeholder has ≥2 facts on the same topic
   // (otherwise the change is just "new fact", already surfaced as NEW_MEETING_FACT)
@@ -361,12 +383,17 @@ function loadStakeholderDriftEvents(db, { bankKey, cutoffISO }) {
 // ──────────────────────────────────────────────────────────────────────
 // Stream 6: ENTITY_HISTORY — low-level field edits
 // ──────────────────────────────────────────────────────────────────────
-function loadEntityHistoryEvents(db, { bankKey, cutoffISO, limit = 30 }) {
+function loadEntityHistoryEvents(db, { bankKey, bankKeys, cutoffISO, limit = 30 }) {
   const where = [];
   const params = [];
   if (bankKey) {
     where.push('(entity_key = ? OR entity_key LIKE ?)');
     params.push(bankKey, `${bankKey}%`);
+  } else if (Array.isArray(bankKeys) && bankKeys.length > 0) {
+    // Match either exact entity_key or LIKE prefix for any bank in the list
+    const clauses = bankKeys.flatMap(() => ['entity_key = ?', 'entity_key LIKE ?']);
+    where.push(`(${clauses.join(' OR ')})`);
+    bankKeys.forEach(bk => { params.push(bk, `${bk}%`); });
   }
   if (cutoffISO) { where.push('changed_at >= ?'); params.push(cutoffISO); }
   let rows = [];
@@ -430,6 +457,7 @@ function loadEntityHistoryEvents(db, { bankKey, cutoffISO, limit = 30 }) {
 export function getChangeFeed(db, options = {}) {
   const {
     bankKey = null,
+    bankKeys = null, // Region/country pages pass a list of banks here
     lookbackDays = DEFAULT_LOOKBACK_DAYS,
     minSignificance = 0,
     sort = 'time',
@@ -441,13 +469,14 @@ export function getChangeFeed(db, options = {}) {
   cutoff.setDate(cutoff.getDate() - lookbackDays);
   const cutoffISO = cutoff.toISOString();
 
+  const scope = { bankKey, bankKeys, cutoffISO };
   const events = [];
-  if (include.includes('NEW_SIGNAL'))        events.push(...loadSignalEvents(db, { bankKey, cutoffISO }));
-  if (include.includes('NEW_MEETING_FACT'))  events.push(...loadMeetingFactEvents(db, { bankKey, cutoffISO }));
-  if (include.includes('NEW_PATTERN'))       events.push(...loadPatternEvents(db, { bankKey, cutoffISO }));
-  if (include.includes('PULSE_DIFF'))        events.push(...loadPulseDiffEvents(db, { bankKey, cutoffISO }));
-  if (include.includes('STAKEHOLDER_DRIFT')) events.push(...loadStakeholderDriftEvents(db, { bankKey, cutoffISO }));
-  if (include.includes('ENTITY_HISTORY'))    events.push(...loadEntityHistoryEvents(db, { bankKey, cutoffISO }));
+  if (include.includes('NEW_SIGNAL'))        events.push(...loadSignalEvents(db, scope));
+  if (include.includes('NEW_MEETING_FACT'))  events.push(...loadMeetingFactEvents(db, scope));
+  if (include.includes('NEW_PATTERN'))       events.push(...loadPatternEvents(db, scope));
+  if (include.includes('PULSE_DIFF'))        events.push(...loadPulseDiffEvents(db, scope));
+  if (include.includes('STAKEHOLDER_DRIFT')) events.push(...loadStakeholderDriftEvents(db, scope));
+  if (include.includes('ENTITY_HISTORY'))    events.push(...loadEntityHistoryEvents(db, scope));
 
   const filtered = events.filter(e => e.significance >= minSignificance);
   filtered.sort((a, b) => {

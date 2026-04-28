@@ -23,7 +23,7 @@ import {
   Loader2, Newspaper, MessageSquare, Link2, RefreshCw, TrendingUp, History,
   Zap, ChevronRight, ExternalLink, Filter,
 } from 'lucide-react';
-import { getBankChangeFeed, getPortfolioChangeFeed } from '../../data/api';
+import { getBankChangeFeed, getPortfolioChangeFeed, fetchRegionChangeFeed } from '../../data/api';
 import { ProvenanceChip } from './Provenance';
 
 const TYPE_META = {
@@ -155,12 +155,23 @@ function FilterBar({ counts, activeTypes, onToggleType, sort, onChangeSort, look
   );
 }
 
-export default function ChangeFeed({ bankKey = null, defaultLookback = null, defaultSort = null, defaultMinSig = null }) {
+export default function ChangeFeed({
+  bankKey = null,
+  // Region/country scope (post-B-series). When `kind` + `identifier` are
+  // provided, the feed routes to /api/{kind}/{identifier}/change-feed
+  // instead of the per-bank or portfolio endpoints.
+  kind = null,        // 'regions' | 'countries' | null
+  identifier = null,  // market key or country name
+  defaultLookback = null, defaultSort = null, defaultMinSig = null,
+  title: customTitle = null,
+}) {
   // Defaults differ between per-bank and portfolio. Per-bank: 30d / time / 0.
-  // Portfolio: 7d / significance / ≥5 (filter to consequential events).
-  const [lookback, setLookback] = useState(defaultLookback ?? (bankKey ? 30 : 7));
-  const [sort, setSort] = useState(defaultSort ?? (bankKey ? 'time' : 'significance'));
-  const [minSig] = useState(defaultMinSig ?? (bankKey ? 0 : 5));
+  // Region/country: 30d / significance / ≥0. Portfolio: 7d / significance / ≥5.
+  const isRegionScope = !!(kind && identifier);
+  const isPerBank = !!bankKey;
+  const [lookback, setLookback] = useState(defaultLookback ?? ((isPerBank || isRegionScope) ? 30 : 7));
+  const [sort, setSort] = useState(defaultSort ?? (isPerBank ? 'time' : 'significance'));
+  const [minSig] = useState(defaultMinSig ?? (isPerBank ? 0 : isRegionScope ? 0 : 5));
   const [activeTypes, setActiveTypes] = useState(Object.keys(TYPE_META));
   const [events, setEvents] = useState([]);
   const [counts, setCounts] = useState({});
@@ -169,7 +180,11 @@ export default function ChangeFeed({ bankKey = null, defaultLookback = null, def
   useEffect(() => {
     setLoading(true);
     const opts = { lookback, sort, minSignificance: minSig, limit: 100, include: activeTypes };
-    const fetchFn = bankKey ? getBankChangeFeed.bind(null, bankKey) : getPortfolioChangeFeed;
+    const fetchFn = isRegionScope
+      ? fetchRegionChangeFeed.bind(null, kind, identifier)
+      : isPerBank
+        ? getBankChangeFeed.bind(null, bankKey)
+        : getPortfolioChangeFeed;
     fetchFn(opts)
       .then(d => {
         setEvents(d?.events || []);
@@ -177,7 +192,7 @@ export default function ChangeFeed({ bankKey = null, defaultLookback = null, def
       })
       .catch(() => { setEvents([]); setCounts({}); })
       .finally(() => setLoading(false));
-  }, [bankKey, lookback, sort, minSig, activeTypes]);
+  }, [bankKey, kind, identifier, lookback, sort, minSig, activeTypes]);
 
   const toggleType = (t) => {
     setActiveTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
@@ -189,7 +204,9 @@ export default function ChangeFeed({ bankKey = null, defaultLookback = null, def
         <div className="flex items-center gap-1.5">
           <Zap size={12} className="text-slate-700" />
           <span className="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
-            {bankKey ? 'What changed' : 'Portfolio changes'}
+            {customTitle || (isRegionScope
+              ? `What changed in ${identifier}`
+              : isPerBank ? 'What changed' : 'Portfolio changes')}
           </span>
           <span className="text-[10px] text-slate-500">· {counts.total || 0} event{counts.total === 1 ? '' : 's'}</span>
         </div>
