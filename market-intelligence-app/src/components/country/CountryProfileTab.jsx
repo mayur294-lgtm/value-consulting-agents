@@ -30,19 +30,54 @@
 import { useState } from 'react';
 import {
   ChevronDown, ChevronRight, Globe, Scale, Smartphone, Building2,
-  Newspaper, Zap, ExternalLink, Search,
+  Newspaper, Zap, ExternalLink, Search, AlertCircle, Sparkles, ShieldCheck,
 } from 'lucide-react';
 import FintechLandscapeGrid from './FintechLandscapeGrid';
 import RegulatoryPanel from './RegulatoryPanel';
 import MarketTrends from './MarketTrends';
 import CustomerNeedsPanel from './CustomerNeedsPanel';
+import CountryRefreshButton from './CountryRefreshButton';
 import { SearchFallbackLink } from '../common/SourceLink';
+
+/**
+ * Source coverage chip — surfaces the % of fact-claims in a section that
+ * carry a source_url. Green ≥80%, amber 40-79%, red <40%, gray "no claims".
+ * The agent populates `_source_coverage` post-parse (Sprint refresh).
+ */
+function SourceCoverageChip({ coverage }) {
+  if (!coverage || coverage.total === 0) return null;
+  const tone = coverage.pct >= 80 ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+             : coverage.pct >= 40 ? 'bg-amber-100 text-amber-800 border-amber-300'
+             : 'bg-rose-100 text-rose-800 border-rose-300';
+  const Icon = coverage.pct >= 80 ? ShieldCheck : AlertCircle;
+  return (
+    <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded border ${tone}`}
+          title={`${coverage.sourced}/${coverage.total} fact-claims have a source URL`}>
+      <Icon size={9} /> {coverage.sourced}/{coverage.total} sourced ({coverage.pct}%)
+    </span>
+  );
+}
+
+/**
+ * Curated reference badge — for plain prose fields that don't carry sources.
+ * Tells the AE this is curated content (not auto-validated) and links to a
+ * verify-online search.
+ */
+function CuratedReferenceBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded border bg-slate-100 text-slate-700 border-slate-300"
+          title="Curated reference content — not auto-validated. Use the verify-online link to confirm.">
+      <Sparkles size={9} /> Curated reference
+    </span>
+  );
+}
 
 /**
  * One thematic cluster — colored accent header + collapsible body.
  * `tone` selects the accent palette.
+ * Optional `coverage` shows a source-coverage chip; `lastRefreshed` shows freshness.
  */
-function Cluster({ title, icon: Icon, tone = 'slate', defaultOpen = true, count = null, subtitle = null, children }) {
+function Cluster({ title, icon: Icon, tone = 'slate', defaultOpen = true, count = null, subtitle = null, coverage = null, curated = false, lastRefreshed = null, children }) {
   const [open, setOpen] = useState(defaultOpen);
 
   // Tailwind palette per cluster — distinct enough to scan, restrained enough
@@ -68,6 +103,13 @@ function Cluster({ title, icon: Icon, tone = 'slate', defaultOpen = true, count 
         {count != null && (
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-white ${TONE.accent} border ${TONE.border}`}>
             {count}
+          </span>
+        )}
+        {coverage && <SourceCoverageChip coverage={coverage} />}
+        {curated && <CuratedReferenceBadge />}
+        {lastRefreshed && (
+          <span className="text-[9px] text-slate-500 font-normal">
+            refreshed {String(lastRefreshed).slice(0, 10)}
           </span>
         )}
         {subtitle && <span className="text-[10px] text-slate-500 font-normal">{subtitle}</span>}
@@ -106,7 +148,7 @@ function TwoCol({ children }) {
 // Top-level component
 // ──────────────────────────────────────────────────────────────────────
 
-export default function CountryProfileTab({ country, data, sw }) {
+export default function CountryProfileTab({ country, data, sw, onRefreshed }) {
   const fintechCount = data.fintech_landscape?.categories?.length || null;
   const regCount = (data.regulatory_environment?.key_regulations?.length || 0) +
                    (data.regulatory_environment?.aml_kyc ? 1 : 0);
@@ -119,6 +161,19 @@ export default function CountryProfileTab({ country, data, sw }) {
 
   return (
     <div>
+      {/* Refresh + freshness banner — surfaces source-traceability state */}
+      <div className="mb-3 flex items-center justify-between gap-3 p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+        <div className="text-[11px] text-slate-700">
+          Country profile mixes <strong>structured intelligence</strong> (regulatory, market trends, customer needs,
+          fintech landscape — auto-refreshable, source-traceable) with <strong>curated reference content</strong>
+          (banking sector, demographics, segments, spending — manually maintained). Click Refresh to pull latest
+          news + sources for the structured sections.
+        </div>
+        <div className="shrink-0">
+          <CountryRefreshButton countryName={country} data={data} onRefreshed={onRefreshed} />
+        </div>
+      </div>
+
       {/* Quick anchor strip — lets AE jump to a cluster without scrolling */}
       <div className="mb-3 flex flex-wrap gap-1.5 text-[10px]">
         <span className="text-slate-500 mr-1 self-center">Jump to:</span>
@@ -137,9 +192,9 @@ export default function CountryProfileTab({ country, data, sw }) {
         ))}
       </div>
 
-      {/* ───── Cluster 1: Macro Context ───── */}
+      {/* ───── Cluster 1: Macro Context (curated reference) ───── */}
       <div id="cluster-macro">
-        <Cluster title="Macro Context" icon={Globe} tone="slate" defaultOpen={true}>
+        <Cluster title="Macro Context" icon={Globe} tone="slate" defaultOpen={true} curated={true}>
           <TwoCol>
             {data.banking_sector && (
               <Subsection title="Banking Sector"
@@ -157,11 +212,12 @@ export default function CountryProfileTab({ country, data, sw }) {
         </Cluster>
       </div>
 
-      {/* ───── Cluster 2: Regulatory Landscape ───── */}
+      {/* ───── Cluster 2: Regulatory Landscape (auto-refreshed, sourced) ───── */}
       <div id="cluster-regulatory">
         <Cluster title="Regulatory Landscape" icon={Scale} tone="amber" defaultOpen={true}
           count={regCount || null}
-          subtitle={data.regulatory_environment?.last_refreshed ? `refreshed ${String(data.regulatory_environment.last_refreshed).slice(0, 10)}` : null}>
+          coverage={data.regulatory_environment?._source_coverage}
+          lastRefreshed={data.regulatory_environment?.last_refreshed}>
           {data.regulatory_environment ? (
             <RegulatoryPanel data={data.regulatory_environment} countryName={country} />
           ) : (
@@ -170,10 +226,12 @@ export default function CountryProfileTab({ country, data, sw }) {
         </Cluster>
       </div>
 
-      {/* ───── Cluster 3: Digital & Behavior ───── */}
+      {/* ───── Cluster 3: Digital & Behavior — Customer Needs is sourced; Digital Banking is curated ───── */}
       <div id="cluster-digital">
         <Cluster title="Digital & Behavior" icon={Smartphone} tone="indigo" defaultOpen={true}
-          count={cnCount + (data.digital_banking ? 1 : 0) || null}>
+          count={cnCount + (data.digital_banking ? 1 : 0) || null}
+          coverage={data.customer_needs?._source_coverage}
+          lastRefreshed={data.customer_needs?.last_refreshed}>
           {data.digital_banking && (
             <Subsection title="Digital Banking"
               footer={<SearchFallbackLink query={`${country} digital banking adoption 2026`} label="Search digital banking news" />}>
@@ -188,10 +246,12 @@ export default function CountryProfileTab({ country, data, sw }) {
         </Cluster>
       </div>
 
-      {/* ───── Cluster 4: Competitive Landscape ───── */}
+      {/* ───── Cluster 4: Competitive Landscape — Fintech is sourced; segments/spending are curated ───── */}
       <div id="cluster-competitive">
         <Cluster title="Competitive Landscape" icon={Building2} tone="purple" defaultOpen={false}
           count={fintechCount}
+          coverage={data.fintech_landscape?._source_coverage}
+          lastRefreshed={data.fintech_landscape?.last_refreshed}
           subtitle={data.fintech_landscape?.maturity_level ? `maturity: ${data.fintech_landscape.maturity_level}` : null}>
           {data.fintech_landscape && (
             <Subsection title="Fintech Landscape">
@@ -215,11 +275,12 @@ export default function CountryProfileTab({ country, data, sw }) {
         </Cluster>
       </div>
 
-      {/* ───── Cluster 5: Market Activity ───── */}
+      {/* ───── Cluster 5: Market Activity (auto-refreshed, sourced) ───── */}
       <div id="cluster-activity">
         <Cluster title="Market Activity · Trends + Recent Deals" icon={Newspaper} tone="blue" defaultOpen={false}
           count={trendCount || null}
-          subtitle={data.market_news?.last_refreshed ? `refreshed ${String(data.market_news.last_refreshed).slice(0, 10)}` : null}>
+          coverage={data.market_news?._source_coverage}
+          lastRefreshed={data.market_news?.last_refreshed}>
           {data.market_news ? (
             <MarketTrends data={data.market_news} countryName={country} />
           ) : (
@@ -228,10 +289,11 @@ export default function CountryProfileTab({ country, data, sw }) {
         </Cluster>
       </div>
 
-      {/* ───── Cluster 6: Backbase Angle ───── */}
+      {/* ───── Cluster 6: Backbase Angle (curated reference) ───── */}
       <div id="cluster-backbase">
         <Cluster title="Backbase Angle · Signals + Market Strengths/Gaps" icon={Zap} tone="emerald" defaultOpen={true}
-          count={(swotStrengths + swotWeaknesses) || null}>
+          count={(swotStrengths + swotWeaknesses) || null}
+          curated={true}>
           {data.backbase_opportunities && (
             <Subsection title="Backbase Signals & Opportunities"
               footer={<SearchFallbackLink query={`Backbase ${country} banking opportunity 2026`} label="Verify Backbase signals online" />}>

@@ -325,7 +325,7 @@ export default function CountryPage() {
         },
         {
           label: '📚 Country Profile',
-          content: <CountryProfileTab country={country} data={data} sw={sw} />,
+          content: <CountryProfileTab country={country} data={data} sw={sw} onRefreshed={handleRefreshed} />,
         },
       ]} />
     </div>
