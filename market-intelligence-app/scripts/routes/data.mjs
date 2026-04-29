@@ -32,6 +32,11 @@ import { buildHandoffSnapshot, snapshotToMarkdown } from '../lib/engagementBridg
 import { ingestDeliverable } from '../lib/deliverableIngest.mjs';
 import { ingestTranscript } from '../lib/transcriptIngestor.mjs';
 import { ingestEmailThread } from '../lib/emailThreadParser.mjs';
+import {
+  generateTimelineActions, regenerateTimeline, getBankTimeline,
+  updateAction as updateTimelineAction, addCustomAction as addTimelineAction,
+  deleteAction as deleteTimelineAction,
+} from '../lib/engagementTimeline.mjs';
 
 // ── Qualification Score Calculator (mirrors client-side calcScoreFromData) ──
 const QUAL_WEIGHTS = {
@@ -1758,6 +1763,65 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
     } catch (err) {
       jsonResponse(res, 400, { error: err.message });
     }
+    return true;
+  }
+
+  // ── Engagement & Execution Timeline ──
+  // GET /api/banks/:key/timeline — current persisted actions
+  match = path.match(/^\/api\/banks\/([^/]+)\/timeline$/);
+  if (match && req.method === 'GET') {
+    const bankKey = decodeURIComponent(match[1]);
+    jsonResponse(res, 200, { bank_key: bankKey, actions: getBankTimeline(db, bankKey) });
+    return true;
+  }
+
+  // POST /api/banks/:key/timeline/preview — generate draft without persisting
+  match = path.match(/^\/api\/banks\/([^/]+)\/timeline\/preview$/);
+  if (match && req.method === 'POST') {
+    const bankKey = decodeURIComponent(match[1]);
+    try { jsonResponse(res, 200, generateTimelineActions(db, bankKey)); }
+    catch (err) { jsonResponse(res, 400, { error: err.message }); }
+    return true;
+  }
+
+  // POST /api/banks/:key/timeline/regenerate — generate + persist
+  match = path.match(/^\/api\/banks\/([^/]+)\/timeline\/regenerate$/);
+  if (match && req.method === 'POST') {
+    const bankKey = decodeURIComponent(match[1]);
+    try {
+      const result = regenerateTimeline(db, bankKey);
+      jsonResponse(res, 200, { ...result, actions: getBankTimeline(db, bankKey) });
+    } catch (err) { jsonResponse(res, 400, { error: err.message }); }
+    return true;
+  }
+
+  // POST /api/banks/:key/timeline/actions — add a custom action
+  match = path.match(/^\/api\/banks\/([^/]+)\/timeline\/actions$/);
+  if (match && req.method === 'POST') {
+    const bankKey = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    try {
+      const action = addTimelineAction(db, bankKey, body);
+      jsonResponse(res, 201, action);
+    } catch (err) { jsonResponse(res, 400, { error: err.message }); }
+    return true;
+  }
+
+  // PATCH /api/timeline-actions/:id — update status / owner / due_date / etc.
+  match = path.match(/^\/api\/timeline-actions\/([^/]+)$/);
+  if (match && req.method === 'PATCH') {
+    const id = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    try {
+      const updated = updateTimelineAction(db, id, body);
+      jsonResponse(res, 200, updated);
+    } catch (err) { jsonResponse(res, 400, { error: err.message }); }
+    return true;
+  }
+  // DELETE /api/timeline-actions/:id
+  if (match && req.method === 'DELETE') {
+    deleteTimelineAction(db, decodeURIComponent(match[1]));
+    jsonResponse(res, 200, { deleted: true });
     return true;
   }
 

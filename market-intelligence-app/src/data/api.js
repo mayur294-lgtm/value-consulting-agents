@@ -353,6 +353,14 @@ export const fetchHandoffSnapshot = (bankKey, opts = {}) => {
   const qs = params.toString();
   return request(`/api/banks/${encodeURIComponent(bankKey)}/handoff-snapshot${qs ? `?${qs}` : ''}`);
 };
+// Engagement & Execution Timeline
+export const fetchBankTimeline = (bankKey) => request(`/api/banks/${encodeURIComponent(bankKey)}/timeline`);
+export const previewBankTimeline = (bankKey) => request(`/api/banks/${encodeURIComponent(bankKey)}/timeline/preview`, { method: 'POST', body: '{}' });
+export const regenerateBankTimeline = (bankKey) => request(`/api/banks/${encodeURIComponent(bankKey)}/timeline/regenerate`, { method: 'POST', body: '{}', timeout: 30000 });
+export const addTimelineAction = (bankKey, data) => request(`/api/banks/${encodeURIComponent(bankKey)}/timeline/actions`, { method: 'POST', body: JSON.stringify(data) });
+export const updateTimelineAction = (id, updates) => request(`/api/timeline-actions/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(updates) });
+export const deleteTimelineAction = (id) => request(`/api/timeline-actions/${encodeURIComponent(id)}`, { method: 'DELETE' });
+
 // Wave 3 — meeting intel input
 export const ingestTranscript = (bankKey, data) =>
   request(`/api/banks/${encodeURIComponent(bankKey)}/ingest-transcript`, { method: 'POST', body: JSON.stringify(data), timeout: 90000 });
