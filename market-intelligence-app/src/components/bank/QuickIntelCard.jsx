@@ -182,6 +182,11 @@ export default function QuickIntelCard({
             Account Plan
           </Button>
         </Link>
+        <Link to={`/bank/${encodeURIComponent(bankKey)}/timeline`}>
+          <Button variant="secondary">
+            Execution Timeline
+          </Button>
+        </Link>
         <Link to={`/bank/${encodeURIComponent(bankKey)}/pulse`}>
           <Button variant="secondary">
             Quarterly Pulse

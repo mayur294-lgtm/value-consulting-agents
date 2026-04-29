@@ -22,6 +22,7 @@ const DesignSystemPage = lazy(() => import('./pages/DesignSystemPage'));
 const PulsePage = lazy(() => import('./pages/PulsePage'));  // Strategic Repositioning Sprint 1
 const ChangesPage = lazy(() => import('./pages/ChangesPage'));  // Strategic Repositioning Sprint 4 — diff-first portfolio view
 const PortfolioQueryPage = lazy(() => import('./pages/PortfolioQueryPage'));  // Sprint 5 — composable portfolio queries
+const TimelinePage = lazy(() => import('./pages/TimelinePage'));  // Engagement & Execution Timeline (per-bank)
 
 export default function App() {
   return (
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/account-plan-doc/:bankKey" element={<Suspense fallback={<LoadingState />}><AccountPlanPage /></Suspense>} />
         {/* Strategic Repositioning Sprint 1 — Quarterly Pulse review surface */}
         <Route path="/bank/:bankKey/pulse" element={<Suspense fallback={<LoadingState />}><PulsePage /></Suspense>} />
+        <Route path="/bank/:bankKey/timeline" element={<Suspense fallback={<LoadingState />}><TimelinePage /></Suspense>} />
         {/* Sprint 4 — diff-first portfolio change feed */}
         <Route path="/changes" element={<Suspense fallback={<LoadingState />}><ChangesPage /></Suspense>} />
         {/* Sprint 5 — composable portfolio queries */}

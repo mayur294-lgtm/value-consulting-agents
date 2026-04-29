@@ -46,6 +46,19 @@ function gatherInputs(db, bankKey) {
   if (!bank) throw new Error(`Bank not found: ${bankKey}`);
   const bankData = JSON.parse(bank.data || '{}');
 
+  // Bank-scoped exclusions — array of keyword strings filtered against
+  // landing zone names + meeting fact text + action titles. Set via
+  // banks.data.timeline_exclusions = ["bancassurance", "wealth", ...].
+  const exclusions = Array.isArray(bankData.timeline_exclusions)
+    ? bankData.timeline_exclusions.map(s => String(s).toLowerCase()).filter(Boolean)
+    : [];
+
+  function isExcluded(text) {
+    if (!exclusions.length || !text) return false;
+    const lower = String(text).toLowerCase();
+    return exclusions.some(kw => lower.includes(kw));
+  }
+
   // Power map / persons — sorted by influence, with engagement state
   const persons = db.prepare(`
     SELECT id, canonical_name, role, role_category, lob, influence_score,
@@ -60,6 +73,12 @@ function gatherInputs(db, bankKey) {
       SELECT id, zone_name, fit_score, rationale, entry_strategy, details, source_url
       FROM landing_zones WHERE bank_key = ? ORDER BY fit_score ASC
     `).all(bankKey);
+    // Apply bank-scoped exclusions — drop zones whose name/details match an
+    // excluded keyword (e.g. "bancassurance" for a bank that explicitly
+    // doesn't want insurance-related actions on the plan).
+    if (exclusions.length > 0) {
+      landingZones = landingZones.filter(z => !isExcluded(`${z.zone_name} ${z.details || ''}`));
+    }
   } catch { /* table may not exist */ }
 
   // Qualification (account plan inputs)
@@ -135,7 +154,7 @@ function gatherInputs(db, bankKey) {
   return {
     bank, bankData, persons, landingZones, qualData,
     signals, facts, patterns, intent, windows, engagement,
-    country, drift,
+    country, drift, exclusions, isExcluded,
   };
 }
 
@@ -423,12 +442,20 @@ function rulePartnerLed(inputs) {
  */
 export function generateTimelineActions(db, bankKey) {
   const inputs = gatherInputs(db, bankKey);
-  const drafts = [
+  let drafts = [
     ...ruleWorkshops(inputs),
     ...ruleStakeholderOutreach(inputs),
     ...ruleMarketingEvents(inputs),
     ...rulePartnerLed(inputs),
   ];
+
+  // Belt-and-braces exclusion filter: scrub any action whose title or
+  // rationale text matches an excluded keyword (catches anything that
+  // slipped past per-rule input filtering).
+  if (inputs.exclusions.length > 0) {
+    drafts = drafts.filter(d => !inputs.isExcluded(`${d.title} ${d.rationale || ''}`));
+  }
+
   // Stable sort by priority desc, category for grouping
   drafts.sort((a, b) => (b.priority || 0) - (a.priority || 0) || a.category.localeCompare(b.category));
   return {

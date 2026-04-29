@@ -36,7 +36,6 @@ import WhatsChangedSummary from '../components/bank/WhatsChangedSummary';
 import ChangeFeed from '../components/common/ChangeFeed';
 import BankStakeholderIntelPanel from '../components/bank/BankStakeholderIntelPanel';
 import BankEngagementPanel from '../components/bank/BankEngagementPanel';
-import BankEngagementTimelinePanel from '../components/bank/BankEngagementTimelinePanel';
 import BankNotesPanel from '../components/bank/BankNotesPanel';
 import { PrepareTab, PositionTab, QualifyTab, MeetingHistoryTab, PeopleTab, AccountPlanTab } from '../components/bank/tabs';
 import { MeetingProvider, useMeeting } from '../context/MeetingContext';
@@ -522,8 +521,8 @@ function BankPageContent({ bankKey: key }) {
       <WhatsChangedCard bankKey={key} />
       {/* Wave 2 — VC engagement panel + shared notes (AE↔VC bridge) */}
       <BankEngagementPanel bankKey={key} bankName={data.bank_name} />
-      {/* Engagement & Execution Timeline (forward-looking 60/90-day plan) */}
-      <BankEngagementTimelinePanel bankKey={key} bankName={data.bank_name} />
+      {/* Execution Timeline now lives at /bank/:key/timeline reachable via the
+          "Execution Timeline" button on the QuickIntelCard above. */}
       {/* Sprint 2 surfacing — meeting intelligence promoted to first-class section */}
       <BankStakeholderIntelPanel bankKey={key} />
       {/* Sprint 4 surfacing — unified change feed expanded by default */}
