@@ -172,7 +172,14 @@ function ruleWorkshops(inputs) {
       f.position && zoneToken && f.position.toLowerCase().includes(zoneToken)
     ).slice(0, 2);
 
-    const horizon = (zone.fit_score >= 8 && inputs.intent.score >= 45) ? '60d' : '90d';
+    // High fit-score zones (≥8) get scheduled in 60d — they're the
+    // highest-conviction Backbase plays and shouldn't wait. Mid-fit zones
+    // go 60d if active engagement exists (workshop fits the discovery /
+    // assessment cadence), 90d otherwise.
+    const hasActiveEng = inputs.engagement?.has_active_engagement;
+    const horizon = (zone.fit_score >= 8) ? '60d'
+      : (hasActiveEng) ? '60d'
+      : '90d';
     actions.push({
       category: 'workshop',
       horizon,
@@ -234,13 +241,18 @@ function ruleStakeholderOutreach(inputs) {
     !ENGAGED_STATES.has((p.engagement_status || '').toLowerCase())
   );
   for (const p of highInfluenceUncontacted.slice(0, 5)) {
-    const horizon = inputs.intent.tier === 'hot' ? '60d' : '90d';
+    // C-level / influence ≥9 always 60d (highest leverage, can't wait)
+    // Influence 7-8: 60d if intent is warm+, 90d otherwise (still warrants action)
+    const isCLevel = (p.influence_score || 0) >= 9 ||
+      /\b(CEO|CTO|CIO|CFO|CDO|COO|Chair|Group)\b/i.test(p.role || '');
+    const horizon = isCLevel ? '60d'
+      : (inputs.intent.score >= 35) ? '60d' : '90d';
     actions.push({
       category: 'stakeholder_outreach',
       horizon,
       priority: Math.min(10, p.influence_score),
       title: `Open relationship with ${p.canonical_name}`,
-      rationale: `Influence ${p.influence_score}/10 · ${p.role || 'role unknown'} · current engagement: ${p.engagement_status || 'none'}. Decision-maker not yet in our orbit.`,
+      rationale: `Influence ${p.influence_score}/10 · ${p.role || 'role unknown'} · current engagement: ${p.engagement_status || 'none'}. ${isCLevel ? 'C-level / executive — highest leverage.' : 'Decision-maker not yet in our orbit.'}`,
       evidence_refs: { persons: [p.id] },
     });
   }
