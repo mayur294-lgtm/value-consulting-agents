@@ -168,7 +168,7 @@ ENGAGEMENT PLAN STRUCTURE (11 sections)
 ═══════════════════════════════════════
 
 Section 1: COVER PAGE
-├── Dark (#091C35) background
+├── Dark (#001C3D) background
 ├── "Backbase" wordmark top-left in Primary Blue
 ├── "[Client Name] Ignite Lab" — main title (45-55pt, white, Black 900)
 ├── "Engagement Plan" — subtitle (22pt, white, Light 300)
@@ -177,7 +177,7 @@ Section 1: COVER PAGE
 └── No footer on cover
 
 Section 2: OBJECTIVES — "Elevating the Conversation"
-├── Blue (#3366FF) section divider: "Ignite Day Objectives  01"
+├── Blue (#1A5AFF) section divider: "Ignite Day Objectives  01"
 │   └── Subtitle: "Elevating the Conversation"
 ├── Content section (WHITE background) with 3 numbered pillars:
 │   ├── [01] [Client] Strategy & Backbase Fitment
@@ -190,7 +190,7 @@ Section 2: OBJECTIVES — "Elevating the Conversation"
 │   └── [03] Creating Architectural & Implementation Blueprint
 │       ├── Create target architecture with key dependencies & effort areas
 │       └── Plan for implementation and create WBS
-├── Use numbered circles (#3366FF bg, white text) for 01, 02, 03
+├── Use numbered circles (#1A5AFF bg, white text) for 01, 02, 03
 ├── Title: "Objectives of Ignite Lab Working Sessions"
 ├── Subtitle: "[Client] - Backbase Ignite Lab"
 └── NOTE: Customize pillar descriptions to the client's specific context.
@@ -217,7 +217,7 @@ Section 3: CASCADING CHOICES FRAMEWORK
 └── Each step shown as a numbered card/block flowing left-to-right or top-to-bottom
 
 Section 4: IGNITE DAY AGENDA
-├── Blue (#3366FF) section divider: "Ignite Day Agenda  02"
+├── Blue (#1A5AFF) section divider: "Ignite Day Agenda  02"
 │   └── Subtitle: "[Day 1 Date] & [Day 2 Date] Schedule"
 ├── Day 1 card (WHITE background):
 │   ├── Header: "Ignite Lab Agenda (X Hrs)  Day 1: [Date]"
@@ -256,7 +256,7 @@ Section 4: IGNITE DAY AGENDA
           Presenter names in parentheses next to each session.
 
 Section 5: PRE-WORKSHOP PREPARATION SESSIONS
-├── Blue (#3366FF) section divider: "Preparation Workshops  03"
+├── Blue (#1A5AFF) section divider: "Preparation Workshops  03"
 │   └── Subtitle: "Backbase - [Client] Collaboration"
 ├── Content section (WHITE background)
 ├── Title: "Pre-Ignite Preparation Sessions (remote — to be conducted before [Date])"
@@ -269,7 +269,7 @@ Section 5: PRE-WORKSHOP PREPARATION SESSIONS
 │   ├── Duration (1 hr, 2 hrs, etc.)
 │   ├── Status (Done / Scheduled / TBD) — use colored badges
 │   └── Proposed Dates
-├── Table styling: #3366FF header, alternating white/#F3F6F9 rows
+├── Table styling: #1A5AFF header, alternating white/#F5F7F9 rows
 ├── Status badges: Green=Done/Scheduled, Amber=TBD
 └── Populate from consultant Phase 2 selections
 
@@ -310,7 +310,7 @@ Section 7: ENGAGEMENT APPROACH — 'V' APPROACH
 │   └── Card 6: "High level data intake"
 │       "We will collect high level data around customer journeys,
 │        processes and technology to develop business value"
-├── Card styling: #F3F6F9 bg, #E5EBFF border, 12px radius
+├── Card styling: #F5F7F9 bg, #EBF0FF border, 12px radius
 └── CRITICAL: Hours and meeting counts MUST be calculated from the actual
     pre-workshop selections, NOT hardcoded. For example:
     - 4 workshops × 1 hr + 1 workshop × 2 hrs = 6 hours
@@ -351,7 +351,7 @@ Section 9: PROPOSED TIMELINE
 └── Timeline styling: Use colored blocks, milestone diamonds, clean horizontal layout
 
 Section 10: DELIVERABLES
-├── Blue (#3366FF) section divider: "Final Deliverables  04"
+├── Blue (#1A5AFF) section divider: "Final Deliverables  04"
 ├── Content section (WHITE background)
 ├── Title: "Introducing IGNITE"
 ├── Visual layout with 4 key deliverable cards arranged around the title:
@@ -365,7 +365,7 @@ Section 10: DELIVERABLES
 └── Add any additional deliverables confirmed in Phase 4
 
 Section 11: THANK YOU / CLOSING
-├── Dark (#091C35) background
+├── Dark (#001C3D) background
 ├── "THANK YOU" — large centered text
 ├── "Backbase" wordmark
 └── No footer needed
@@ -385,20 +385,20 @@ This file is the SINGLE SOURCE OF TRUTH for all Backbase branding, colors, typog
 ```
 SLIDE/SECTION BACKGROUND RULES
 ───────────────────────────────
-Content sections:    WHITE (#FFFFFF) background, dark text (#091C35)
-Section dividers:    BLUE (#3366FF) background, white text, "Backbase" wordmark top-left
-Cover & closing:     DARK (#091C35) background, white text
+Content sections:    WHITE (#FFFFFF) background, dark text (#001C3D)
+Section dividers:    BLUE (#1A5AFF) background, white text, "Backbase" wordmark top-left
+Cover & closing:     DARK (#001C3D) background, white text
 
 COLORS (Official Backbase Palette)
 ──────
-Primary Dark:        #091C35  (text on white, cover/closing bg)
-Primary Blue:        #3366FF  (accent, CTAs, section divider bg, headers)
-Cyan:                #69FEFF  (highlights, accent on blue/dark slides)
+Primary Dark:        #001C3D  (text on white, cover/closing bg)
+Primary Blue:        #1A5AFF  (accent, CTAs, section divider bg, headers)
+Cyan:                #93B5FF  (highlights, accent on blue/dark slides)
 White:               #FFFFFF  (content slide backgrounds)
-Light Grey:          #F3F6F9  (card backgrounds on white slides)
-Light Blue:          #E5EBFF  (card borders, light fills)
-Muted Blue-Grey:     #3A495D  (secondary text on white slides)
-Green/Amber/Red:     #26BC71 / #FFAC09 / #FF7262  (status indicators)
+Light Grey:          #F5F7F9  (card backgrounds on white slides)
+Light Blue:          #EBF0FF  (card borders, light fills)
+Muted Blue-Grey:     #5C6E84  (secondary text on white slides)
+Green/Amber/Red:     #2ECC71 / #D97706 / #E02020  (status indicators)
 
 TYPOGRAPHY
 ──────────
@@ -413,18 +413,18 @@ BRANDING
 ────────
 - "Backbase" text wordmark (Libre Franklin, NOT an image)
 - "Backbase | [n]" footer bottom-right on content slides
-- Small blue accent square (#3366FF, ~16px) left of every title
+- Small blue accent square (#1A5AFF, ~16px) left of every title
 - "Backbase" wordmark top-left on section dividers
 
 COMPONENTS (White/Light Theme)
 ──────────
-Cards:               #F3F6F9 bg, #E5EBFF border, 12-16px radius
-Tables:              #3366FF header with white text, alternating white/#F3F6F9 rows
-Numbered circles:    #3366FF bg, white text (for objectives 01, 02, 03)
+Cards:               #F5F7F9 bg, #EBF0FF border, 12-16px radius
+Tables:              #1A5AFF header with white text, alternating white/#F5F7F9 rows
+Numbered circles:    #1A5AFF bg, white text (for objectives 01, 02, 03)
 Status badges:       Green=scheduled, Amber=pending, Red=blocked
 ```
 
-**DO NOT** use these old/wrong colors: `#1A1F36`, `#1A56FF`, `#0B0F1A`, `#3B6BF5`
+**DO NOT** use these old/wrong colors: `#001C3D`, `#1A5AFF`, `#001C3D`, `#1A5AFF`
 **DO NOT** use dark backgrounds for content slides — white is the default.
 
 ### HTML Reference Template
@@ -462,7 +462,7 @@ CASCADING CHOICES VISUAL SPECIFICATION
 
 Display as 5 numbered blocks flowing left→right or top→bottom,
 each slightly offset (staircase effect). Use numbered circles
-(#3366FF bg, white text) for each step number.
+(#1A5AFF bg, white text) for each step number.
 
 Step 1: "What are our key strategic themes?"
         → Goals & objectives
@@ -649,9 +649,9 @@ Before delivering the HTML engagement plan, verify:
 - [ ] Timeline visual matches actual dates and shows correct month labels
 - [ ] Deliverables match confirmed scope from Phase 4
 - [ ] Cascading Choices Framework visual included with "OUR FOCUS" overlay
-- [ ] Section dividers use BLUE (#3366FF) background, not dark
+- [ ] Section dividers use BLUE (#1A5AFF) background, not dark
 - [ ] Content sections use WHITE (#FFFFFF) background, not dark
-- [ ] Cover and closing use DARK (#091C35) background
+- [ ] Cover and closing use DARK (#001C3D) background
 - [ ] "Backbase" wordmark appears on section dividers (top-left)
 - [ ] Blue accent square left of titles on content slides
 - [ ] "Backbase | [n]" footer on content sections
@@ -683,12 +683,12 @@ Real engagement plans use blue section dividers between major content groups. Fo
 ```
 SECTION DIVIDER LAYOUT
 ──────────────────────
-Background: #3366FF (Primary Blue)
+Background: #1A5AFF (Primary Blue)
 "Backbase" wordmark: top-left, white, Libre Franklin 600
 Section title: large text, white, centered or left-aligned
 Section number: "01", "02", "03", "04" — large ghost number (faded/semi-transparent)
 Optional subtitle below title
-Optional cyan (#69FEFF) accent line or element
+Optional cyan (#93B5FF) accent line or element
 
 Standard section dividers in an engagement plan:
 ├── Before Objectives:        "Ignite Day Objectives  01" / "Elevating the Conversation"

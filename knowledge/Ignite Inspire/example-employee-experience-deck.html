@@ -7,23 +7,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --primary-dark: #091C35;
-    --primary-blue: #3366FF;
-    --cyan: #69FEFF;
+    --primary-dark: #001C3D;
+    --primary-blue: #1A5AFF;
+    --cyan: #93B5FF;
     --white: #FFFFFF;
-    --light-grey: #F3F6F9;
-    --light-blue: #E5EBFF;
-    --muted: #3A495D;
-    --green: #26BC71;
-    --amber: #FFAC09;
-    --red: #FF7262;
-    --text: #091C35;
+    --light-grey: #F5F7F9;
+    --light-blue: #EBF0FF;
+    --muted: #5C6E84;
+    --green: #2ECC71;
+    --amber: #D97706;
+    --red: #E02020;
+    --text: #001C3D;
     --text-light: #5A6A7E;
     --border: #E0E6ED;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Libre Franklin', 'Libre Franklin', Helvetica, Arial, -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 15px; line-height: 1.6; color: var(--text); background: var(--white);
   }
 
@@ -215,7 +215,7 @@
   .linkage-card { padding: 20px; border-radius: 12px; }
   .linkage-card.ex { background: rgba(255,114,98,0.06); border: 1px solid rgba(255,114,98,0.15); border-left: 3px solid var(--red); }
   .linkage-card.cx { background: rgba(255,172,9,0.06); border: 1px solid rgba(255,172,9,0.15); border-left: 3px solid var(--amber); }
-  .linkage-card.cost { background: rgba(51,102,255,0.06); border: 1px solid var(--light-blue); border-left: 3px solid var(--primary-blue); }
+  .linkage-card.cost { background: rgba(26,90,255,0.06); border: 1px solid var(--light-blue); border-left: 3px solid var(--primary-blue); }
   .linkage-card .linkage-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
   .linkage-card.ex .linkage-label { color: var(--red); }
   .linkage-card.cx .linkage-label { color: var(--amber); }
@@ -269,7 +269,7 @@
   .matrix-cell.header { background: var(--primary-blue); color: #fff; font-weight: 700; text-align: center; font-size: 11px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; }
   .matrix-cell.row-label { background: var(--light-grey); font-weight: 700; color: var(--text); writing-mode: vertical-lr; transform: rotate(180deg); text-align: center; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; }
   .matrix-cell.q-transform { background: rgba(38,188,113,0.08); border: 1px solid rgba(38,188,113,0.15); }
-  .matrix-cell.q-streamline { background: rgba(51,102,255,0.06); border: 1px solid var(--light-blue); }
+  .matrix-cell.q-streamline { background: rgba(26,90,255,0.06); border: 1px solid var(--light-blue); }
   .matrix-cell.q-optimize { background: rgba(255,172,9,0.06); border: 1px solid rgba(255,172,9,0.15); }
   .matrix-cell.q-defer { background: var(--light-grey); border: 1px solid var(--border); }
   .matrix-item { font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 6px; margin: 4px 0; display: inline-block; }
@@ -318,7 +318,7 @@
   .pc-card.challenge ul li::before { background: var(--amber); }
   .hmw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
   .hmw-card {
-    background: rgba(51,102,255,0.04); border: 1px solid var(--light-blue);
+    background: rgba(26,90,255,0.04); border: 1px solid var(--light-blue);
     border-radius: 12px; padding: 14px 16px 14px 44px; font-size: 13px; color: var(--text);
     line-height: 1.5; position: relative;
   }
@@ -525,7 +525,7 @@
   <div class="persona-grid">
     <div class="persona-card">
       <div class="persona-header">
-        <div class="persona-avatar"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#3366FF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#3366FF" opacity="0.3"/></svg></div>
+        <div class="persona-avatar"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#1A5AFF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#1A5AFF" opacity="0.3"/></svg></div>
         <div>
           <div class="persona-name">Customer Service Officer</div>
           <div class="persona-segment">Branch | ~450 employees</div>
@@ -564,7 +564,7 @@
 
     <div class="persona-card">
       <div class="persona-header">
-        <div class="persona-avatar"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#3366FF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#3366FF" opacity="0.3"/></svg></div>
+        <div class="persona-avatar"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#1A5AFF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#1A5AFF" opacity="0.3"/></svg></div>
         <div>
           <div class="persona-name">Contact Center Agent</div>
           <div class="persona-segment">Contact Center | ~180 employees</div>
@@ -603,7 +603,7 @@
 
     <div class="persona-card">
       <div class="persona-header">
-        <div class="persona-avatar"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#3366FF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#3366FF" opacity="0.3"/></svg></div>
+        <div class="persona-avatar"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#1A5AFF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#1A5AFF" opacity="0.3"/></svg></div>
         <div>
           <div class="persona-name">Relationship Manager</div>
           <div class="persona-segment">Branch / Premium | ~200 employees</div>
@@ -642,7 +642,7 @@
 
     <div class="persona-card">
       <div class="persona-header">
-        <div class="persona-avatar"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#3366FF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#3366FF" opacity="0.3"/></svg></div>
+        <div class="persona-avatar"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="8" fill="#1A5AFF" opacity="0.3"/><ellipse cx="20" cy="36" rx="14" ry="10" fill="#1A5AFF" opacity="0.3"/></svg></div>
         <div>
           <div class="persona-name">Operations &amp; Compliance Specialist</div>
           <div class="persona-segment">Back Office | ~300 employees</div>
@@ -1112,7 +1112,7 @@
   <!-- === BACK OFFICE GROUP: OPERATIONS & COMPLIANCE === -->
   <div class="persona-group">
     <div class="persona-group-header">
-      <div class="pg-icon"><svg viewBox="0 0 28 28" fill="none"><rect x="4" y="6" width="20" height="16" rx="2" fill="#fff" opacity="0.9"/><line x1="4" y1="12" x2="24" y2="12" stroke="#3366FF" stroke-width="1.5"/></svg></div>
+      <div class="pg-icon"><svg viewBox="0 0 28 28" fill="none"><rect x="4" y="6" width="20" height="16" rx="2" fill="#fff" opacity="0.9"/><line x1="4" y1="12" x2="24" y2="12" stroke="#1A5AFF" stroke-width="1.5"/></svg></div>
       <div>
         <h3>Back Office: Operations &amp; Compliance</h3>
         <div class="pg-roles">Operations Specialist &bull; Shariah Compliance Officer &bull; Processing Staff (~300 employees)</div>

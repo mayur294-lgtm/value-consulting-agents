@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cortex Knowledge Graph — Live Data</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root { --dark:#001C3D;--blue:#1A5AFF;--purple:#93B5FF;--green:#2ECC71;--amber:#D97706;--red:#E02020;--cyan:#93B5FF;--bg:#0B1120; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Libre Franklin',system-ui,sans-serif;background:var(--bg);color:#E2E8F0;overflow:hidden;height:100vh}
+
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(11,17,32,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.06);padding:10px 24px;display:flex;align-items:center;gap:16px}
+.topbar h1{font-size:0.95rem;font-weight:900;white-space:nowrap}
+.topbar h1 span{color:var(--cyan)}
+.legend{display:flex;gap:10px;flex:1;justify-content:center}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:0.65rem;color:#64748B;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s}
+.legend-item:hover,.legend-item.active{background:rgba(255,255,255,0.05);color:#CBD5E1}
+.legend-dot{width:8px;height:8px;border-radius:3px}
+.controls{display:flex;gap:6px}
+.ctrl-btn{padding:5px 10px;font-size:0.68rem;font-weight:600;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#94A3B8;border-radius:6px;cursor:pointer;transition:all 0.2s}
+.ctrl-btn:hover{background:rgba(255,255,255,0.08);color:#E2E8F0}
+.ctrl-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.eng-select{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#E2E8F0;padding:5px 10px;border-radius:6px;font-size:0.72rem;font-family:'Libre Franklin',sans-serif;cursor:pointer}
+.eng-select option{background:#001C3D}
+
+#graph{width:100%;height:100vh}
+
+.panel{position:fixed;right:-460px;top:0;bottom:0;width:440px;background:rgba(15,21,35,0.97);backdrop-filter:blur(16px);border-left:1px solid rgba(255,255,255,0.06);z-index:200;transition:right 0.35s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;padding-top:52px}
+.panel.open{right:0}
+.panel-close{position:absolute;top:62px;right:14px;width:26px;height:26px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#64748B;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;z-index:10}
+.panel-close:hover{background:rgba(255,255,255,0.08);color:#E2E8F0}
+.panel-header{padding:16px 20px 10px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.panel-type{font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px;display:flex;align-items:center;gap:6px}
+.panel-type .dot{width:8px;height:8px;border-radius:3px;display:inline-block}
+.panel-name{font-size:1.2rem;font-weight:900;color:#fff;margin-top:2px}
+.panel-desc{font-size:0.76rem;color:#64748B;margin-top:4px;line-height:1.5}
+.panel-section{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.panel-section-title{font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#475569;margin-bottom:8px}
+.prop-row{display:flex;gap:8px;padding:3px 0;font-size:0.74rem}
+.prop-k{font-weight:600;color:#94A3B8;min-width:120px;font-size:0.7rem}
+.prop-v{color:#CBD5E1;font-size:0.72rem;word-break:break-word}
+.prop-v.highlight{color:var(--cyan);font-weight:600}
+.prop-v.score{font-weight:900;font-size:0.85rem}
+.rel-item{padding:5px 0;font-size:0.74rem;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:4px;padding:4px 6px;margin:0 -6px}
+.rel-item:hover{background:rgba(255,255,255,0.04)}
+.rel-arrow{color:#475569;font-size:0.65rem;width:14px;text-align:center}
+.rel-verb{color:var(--blue);font-weight:500;font-style:italic;font-size:0.68rem}
+.rel-target{color:#CBD5E1;font-weight:600}
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:0.62rem;font-weight:600;margin:1px}
+.tag-red{background:rgba(255,114,98,0.15);color:var(--red)}
+.tag-amber{background:rgba(255,172,9,0.15);color:var(--amber)}
+.tag-green{background:rgba(38,188,113,0.15);color:var(--green)}
+.tag-blue{background:rgba(26,90,255,0.15);color:var(--blue)}
+.tag-purple{background:rgba(26,90,255,0.15);color:var(--purple)}
+.tag-gray{background:rgba(148,163,184,0.1);color:#94A3B8}
+.timeline-item{padding:6px 0;border-left:2px solid rgba(255,255,255,0.06);padding-left:12px;margin-left:4px;font-size:0.72rem}
+.timeline-item .t-date{color:#475569;font-size:0.62rem}
+.timeline-item .t-title{color:#CBD5E1;font-weight:600;margin-top:1px}
+.timeline-item .t-desc{color:#64748B;font-size:0.68rem;margin-top:2px}
+.timeline-item.positive{border-left-color:var(--green)}
+.timeline-item.negative{border-left-color:var(--red)}
+.timeline-item.neutral{border-left-color:var(--amber)}
+
+.tooltip{position:fixed;padding:8px 12px;background:rgba(15,21,35,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:0.7rem;color:#CBD5E1;pointer-events:none;z-index:300;max-width:280px;display:none;backdrop-filter:blur(8px)}
+.tooltip .tt-type{font-size:0.56rem;color:#64748B;text-transform:uppercase;letter-spacing:0.05em}
+.tooltip .tt-name{font-weight:700;color:#fff;margin-top:1px}
+.tooltip .tt-detail{margin-top:3px;font-size:0.66rem;color:#94A3B8}
+
+.statsbar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:16px;background:rgba(15,21,35,0.85);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:7px 18px;z-index:100}
+.stat{text-align:center}
+.stat-val{font-size:1rem;font-weight:900;color:var(--cyan)}
+.stat-label{font-size:0.55rem;color:#475569;text-transform:uppercase;letter-spacing:0.06em}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Cortex <span>Live Graph</span></h1>
+  <select class="eng-select" id="eng-select">
+    <option value="all">All Engagements</option>
+    <option value="nfis" selected>Navy Federal — Wealth Assessment</option>
+    <option value="schoolsfirst">SchoolsFirst — CLO Engagement</option>
+    <option value="aib">Allied Irish Banks — Retail Assessment</option>
+  </select>
+  <div class="legend" id="legend">
+    <div class="legend-item active" data-cat="all"><div class="legend-dot" style="background:#fff"></div>All</div>
+    <div class="legend-item" data-cat="client"><div class="legend-dot" style="background:var(--blue)"></div>Client</div>
+    <div class="legend-item" data-cat="engagement"><div class="legend-dot" style="background:var(--cyan)"></div>Engagement</div>
+    <div class="legend-item" data-cat="workshop"><div class="legend-dot" style="background:var(--amber)"></div>Workshop</div>
+    <div class="legend-item" data-cat="discovery"><div class="legend-dot" style="background:var(--red)"></div>Discovery</div>
+    <div class="legend-item" data-cat="capability"><div class="legend-dot" style="background:var(--green)"></div>Capability</div>
+    <div class="legend-item" data-cat="usecase"><div class="legend-dot" style="background:var(--purple)"></div>UseCase</div>
+    <div class="legend-item" data-cat="financial"><div class="legend-dot" style="background:#D97706"></div>Financial</div>
+    <div class="legend-item" data-cat="outcome"><div class="legend-dot" style="background:#EC4899"></div>Outcome</div>
+  </div>
+  <div class="controls">
+    <button class="ctrl-btn" id="btn-labels">Labels</button>
+    <button class="ctrl-btn" id="btn-reset">Reset</button>
+  </div>
+</div>
+
+<svg id="graph"></svg>
+<div class="panel" id="panel"><button class="panel-close" id="panel-close">&times;</button><div id="panel-content"></div></div>
+<div class="tooltip" id="tooltip"></div>
+<div class="statsbar" id="statsbar"></div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+const CAT_COLORS = {
+  client:'#1A5AFF', engagement:'#93B5FF', workshop:'#D97706', discovery:'#E02020',
+  capability:'#2ECC71', usecase:'#93B5FF', financial:'#D97706', outcome:'#EC4899',
+  plan:'#0EA5E9', decision:'#7C3AED', roadmap:'#0891B2', tech:'#6366F1',
+  event:'#F97316', debrief:'#A855F7', pattern:'#D946EF', file:'#64748B',
+  consultant:'#06B6D4', benchmark:'#7C3AED'
+};
+
+// ─── ENGAGEMENT DATA ─────────────────────────────
+const engagements = {
+nfis: {
+  nodes: [
+    // Client
+    { id:'navy_federal', type:'client', label:'Navy Federal CU', cat:'client',
+      props:{industry:'Credit Union',geography:'North America',asset_size:'$170B+',members:'15M+',tech_stack:'Pershing, FIS, Custom CRM',core_banking:'Symitar',salesforce_id:'001XX000003DHIA'} },
+
+    // Consultant
+    { id:'mayur', type:'consultant', label:'Mayur P.', cat:'consultant',
+      props:{region:'Global',specializations:'Wealth, Investing, Retail'} },
+
+    // Engagement
+    { id:'nfis_assess', type:'engagement', label:'NFIS Wealth Assessment', cat:'engagement',
+      props:{domain:'investing',type:'Value Assessment',journey_stage:'Why Change',decision_maker:'CDO + CTO',forcing_function:'Board presentation Q2',deal_value:'$2.8M',stage:'Delivery',started:'2026-02-10',status:'Active'} },
+
+    // Workshops
+    { id:'ws1', type:'workshop', label:'Strategic Alignment', cat:'workshop',
+      props:{date:'2026-02-12',duration_planned:'90 min',duration_actual:'110 min',status:'Completed',attendees:'CDO, CTO, VP Product, Head of Digital',facilitation:'Disruption-first: led with competitor moves and member awareness gaps',key_moment:'CDO aligned on "Unified Frontline" vision. CTO skeptical on integration timeline.'} },
+    { id:'ws2', type:'workshop', label:'Capability Assessment', cat:'workshop',
+      props:{date:'2026-02-18',duration_planned:'90 min',duration_actual:'95 min',status:'Completed',attendees:'CTO, Enterprise Architect, Product Owners, Ops Lead',facilitation:'Mirror moment: scored capabilities then showed peer benchmarks',key_moment:'Client shocked by 1.8 vs 2.8 self-assessment gap. Room went silent when activation score (0.8) was shown.'} },
+    { id:'ws3', type:'workshop', label:'CX Deep Dive', cat:'workshop',
+      props:{date:'2026-02-20',duration_planned:'90 min',duration_actual:'105 min',status:'Completed',attendees:'Head of CX, Channel Managers, UX Lead',facilitation:'Evidence-led: used capability gaps to frame CX discussion',key_moment:'Mapped the funding journey — discovered NFCU→NFIS external ACH pattern. Balance sheet risk flagged.'} },
+    { id:'ws4', type:'workshop', label:'Architecture Review', cat:'workshop',
+      props:{date:'2026-02-22',duration_planned:'90 min',duration_actual:'90 min',status:'Completed',attendees:'CTO, Enterprise Architect, DevOps Lead',facilitation:'Feasibility-first: addressed CTO skepticism with integration proof points',key_moment:'CTO convinced after seeing Pershing API integration pattern from Pentagon FCU. Agreed on 6-month Phase 1.'} },
+    { id:'ws5', type:'workshop', label:'Use Case Validation', cat:'workshop',
+      props:{date:'2026-02-25',duration_planned:'90 min',duration_actual:'120 min',status:'Completed',attendees:'All stakeholders, Business Sponsors',facilitation:'Solution-ready: $100 prioritization exercise after 4 workshops of pain discovery',key_moment:'Guided Account Funding chosen as lighthouse unanimously. $100 vote: Funding=34, Activation=28, Advisor=22, Servicing=16.'} },
+    { id:'ws6', type:'workshop', label:'Executive Readout', cat:'workshop',
+      props:{date:'2026-03-05',duration_planned:'60 min',duration_actual:'75 min',status:'Completed',attendees:'CEO/President, CFO, CDO, CTO',facilitation:'Decision-meeting: led with cost of inaction ($380K/quarter in activation leakage)',key_moment:'CFO asked about payback period first. When shown 14 months conservative, he nodded. CTO endorsed Phase 1 architecture. Decision: proceed.'} },
+
+    // Discoveries
+    { id:'d1', type:'discovery', label:'50% accounts never funded', cat:'discovery',
+      props:{category:'Pain Point',severity:'Critical',confidence:'0.95',source:'Transcript — Feb 9 discovery session',stakeholder:'Head of Digital',detail:'Half of Digital Investor accounts are opened but never receive initial funding. Members start the process, hit friction at the ACH linking step, and abandon.',impact:'$8.2M annual revenue leakage (estimated from avg account value × abandonment rate)'} },
+    { id:'d2', type:'discovery', label:'36% member awareness of NFIS', cat:'discovery',
+      props:{category:'Pain Point',severity:'Critical',confidence:'0.90',source:'Transcript — Feb 13 session',stakeholder:'CDO',detail:'Only 36% of NFCU members know that investment services exist through NFIS. NFIS is invisible inside the NFCU digital experience.',impact:'15M members × 36% awareness × <1% investing = massive untapped market'} },
+    { id:'d3', type:'discovery', label:'51% advisor referrals go cold', cat:'discovery',
+      props:{category:'Pain Point',severity:'High',confidence:'0.88',source:'Transcript — Feb 9 session',stakeholder:'VP Advisory',detail:'36K annual referrals from NFCU branches to NFIS advisors. 51% are never contacted within the first 48 hours.',impact:'~18K potential advisory clients lost annually. At $2K avg first-year revenue = $36M opportunity'} },
+    { id:'d4', type:'discovery', label:'NFCU→NFIS via external ACH', cat:'discovery',
+      props:{category:'Evidence',severity:'High',confidence:'0.95',source:'Architecture Workshop — Feb 22',stakeholder:'CTO',detail:'Funding flows from NFCU to NFIS through external ACH — NFIS fronts the money during settlement. This creates balance sheet risk and 2-3 day delays.',impact:'Architectural risk. Not regulatory — "a design choice, not a compliance requirement" (client\'s own words)'} },
+    { id:'d5', type:'discovery', label:'5-7 day IRA withdrawal', cat:'discovery',
+      props:{category:'Pain Point',severity:'Medium',confidence:'0.85',source:'Transcript — Feb 13 session',stakeholder:'Ops Lead',detail:'IRA withdrawals take 5-7 business days due to manual form processing. 50% of forms are rejected on first submission.',impact:'Member satisfaction impact. Competitive disadvantage vs Schwab/Fidelity (same-day).'} },
+    { id:'d6', type:'discovery', label:'CTO skeptical on timeline', cat:'discovery',
+      props:{category:'Stakeholder Signal',severity:'High',confidence:'0.80',source:'Workshop 1 Debrief',stakeholder:'CTO',detail:'CTO repeatedly questioned integration feasibility. "Six months is aggressive for Pershing integration." Body language: arms crossed during architecture discussion.',impact:'Potential blocker. Must be addressed in Architecture workshop with proof points.'} },
+    { id:'d7', type:'discovery', label:'CFO engaged from day 1', cat:'discovery',
+      props:{category:'Stakeholder Signal',severity:'High',confidence:'0.90',source:'Workshop 1 Debrief',stakeholder:'CFO',detail:'CFO asked about ROI within first 10 minutes of Strategic Alignment. Unusual for a Why Change engagement. Buying signal.',impact:'Accelerate ROI framing. Don\'t defer business case to later workshops.'} },
+
+    // Capability Scores
+    { id:'cap1', type:'capability', label:'Activation Orchestration: 0.8', cat:'capability',
+      props:{code:'CAP-I-CL-03',capability:'Activation Orchestration',layer:'Middle',current:'0.8',target:'3.0',gap:'2.2',evidence:'No exit-intent capture, no funding reminders, ACAT false positives kill 30% of transfers'} },
+    { id:'cap2', type:'capability', label:'Digital Channel: 2.1', cat:'capability',
+      props:{code:'CAP-I-CE-01',capability:'Digital Channel Availability',layer:'Front',current:'2.1',target:'3.5',gap:'1.4',evidence:'Web portal exists but no mobile investing, no unified app experience'} },
+    { id:'cap3', type:'capability', label:'Advisor Enablement: 1.2', cat:'capability',
+      props:{code:'CAP-I-AE-01',capability:'Advisor Enablement',layer:'Middle',current:'1.2',target:'3.0',gap:'1.8',evidence:'No CRM integration, manual referral tracking, no member context at point of advice'} },
+    { id:'cap4', type:'capability', label:'Data Integration: 1.4', cat:'capability',
+      props:{code:'CAP-I-DI-01',capability:'Cross-Entity Data Integration',layer:'Back',current:'1.4',target:'3.5',gap:'2.1',evidence:'NFCU and NFIS data completely siloed. No shared member truth.'} },
+    { id:'cap5', type:'capability', label:'Overall Maturity: 1.8', cat:'capability',
+      props:{code:'OVERALL',capability:'Overall Maturity',layer:'All',current:'1.8',target:'3.2',gap:'1.4',evidence:'Front: 2.1, Middle: 1.6, Back: 1.4. Chain breaks at weakest link (Back layer).'} },
+
+    // Use Cases
+    { id:'uc1', type:'usecase', label:'Guided Account Funding', cat:'usecase',
+      props:{code:'NFIS-UC-01',status:'Validated — Lighthouse',priority:'Must Have',priority_score:'$34 (of $100)',effort:'8 weeks',problem:'50% of DI accounts never funded',solution:'Pre-linked NFCU accounts, real-time balance verification, exit-intent capture for incomplete funding',backbase:'Flow Orchestration, Payment Initiation',phase:'Phase 1'} },
+    { id:'uc2', type:'usecase', label:'Advisor Referral Engine', cat:'usecase',
+      props:{code:'NFIS-UC-02',status:'Validated',priority:'Should Have',priority_score:'$28',effort:'12 weeks',problem:'51% of referrals go cold',solution:'Real-time referral with member context, SLA tracking, automated follow-up',backbase:'Engagement Banking, Notifications',phase:'Phase 1'} },
+    { id:'uc3', type:'usecase', label:'Unified Member Dashboard', cat:'usecase',
+      props:{code:'NFIS-UC-03',status:'Validated',priority:'Should Have',priority_score:'$22',effort:'16 weeks',problem:'NFIS invisible inside NFCU — 36% awareness',solution:'Consolidated view of banking + investing in single NFCU app',backbase:'Widget Architecture, Portfolio View',phase:'Phase 2'} },
+    { id:'uc4', type:'usecase', label:'Automated IRA Processing', cat:'usecase',
+      props:{code:'NFIS-UC-04',status:'Validated',priority:'Nice to Have',priority_score:'$16',effort:'10 weeks',problem:'5-7 day IRA withdrawal, 50% form rejection',solution:'Digital IRA forms with pre-validation, straight-through processing',backbase:'Document Management, Flow Orchestration',phase:'Phase 2'} },
+
+    // Value Levers
+    { id:'vl1', type:'value_lever', label:'Funded Account Increase: $3.2M/yr', cat:'financial',
+      props:{group:'Activation',lever:'Funded Account Rate Improvement',type:'Revenue',baseline:'50%',target:'75%',annual_value:'$3.2M',confidence:'0.82',source:'Benchmark + client data'} },
+    { id:'vl2', type:'value_lever', label:'Referral Conversion: $1.8M/yr', cat:'financial',
+      props:{group:'Advisory',lever:'Referral Contact Rate Improvement',type:'Revenue',baseline:'49%',target:'80%',annual_value:'$1.8M',confidence:'0.75',source:'Client data (36K referrals × conversion delta)'} },
+    { id:'vl3', type:'value_lever', label:'Member Awareness: $2.1M/yr', cat:'financial',
+      props:{group:'Acquisition',lever:'NFIS Awareness & Cross-sell',type:'Revenue',baseline:'36%',target:'60%',annual_value:'$2.1M',confidence:'0.65',source:'Benchmark estimate (awareness → conversion model)'} },
+    { id:'vl4', type:'value_lever', label:'Servicing Efficiency: $0.9M/yr', cat:'financial',
+      props:{group:'Servicing',lever:'IRA Processing Automation',type:'Cost Reduction',baseline:'Manual',target:'85% STP',annual_value:'$0.9M',confidence:'0.70',source:'FTE reduction + error rate improvement'} },
+
+    // ROI Model
+    { id:'roi', type:'roi_model', label:'ROI Model: $4.2M NPV', cat:'financial',
+      props:{conservative_npv:'$4.2M',moderate_npv:'$7.8M',aggressive_npv:'$12.1M',total_investment:'$2.8M',payback:'14 months (conservative)',analysis_years:'5',discount_rate:'10%',total_levers:'4 groups, 12 individual levers'} },
+
+    // Roadmap
+    { id:'rm_p1', type:'roadmap_phase', label:'Phase 1: Foundation (6mo)', cat:'roadmap',
+      props:{phase:'1',name:'Foundation — Prove the Model',duration:'6 months',investment:'$800K',theme:'Lighthouse: Guided Account Funding + Advisor Referral Engine',success_criteria:'Funding rate >70%, Referral contact rate >75%'} },
+    { id:'rm_p2', type:'roadmap_phase', label:'Phase 2: Scale (9mo)', cat:'roadmap',
+      props:{phase:'2',name:'Scale — Unified Member Experience',duration:'9 months',investment:'$1.2M',theme:'Unified Dashboard + IRA Automation + Cross-sell Signals',success_criteria:'Member awareness >55%, IRA STP >80%'} },
+    { id:'rm_p3', type:'roadmap_phase', label:'Phase 3: Transform (12mo)', cat:'roadmap',
+      props:{phase:'3',name:'Transform — Intelligent Advisory',duration:'12 months',investment:'$800K',theme:'AI-assisted advisory, predictive cross-sell, real-time decisioning',success_criteria:'AUM growth >15%, advisor productivity +40%'} },
+
+    // Decisions
+    { id:'dec1', type:'decision', label:'Expanded scope to full BC', cat:'decision',
+      props:{type:'Scope Change',proposed:'Journey assessment only',chosen:'Full 7-Act assessment + business case',reason:'CFO engaged early, asked about ROI. Capability gaps larger than expected. Opportunity sized at $8M+ annually.',decided_by:'Client (CFO)',date:'2026-02-16'} },
+    { id:'dec2', type:'decision', label:'Per-product ROI structure', cat:'decision',
+      props:{type:'ROI Structure',proposed:'Per-channel ROI (digital vs branch)',chosen:'Per-product ROI (DI, Advisory, IRA)',reason:'Similar deals showed per-product resonates better with investment committee. Pentagon FCU validated this.',decided_by:'Consultant',date:'2026-02-25'} },
+    { id:'dec3', type:'decision', label:'Proceed with Phase 1', cat:'decision',
+      props:{type:'Client Go/No-Go',proposed:'Phase 1 ($800K) or Full program ($2.8M)',chosen:'Phase 1 with option to expand',reason:'Conservative payback of 14 months. CFO comfortable. CTO endorsed architecture after Pentagon FCU proof point.',decided_by:'Client (CFO + CTO)',date:'2026-03-05'} },
+
+    // Outcome
+    { id:'out1', type:'outcome', label:'Reached Negotiation', cat:'outcome',
+      props:{type:'reached_negotiation',detected:'2026-03-05',deal_value:'$2.8M',days_from_start:'23 days',source:'Salesforce stage change',note:'Fastest CU deal to negotiation in practice history. CFO engagement from Workshop 1 was the accelerator.'} },
+
+    // Pain Patterns (cross-engagement)
+    { id:'pp1', type:'pain_pattern', label:'Account Activation Failure', cat:'pattern',
+      props:{frequency:'23 engagements',severity:'Critical',industries:'Credit Union, Retail Bank, Digital Bank',avg_impact:'$8-15M annual revenue leakage',instances:'Navy Federal (50% unfunded), Pentagon FCU (45% dormant), BECU (38% inactive), First Tech (42% unfunded)'} },
+    { id:'pp2', type:'pain_pattern', label:'Advisor Referral Leakage', cat:'pattern',
+      props:{frequency:'18 engagements',severity:'High',industries:'Credit Union, Wealth Manager',avg_impact:'40-55% of referrals go cold',instances:'Navy Federal (51% cold), Pentagon FCU (48% cold), BECU (44% cold)'} },
+  ],
+  links: [
+    // Client → Engagement
+    {source:'navy_federal',target:'nfis_assess',label:'hasEngagement',type:'core'},
+    {source:'mayur',target:'nfis_assess',label:'leads',type:'core'},
+
+    // Engagement → Workshops
+    {source:'nfis_assess',target:'ws1',label:'conducted',type:'workshop'},
+    {source:'nfis_assess',target:'ws2',label:'conducted',type:'workshop'},
+    {source:'nfis_assess',target:'ws3',label:'conducted',type:'workshop'},
+    {source:'nfis_assess',target:'ws4',label:'conducted',type:'workshop'},
+    {source:'nfis_assess',target:'ws5',label:'conducted',type:'workshop'},
+    {source:'nfis_assess',target:'ws6',label:'conducted',type:'workshop'},
+
+    // Workshop → Discovery (surfaced)
+    {source:'ws1',target:'d2',label:'surfaced',type:'discovery'},
+    {source:'ws1',target:'d6',label:'surfaced',type:'discovery'},
+    {source:'ws1',target:'d7',label:'surfaced',type:'discovery'},
+    {source:'ws2',target:'d1',label:'surfaced',type:'discovery'},
+    {source:'ws2',target:'d5',label:'surfaced',type:'discovery'},
+    {source:'ws3',target:'d3',label:'surfaced',type:'discovery'},
+    {source:'ws3',target:'d4',label:'surfaced',type:'discovery'},
+
+    // Discovery → Capability (reveals gap)
+    {source:'d1',target:'cap1',label:'revealsGap',type:'capability'},
+    {source:'d2',target:'cap2',label:'revealsGap',type:'capability'},
+    {source:'d3',target:'cap3',label:'revealsGap',type:'capability'},
+    {source:'d4',target:'cap4',label:'revealsGap',type:'capability'},
+
+    // UseCase → Discovery (addresses)
+    {source:'uc1',target:'d1',label:'addresses',type:'usecase'},
+    {source:'uc2',target:'d3',label:'addresses',type:'usecase'},
+    {source:'uc3',target:'d2',label:'addresses',type:'usecase'},
+    {source:'uc4',target:'d5',label:'addresses',type:'usecase'},
+
+    // UseCase → Capability (closes gap)
+    {source:'uc1',target:'cap1',label:'closesGap',type:'usecase'},
+    {source:'uc2',target:'cap3',label:'closesGap',type:'usecase'},
+    {source:'uc3',target:'cap2',label:'closesGap',type:'usecase'},
+    {source:'uc3',target:'cap4',label:'closesGap',type:'usecase'},
+
+    // UseCase → ValueLever (drives)
+    {source:'uc1',target:'vl1',label:'drives',type:'financial'},
+    {source:'uc2',target:'vl2',label:'drives',type:'financial'},
+    {source:'uc3',target:'vl3',label:'drives',type:'financial'},
+    {source:'uc4',target:'vl4',label:'drives',type:'financial'},
+
+    // ValueLever → ROI
+    {source:'vl1',target:'roi',label:'contributesTo',type:'financial'},
+    {source:'vl2',target:'roi',label:'contributesTo',type:'financial'},
+    {source:'vl3',target:'roi',label:'contributesTo',type:'financial'},
+    {source:'vl4',target:'roi',label:'contributesTo',type:'financial'},
+
+    // UseCase → Roadmap
+    {source:'uc1',target:'rm_p1',label:'scheduledIn',type:'roadmap'},
+    {source:'uc2',target:'rm_p1',label:'scheduledIn',type:'roadmap'},
+    {source:'uc3',target:'rm_p2',label:'scheduledIn',type:'roadmap'},
+    {source:'uc4',target:'rm_p2',label:'scheduledIn',type:'roadmap'},
+
+    // Discovery → Pain Pattern
+    {source:'d1',target:'pp1',label:'isInstanceOf',type:'pattern'},
+    {source:'d3',target:'pp2',label:'isInstanceOf',type:'pattern'},
+
+    // Decisions
+    {source:'d7',target:'dec1',label:'influenced',type:'decision'},
+    {source:'d6',target:'dec2',label:'influenced',type:'decision'},
+    {source:'roi',target:'dec3',label:'justified',type:'decision'},
+
+    // Outcome
+    {source:'dec3',target:'out1',label:'ledTo',type:'outcome'},
+    {source:'nfis_assess',target:'out1',label:'hasOutcome',type:'outcome'},
+  ]
+}
+};
+
+// ─── RENDER ────────────────────────────────────
+const width = window.innerWidth, height = window.innerHeight;
+const svg = d3.select('#graph').attr('width', width).attr('height', height);
+const defs = svg.append('defs');
+
+// Arrow markers per type
+Object.entries(CAT_COLORS).forEach(([k,c]) => {
+  defs.append('marker').attr('id',`arr-${k}`).attr('viewBox','0 -5 10 10').attr('refX',24).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+    .append('path').attr('d','M0,-4L10,0L0,4').attr('fill',c).attr('opacity',0.6);
+});
+
+// Glow filters
+Object.entries(CAT_COLORS).forEach(([k,c]) => {
+  const f = defs.append('filter').attr('id',`glow-${k}`);
+  f.append('feGaussianBlur').attr('stdDeviation',4).attr('result','blur');
+  f.append('feComposite').attr('in','SourceGraphic').attr('in2','blur').attr('operator','over');
+});
+
+const g = svg.append('g');
+const zoom = d3.zoom().scaleExtent([0.15,5]).on('zoom', e => g.attr('transform', e.transform));
+svg.call(zoom);
+
+let currentData = engagements.nfis;
+let simulation, linkSel, linkLabelSel, nodeSel;
+let showLabels = false;
+
+function render(data) {
+  g.selectAll('*').remove();
+  currentData = data;
+
+  // Stats
+  document.getElementById('statsbar').innerHTML = `
+    <div class="stat"><div class="stat-val">${data.nodes.length}</div><div class="stat-label">Nodes</div></div>
+    <div class="stat"><div class="stat-val">${data.links.length}</div><div class="stat-label">Relationships</div></div>
+    <div class="stat"><div class="stat-val">${data.nodes.filter(n=>n.type==='workshop').length}</div><div class="stat-label">Workshops</div></div>
+    <div class="stat"><div class="stat-val">${data.nodes.filter(n=>n.type==='discovery').length}</div><div class="stat-label">Discoveries</div></div>
+    <div class="stat"><div class="stat-val">${data.nodes.filter(n=>n.type==='usecase').length}</div><div class="stat-label">Use Cases</div></div>
+  `;
+
+  const nodesCopy = data.nodes.map(d => ({...d}));
+  const linksCopy = data.links.map(d => ({...d}));
+
+  simulation = d3.forceSimulation(nodesCopy)
+    .force('link', d3.forceLink(linksCopy).id(d=>d.id).distance(d => {
+      if(d.type==='core') return 100;
+      if(d.type==='workshop') return 90;
+      return 120;
+    }).strength(0.5))
+    .force('charge', d3.forceManyBody().strength(-500))
+    .force('center', d3.forceCenter(width/2, height/2))
+    .force('collision', d3.forceCollide(32));
+
+  linkSel = g.append('g').selectAll('line').data(linksCopy).join('line')
+    .attr('stroke', d => CAT_COLORS[d.type] || '#334')
+    .attr('stroke-width', d => d.type==='core' ? 2 : 1.2)
+    .attr('stroke-opacity', d => d.type==='core' ? 0.4 : 0.2)
+    .attr('marker-end', d => `url(#arr-${d.type})`);
+
+  linkLabelSel = g.append('g').selectAll('text').data(linksCopy).join('text')
+    .text(d=>d.label).attr('text-anchor','middle').attr('fill','#475569').attr('font-size','7px')
+    .attr('font-family',"'Libre Franklin',sans-serif").attr('font-weight',500).attr('display','none');
+
+  nodeSel = g.append('g').selectAll('g').data(nodesCopy).join('g')
+    .call(d3.drag()
+      .on('start',(e,d)=>{if(!e.active)simulation.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y})
+      .on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y})
+      .on('end',(e,d)=>{if(!e.active)simulation.alphaTarget(0);d.fx=null;d.fy=null})
+    );
+
+  // Size by importance
+  const sizeMap = {client:28,engagement:32,workshop:18,discovery:14,capability:14,usecase:16,financial:14,outcome:20,decision:13,roadmap:14,pattern:18,consultant:16};
+
+  nodeSel.append('circle')
+    .attr('r', d => sizeMap[d.type] || sizeMap[d.cat] || 14)
+    .attr('fill', d => CAT_COLORS[d.cat] || CAT_COLORS[d.type] || '#444')
+    .attr('fill-opacity', 0.15)
+    .attr('stroke', d => CAT_COLORS[d.cat] || CAT_COLORS[d.type] || '#444')
+    .attr('stroke-width', d => d.type==='engagement'||d.type==='client' ? 2.5 : 1.5)
+    .attr('stroke-opacity', 0.8)
+    .style('cursor','pointer')
+    .style('filter', d => `url(#glow-${d.cat || d.type})`);
+
+  // Node labels
+  nodeSel.append('text')
+    .text(d => d.label.length > 22 ? d.label.slice(0,20)+'…' : d.label)
+    .attr('text-anchor','middle')
+    .attr('dy', d => (sizeMap[d.type] || sizeMap[d.cat] || 14) + 12)
+    .attr('fill', d => CAT_COLORS[d.cat] || CAT_COLORS[d.type] || '#666')
+    .attr('font-size','8px').attr('font-weight',600)
+    .attr('font-family',"'Libre Franklin',sans-serif")
+    .style('pointer-events','none');
+
+  // Type icon inside node
+  const iconMap = {client:'🏦',engagement:'📋',workshop:'🎯',discovery:'🔍',capability:'📊',usecase:'💡',financial:'💰',outcome:'🎉',decision:'⚖️',roadmap:'🛣️',pattern:'🔄',consultant:'👤',value_lever:'📈',roi_model:'💵',roadmap_phase:'📅'};
+  nodeSel.append('text')
+    .text(d => iconMap[d.type] || '●')
+    .attr('text-anchor','middle').attr('dy','4px')
+    .attr('font-size', d => (sizeMap[d.type]||14) > 18 ? '14px' : '10px')
+    .style('pointer-events','none');
+
+  // Interactions
+  const tooltip = document.getElementById('tooltip');
+  nodeSel.on('mouseover',(e,d)=>{
+    tooltip.innerHTML=`<div class="tt-type">${d.type}</div><div class="tt-name">${d.label}</div>`;
+    const firstProp = Object.entries(d.props||{})[0];
+    if(firstProp) tooltip.innerHTML+=`<div class="tt-detail">${firstProp[0]}: ${firstProp[1]}</div>`;
+    tooltip.style.display='block';tooltip.style.left=(e.clientX+14)+'px';tooltip.style.top=(e.clientY-8)+'px';
+  }).on('mousemove',e=>{tooltip.style.left=(e.clientX+14)+'px';tooltip.style.top=(e.clientY-8)+'px'})
+  .on('mouseout',()=>tooltip.style.display='none')
+  .on('click',(e,d)=>{e.stopPropagation();highlightNode(d.id,nodesCopy,linksCopy);openPanel(d,linksCopy,nodesCopy)});
+
+  svg.on('click',()=>{resetHighlight(linksCopy);document.getElementById('panel').classList.remove('open')});
+
+  simulation.on('tick',()=>{
+    linkSel.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    linkLabelSel.attr('x',d=>(d.source.x+d.target.x)/2).attr('y',d=>(d.source.y+d.target.y)/2);
+    nodeSel.attr('transform',d=>`translate(${d.x},${d.y})`);
+  });
+
+  // Fit after settle
+  setTimeout(()=>{
+    const bounds = g.node().getBBox();
+    const dx=bounds.width,dy=bounds.height,x=bounds.x+dx/2,y=bounds.y+dy/2;
+    const scale=0.8/Math.max(dx/width,dy/height);
+    svg.transition().duration(800).call(zoom.transform,d3.zoomIdentity.translate(width/2-scale*x,height/2-scale*y).scale(scale));
+  },2000);
+}
+
+function highlightNode(id,nodes,links){
+  const connected=new Set([id]);
+  links.forEach(l=>{
+    const s=typeof l.source==='string'?l.source:l.source.id;
+    const t=typeof l.target==='string'?l.target:l.target.id;
+    if(s===id)connected.add(t);if(t===id)connected.add(s);
+  });
+  nodeSel.select('circle').attr('fill-opacity',d=>connected.has(d.id)?0.3:0.03).attr('stroke-opacity',d=>connected.has(d.id)?1:0.08).attr('stroke-width',d=>d.id===id?3:connected.has(d.id)?2:1);
+  nodeSel.selectAll('text').attr('fill-opacity',d=>connected.has(d.id)?1:0.1);
+  linkSel.attr('stroke-opacity',d=>{const s=typeof d.source==='string'?d.source:d.source.id;const t=typeof d.target==='string'?d.target:d.target.id;return(s===id||t===id)?0.7:0.02}).attr('stroke-width',d=>{const s=typeof d.source==='string'?d.source:d.source.id;const t=typeof d.target==='string'?d.target:d.target.id;return(s===id||t===id)?2.5:1});
+  linkLabelSel.attr('display',d=>{const s=typeof d.source==='string'?d.source:d.source.id;const t=typeof d.target==='string'?d.target:d.target.id;return(s===id||t===id)?'block':'none'}).attr('fill','#94A3B8').attr('font-size','9px');
+}
+
+function resetHighlight(links){
+  nodeSel.select('circle').attr('fill-opacity',0.15).attr('stroke-opacity',0.8).attr('stroke-width',d=>d.type==='engagement'||d.type==='client'?2.5:1.5);
+  nodeSel.selectAll('text').attr('fill-opacity',1);
+  linkSel.attr('stroke-opacity',d=>d.type==='core'?0.4:0.2).attr('stroke-width',d=>d.type==='core'?2:1.2);
+  linkLabelSel.attr('display',showLabels?'block':'none');
+}
+
+function openPanel(d,links,nodes){
+  const color=CAT_COLORS[d.cat]||CAT_COLORS[d.type]||'#666';
+  const rels=[];
+  links.forEach(l=>{
+    const s=typeof l.source==='string'?l.source:l.source.id;
+    const t=typeof l.target==='string'?l.target:l.target.id;
+    if(s===d.id){const tn=nodes.find(n=>n.id===t);rels.push({dir:'→',verb:l.label,target:tn?tn.label:t,targetId:t})}
+    if(t===d.id){const sn=nodes.find(n=>n.id===s);rels.push({dir:'←',verb:l.label,target:sn?sn.label:s,targetId:s})}
+  });
+
+  // Score coloring
+  function scoreColor(v){const n=parseFloat(v);if(isNaN(n))return'';if(n<=1)return'color:var(--red)';if(n<=2)return'color:var(--amber)';if(n<=3)return'color:var(--green)';return'color:var(--blue)'}
+
+  let html=`<div class="panel-header">
+    <div class="panel-type" style="color:${color}"><span class="dot" style="background:${color}"></span>${d.type.replace(/_/g,' ').toUpperCase()}</div>
+    <div class="panel-name">${d.label}</div>
+  </div>`;
+
+  // Properties
+  if(d.props && Object.keys(d.props).length){
+    html+=`<div class="panel-section"><div class="panel-section-title">Properties</div>`;
+    Object.entries(d.props).forEach(([k,v])=>{
+      const isScore=k==='current'||k==='target'||k==='gap';
+      const isHighlight=k==='annual_value'||k==='conservative_npv'||k==='deal_value'||k==='priority_score';
+      let valClass='prop-v';
+      if(isScore)valClass+=' score';
+      if(isHighlight)valClass+=' highlight';
+      let style='';
+      if(isScore)style=scoreColor(v);
+      html+=`<div class="prop-row"><span class="prop-k">${k.replace(/_/g,' ')}</span><span class="${valClass}" style="${style}">${v}</span></div>`;
+    });
+    html+=`</div>`;
+  }
+
+  // Relationships
+  if(rels.length){
+    html+=`<div class="panel-section"><div class="panel-section-title">Relationships (${rels.length})</div>`;
+    rels.forEach(r=>{
+      html+=`<div class="rel-item" onclick="window._navTo('${r.targetId}')">
+        <span class="rel-arrow">${r.dir}</span>
+        <span class="rel-verb">${r.verb}</span>
+        <span class="rel-target">${r.target}</span>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+
+  document.getElementById('panel-content').innerHTML=html;
+  document.getElementById('panel').classList.add('open');
+}
+
+window._navTo=function(id){
+  const n=currentData.nodes.find(nd=>nd.id===id);
+  if(!n)return;
+  // Find in simulation
+  const simNode=simulation.nodes().find(sn=>sn.id===id);
+  if(simNode){
+    highlightNode(id,simulation.nodes(),currentData.links);
+    openPanel({...n,...simNode},currentData.links,simulation.nodes());
+    const t=d3.zoomTransform(svg.node());
+    svg.transition().duration(600).call(zoom.transform,d3.zoomIdentity.translate(width/2-simNode.x*t.k,height/2-simNode.y*t.k).scale(t.k));
+  }
+};
+
+// Controls
+document.getElementById('panel-close').addEventListener('click',()=>{document.getElementById('panel').classList.remove('open');resetHighlight(currentData.links)});
+document.getElementById('btn-labels').addEventListener('click',function(){showLabels=!showLabels;this.classList.toggle('active');linkLabelSel.attr('display',showLabels?'block':'none')});
+document.getElementById('btn-reset').addEventListener('click',()=>{svg.transition().duration(600).call(zoom.transform,d3.zoomIdentity);resetHighlight(currentData.links);document.getElementById('panel').classList.remove('open')});
+
+// Legend filter
+document.querySelectorAll('.legend-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    const cat=item.dataset.cat;
+    document.querySelectorAll('.legend-item').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    if(cat==='all'){resetHighlight(currentData.links)}
+    else{
+      nodeSel.select('circle').attr('fill-opacity',d=>(d.cat===cat||d.type===cat)?0.3:0.03).attr('stroke-opacity',d=>(d.cat===cat||d.type===cat)?1:0.08);
+      nodeSel.selectAll('text').attr('fill-opacity',d=>(d.cat===cat||d.type===cat)?1:0.1);
+      linkSel.attr('stroke-opacity',d=>{
+        const s=simulation.nodes().find(n=>n.id===(typeof d.source==='string'?d.source:d.source.id));
+        const t=simulation.nodes().find(n=>n.id===(typeof d.target==='string'?d.target:d.target.id));
+        return(s&&(s.cat===cat||s.type===cat))||(t&&(t.cat===cat||t.type===cat))?0.5:0.02;
+      });
+    }
+  });
+});
+
+// Engagement selector
+document.getElementById('eng-select').addEventListener('change',function(){
+  const val=this.value;
+  if(engagements[val]) render(engagements[val]);
+});
+
+// Initial render
+render(engagements.nfis);
+</script>
+</body>
+</html>

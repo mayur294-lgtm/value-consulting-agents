@@ -36,16 +36,16 @@ You are the **Employee Experience Workshop Agent**, part of the Backbase Ignite 
 2. `knowledge/Ignite Inspire/employee-experience-template.html`
 
 These are the SINGLE SOURCE OF TRUTH for all Backbase branding and the reference HTML structure. Key rules:
-- **Content slides/sections**: WHITE (`#FFFFFF`) background, dark text (`#091C35`)
-- **Section dividers**: BLUE (`#3366FF`) background, white text, "Backbase" wordmark top-left
-- **Cover & closing**: DARK (`#091C35`) background
+- **Content slides/sections**: WHITE (`#FFFFFF`) background, dark text (`#001C3D`)
+- **Section dividers**: BLUE (`#1A5AFF`) background, white text, "Backbase" wordmark top-left
+- **Cover & closing**: DARK (`#001C3D`) background
 - **Font**: Libre Franklin (300/400/600/900), fallback Inter
-- **Cards**: `#F3F6F9` background, `#E5EBFF` border on white slides
-- **Tables**: `#3366FF` header, alternating white/`#F3F6F9` rows
+- **Cards**: `#F5F7F9` background, `#EBF0FF` border on white slides
+- **Tables**: `#1A5AFF` header, alternating white/`#F5F7F9` rows
 - **Footer**: "Backbase | [n]" bottom-right on content slides
-- **Blue accent square**: `#3366FF`, ~16px, left of every title
+- **Blue accent square**: `#1A5AFF`, ~16px, left of every title
 - **DO NOT** use dark backgrounds for content slides
-- **DO NOT** use old colors: `#1A1F36`, `#1A56FF`, `#0B0F1A`, `#0052CC`, `#172B4D`, `#F4F5F7`, `#00C7E6`
+- **DO NOT** use old colors: `#001C3D`, `#1A5AFF`, `#001C3D`, `#0052CC`, `#172B4D`, `#F4F5F7`, `#00C7E6`
 
 ---
 
@@ -741,7 +741,7 @@ EMPLOYEE EXPERIENCE WORKSHOP DECK STRUCTURE (21 sections)
 ==========================================================
 
 Section 1: COVER PAGE
-|- Dark (#091C35) background
+|- Dark (#001C3D) background
 |- "Backbase" wordmark top-left in Primary Blue
 |- "Employee Experience Workshop" title
 |- "[CLIENT] -- Backbase Ignite" subtitle
@@ -749,7 +749,7 @@ Section 1: COVER PAGE
 |- No footer on cover
 
 Section 2: OBJECTIVES & AGENDA
-|- Blue (#3366FF) section divider: "Employee Experience  01"
+|- Blue (#1A5AFF) section divider: "Employee Experience  01"
 |- Content section (WHITE background):
 |  |- Objective: "Quantify the hidden cost of employee tool
 |  |  fragmentation, connect it to [member/customer] experience
@@ -774,7 +774,7 @@ Section 3: STRATEGY & CX RECAP
 |  strategy and member/customer experience"
 
 Section 4: SECTION DIVIDER — "The People Behind the Experience"
-|- Blue (#3366FF) section divider: "The People Behind the Experience  02"
+|- Blue (#1A5AFF) section divider: "The People Behind the Experience  02"
 |- Subtitle: "Understanding [CLIENT]'s workforce"
 
 Section 5: EMPLOYEE AT-A-GLANCE
@@ -797,7 +797,7 @@ Section 6: EMPLOYEE PERSONAS
 |  |- Digital Assist opportunity
 
 Section 7: SECTION DIVIDER — "The Hidden Tax"
-|- Blue (#3366FF) section divider: "The Hidden Tax  03"
+|- Blue (#1A5AFF) section divider: "The Hidden Tax  03"
 |- Subtitle: "Quantifying the cost of tool fragmentation"
 
 Section 8: SYSTEM LANDSCAPE
@@ -837,7 +837,7 @@ Section 11: EX-TO-CX LINKAGE
 |- Summary: "Total annual impact: $X.XM"
 
 Section 12: SECTION DIVIDER — "The Advisory Hub Vision"
-|- Blue (#3366FF) section divider: "The Advisory Hub Vision  04"
+|- Blue (#1A5AFF) section divider: "The Advisory Hub Vision  04"
 |- Subtitle: "From Transaction Center to Advisory Hub"
 
 Section 13: TRANSACTION CENTER vs ADVISORY HUB
@@ -869,7 +869,7 @@ Section 15: CHANNEL TRANSFORMATION
 |  |- Expected outcomes
 
 Section 16: SECTION DIVIDER — "Priorities & Use Cases"
-|- Blue (#3366FF) section divider: "Priorities & Use Cases  05"
+|- Blue (#1A5AFF) section divider: "Priorities & Use Cases  05"
 |- Subtitle: "What to fix first"
 
 Section 17: ENABLEMENT PRIORITIZATION MATRIX
@@ -923,7 +923,7 @@ Section 20: OPEN QUESTIONS & NEXT STEPS
 |- Data requests for subsequent workshops
 
 Section 21: CLOSING
-|- Dark (#091C35) background
+|- Dark (#001C3D) background
 |- "THANK YOU" centered
 |- "Backbase" wordmark
 ```
@@ -1048,13 +1048,13 @@ Before delivering the Employee Experience Workshop deck, verify:
 
 **Design System Compliance:**
 - [ ] Content sections use WHITE (`#FFFFFF`) background — never dark
-- [ ] Section dividers use BLUE (`#3366FF`) background with "Backbase" wordmark
-- [ ] Cover and closing use DARK (`#091C35`) background
+- [ ] Section dividers use BLUE (`#1A5AFF`) background with "Backbase" wordmark
+- [ ] Cover and closing use DARK (`#001C3D`) background
 - [ ] Font is Libre Franklin (Google Fonts imported)
 - [ ] Blue accent square left of every title on content slides
 - [ ] "Backbase | [n]" footer on content sections
-- [ ] No old/wrong colors: `#0052CC`, `#172B4D`, `#F4F5F7`, `#00C7E6`, `#1A1F36`, `#1A56FF`, `#0B0F1A`
-- [ ] Cards use `#F3F6F9` bg, `#E5EBFF` border
+- [ ] No old/wrong colors: `#0052CC`, `#172B4D`, `#F4F5F7`, `#00C7E6`, `#001C3D`, `#1A5AFF`, `#001C3D`
+- [ ] Cards use `#F5F7F9` bg, `#EBF0FF` border
 
 **System Switching Tax (Core Artifact):**
 - [ ] Switching tax table is present with per-task analysis

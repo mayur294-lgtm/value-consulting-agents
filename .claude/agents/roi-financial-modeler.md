@@ -14,8 +14,8 @@ You do NOT identify levers. You do NOT build hypothesis trees. You do NOT scan e
 ## VISUAL OUTPUT: UNIFIED DESIGN SYSTEM (MANDATORY)
 
 All visual outputs MUST follow the **Unified Design System** at `knowledge/design-system.md`.
-- Colors: `#3366FF` blue, `#0F172A` dark, `#FF6B5E` coral, `#93C47D` sage, `#E8B931` gold — ENGAGE 2026 palette ONLY. NO cyan, NO purple.
-- Typography: Inter primary (ENGAGE 2026), system fallback
+- Colors: Backbase Unified Frontline 2026 ONLY — `#1A5AFF` action blue, `#001C3D` navy, `#E02020` red, `#2ECC71` green, `#D97706` amber, `#5C6E84` muted, `#F5F7F9` bg gray. See `knowledge/design-system.md` Section 1. NO cyan headlines, NO purple headlines, NO ENGAGE 2026 hexes (`#3366FF`, `#0F172A`, `#FF6B5E`, `#93C47D`, `#E8B931` deprecated).
+- Typography: Libre Franklin primary (Frontline 2026), Helvetica/Arial fallback
 - Cards: Top accent gradients (NEVER `border-left` ribbons)
 - Self-contained: Zero external CDN dependencies except Google Fonts
 
@@ -310,7 +310,7 @@ Token `{incremental_members_steady_state}` doesn't match any input key (the key 
 ```json
 "lever_summary": [{
   "id": "L1", "name": "...", "value_5yr": "$X",
-  "color": "#3366FF",
+  "color": "#1A5AFF",
   "current_state": "max 20 words",
   "change_driver": "max 20 words",
   "target_state": "max 20 words",

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cortex — Value Consulting AgenticOS | MT QBR Q2 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --navy: #001C3D;
+    --cyan: #00D2FF;
+    --orange: #FF6B35;
+    --blue: #60A5FA;
+    --green: #34D399;
+    --purple: #A78BFA;
+    --red: #EF4444;
+    --card: rgba(255,255,255,0.06);
+    --card-border: rgba(255,255,255,0.08);
+    --gray: rgba(255,255,255,0.45);
+  }
+  body {
+    font-family: 'Libre Franklin', -apple-system, sans-serif;
+    background: #0B0E2C;
+    color: white;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+  .bg-grid {
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 60px 60px;
+    z-index: 0; pointer-events: none;
+  }
+  .orb { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.12; z-index: 0; pointer-events: none; }
+  .orb-1 { width: 600px; height: 600px; background: var(--cyan); top: -200px; right: -200px; }
+  .orb-2 { width: 500px; height: 500px; background: var(--orange); bottom: -200px; left: -200px; }
+
+  .progress-bar { position: fixed; bottom: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--cyan), var(--orange)); transition: width 0.5s ease; z-index: 100; border-radius: 0 2px 2px 0; }
+  .nav-hint { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 11px; color: rgba(255,255,255,0.2); z-index: 100; }
+  .slide-counter { position: fixed; top: 20px; right: 28px; font-size: 12px; color: rgba(255,255,255,0.25); z-index: 100; font-weight: 600; letter-spacing: 1px; }
+  .brand { position: fixed; top: 20px; left: 28px; font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.2); z-index: 100; }
+
+  .slide {
+    display: none; width: 100vw; height: 100vh;
+    position: relative; z-index: 10;
+    padding: 80px 80px 60px;
+  }
+  .slide.active { display: flex; flex-direction: column; justify-content: center; animation: fadeIn 0.5s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--cyan); margin-bottom: 16px;
+  }
+  .section-label.orange { color: var(--orange); }
+  .section-label.green { color: var(--green); }
+
+  h1 { font-size: clamp(48px, 7vw, 88px); font-weight: 900; line-height: 1.05; letter-spacing: -2px; margin-bottom: 20px; }
+  h1 .cyan { color: var(--cyan); }
+  h1 .orange { color: var(--orange); }
+
+  h2 { font-size: clamp(32px, 4.5vw, 52px); font-weight: 800; line-height: 1.15; margin-bottom: 36px; }
+
+  .subtitle { font-size: 18px; color: var(--gray); line-height: 1.6; max-width: 600px; }
+  .sub-sm { font-size: 14px; color: rgba(255,255,255,0.3); max-width: 600px; margin-top: 8px; }
+
+  /* Cards */
+  .card { background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; text-align: left; }
+
+  /* Pain grid (slide 2) */
+  .pain-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 880px; }
+  .pain-card { display: flex; gap: 14px; align-items: flex-start; }
+  .pain-card .pain-icon { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+  .pain-card .pain-week { font-size: 10px; font-weight: 700; color: var(--orange); letter-spacing: 1.5px; text-transform: uppercase; }
+  .pain-card .pain-text { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.85); line-height: 1.4; margin-top: 2px; }
+  .pain-card .pain-sub { font-size: 12px; color: rgba(255,255,255,0.3); font-style: italic; margin-top: 4px; }
+
+  /* Big number (slide 2) */
+  .big-promise { display: flex; align-items: center; gap: 28px; margin: 36px 0; }
+  .big-old { font-size: 72px; font-weight: 900; color: rgba(255,255,255,0.12); text-decoration: line-through; }
+  .big-arrow { font-size: 40px; color: var(--orange); }
+  .big-new { font-size: 72px; font-weight: 900; background: linear-gradient(135deg, var(--cyan), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+  /* Stats row */
+  .stats-row { display: flex; gap: 16px; flex-wrap: wrap; max-width: 900px; }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 16px; padding: 22px 20px; text-align: center; flex: 1; min-width: 140px;
+  }
+  .stat-val { font-size: 36px; font-weight: 900; background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; }
+  .stat-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Deliverables grid (slide 3) */
+  .del-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 960px; }
+  .del-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 20px 16px; text-align: center; }
+  .del-icon { font-size: 28px; margin-bottom: 8px; }
+  .del-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .del-desc { font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.4; }
+  .del-card.spotlight { border-color: rgba(0,210,255,0.25); background: linear-gradient(135deg, rgba(0,210,255,0.06), var(--card)); grid-column: span 2; }
+
+  /* Before/After (slide 4) */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 900px; }
+  .compare-col { display: flex; flex-direction: column; gap: 10px; }
+  .compare-header { font-size: 14px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; padding: 12px 16px; border-radius: 12px 12px 4px 4px; text-align: center; }
+  .compare-header.before { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+  .compare-header.after { background: rgba(0,210,255,0.08); color: var(--cyan); border: 1px solid rgba(0,210,255,0.2); }
+  .compare-item { background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 14px 16px; font-size: 14px; color: rgba(255,255,255,0.65); display: flex; align-items: center; gap: 10px; }
+  .compare-item.bad { border-color: rgba(239,68,68,0.1); }
+  .ci-icon { font-size: 18px; flex-shrink: 0; }
+
+  /* Proof cards (slide 4) */
+  .proof-row { display: flex; gap: 14px; max-width: 900px; margin-top: 32px; }
+  .proof-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px 18px; flex: 1; }
+  .proof-card .proof-name { font-size: 12px; font-weight: 700; color: var(--cyan); margin-bottom: 4px; }
+  .proof-card .proof-text { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.4; }
+
+  /* CTA cards (slide 5) */
+  .cta-row { display: flex; gap: 20px; margin-top: 40px; }
+  .cta-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 28px; flex: 1; text-align: left; }
+  .cta-q { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .cta-card:nth-child(1) .cta-q { color: var(--cyan); }
+  .cta-card:nth-child(2) .cta-q { color: var(--orange); }
+  .cta-card:nth-child(3) .cta-q { color: var(--green); }
+  .cta-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+  .cta-desc { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="progress-bar" id="progressBar"></div>
+<div class="brand">Cortex AgenticOS</div>
+<div class="slide-counter" id="slideCounter">1 / 5</div>
+<div class="nav-hint">Arrow keys or click to navigate</div>
+
+<!-- SLIDE 1: Title -->
+<div class="slide active" data-slide="1">
+  <div class="section-label">MT Quarterly Business Review &middot; Q2 2026</div>
+  <h1><span class="cyan">Cortex</span><br>Value Consulting<br>AgenticOS</h1>
+  <p class="subtitle">18 AI agents that turn a week of consulting work into 3 hours. Every assessment evidence-based, every ROI model defensible, every deliverable executive-ready.</p>
+  <p class="sub-sm">Built by Value Consulting &middot; Live since Feb 2026 &middot; 6 banking domains</p>
+</div>
+
+<!-- SLIDE 2: The Problem → The Promise -->
+<div class="slide" data-slide="2">
+  <div class="section-label orange">The Before</div>
+  <h2>What a Value Assessment<br>Costs Us Today</h2>
+  <div class="pain-grid">
+    <div class="card pain-card">
+      <div class="pain-icon">&#x1F4DA;</div>
+      <div>
+        <div class="pain-week">Day 1-2</div>
+        <div class="pain-text">Read transcripts until your eyes bleed</div>
+        <div class="pain-sub">"Wait, did they say 40% or 14%?"</div>
+      </div>
+    </div>
+    <div class="card pain-card">
+      <div class="pain-icon">&#x1F4C9;</div>
+      <div>
+        <div class="pain-week">Day 3-4</div>
+        <div class="pain-text">Build ROI models in Excel hell</div>
+        <div class="pain-sub">"Which cell broke the formula this time?"</div>
+      </div>
+    </div>
+    <div class="card pain-card">
+      <div class="pain-icon">&#x1F4DD;</div>
+      <div>
+        <div class="pain-week">Day 5</div>
+        <div class="pain-text">Write the assessment, pray the numbers match</div>
+        <div class="pain-sub">"Exec summary says $4M but slide 17 says $3.2M..."</div>
+      </div>
+    </div>
+    <div class="card pain-card">
+      <div class="pain-icon">&#x1F914;</div>
+      <div>
+        <div class="pain-week">Somewhere</div>
+        <div class="pain-text">Actually think strategically</div>
+        <div class="pain-sub">"The part we're actually good at"</div>
+      </div>
+    </div>
+  </div>
+  <div class="big-promise">
+    <div class="big-old">1 Week</div>
+    <div class="big-arrow">&#x2192;</div>
+    <div class="big-new">3 Hours</div>
+  </div>
+  <p style="font-size:14px; color:rgba(255,255,255,0.35); font-style:italic;">Cortex generates the first draft in 15-30 min. You spend 2-3 hours validating, refining, making it yours.</p>
+</div>
+
+<!-- SLIDE 3: What Cortex Actually Is -->
+<div class="slide" data-slide="3">
+  <div class="section-label">What It Is</div>
+  <h2>18 Specialist Agents.<br>One Orchestrated Pipeline.</h2>
+  <div style="display:flex; gap:32px; align-items:flex-start; max-width:1000px;">
+    <div style="flex:1;">
+      <div style="font-size:14px; color:rgba(255,255,255,0.55); line-height:1.7; margin-bottom:24px;">
+        Drop in discovery transcripts. Cortex reads them, extracts evidence, maps journeys, scores capabilities, builds ROI models, and assembles executive-ready deliverables &mdash; all with traceable evidence IDs back to exact transcript lines.
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-val">18</div><div class="stat-label">Agents</div></div>
+        <div class="stat-card"><div class="stat-val">23</div><div class="stat-label">Skills</div></div>
+        <div class="stat-card"><div class="stat-val">6</div><div class="stat-label">Domains</div></div>
+        <div class="stat-card"><div class="stat-val">15+</div><div class="stat-label">Banks Benchmarked</div></div>
+      </div>
+    </div>
+    <div style="flex:1;">
+      <div class="del-grid" style="grid-template-columns: repeat(2,1fr);">
+        <div class="del-card"><div class="del-icon">&#x1F50D;</div><div class="del-title">Evidence Register</div><div class="del-desc">Every claim traced to transcript</div></div>
+        <div class="del-card"><div class="del-icon">&#x1F5FA;&#xFE0F;</div><div class="del-title">Journey Maps</div><div class="del-desc">Swimlanes with friction &amp; leakage</div></div>
+        <div class="del-card"><div class="del-icon">&#x1F3AF;</div><div class="del-title">Capability Heatmap</div><div class="del-desc">BIAN maturity scoring</div></div>
+        <div class="del-card"><div class="del-icon">&#x1F4B0;</div><div class="del-title">ROI Business Case</div><div class="del-desc">3 scenarios + sensitivity</div></div>
+        <div class="del-card"><div class="del-icon">&#x1F4C5;</div><div class="del-title">Roadmap</div><div class="del-desc">Phased, value-sequenced</div></div>
+        <div class="del-card"><div class="del-icon">&#x1F4CB;</div><div class="del-title">Exec Summary</div><div class="del-desc">C-suite decision doc</div></div>
+        <div class="del-card spotlight" style="grid-column: span 2;"><div class="del-icon">&#x2728;</div><div class="del-title">Interactive HTML Dashboard</div><div class="del-desc">250-400KB self-contained. Heatmaps, ROI toggles, journey swimlanes, phone prototypes. One file. Zero dependencies.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: Before vs After + Proof Points -->
+<div class="slide" data-slide="4">
+  <div class="section-label green">Proven Impact</div>
+  <h2>Before vs After Cortex</h2>
+  <div class="compare-grid">
+    <div class="compare-col">
+      <div class="compare-header before">Before Cortex</div>
+      <div class="compare-item bad"><span class="ci-icon">&#x23F0;</span> 1 full week per assessment</div>
+      <div class="compare-item bad"><span class="ci-icon">&#x1F4CA;</span> Manual Excel ROI &mdash; inconsistent formulas</div>
+      <div class="compare-item bad"><span class="ci-icon">&#x1F4CB;</span> Copy-paste from old decks</div>
+      <div class="compare-item bad"><span class="ci-icon">&#x1F937;</span> "I think the number was..."</div>
+      <div class="compare-item bad"><span class="ci-icon">&#x1F3B2;</span> Quality depends on who runs it</div>
+    </div>
+    <div class="compare-col">
+      <div class="compare-header after">With Cortex</div>
+      <div class="compare-item"><span class="ci-icon">&#x26A1;</span> First draft in <strong>15-30 min</strong>, validated in <strong>3 hrs</strong></div>
+      <div class="compare-item"><span class="ci-icon">&#x1F4B0;</span> Auto-generated with sensitivity &amp; confidence tiers</div>
+      <div class="compare-item"><span class="ci-icon">&#x2728;</span> Fresh, evidence-based deliverables every time</div>
+      <div class="compare-item"><span class="ci-icon">&#x1F4CD;</span> "Evidence E-042, transcript line 287"</div>
+      <div class="compare-item"><span class="ci-icon">&#x1F504;</span> Gets smarter every engagement (flywheel)</div>
+    </div>
+  </div>
+  <div class="proof-row">
+    <div class="proof-card">
+      <div class="proof-name">Navy Federal (NFIS)</div>
+      <div class="proof-text">Full assessment + $4.2M NPV business case. Closed with Cortex-generated deliverables.</div>
+    </div>
+    <div class="proof-card">
+      <div class="proof-name">SchoolsFirst FCU</div>
+      <div class="proof-text">Discovered 9-month activation gap nobody measured. 80% scope expansion on the spot.</div>
+    </div>
+    <div class="proof-card">
+      <div class="proof-name">Pentagon FCU</div>
+      <div class="proof-text">Closed 3 weeks after executive readout. Fastest cycle in the region.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: What's Next -->
+<div class="slide" data-slide="5">
+  <div class="section-label orange">What's Next</div>
+  <h2 style="text-align:center;">Scaling Cortex<br>Across the GTM</h2>
+  <p style="font-size:16px; color:rgba(255,255,255,0.45); text-align:center; max-width:600px; margin:0 auto 12px; line-height:1.6;">
+    Today: consultants run Cortex for strategic deals.<br>
+    Next: sellers self-serve ROI for every deal under $800K.
+  </p>
+  <div class="cta-row" style="max-width:900px; margin:0 auto;">
+    <div class="cta-card">
+      <div class="cta-q">Now &mdash; Live</div>
+      <div class="cta-title">Consultant-Led Assessments</div>
+      <div class="cta-desc">18 agents, 7 deliverables, full pipeline. Consultants run Cortex for strategic and complex deals. Evidence-traced, executive-ready.</div>
+    </div>
+    <div class="cta-card">
+      <div class="cta-q">Q2 2026</div>
+      <div class="cta-title">Seller Self-Service ROI</div>
+      <div class="cta-desc">5-input ROI calculator using real Backbase value levers and benchmarks. Sellers build a defensible business case in 2 minutes. No consultant needed for deals &lt;$800K.</div>
+    </div>
+    <div class="cta-card">
+      <div class="cta-q">Q3 2026</div>
+      <div class="cta-title">Full Self-Serve Pipeline</div>
+      <div class="cta-desc">Sellers scope, configure, and run lightweight assessments autonomously. Cortex intel embedded in CRM. Consultants focus on the big bets.</div>
+    </div>
+  </div>
+  <p style="font-size:13px; color:rgba(255,255,255,0.25); text-align:center; margin-top:32px; font-style:italic;">
+    The flywheel is spinning. Every engagement makes the system smarter. Every seller gets the collective brain of every consultant who came before them.
+  </p>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const bar = document.getElementById('progressBar');
+const counter = document.getElementById('slideCounter');
+let cur = 0;
+function go(n) {
+  if (n < 0 || n >= slides.length) return;
+  slides[cur].classList.remove('active');
+  cur = n;
+  slides[cur].classList.add('active');
+  bar.style.width = ((cur+1)/slides.length*100)+'%';
+  counter.textContent = (cur+1)+' / '+slides.length;
+}
+document.addEventListener('keydown', e => {
+  if (e.key==='ArrowRight'||e.key===' ') go(cur+1);
+  if (e.key==='ArrowLeft') go(cur-1);
+});
+document.addEventListener('click', e => {
+  if (e.clientX/window.innerWidth > 0.5) go(cur+1); else go(cur-1);
+});
+bar.style.width = '20%';
+</script>
+</body>
+</html>

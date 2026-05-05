@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backbase Self-Service ROI Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FFFFFF 0%, #E8F4FF 100%);
+            font-family: 'Libre Franklin', sans-serif;
+            color: #001C3D;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #001C3D;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+            height: 80px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1A5AFF;
+            letter-spacing: 1px;
+        }
+
+        .header-text h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .header-text p {
+            font-size: 13px;
+            color: #B0C4DE;
+            margin: 4px 0 0 0;
+        }
+
+        .export-btn {
+            background: #1A5AFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Libre Franklin', sans-serif;
+        }
+
+        .export-btn:hover {
+            background: #2050DD;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26,90,255, 0.3);
+        }
+
+        .main-content {
+            display: flex;
+            margin-top: 80px;
+            height: calc(100vh - 80px);
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            width: 60%;
+            padding: 40px;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .right-panel {
+            width: 40%;
+            padding: 40px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #E8F4FF 100%);
+            overflow-y: auto;
+        }
+
+        .input-group {
+            margin-bottom: 40px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .input-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #001C3D;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .input-description {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .input-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .slider {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #1A5AFF, #93B5FF);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1A5AFF;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(26,90,255, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(26,90,255, 0.6);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1A5AFF;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(26,90,255, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(26,90,255, 0.6);
+        }
+
+        .number-input {
+            width: 120px;
+            padding: 10px;
+            border: 2px solid #E0E8F0;
+            border-radius: 6px;
+            font-family: 'Libre Franklin', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1A5AFF;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .number-input:focus {
+            outline: none;
+            border-color: #1A5AFF;
+            box-shadow: 0 0 0 3px rgba(26,90,255, 0.1);
+        }
+
+        .value-unit {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+            min-width: 60px;
+        }
+
+        .results-section {
+            margin-bottom: 30px;
+        }
+
+        .results-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .big-number {
+            font-size: 44px;
+            font-weight: 700;
+            color: #1A5AFF;
+            margin-bottom: 8px;
+            animation: pulse 0.6s ease-out;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .big-number-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 30px;
+        }
+
+        .benefit-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .benefit-card {
+            background: white;
+            padding: 18px;
+            border-radius: 10px;
+            border-left: 4px solid #1A5AFF;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .benefit-card.savings { border-left-color: #2ECC71; }
+        .benefit-card.cac { border-left-color: #1A5AFF; }
+        .benefit-card.it { border-left-color: #D97706; }
+        .benefit-card.revenue { border-left-color: #93B5FF; }
+
+        .benefit-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #001C3D;
+            margin-bottom: 4px;
+        }
+
+        .benefit-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .roi-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .roi-big {
+            font-size: 48px;
+            font-weight: 700;
+            color: #2ECC71;
+            margin-bottom: 8px;
+        }
+
+        .roi-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .metrics-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #E0E8F0;
+        }
+
+        .metric-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1A5AFF;
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #999;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .chart-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #001C3D;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            gap: 10px;
+            height: 120px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, #1A5AFF, #93B5FF);
+            border-radius: 6px 6px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+            min-height: 10px;
+        }
+
+        .chart-bar:hover {
+            filter: brightness(1.1);
+        }
+
+        .chart-label {
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .chart-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            font-weight: 600;
+            color: #1A5AFF;
+            white-space: nowrap;
+        }
+
+        .disclaimer {
+            font-size: 11px;
+            color: #999;
+            line-height: 1.6;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #E0E8F0;
+            font-style: italic;
+        }
+
+        /* Print Styles */
+        @media print {
+            .export-btn {
+                display: none;
+            }
+
+            html, body {
+                background: white;
+                height: auto;
+            }
+
+            .container {
+                height: auto;
+                flex-direction: column;
+            }
+
+            .header {
+                position: relative;
+                margin-top: 0;
+                margin-bottom: 30px;
+            }
+
+            .main-content {
+                margin-top: 0;
+                height: auto;
+                flex-direction: column;
+            }
+
+            .left-panel, .right-panel {
+                width: 100%;
+                padding: 0;
+                background: white;
+                overflow: visible;
+            }
+
+            .left-panel {
+                page-break-after: avoid;
+                margin-bottom: 30px;
+            }
+
+            .right-panel {
+                margin-bottom: 20px;
+            }
+
+            body::before {
+                content: "Backbase ROI Calculator — Generated " attr(data-print-date);
+                display: block;
+                font-size: 12px;
+                color: #666;
+                margin-bottom: 20px;
+                border-bottom: 1px solid #DDD;
+                padding-bottom: 10px;
+            }
+
+            .benefit-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .left-panel, .right-panel {
+                width: 100%;
+                height: auto;
+            }
+
+            .main-content {
+                margin-top: 0;
+                height: auto;
+                flex-direction: column;
+            }
+        }
+
+        /* Scrollbar styling */
+        .left-panel::-webkit-scrollbar,
+        .right-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .left-panel::-webkit-scrollbar-track,
+        .right-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .left-panel::-webkit-scrollbar-thumb,
+        .right-panel::-webkit-scrollbar-thumb {
+            background: #1A5AFF;
+            border-radius: 4px;
+        }
+
+        .left-panel::-webkit-scrollbar-thumb:hover,
+        .right-panel::-webkit-scrollbar-thumb:hover {
+            background: #2050DD;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">backbase</div>
+            <div class="header-text">
+                <h1>Self-Service ROI Calculator</h1>
+                <p>For deals under €800K</p>
+            </div>
+        </div>
+        <button class="export-btn" onclick="exportToPDF()">Export as PDF</button>
+    </div>
+
+    <div class="container">
+        <div class="left-panel">
+            <div class="input-group">
+                <label class="input-label">Number of Digital Journeys</label>
+                <p class="input-description">How many customer journeys will be digitized (onboarding, lending, account opening, etc.)</p>
+                <div class="input-controls">
+                    <input type="range" id="journeys" class="slider" min="1" max="20" value="5" oninput="updateCalculations()">
+                    <input type="number" id="journeys-input" class="number-input" min="1" max="20" value="5" oninput="syncInput(this, 'journeys')">
+                    <span class="value-unit">journeys</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Average Manual Processing Time</label>
+                <p class="input-description">Current time spent manually processing each application</p>
+                <div class="input-controls">
+                    <input type="range" id="time" class="slider" min="5" max="120" value="45" oninput="updateCalculations()">
+                    <input type="number" id="time-input" class="number-input" min="5" max="120" value="45" oninput="syncInput(this, 'time')">
+                    <span class="value-unit">minutes</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Monthly Application Volume</label>
+                <p class="input-description">Total applications processed per month across all journeys</p>
+                <div class="input-controls">
+                    <input type="range" id="volume" class="slider" min="100" max="50000" value="5000" oninput="updateCalculations()">
+                    <input type="number" id="volume-input" class="number-input" min="100" max="50000" value="5000" oninput="syncInput(this, 'volume')">
+                    <span class="value-unit">apps/month</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Current Customer Acquisition Cost (CAC)</label>
+                <p class="input-description">Cost to acquire each new customer</p>
+                <div class="input-controls">
+                    <input type="range" id="cac" class="slider" min="50" max="2000" value="500" oninput="updateCalculations()">
+                    <input type="number" id="cac-input" class="number-input" min="50" max="2000" value="500" oninput="syncInput(this, 'cac')">
+                    <span class="value-unit">€</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Annual IT Maintenance Cost</label>
+                <p class="input-description">Current annual spend maintaining existing systems</p>
+                <div class="input-controls">
+                    <input type="range" id="itcost" class="slider" min="100000" max="5000000" value="1500000" step="100000" oninput="updateCalculations()">
+                    <input type="number" id="itcost-input" class="number-input" min="100000" max="5000000" value="1500000" oninput="syncInput(this, 'itcost')">
+                    <span class="value-unit">€</span>
+                </div>
+            </div>
+
+            <div class="disclaimer">
+                Estimates based on conservative industry benchmarks. Actual results may vary. For deals >€800K, contact the Value Consulting team for a detailed assessment.
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="results-section">
+                <h3>Annual Value Creation</h3>
+                <div class="big-number" id="annualBenefit">€7.5M</div>
+                <div class="big-number-label">Total Annual Benefit</div>
+            </div>
+
+            <div class="benefit-cards">
+                <div class="benefit-card savings">
+                    <div class="benefit-value" id="timeSavings">€1.4M</div>
+                    <div class="benefit-label">Time Savings</div>
+                </div>
+                <div class="benefit-card cac">
+                    <div class="benefit-value" id="cacReduction">€1.8M</div>
+                    <div class="benefit-label">CAC Reduction</div>
+                </div>
+                <div class="benefit-card it">
+                    <div class="benefit-value" id="itSavings">€600K</div>
+                    <div class="benefit-label">IT Cost Savings</div>
+                </div>
+                <div class="benefit-card revenue">
+                    <div class="benefit-value" id="revenueUplift">€750K</div>
+                    <div class="benefit-label">Revenue Uplift</div>
+                </div>
+            </div>
+
+            <div class="roi-section">
+                <div class="roi-big" id="roi">150%</div>
+                <div class="roi-label">3-Year ROI</div>
+
+                <div class="metrics-row">
+                    <div class="metric-item">
+                        <div class="metric-value" id="payback">18</div>
+                        <div class="metric-label">Payback Period (months)</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value" id="implCost">€400K</div>
+                        <div class="metric-label">Implementation Cost</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Benefit Breakdown</div>
+                <div class="chart-bars" id="chartBars">
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                        <div class="chart-bar" id="bar1" style="height: 90px;"></div>
+                        <div class="chart-value">€1.4M</div>
+                        <div class="chart-label">Time</div>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                        <div class="chart-bar" id="bar2" style="height: 70px;"></div>
+                        <div class="chart-value">€1.8M</div>
+                        <div class="chart-label">CAC</div>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                        <div class="chart-bar" id="bar3" style="height: 25px;"></div>
+                        <div class="chart-value">€600K</div>
+                        <div class="chart-label">IT</div>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                        <div class="chart-bar" id="bar4" style="height: 30px;"></div>
+                        <div class="chart-value">€750K</div>
+                        <div class="chart-label">Revenue</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const laborCostPerMin = 0.50; // €/minute
+        const revenueLiftPerJourney = 150000; // € per journey
+        const implCostPerJourney = 80000; // € per journey
+
+        function syncInput(input, sliderId) {
+            const slider = document.getElementById(sliderId);
+            const value = parseFloat(input.value);
+            const min = parseFloat(input.min);
+            const max = parseFloat(input.max);
+
+            if (value >= min && value <= max) {
+                slider.value = value;
+                updateCalculations();
+            }
+        }
+
+        function formatCurrency(value) {
+            if (value >= 1000000) {
+                return '€' + (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 1000) {
+                return '€' + (value / 1000).toFixed(0) + 'K';
+            }
+            return '€' + Math.round(value);
+        }
+
+        function updateCalculations() {
+            // Get input values
+            const journeys = parseFloat(document.getElementById('journeys').value);
+            const time = parseFloat(document.getElementById('time').value);
+            const volume = parseFloat(document.getElementById('volume').value);
+            const cac = parseFloat(document.getElementById('cac').value);
+            const itcost = parseFloat(document.getElementById('itcost').value);
+
+            // Sync inputs to number fields
+            document.getElementById('journeys-input').value = journeys;
+            document.getElementById('time-input').value = time;
+            document.getElementById('volume-input').value = volume;
+            document.getElementById('cac-input').value = cac;
+            document.getElementById('itcost-input').value = itcost;
+
+            // Calculate benefits (annual)
+            const timeSavings = volume * (time * 0.70) * 12 * laborCostPerMin;
+            const cacReduction = volume * 12 * cac * 0.30;
+            const itSavings = itcost * 0.40;
+            const revenueUplift = journeys * revenueLiftPerJourney;
+
+            const totalAnnualBenefit = timeSavings + cacReduction + itSavings + revenueUplift;
+
+            // Calculate ROI
+            const implCost = journeys * implCostPerJourney;
+            const threeYearROI = ((totalAnnualBenefit * 3) - implCost) / implCost * 100;
+
+            // Calculate payback period
+            const paybackMonths = (implCost / (totalAnnualBenefit / 12));
+
+            // Update UI with animation
+            updateElement('annualBenefit', formatCurrency(totalAnnualBenefit));
+            updateElement('timeSavings', formatCurrency(timeSavings));
+            updateElement('cacReduction', formatCurrency(cacReduction));
+            updateElement('itSavings', formatCurrency(itSavings));
+            updateElement('revenueUplift', formatCurrency(revenueUplift));
+            updateElement('roi', Math.round(threeYearROI) + '%');
+            updateElement('implCost', formatCurrency(implCost));
+            updateElement('payback', Math.round(paybackMonths));
+
+            // Update chart
+            const maxValue = Math.max(timeSavings, cacReduction, itSavings, revenueUplift);
+            document.getElementById('bar1').style.height = (timeSavings / maxValue * 100) + 'px';
+            document.getElementById('bar2').style.height = (cacReduction / maxValue * 100) + 'px';
+            document.getElementById('bar3').style.height = (itSavings / maxValue * 100) + 'px';
+            document.getElementById('bar4').style.height = (revenueUplift / maxValue * 100) + 'px';
+
+            // Update chart values
+            document.querySelectorAll('.chart-value')[0].textContent = formatCurrency(timeSavings);
+            document.querySelectorAll('.chart-value')[1].textContent = formatCurrency(cacReduction);
+            document.querySelectorAll('.chart-value')[2].textContent = formatCurrency(itSavings);
+            document.querySelectorAll('.chart-value')[3].textContent = formatCurrency(revenueUplift);
+        }
+
+        function updateElement(id, value) {
+            const element = document.getElementById(id);
+            if (element.textContent !== value) {
+                element.textContent = value;
+                element.style.animation = 'none';
+                setTimeout(() => {
+                    element.style.animation = 'pulse 0.6s ease-out';
+                }, 10);
+            }
+        }
+
+        function exportToPDF() {
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            document.body.setAttribute('data-print-date', dateStr);
+
+            window.print();
+        }
+
+        // Initial calculation
+        updateCalculations();
+    </script>
+</body>
+</html>

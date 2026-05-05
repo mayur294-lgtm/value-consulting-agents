@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bb-dark: #001C3D;
+  --color-bb-blue: #1A5AFF;
+  --color-bb-blue-light: #EBF0FF;
+  --color-bb-cyan: #93B5FF;
+  --color-bb-purple: #93B5FF;
+  --color-bb-green: #2ECC71;
+  --color-bb-red: #E02020;
+  --color-bb-amber: #D97706;
+  --color-bb-off-white: #FFFFFF;
+  --color-bb-body: #F5F7F9;
+
+  --color-rag-0: #DC2626;
+  --color-rag-1: #EA580C;
+  --color-rag-2: #0891B2;
+  --color-rag-3: #059669;
+  --color-rag-4: #2563EB;
+
+  --color-stage-prospect: #93B5FF;
+  --color-stage-discovery: #1A5AFF;
+  --color-stage-proposal: #0891B2;
+  --color-stage-workshop: #D97706;
+  --color-stage-delivery: #2ECC71;
+  --color-stage-closed: #001C3D;
+}
+
+body {
+  font-family: 'Libre Franklin', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+.animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }

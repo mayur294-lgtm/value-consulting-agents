@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cortex Ontology — Interactive Graph</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --dark: #001C3D; --blue: #1A5AFF; --purple: #93B5FF; --green: #2ECC71;
+  --amber: #D97706; --red: #E02020; --cyan: #93B5FF; --body: #0B1120;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Libre Franklin', system-ui, sans-serif; background: var(--body); color: #E2E8F0; overflow: hidden; height: 100vh; }
+
+/* Top bar */
+.topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(11,17,32,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+.topbar h1 { font-size: 1rem; font-weight: 900; letter-spacing: -0.02em; }
+.topbar h1 span { color: var(--blue); }
+.legend { display: flex; gap: 14px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.68rem; color: #64748B; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; }
+.legend-item:hover, .legend-item.active { background: rgba(255,255,255,0.05); color: #CBD5E1; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+.controls { display: flex; gap: 8px; }
+.ctrl-btn { padding: 5px 12px; font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #94A3B8; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.ctrl-btn:hover { background: rgba(255,255,255,0.08); color: #E2E8F0; }
+.ctrl-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+/* Graph canvas */
+#graph { width: 100%; height: 100vh; }
+
+/* Detail panel */
+.panel { position: fixed; right: -440px; top: 0; bottom: 0; width: 420px; background: rgba(15,21,35,0.97); backdrop-filter: blur(16px); border-left: 1px solid rgba(255,255,255,0.06); z-index: 200; transition: right 0.35s cubic-bezier(0.4,0,0.2,1); overflow-y: auto; padding-top: 56px; }
+.panel.open { right: 0; }
+.panel-close { position: absolute; top: 68px; right: 16px; width: 28px; height: 28px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #64748B; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; z-index: 10; }
+.panel-close:hover { background: rgba(255,255,255,0.08); color: #E2E8F0; }
+.panel-header { padding: 20px 24px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.panel-cat { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+.panel-name { font-size: 1.3rem; font-weight: 900; color: #fff; }
+.panel-desc { font-size: 0.78rem; color: #64748B; margin-top: 4px; line-height: 1.5; }
+.panel-section { padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.panel-section-title { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #475569; margin-bottom: 8px; }
+.attr-row { display: flex; align-items: baseline; gap: 8px; padding: 3px 0; font-size: 0.76rem; }
+.attr-n { font-weight: 600; color: #CBD5E1; font-family: 'SF Mono', Menlo, monospace; font-size: 0.72rem; min-width: 140px; }
+.attr-t { color: #475569; font-family: monospace; font-size: 0.68rem; min-width: 80px; }
+.attr-d { color: #64748B; font-size: 0.68rem; }
+.attr-pk .attr-n { color: var(--blue); }
+.attr-fk .attr-n { color: var(--purple); }
+.rel-item { padding: 6px 0; font-size: 0.76rem; display: flex; align-items: center; gap: 6px; }
+.rel-dir { font-size: 0.65rem; color: #475569; font-weight: 600; width: 16px; text-align: center; }
+.rel-verb { color: var(--blue); font-weight: 500; font-style: italic; }
+.rel-target { color: #CBD5E1; font-weight: 600; cursor: pointer; }
+.rel-target:hover { color: var(--blue); text-decoration: underline; }
+.rel-card { color: #475569; font-size: 0.65rem; margin-left: auto; }
+
+/* Tooltip */
+.tooltip { position: fixed; padding: 8px 12px; background: rgba(15,21,35,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; font-size: 0.72rem; color: #CBD5E1; pointer-events: none; z-index: 300; max-width: 240px; display: none; backdrop-filter: blur(8px); }
+.tooltip .tt-name { font-weight: 700; color: #fff; margin-bottom: 2px; }
+.tooltip .tt-cat { font-size: 0.6rem; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Link labels */
+.link-label { font-size: 8px; fill: #475569; font-family: 'Libre Franklin', sans-serif; font-weight: 500; pointer-events: none; }
+
+/* Search */
+.search-box { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 150; }
+.search-box input { width: 260px; padding: 7px 14px 7px 32px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #E2E8F0; font-size: 0.78rem; font-family: 'Libre Franklin', sans-serif; outline: none; }
+.search-box input::placeholder { color: #475569; }
+.search-box input:focus { border-color: var(--blue); background: rgba(255,255,255,0.08); }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #475569; font-size: 12px; }
+
+/* Stats bar */
+.statsbar { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; background: rgba(15,21,35,0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 20px; z-index: 100; }
+.stat { text-align: center; }
+.stat-val { font-size: 1.1rem; font-weight: 900; color: var(--cyan); }
+.stat-label { font-size: 0.58rem; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Cortex <span>Ontology Graph</span></h1>
+  <div class="legend" id="legend">
+    <div class="legend-item active" data-cat="all"><div class="legend-dot" style="background:#fff"></div>All</div>
+    <div class="legend-item" data-cat="ref"><div class="legend-dot" style="background:#94A3B8"></div>Reference</div>
+    <div class="legend-item" data-cat="core"><div class="legend-dot" style="background:var(--blue)"></div>Core</div>
+    <div class="legend-item" data-cat="event"><div class="legend-dot" style="background:var(--amber)"></div>Events</div>
+    <div class="legend-item" data-cat="artifact"><div class="legend-dot" style="background:var(--green)"></div>Artifacts</div>
+    <div class="legend-item" data-cat="intel"><div class="legend-dot" style="background:var(--purple)"></div>Intelligence</div>
+  </div>
+  <div class="controls">
+    <button class="ctrl-btn" id="btn-labels">Labels</button>
+    <button class="ctrl-btn" id="btn-reset">Reset</button>
+  </div>
+</div>
+
+<div class="search-box">
+  <span class="search-icon">&#x1F50D;</span>
+  <input type="text" id="search" placeholder="Search entities..." />
+</div>
+
+<svg id="graph"></svg>
+
+<div class="panel" id="panel">
+  <button class="panel-close" id="panel-close">&times;</button>
+  <div id="panel-content"></div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<div class="statsbar">
+  <div class="stat"><div class="stat-val">32</div><div class="stat-label">Entities</div></div>
+  <div class="stat"><div class="stat-val">35</div><div class="stat-label">Relationships</div></div>
+  <div class="stat"><div class="stat-val">20</div><div class="stat-label">Event Types</div></div>
+  <div class="stat"><div class="stat-val">18</div><div class="stat-label">Enums</div></div>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+const CATS = {
+  ref:      { color: '#94A3B8', label: 'Reference Data', glow: 'rgba(148,163,184,0.3)' },
+  core:     { color: '#1A5AFF', label: 'Core',           glow: 'rgba(26,90,255,0.3)' },
+  event:    { color: '#D97706', label: 'Event System',   glow: 'rgba(255,172,9,0.3)' },
+  artifact: { color: '#2ECC71', label: 'Artifact',       glow: 'rgba(38,188,113,0.3)' },
+  intel:    { color: '#93B5FF', label: 'Intelligence',   glow: 'rgba(26,90,255,0.3)' },
+};
+
+// ─── NODES ─────────────────────────────────────────
+const nodes = [
+  // Reference Data
+  { id: 'Domain', cat: 'ref', desc: 'Banking vertical (retail, commercial, wealth, investing, sme)', parent: 'ReferenceData', attrs: ['id:UUID PK','slug:TEXT','name:TEXT','description:TEXT'] },
+  { id: 'JourneyTemplate', cat: 'ref', desc: 'Standard customer journey per domain', parent: 'ReferenceData', attrs: ['id:UUID PK','domain_id:FK→Domain','name:TEXT','journey_type:ENUM','stages:JSONB','benchmarks:JSONB'] },
+  { id: 'ProcessTemplate', cat: 'ref', desc: 'Standard operational process per domain', parent: 'ReferenceData', attrs: ['id:UUID PK','domain_id:FK→Domain','name:TEXT','process_type:ENUM','steps:JSONB'] },
+  { id: 'Persona', cat: 'ref', desc: 'Customer/employee archetypes', parent: 'ReferenceData', attrs: ['id:UUID PK','domain_id:FK→Domain','name:TEXT','persona_type:ENUM','demographics:JSONB','pain_points:TEXT[]'] },
+  { id: 'CapabilityDefinition', cat: 'ref', desc: 'BIAN-aligned capability taxonomy with probing questions', parent: 'ReferenceData', attrs: ['id:UUID PK','code:TEXT','name:TEXT','domain_id:FK→Domain','category:TEXT','probing_questions:JSONB','maturity_criteria:JSONB'] },
+  { id: 'UseCaseTemplate', cat: 'ref', desc: 'Backbase solution use cases — what we CAN do', parent: 'ReferenceData', attrs: ['id:UUID PK','code:TEXT','name:TEXT','domain_id:FK→Domain','category:ENUM','backbase_capabilities:TEXT[]','complexity:ENUM','typical_effort_weeks:INT','kpis:JSONB'] },
+  { id: 'WorkshopKitTemplate', cat: 'ref', desc: 'Facilitation playbooks with agenda, exercises, probing questions', parent: 'ReferenceData', attrs: ['id:UUID PK','name:TEXT','workshop_type:ENUM','duration:TEXT','ideal_attendees:TEXT[]','agenda:JSONB','exercises:JSONB','probing_questions:TEXT[]','capture_template:TEXT[]'] },
+
+  // Core
+  { id: 'Client', cat: 'core', desc: 'A financial institution we engage with. Persists across engagements.', parent: 'CoreEntity', attrs: ['id:UUID PK','slug:TEXT UNIQUE','name:TEXT','industry:ENUM','geography:TEXT','asset_size:TEXT','asset_size_numeric:BIGINT','tech_stack:TEXT[]','core_banking:TEXT','employee_count:INT','member_customer_count:INT','salesforce_account_id:TEXT','profile_data:JSONB'] },
+  { id: 'Engagement', cat: 'core', desc: 'A specific consulting project with lifecycle, artifacts, and knowledge generation.', parent: 'CoreEntity', attrs: ['id:UUID PK','client_id:FK→Client','slug:TEXT','domain:ENUM','engagement_type:ENUM','journey_stage:ENUM','decision_maker:ENUM','forcing_function:ENUM','deal_value:TEXT','stage:ENUM','consultant:TEXT','consultant_id:FK→Consultant','status:ENUM','qa_answers:JSONB','beliefs_needed:TEXT[]','salesforce_deal_id:TEXT'] },
+  { id: 'Consultant', cat: 'core', desc: 'Value consultant. Expertise inferred from engagement history.', parent: 'CoreEntity', attrs: ['id:UUID PK','name:TEXT','email:TEXT','clerk_user_id:TEXT','region:TEXT','active:BOOLEAN'] },
+  { id: 'EngagementFile', cat: 'core', desc: 'File metadata. Actual file stored in Cloudflare R2.', parent: 'CoreEntity', attrs: ['id:UUID PK','engagement_id:FK→Engagement','filename:TEXT','category:ENUM','direction:ENUM','r2_key:TEXT','size_bytes:BIGINT','mime_type:TEXT'] },
+
+  // Events
+  { id: 'EngagementEvent', cat: 'event', desc: 'Immutable, append-only event with causal chain. The backbone of institutional knowledge.', parent: 'EventEntity', attrs: ['id:UUID PK','engagement_id:FK→Engagement','sequence_num:SERIAL','event_type:ENUM (20 types)','actor:ENUM','title:TEXT','description:TEXT','impact:ENUM','metadata:JSONB','caused_by_event_id:FK→self','created_at:TIMESTAMPTZ'] },
+  { id: 'EngagementPlan', cat: 'event', desc: 'Versioned workshop plan snapshot. New version on every modification.', parent: 'EventEntity', attrs: ['id:UUID PK','engagement_id:FK→Engagement','version:INT','workshops:JSONB','deliverables:JSONB','status:ENUM','change_reason:TEXT','caused_by_event_id:FK→EngagementEvent'] },
+  { id: 'EngagementChoice', cat: 'event', desc: 'Auto-captured consultant interaction. Zero effort. What they DO, not what they SAY.', parent: 'EventEntity', attrs: ['id:UUID PK','engagement_id:FK→Engagement','action_type:ENUM','action_data:JSONB','reason:TEXT (optional)','alternatives_shown:JSONB','source_page:TEXT'] },
+
+  // Artifacts
+  { id: 'Workshop', cat: 'artifact', desc: 'A facilitated session. First-class entity. Instance of WorkshopKitTemplate.', parent: 'EngagementArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','template_id:FK→WorkshopKitTemplate','plan_version:INT','name:TEXT','workshop_type:ENUM','sequence_position:INT','status:ENUM','duration_planned:TEXT','duration_actual:TEXT','attendees_planned:TEXT[]','attendees_actual:TEXT[]','facilitation_approach:TEXT','adaptation_notes:TEXT'] },
+  { id: 'Discovery', cat: 'artifact', desc: 'Atomic unit of consulting intelligence — pain point, evidence, metric, signal.', parent: 'EngagementArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','workshop_id:FK→Workshop','pain_pattern_id:FK→PainPattern','category:ENUM','title:TEXT','description:TEXT','severity:ENUM','confidence:REAL','source_type:ENUM','source_ref:TEXT','stakeholder_role:TEXT','metadata:JSONB'] },
+  { id: 'CapabilityScore', cat: 'artifact', desc: 'Maturity rating 0-4 per capability per layer (front/middle/back).', parent: 'EngagementArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','capability_def_id:FK→CapabilityDefinition','capability_code:TEXT','capability_name:TEXT','layer:ENUM','current_score:REAL','target_score:REAL','gap:REAL','evidence_notes:TEXT','evidence_ids:UUID[]'] },
+  { id: 'JourneyMap', cat: 'artifact', desc: 'Client-specific customer/employee journey (current or target state).', parent: 'AssessmentArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','template_id:FK→JourneyTemplate','state:ENUM current|target','journey_name:TEXT','journey_type:ENUM','stages:JSONB','total_friction_points:INT','value_leakage:NUMERIC'] },
+  { id: 'ProcessMap', cat: 'artifact', desc: 'Client-specific operational process (current or target). Inside view vs journey = outside view.', parent: 'AssessmentArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','template_id:FK→ProcessTemplate','state:ENUM current|target','process_name:TEXT','process_type:ENUM','steps:JSONB','total_steps:INT','manual_steps:INT','avg_cycle_time:TEXT','stp_rate:REAL','handoff_count:INT','linked_journey_ids:UUID[]'] },
+  { id: 'TechLandscape', cat: 'artifact', desc: 'Architecture view — systems, integrations, patterns (current or target).', parent: 'AssessmentArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','state:ENUM current|target','systems:JSONB','integrations:JSONB','architecture_pattern:ENUM','api_maturity:ENUM','total_systems:INT','batch_integration_pct:REAL'] },
+  { id: 'ROIModel', cat: 'artifact', desc: 'Business case with scenarios. Config JSONB drives Excel generator.', parent: 'FinancialArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','version:INT','config:JSONB','total_investment:NUMERIC','conservative_npv:NUMERIC','moderate_npv:NUMERIC','aggressive_npv:NUMERIC','payback_months:INT','assumptions:JSONB'] },
+  { id: 'ValueLever', cat: 'artifact', desc: 'Individual ROI lever. First-class for cross-engagement analysis.', parent: 'FinancialArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','roi_model_id:FK→ROIModel','group:TEXT','lever_name:TEXT','lever_type:ENUM','baseline_value:REAL','target_value:REAL','annual_value:NUMERIC','confidence:REAL','assumption_source:TEXT'] },
+  { id: 'UseCase', cat: 'artifact', desc: 'Client-specific use case with full lifecycle: proposed → validated → prioritized → implemented.', parent: 'PlanningArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','template_id:FK→UseCaseTemplate','code:TEXT','name:TEXT','category:ENUM','problem_statement:TEXT','proposed_solution:TEXT','backbase_capabilities:TEXT[]','validation_status:ENUM','priority:ENUM','priority_score:REAL','is_lighthouse:BOOLEAN','effort_weeks:INT','addresses_pain_points:UUID[]→Discovery','addresses_capability_gaps:UUID[]→CapabilityScore','feeds_value_levers:UUID[]→ValueLever','roadmap_phase:INT','dependencies:UUID[]→UseCase'] },
+  { id: 'Roadmap', cat: 'artifact', desc: 'Phased implementation plan.', parent: 'PlanningArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','version:INT','total_phases:INT','total_duration_months:INT','total_investment:NUMERIC'] },
+  { id: 'RoadmapPhase', cat: 'artifact', desc: 'Individual phase with use cases, timeline, investment.', parent: 'PlanningArtifact', attrs: ['id:UUID PK','roadmap_id:FK→Roadmap','phase_number:INT','name:TEXT','duration_months:INT','investment:NUMERIC','theme:TEXT','success_criteria:TEXT[]','use_case_ids:UUID[]→UseCase','risks:JSONB'] },
+  { id: 'ApplicationPortfolio', cat: 'artifact', desc: 'Full application inventory with rationalization summary.', parent: 'TechArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','total_applications:INT','rationalization_summary:JSONB','total_annual_cost:NUMERIC','potential_savings:NUMERIC'] },
+  { id: 'Application', cat: 'artifact', desc: 'Individual app with health assessment and rationalization disposition.', parent: 'TechArtifact', attrs: ['id:UUID PK','portfolio_id:FK→ApplicationPortfolio','name:TEXT','vendor:TEXT','category:ENUM','annual_cost:NUMERIC','business_fit:ENUM','technical_health:ENUM','disposition:ENUM keep|invest|migrate|consolidate|retire','disposition_rationale:TEXT','estimated_savings:NUMERIC','dependencies:TEXT[]'] },
+  { id: 'Decision', cat: 'artifact', desc: 'A significant choice by consultant or client.', parent: 'EngagementArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','decision_type:ENUM','proposed_options:JSONB','chosen_option:TEXT','reason:TEXT','decided_by:ENUM','caused_by_event_id:FK→EngagementEvent'] },
+  { id: 'DebriefEntry', cat: 'artifact', desc: 'Post-workshop signal extraction from consultant chat.', parent: 'EngagementArtifact', attrs: ['id:UUID PK','engagement_id:FK→Engagement','workshop_id:FK→Workshop','consultant_input:TEXT','extracted_signals:JSONB','plan_impact:TEXT','follow_up:TEXT','caused_by_event_id:FK→EngagementEvent'] },
+
+  // Intelligence
+  { id: 'PainPattern', cat: 'intel', desc: 'Recurring pain point aggregated across engagements. Frequency grows with each new instance.', parent: 'IntelligenceEntity', attrs: ['id:UUID PK','name:TEXT UNIQUE','description:TEXT','frequency:INT','severity:ENUM','industries:TEXT[]','domains:TEXT[]','avg_impact:TEXT','contributing_engagement_ids:UUID[]'] },
+  { id: 'Benchmark', cat: 'intel', desc: 'Industry KPI range. Confidence grows with sample size: Anecdotal(<6) → Emerging(6-14) → Validated(≥15).', parent: 'IntelligenceEntity', attrs: ['id:UUID PK','metric:TEXT','domain:TEXT','industry:TEXT','value_range:TEXT','p25:REAL','median:REAL','p75:REAL','unit:TEXT','confidence:REAL','sample_size:INT','source:TEXT'] },
+  { id: 'Outcome', cat: 'intel', desc: 'Deal result from Salesforce. Leading indicator: reached_negotiation.', parent: 'IntelligenceEntity', attrs: ['id:UUID PK','engagement_id:FK→Engagement','outcome_type:ENUM','detected_at:TIMESTAMPTZ','deal_value_at_outcome:NUMERIC','days_from_engagement_start:INT','salesforce_data:JSONB'] },
+  { id: 'Embedding', cat: 'intel', desc: 'Vector for similarity search via pgvector. Powers "find similar deals."', parent: 'IntelligenceEntity', attrs: ['id:UUID PK','source_type:ENUM','source_id:UUID','embedding:vector(1536)','content_hash:TEXT'] },
+];
+
+// ─── LINKS ─────────────────────────────────────────
+const links = [
+  // Core relationships
+  { source: 'Client', target: 'Engagement', label: 'hasEngagement', card: '1→N' },
+  { source: 'Consultant', target: 'Engagement', label: 'leads', card: '1→N' },
+  { source: 'Engagement', target: 'EngagementFile', label: 'hasFile', card: '1→N' },
+  // Event relationships
+  { source: 'Engagement', target: 'EngagementEvent', label: 'hasEvent', card: '1→N' },
+  { source: 'EngagementEvent', target: 'EngagementEvent', label: 'causedBy', card: 'self', important: true },
+  { source: 'Engagement', target: 'EngagementPlan', label: 'hasPlanVersion', card: '1→N' },
+  { source: 'EngagementPlan', target: 'EngagementEvent', label: 'triggeredBy', card: 'N→1' },
+  { source: 'Engagement', target: 'EngagementChoice', label: 'hasChoice', card: '1→N' },
+  // Artifact relationships
+  { source: 'Engagement', target: 'Workshop', label: 'conducted', card: '1→N' },
+  { source: 'WorkshopKitTemplate', target: 'Workshop', label: 'instantiatedAs', card: '1→N' },
+  { source: 'Workshop', target: 'Discovery', label: 'surfaced', card: '1→N', important: true },
+  { source: 'Workshop', target: 'DebriefEntry', label: 'hasDebrief', card: '1→N' },
+  { source: 'Discovery', target: 'PainPattern', label: 'isInstanceOf', card: 'N→1', important: true },
+  { source: 'CapabilityDefinition', target: 'CapabilityScore', label: 'scoredAs', card: '1→N' },
+  { source: 'Engagement', target: 'CapabilityScore', label: 'assessed', card: '1→N' },
+  { source: 'Engagement', target: 'JourneyMap', label: 'mapped', card: '1→N' },
+  { source: 'JourneyTemplate', target: 'JourneyMap', label: 'instantiatedAs', card: '1→N' },
+  { source: 'Engagement', target: 'ProcessMap', label: 'mapped', card: '1→N' },
+  { source: 'ProcessTemplate', target: 'ProcessMap', label: 'instantiatedAs', card: '1→N' },
+  { source: 'ProcessMap', target: 'JourneyMap', label: 'supportsJourney', card: 'N→N' },
+  { source: 'ProcessMap', target: 'CapabilityScore', label: 'revealsGap', card: 'N→N' },
+  { source: 'UseCase', target: 'Discovery', label: 'addressesPainPoint', card: 'N→N', important: true },
+  { source: 'UseCase', target: 'CapabilityScore', label: 'closesGap', card: 'N→N' },
+  { source: 'UseCase', target: 'ValueLever', label: 'drivesLever', card: 'N→N', important: true },
+  { source: 'ValueLever', target: 'ROIModel', label: 'contributesTo', card: 'N→1' },
+  { source: 'UseCaseTemplate', target: 'UseCase', label: 'instantiatedAs', card: '1→N' },
+  { source: 'Roadmap', target: 'RoadmapPhase', label: 'hasPhase', card: '1→N' },
+  { source: 'RoadmapPhase', target: 'UseCase', label: 'includesUseCase', card: 'N→N' },
+  { source: 'Engagement', target: 'ROIModel', label: 'modeled', card: '1→N' },
+  { source: 'Engagement', target: 'Roadmap', label: 'planned', card: '1→N' },
+  { source: 'Engagement', target: 'TechLandscape', label: 'assessed', card: '1→N' },
+  { source: 'ApplicationPortfolio', target: 'Application', label: 'containsApp', card: '1→N' },
+  { source: 'Engagement', target: 'ApplicationPortfolio', label: 'inventoried', card: '1→N' },
+  { source: 'Decision', target: 'EngagementEvent', label: 'triggeredBy', card: 'N→1' },
+  { source: 'Engagement', target: 'Outcome', label: 'hasOutcome', card: '1→N' },
+  // Domain relationships
+  { source: 'Domain', target: 'JourneyTemplate', label: 'hasTemplate', card: '1→N' },
+  { source: 'Domain', target: 'ProcessTemplate', label: 'hasTemplate', card: '1→N' },
+  { source: 'Domain', target: 'Persona', label: 'hasPersona', card: '1→N' },
+  { source: 'Domain', target: 'CapabilityDefinition', label: 'hasTaxonomy', card: '1→N' },
+  { source: 'Domain', target: 'UseCaseTemplate', label: 'hasUseCases', card: '1→N' },
+  { source: 'UseCase', target: 'UseCase', label: 'dependsOn', card: 'self' },
+  { source: 'Engagement', target: 'UseCase', label: 'designed', card: '1→N' },
+  { source: 'Engagement', target: 'Decision', label: 'recorded', card: '1→N' },
+  { source: 'Engagement', target: 'Discovery', label: 'produced', card: '1→N' },
+];
+
+// ─── D3 SETUP ──────────────────────────────────────
+const width = window.innerWidth;
+const height = window.innerHeight;
+const svg = d3.select('#graph').attr('width', width).attr('height', height);
+
+// Defs for arrow markers and glows
+const defs = svg.append('defs');
+Object.entries(CATS).forEach(([key, cat]) => {
+  defs.append('marker')
+    .attr('id', `arrow-${key}`)
+    .attr('viewBox', '0 -5 10 10').attr('refX', 28).attr('refY', 0)
+    .attr('markerWidth', 6).attr('markerHeight', 6).attr('orient', 'auto')
+    .append('path').attr('d', 'M0,-4L10,0L0,4').attr('fill', cat.color).attr('opacity', 0.5);
+
+  const filter = defs.append('filter').attr('id', `glow-${key}`);
+  filter.append('feGaussianBlur').attr('stdDeviation', 6).attr('result', 'blur');
+  filter.append('feComposite').attr('in', 'SourceGraphic').attr('in2', 'blur').attr('operator', 'over');
+});
+
+const g = svg.append('g');
+
+// Zoom
+const zoom = d3.zoom()
+  .scaleExtent([0.2, 4])
+  .on('zoom', e => g.attr('transform', e.transform));
+svg.call(zoom);
+
+// Force simulation
+const simulation = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(links).id(d => d.id).distance(d => d.important ? 120 : 160).strength(0.4))
+  .force('charge', d3.forceManyBody().strength(-800))
+  .force('center', d3.forceCenter(width / 2, height / 2))
+  .force('collision', d3.forceCollide(45))
+  .force('x', d3.forceX(width / 2).strength(0.03))
+  .force('y', d3.forceY(height / 2).strength(0.03));
+
+// Links
+const link = g.append('g').selectAll('line')
+  .data(links).join('line')
+  .attr('stroke', d => {
+    const src = nodes.find(n => n.id === (typeof d.source === 'string' ? d.source : d.source.id));
+    return src ? CATS[src.cat].color : '#334';
+  })
+  .attr('stroke-width', d => d.important ? 2 : 1)
+  .attr('stroke-opacity', d => d.important ? 0.5 : 0.15)
+  .attr('marker-end', d => {
+    const src = nodes.find(n => n.id === (typeof d.source === 'string' ? d.source : d.source.id));
+    return src ? `url(#arrow-${src.cat})` : '';
+  });
+
+// Link labels
+let showLabels = false;
+const linkLabel = g.append('g').selectAll('text')
+  .data(links).join('text')
+  .attr('class', 'link-label')
+  .text(d => d.label)
+  .attr('text-anchor', 'middle')
+  .attr('display', 'none');
+
+// Nodes
+const node = g.append('g').selectAll('g')
+  .data(nodes).join('g')
+  .call(d3.drag()
+    .on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+    .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+    .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; })
+  );
+
+// Node circles
+node.append('circle')
+  .attr('r', d => d.cat === 'core' && d.id === 'Engagement' ? 24 : d.cat === 'event' && d.id === 'EngagementEvent' ? 22 : 16)
+  .attr('fill', d => CATS[d.cat].color)
+  .attr('fill-opacity', 0.15)
+  .attr('stroke', d => CATS[d.cat].color)
+  .attr('stroke-width', 2)
+  .attr('stroke-opacity', 0.7)
+  .style('cursor', 'pointer')
+  .style('filter', d => `url(#glow-${d.cat})`);
+
+// Node labels
+node.append('text')
+  .text(d => d.id.length > 16 ? d.id.replace(/([a-z])([A-Z])/g, '$1\n$2').split('\n')[0] : d.id)
+  .attr('text-anchor', 'middle')
+  .attr('dy', d => {
+    const r = d.cat === 'core' && d.id === 'Engagement' ? 24 : d.cat === 'event' && d.id === 'EngagementEvent' ? 22 : 16;
+    return r + 14;
+  })
+  .attr('fill', d => CATS[d.cat].color)
+  .attr('font-size', '9px')
+  .attr('font-weight', 600)
+  .attr('font-family', "'Libre Franklin', sans-serif")
+  .style('pointer-events', 'none');
+
+// Tooltip
+const tooltip = document.getElementById('tooltip');
+node.on('mouseover', (e, d) => {
+  tooltip.innerHTML = `<div class="tt-name">${d.id}</div><div class="tt-cat">${CATS[d.cat].label} · ${d.parent || ''}</div><div style="margin-top:4px;font-size:0.68rem;color:#94A3B8">${d.desc}</div>`;
+  tooltip.style.display = 'block';
+  tooltip.style.left = (e.clientX + 16) + 'px';
+  tooltip.style.top = (e.clientY - 10) + 'px';
+}).on('mousemove', e => {
+  tooltip.style.left = (e.clientX + 16) + 'px';
+  tooltip.style.top = (e.clientY - 10) + 'px';
+}).on('mouseout', () => { tooltip.style.display = 'none'; });
+
+// Click → open panel + highlight
+let selectedNode = null;
+node.on('click', (e, d) => {
+  e.stopPropagation();
+  selectedNode = d.id;
+  highlightNode(d.id);
+  openPanel(d);
+});
+
+svg.on('click', () => {
+  selectedNode = null;
+  resetHighlight();
+  document.getElementById('panel').classList.remove('open');
+});
+
+function highlightNode(id) {
+  const connected = new Set();
+  connected.add(id);
+  links.forEach(l => {
+    const s = typeof l.source === 'string' ? l.source : l.source.id;
+    const t = typeof l.target === 'string' ? l.target : l.target.id;
+    if (s === id) connected.add(t);
+    if (t === id) connected.add(s);
+  });
+
+  node.select('circle')
+    .attr('fill-opacity', d => connected.has(d.id) ? 0.3 : 0.04)
+    .attr('stroke-opacity', d => connected.has(d.id) ? 1 : 0.1)
+    .attr('stroke-width', d => d.id === id ? 3 : connected.has(d.id) ? 2 : 1);
+
+  node.select('text')
+    .attr('fill-opacity', d => connected.has(d.id) ? 1 : 0.15);
+
+  link
+    .attr('stroke-opacity', d => {
+      const s = typeof d.source === 'string' ? d.source : d.source.id;
+      const t = typeof d.target === 'string' ? d.target : d.target.id;
+      return (s === id || t === id) ? 0.7 : 0.03;
+    })
+    .attr('stroke-width', d => {
+      const s = typeof d.source === 'string' ? d.source : d.source.id;
+      const t = typeof d.target === 'string' ? d.target : d.target.id;
+      return (s === id || t === id) ? 2.5 : 1;
+    });
+
+  linkLabel.attr('display', d => {
+    const s = typeof d.source === 'string' ? d.source : d.source.id;
+    const t = typeof d.target === 'string' ? d.target : d.target.id;
+    return (s === id || t === id) ? 'block' : 'none';
+  }).attr('fill', '#94A3B8').attr('font-size', '9px');
+}
+
+function resetHighlight() {
+  node.select('circle')
+    .attr('fill-opacity', 0.15).attr('stroke-opacity', 0.7).attr('stroke-width', 2);
+  node.select('text').attr('fill-opacity', 1);
+  link.attr('stroke-opacity', d => d.important ? 0.5 : 0.15).attr('stroke-width', d => d.important ? 2 : 1);
+  linkLabel.attr('display', showLabels ? 'block' : 'none');
+}
+
+function openPanel(d) {
+  const panel = document.getElementById('panel');
+  const catColor = CATS[d.cat].color;
+
+  // Find relationships
+  const rels = [];
+  links.forEach(l => {
+    const s = typeof l.source === 'string' ? l.source : l.source.id;
+    const t = typeof l.target === 'string' ? l.target : l.target.id;
+    if (s === d.id) rels.push({ dir: '→', verb: l.label, target: t, card: l.card });
+    if (t === d.id) rels.push({ dir: '←', verb: l.label, target: s, card: l.card });
+  });
+
+  let html = `
+    <div class="panel-header">
+      <div class="panel-cat" style="color:${catColor}">${CATS[d.cat].label} · ${d.parent || ''}</div>
+      <div class="panel-name">${d.id}</div>
+      <div class="panel-desc">${d.desc}</div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-section-title">Attributes (${d.attrs.length})</div>
+      ${d.attrs.map(a => {
+        const parts = a.split(':');
+        const name = parts[0];
+        const rest = parts.slice(1).join(':').trim();
+        const isPK = rest.includes('PK');
+        const isFK = rest.includes('FK') || rest.includes('→');
+        return `<div class="attr-row ${isPK ? 'attr-pk' : ''} ${isFK ? 'attr-fk' : ''}">
+          <span class="attr-n">${name}</span>
+          <span class="attr-d">${rest}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="panel-section">
+      <div class="panel-section-title">Relationships (${rels.length})</div>
+      ${rels.map(r => `<div class="rel-item">
+        <span class="rel-dir">${r.dir}</span>
+        <span class="rel-verb">${r.verb}</span>
+        <span class="rel-target" onclick="clickRelTarget('${r.target}')">${r.target}</span>
+        <span class="rel-card">${r.card}</span>
+      </div>`).join('')}
+    </div>
+  `;
+
+  document.getElementById('panel-content').innerHTML = html;
+  panel.classList.add('open');
+}
+
+window.clickRelTarget = function(id) {
+  const n = nodes.find(n => n.id === id);
+  if (n) {
+    selectedNode = id;
+    highlightNode(id);
+    openPanel(n);
+    // Pan to node
+    const transform = d3.zoomTransform(svg.node());
+    svg.transition().duration(600).call(
+      zoom.transform,
+      d3.zoomIdentity.translate(width/2 - n.x * transform.k, height/2 - n.y * transform.k).scale(transform.k)
+    );
+  }
+};
+
+// Panel close
+document.getElementById('panel-close').addEventListener('click', () => {
+  document.getElementById('panel').classList.remove('open');
+  selectedNode = null;
+  resetHighlight();
+});
+
+// Legend filter
+document.querySelectorAll('.legend-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const cat = item.dataset.cat;
+    document.querySelectorAll('.legend-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+
+    if (cat === 'all') {
+      node.select('circle').attr('fill-opacity', 0.15).attr('stroke-opacity', 0.7);
+      node.select('text').attr('fill-opacity', 1);
+      link.attr('stroke-opacity', d => d.important ? 0.5 : 0.15);
+    } else {
+      node.select('circle')
+        .attr('fill-opacity', d => d.cat === cat ? 0.3 : 0.03)
+        .attr('stroke-opacity', d => d.cat === cat ? 1 : 0.08);
+      node.select('text')
+        .attr('fill-opacity', d => d.cat === cat ? 1 : 0.1);
+      link.attr('stroke-opacity', d => {
+        const s = nodes.find(n => n.id === (typeof d.source === 'string' ? d.source : d.source.id));
+        const t = nodes.find(n => n.id === (typeof d.target === 'string' ? d.target : d.target.id));
+        return (s && s.cat === cat) || (t && t.cat === cat) ? 0.5 : 0.03;
+      });
+    }
+  });
+});
+
+// Toggle labels
+document.getElementById('btn-labels').addEventListener('click', function() {
+  showLabels = !showLabels;
+  this.classList.toggle('active');
+  linkLabel.attr('display', showLabels ? 'block' : 'none');
+});
+
+// Reset view
+document.getElementById('btn-reset').addEventListener('click', () => {
+  svg.transition().duration(600).call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1));
+  selectedNode = null;
+  resetHighlight();
+  document.getElementById('panel').classList.remove('open');
+  document.querySelectorAll('.legend-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('.legend-item[data-cat="all"]').classList.add('active');
+});
+
+// Search
+document.getElementById('search').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  if (!q) { resetHighlight(); return; }
+  const matches = nodes.filter(n => n.id.toLowerCase().includes(q));
+  if (matches.length === 1) {
+    highlightNode(matches[0].id);
+    openPanel(matches[0]);
+  } else {
+    const matchIds = new Set(matches.map(n => n.id));
+    node.select('circle')
+      .attr('fill-opacity', d => matchIds.has(d.id) ? 0.3 : 0.03)
+      .attr('stroke-opacity', d => matchIds.has(d.id) ? 1 : 0.08);
+    node.select('text')
+      .attr('fill-opacity', d => matchIds.has(d.id) ? 1 : 0.1);
+  }
+});
+
+// Tick
+simulation.on('tick', () => {
+  link
+    .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+    .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+
+  linkLabel
+    .attr('x', d => (d.source.x + d.target.x) / 2)
+    .attr('y', d => (d.source.y + d.target.y) / 2);
+
+  node.attr('transform', d => `translate(${d.x},${d.y})`);
+});
+
+// Initial zoom to fit
+simulation.on('end', () => {
+  const bounds = g.node().getBBox();
+  const dx = bounds.width, dy = bounds.height;
+  const x = bounds.x + dx / 2, y = bounds.y + dy / 2;
+  const scale = 0.85 / Math.max(dx / width, dy / height);
+  const translate = [width / 2 - scale * x, height / 2 - scale * y];
+  svg.transition().duration(1000).call(
+    zoom.transform,
+    d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
+  );
+});
+</script>
+</body>
+</html>

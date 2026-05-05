@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cortex Ontology — Entity Relationship Model</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --dark: #001C3D; --blue: #1A5AFF; --purple: #93B5FF; --green: #2ECC71;
+  --amber: #D97706; --red: #E02020; --cyan: #93B5FF;
+  --body: #F5F7F9; --card: #FFFFFF; --border: #E2E8F0; --text: #5C6E84;
+  --muted: #64748B; --light: #F1F5F9;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Libre Franklin',system-ui,sans-serif;background:var(--body);color:var(--text);line-height:1.65}
+.container{max-width:1240px;margin:0 auto;padding:0 32px}
+
+/* Header */
+.hero{background:linear-gradient(135deg,var(--dark) 0%,#0F2B4F 100%);padding:48px 0 0;color:#fff}
+.hero h1{font-size:2.8rem;font-weight:900;letter-spacing:-0.04em}
+.hero .sub{color:rgba(255,255,255,0.5);font-size:0.95rem;margin-top:6px}
+.hero .stats{display:flex;gap:32px;margin-top:24px;padding-bottom:24px}
+.hero .stat{text-align:center}
+.hero .stat-val{font-size:2rem;font-weight:900;color:var(--cyan)}
+.hero .stat-label{font-size:0.7rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;background:var(--dark);padding:0 32px;position:sticky;top:0;z-index:100}
+.tab{padding:14px 20px;font-size:0.8rem;font-weight:600;color:rgba(255,255,255,0.4);cursor:pointer;border-bottom:3px solid transparent;transition:all 0.2s}
+.tab:hover{color:rgba(255,255,255,0.7)}
+.tab.active{color:#fff;border-bottom-color:var(--blue)}
+.tab-content{display:none;padding:40px 0 80px}
+.tab-content.active{display:block}
+
+/* Section headers */
+h2{font-size:1.6rem;font-weight:900;color:var(--dark);margin:40px 0 8px;letter-spacing:-0.02em}
+h2:first-child{margin-top:0}
+h3{font-size:1.15rem;font-weight:700;color:var(--dark);margin:28px 0 10px}
+h4{font-size:0.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin:20px 0 8px}
+p{font-size:0.9rem;margin:6px 0;color:#475569}
+.lead{font-size:1rem;color:var(--muted);margin-bottom:24px}
+
+/* Legend */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0 24px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--muted)}
+.legend-dot{width:14px;height:14px;border-radius:4px}
+
+/* Entity cards */
+.entity-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.entity-grid.full{grid-template-columns:1fr}
+.entity-grid.tri{grid-template-columns:1fr 1fr 1fr}
+.e-card{background:var(--card);border-radius:14px;border:1px solid var(--border);overflow:hidden}
+.e-card.core{border-top:3px solid var(--blue)}
+.e-card.event{border-top:3px solid var(--amber)}
+.e-card.artifact{border-top:3px solid var(--green)}
+.e-card.intel{border-top:3px solid var(--purple)}
+.e-card.ref{border-top:3px solid #94A3B8}
+.e-head{padding:14px 18px 6px;display:flex;align-items:center;gap:8px}
+.e-name{font-size:1rem;font-weight:900;color:var(--dark)}
+.e-badge{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:3px 8px;border-radius:5px}
+.b-core{background:#EBF0FF;color:var(--blue)}.b-event{background:#FFF8E1;color:#B45309}
+.b-artifact{background:#E8F5E9;color:#16A34A}.b-intel{background:#F3EEFF;color:var(--purple)}
+.b-ref{background:var(--light);color:var(--muted)}.b-abstract{background:#FEF3C7;color:#92400E}
+.e-desc{padding:0 18px 10px;font-size:0.78rem;color:var(--muted)}
+.e-parent{font-size:0.7rem;color:var(--blue);padding:0 18px 8px;font-weight:600}
+
+/* Attribute table */
+.a-tbl{width:100%;border-collapse:collapse;font-size:0.76rem}
+.a-tbl th{text-align:left;padding:5px 18px;font-size:0.65rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.05em;background:var(--light);border-top:1px solid var(--border)}
+.a-tbl td{padding:4px 18px;border-top:1px solid #F5F7F9;vertical-align:top}
+.a-name{font-weight:600;color:var(--dark);font-family:'SF Mono',Menlo,monospace;font-size:0.72rem}
+.a-type{color:#94A3B8;font-family:monospace;font-size:0.7rem}
+.a-note{color:var(--muted);font-size:0.7rem}
+.pk{color:var(--blue)}.fk{color:var(--purple)}.req{color:var(--red)}
+.inh{background:#FFFBEB}
+
+/* Relationship table */
+.r-tbl{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;border:1px solid var(--border);margin:12px 0}
+.r-tbl th{text-align:left;padding:10px 14px;font-size:0.68rem;font-weight:700;color:#94A3B8;text-transform:uppercase;background:var(--light)}
+.r-tbl td{padding:7px 14px;font-size:0.78rem;border-top:1px solid #F5F7F9}
+.r-from,.r-to{font-weight:700;color:var(--dark)}
+.r-verb{font-style:italic;color:var(--blue);font-weight:500}
+.r-inv{font-style:italic;color:var(--purple);font-size:0.72rem}
+.r-card{color:#94A3B8;font-size:0.72rem}
+
+/* Enum grid */
+.enum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.enum-card{background:var(--card);border-radius:10px;border:1px solid var(--border);padding:12px 14px}
+.enum-name{font-size:0.8rem;font-weight:700;color:var(--dark);margin-bottom:6px;font-family:monospace}
+.enum-vals{display:flex;flex-wrap:wrap;gap:4px}
+.enum-v{font-size:0.66rem;background:var(--light);color:#475569;padding:2px 7px;border-radius:4px;font-family:monospace}
+
+/* Event grid */
+.ev-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0}
+.ev-type{background:var(--card);border-radius:8px;border:1px solid var(--border);padding:8px 12px}
+.ev-name{font-size:0.74rem;font-weight:700;color:var(--dark);margin-bottom:2px;font-family:monospace}
+.ev-desc{font-size:0.65rem;color:#94A3B8}
+
+/* Query cards */
+.q-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:16px 18px;margin:10px 0}
+.q-q{font-size:0.88rem;font-weight:700;color:var(--dark);margin-bottom:6px}
+.q-path{font-size:0.76rem;color:var(--muted)}
+.q-path em{background:#EBF0FF;color:var(--blue);padding:1px 5px;border-radius:3px;font-weight:600;font-style:normal}
+
+/* Concept cards (intro tab) */
+.concept{background:var(--card);border-radius:16px;border:1px solid var(--border);padding:24px;margin:16px 0}
+.concept h3{margin:0 0 8px;font-size:1.1rem}
+.concept .example{background:var(--light);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:0.82rem;color:#475569;border-left:3px solid var(--blue)}
+.concept .analogy{background:#FFFBEB;border-radius:10px;padding:12px 18px;margin:12px 0;font-size:0.82rem;color:#92400E;border-left:3px solid var(--amber)}
+
+/* Hierarchy tree */
+.tree{font-family:'SF Mono',Menlo,monospace;font-size:0.78rem;background:var(--card);border-radius:12px;border:1px solid var(--border);padding:20px 24px;margin:12px 0;line-height:1.8;white-space:pre;overflow-x:auto}
+.tree .abstract{color:var(--muted);font-style:italic}
+.tree .concrete{color:var(--dark);font-weight:600}
+.tree .hl-blue{color:var(--blue)}.tree .hl-green{color:var(--green)}.tree .hl-amber{color:#B45309}.tree .hl-purple{color:var(--purple)}.tree .hl-gray{color:#94A3B8}
+
+/* Data flow */
+.flow-tbl{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;border:1px solid var(--border);margin:12px 0}
+.flow-tbl th{text-align:left;padding:8px 14px;font-size:0.68rem;font-weight:700;color:#94A3B8;text-transform:uppercase;background:var(--light)}
+.flow-tbl td{padding:7px 14px;font-size:0.76rem;border-top:1px solid #F5F7F9;vertical-align:top}
+.effort-zero{color:var(--green);font-weight:600}
+.effort-low{color:var(--blue);font-weight:600}
+.effort-opt{color:var(--muted);font-weight:600}
+
+/* Objectives */
+.obj-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.obj-card{background:var(--card);border-radius:10px;border:1px solid var(--border);padding:14px 16px}
+.obj-title{font-size:0.82rem;font-weight:700;color:var(--dark);margin-bottom:4px}
+.obj-how{font-size:0.72rem;color:var(--muted)}
+.obj-entities{margin-top:6px;display:flex;flex-wrap:wrap;gap:3px}
+.obj-e{font-size:0.62rem;background:var(--light);color:var(--blue);padding:2px 6px;border-radius:3px;font-weight:600}
+
+/* Print */
+@media print{.tabs{display:none}.tab-content{display:block!important;break-before:page}.hero{padding:24px 0}}
+@media(max-width:768px){.entity-grid,.enum-grid{grid-template-columns:1fr}.ev-grid{grid-template-columns:1fr 1fr}.entity-grid.tri{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ══════════ HERO ══════════ -->
+<div class="hero">
+<div class="container">
+  <h1>Cortex Ontology</h1>
+  <p class="sub">Entity Relationship Model for the Consulting Intelligence Platform — v1.0, April 2026</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-val">33</div><div class="stat-label">Entities</div></div>
+    <div class="stat"><div class="stat-val">36</div><div class="stat-label">Relationships</div></div>
+    <div class="stat"><div class="stat-val">20</div><div class="stat-label">Event Types</div></div>
+    <div class="stat"><div class="stat-val">19</div><div class="stat-label">Enumerations</div></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ TABS ══════════ -->
+<div class="tabs" id="tabs">
+  <div class="tab active" data-tab="intro">What Is This?</div>
+  <div class="tab" data-tab="hierarchy">Class Hierarchy</div>
+  <div class="tab" data-tab="entities">All Entities</div>
+  <div class="tab" data-tab="relationships">Relationships</div>
+  <div class="tab" data-tab="events">Event System</div>
+  <div class="tab" data-tab="enums">Enumerations</div>
+  <div class="tab" data-tab="queries">Intelligence Queries</div>
+  <div class="tab" data-tab="flow">Data Flow</div>
+  <div class="tab" data-tab="objectives">Objectives</div>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- TAB: INTRO -->
+<!-- ══════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-intro">
+
+<h2>This Document in Plain English</h2>
+<p class="lead">If you've ever filled out a Salesforce record, you already understand 90% of what an ontology is. This document just names the things we work with every day and shows how they connect.</p>
+
+<div class="concept">
+  <h3>What is an Ontology?</h3>
+  <p>An ontology is a shared vocabulary. It names every "thing" in a system, what properties each thing has, and how things relate to each other. Think of it as the blueprint for how Cortex understands the consulting world.</p>
+  <div class="analogy">Analogy: A Salesforce org has Accounts, Contacts, Opportunities, Activities. Each has fields. They connect via lookups. That's Salesforce's ontology. This document is Cortex's version — but for consulting work, not CRM data.</div>
+</div>
+
+<div class="concept">
+  <h3>Entities = The Nouns</h3>
+  <p>An entity is a "type of thing" that exists in the system. Each entity has <strong>attributes</strong> — the fields that describe it. Every specific instance (like "Navy Federal" or "the NFIS Wealth Assessment") is a row in that entity's table.</p>
+  <div class="example">
+    <strong>Entity:</strong> Client<br>
+    <strong>Attributes:</strong> name, industry, geography, asset_size, tech_stack<br>
+    <strong>Instance:</strong> name="Navy Federal CU", industry="Credit Union", geography="North America", asset_size="$170B+"
+  </div>
+  <p>We have 32 entities organized into 5 categories:</p>
+  <div class="legend" style="margin-top:12px">
+    <div class="legend-item"><div class="legend-dot" style="background:#94A3B8"></div> <strong>Reference Data</strong> — Domain knowledge that exists before any engagement (templates, taxonomies, personas)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> <strong>Core</strong> — The actors and containers (clients, consultants, engagements, files)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> <strong>Events</strong> — The timeline of what happened, when, and why (append-only, immutable)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> <strong>Artifacts</strong> — Work products from engagements (discoveries, scores, journey maps, use cases, ROI models)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> <strong>Intelligence</strong> — Patterns that emerge across many engagements (benchmarks, pain patterns, outcomes)</div>
+  </div>
+</div>
+
+<div class="concept">
+  <h3>Relationships = The Verbs</h3>
+  <p>Relationships describe how entities connect. Each relationship has a <strong>direction</strong> (forward and inverse) and a <strong>cardinality</strong> — how many of one thing can connect to how many of another.</p>
+  <div class="example">
+    <strong>Forward:</strong> Client <em>hasEngagement</em> Engagement (one client can have many engagements)<br>
+    <strong>Inverse:</strong> Engagement <em>isEngagementOf</em> Client (each engagement belongs to one client)<br>
+    <strong>Cardinality:</strong> 1 → N (one-to-many)
+  </div>
+  <p><strong>The special relationship:</strong> EngagementEvent has a <code>caused_by_event_id</code> that points to ITSELF. This creates <strong>causal chains</strong> — you can trace "the plan changed because the debrief revealed the CFO was engaged, which happened because Workshop 1 was completed." Every consequence links back to its cause.</p>
+</div>
+
+<div class="concept">
+  <h3>Events = The Journal</h3>
+  <p>An event is an immutable record of something that happened at a specific moment. Events are <strong>append-only</strong> — once written, they never change. There are 20 types of events (workshop completed, plan modified, client decision, etc.).</p>
+  <div class="example">
+    Feb 12: workshop_completed — "Strategic Alignment" (actor: consultant)<br>
+    Feb 14: debrief_submitted — "CFO showed up unexpectedly" (actor: consultant)<br>
+    Feb 14: plan_modified — "Added ROI framing to Workshop 2" (actor: system, <strong>caused by</strong> the debrief)
+  </div>
+  <div class="analogy">Analogy: Git commits. Each commit is immutable, has a timestamp, a message, and a parent commit. Events work the same way — each has a timestamp, a description, and optionally a "caused by" pointer to its parent event.</div>
+</div>
+
+<div class="concept">
+  <h3>Enumerations = The Dropdowns</h3>
+  <p>An enumeration (enum) is a fixed list of allowed values. Like a dropdown menu — you can only pick from the defined options. This ensures everyone uses the same vocabulary.</p>
+  <div class="example">
+    <strong>domain:</strong> retail | commercial | wealth | investing | sme<br>
+    <strong>journey_stage:</strong> why_change | why_now | why_invest | why_stay<br>
+    <strong>severity:</strong> critical | high | medium | low
+  </div>
+</div>
+
+<div class="concept">
+  <h3>Class Hierarchy = Inheritance</h3>
+  <p>Some entities share common properties. Instead of repeating <code>engagement_id</code> and <code>created_at</code> on every entity, we define a parent class that children inherit from.</p>
+  <div class="example">
+    <strong>EngagementArtifact</strong> (abstract parent) has: engagement_id, domain, created_at<br>
+    ↓ inherited by<br>
+    <strong>JourneyMap</strong>, <strong>ProcessMap</strong>, <strong>CapabilityScore</strong>, <strong>UseCase</strong>, <strong>ROIModel</strong>, etc.<br><br>
+    This means every artifact automatically has engagement_id — you don't have to remember to add it.
+  </div>
+  <div class="analogy">Analogy: In banking, a "Financial Product" is the parent. "Savings Account", "Current Account", "Fixed Deposit" are children. They all have account_number and balance (inherited), but each adds its own fields (interest_rate, overdraft_limit, maturity_date).</div>
+</div>
+
+<div class="concept">
+  <h3>Current State vs Target State</h3>
+  <p>Several artifacts exist in pairs: what the client has TODAY vs what we recommend for THE FUTURE. The gap between them is literally the engagement — understanding current, defining target, quantifying the delta, building the case to close it.</p>
+  <div class="example">
+    <strong>ProcessMap</strong> (current): "Lending takes 3.2 days, 9 manual steps, 22% STP"<br>
+    <strong>ProcessMap</strong> (target): "Lending takes 4 hours, 2 manual steps, 85% STP"<br><br>
+    <strong>JourneyMap</strong> (current): "Customer visits branch 3 times, 35% abandon"<br>
+    <strong>JourneyMap</strong> (target): "Fully digital, zero branch visits, 85% completion"<br><br>
+    The delta feeds directly into ValueLever → ROIModel → Roadmap.
+  </div>
+</div>
+
+<div class="concept">
+  <h3>The Full Chain — How Everything Connects</h3>
+  <p>The power of the ontology is traceability. Every number in the business case traces back to a specific finding from a specific workshop:</p>
+  <div class="example" style="line-height:2">
+    <strong>Workshop</strong> (Capability Assessment) →<br>
+    &nbsp;&nbsp;surfaces <strong>Discovery</strong> ("50% accounts never funded" — pain_point, critical) →<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;reveals gap in <strong>CapabilityScore</strong> ("Activation Orchestration: 0.8/4.0") →<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addressed by <strong>UseCase</strong> ("Guided Account Funding" — must_have, lighthouse) →<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;drives <strong>ValueLever</strong> ("Funded account increase: $3.2M/year") →<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rolled into <strong>ROIModel</strong> ("Conservative NPV: $4.2M") →<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sequenced in <strong>RoadmapPhase</strong> ("Phase 1: 6 months, $800K") →<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;presented at <strong>Workshop</strong> (Executive Readout) →<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;leads to <strong>Decision</strong> ("CFO: proceed with Phase 1") →<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;detected as <strong>Outcome</strong> ("reached_negotiation")
+  </div>
+</div>
+
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- TAB: CLASS HIERARCHY -->
+<!-- ══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-hierarchy">
+
+<h2>Class Hierarchy</h2>
+<p class="lead">Entities are organized in an inheritance tree. Abstract classes (italic) define shared properties. Concrete classes (bold) are actual database tables. Children inherit all parent attributes.</p>
+
+<div class="tree"><span class="abstract">ConsultingEntity</span>                          <span class="hl-gray">← base: created_at, updated_at</span>
+│
+├── <span class="abstract">ReferenceData</span>                           <span class="hl-gray">← domain knowledge, pre-engagement</span>
+│     ├── <span class="concrete hl-gray">Domain</span>                             retail, commercial, wealth, investing, sme
+│     ├── <span class="concrete hl-gray">JourneyTemplate</span>                    standard journeys per domain
+│     ├── <span class="concrete hl-gray">ProcessTemplate</span>                    operational processes per domain
+│     ├── <span class="concrete hl-gray">Persona</span>                            customer/employee archetypes
+│     ├── <span class="concrete hl-gray">CapabilityDefinition</span>               taxonomy with probing questions (BIAN-aligned)
+│     ├── <span class="concrete hl-gray">UseCaseTemplate</span>                    Backbase solution use cases
+│     └── <span class="concrete hl-gray">WorkshopKitTemplate</span>                facilitation playbooks
+│
+├── <span class="abstract">CoreEntity</span>                              <span class="hl-blue">← actors and containers</span>
+│     ├── <span class="concrete hl-blue">Client</span>                             financial institution
+│     ├── <span class="concrete hl-blue">Consultant</span>                         value consultant
+│     ├── <span class="concrete hl-blue">Engagement</span>                         a specific consulting project
+│     └── <span class="concrete hl-blue">EngagementFile</span>                     uploaded/generated file (metadata → R2)
+│
+├── <span class="abstract">EventEntity</span>                             <span class="hl-amber">← append-only, immutable</span>
+│     ├── <span class="concrete hl-amber">EngagementEvent</span>                    timestamped event with causal chain
+│     ├── <span class="concrete hl-amber">EngagementPlan</span>                     versioned workshop plan snapshot
+│     └── <span class="concrete hl-amber">EngagementChoice</span>                   auto-logged consultant interaction
+│
+├── <span class="abstract">EngagementArtifact</span>                      <span class="hl-green">← engagement_id, domain, created_at</span>
+│     │
+│     ├── <span class="abstract">AssessmentArtifact</span>                  <span class="hl-green">← adds: state (current | target)</span>
+│     │     ├── <span class="concrete hl-green">JourneyMap</span>                     customer/employee journey (current + target)
+│     │     ├── <span class="concrete hl-green">ProcessMap</span>                     operational process (current + target)
+│     │     └── <span class="concrete hl-green">TechLandscape</span>                  architecture view (current + target)
+│     │
+│     ├── <span class="abstract">FinancialArtifact</span>                   <span class="hl-green">← financial models</span>
+│     │     ├── <span class="concrete hl-green">ROIModel</span>                       business case with scenarios
+│     │     └── <span class="concrete hl-green">ValueLever</span>                     individual ROI lever
+│     │
+│     ├── <span class="abstract">PlanningArtifact</span>                    <span class="hl-green">← future-state plans</span>
+│     │     ├── <span class="concrete hl-green">UseCase</span>                        client-specific solution (with lifecycle)
+│     │     ├── <span class="concrete hl-green">Roadmap</span>                        phased implementation plan
+│     │     └── <span class="concrete hl-green">RoadmapPhase</span>                   individual phase with use cases
+│     │
+│     ├── <span class="abstract">TechArtifact</span>                        <span class="hl-green">← technology assessment</span>
+│     │     ├── <span class="concrete hl-green">ApplicationPortfolio</span>           full app inventory + rationalization
+│     │     └── <span class="concrete hl-green">Application</span>                    individual app with disposition
+│     │
+│     ├── <span class="concrete hl-green">Workshop</span>                           facilitated session (instance of kit)
+│     ├── <span class="concrete hl-green">Discovery</span>                          pain point, evidence, signal, metric
+│     ├── <span class="concrete hl-green">CapabilityScore</span>                    maturity rating (0-4, per layer)
+│     ├── <span class="concrete hl-green">Decision</span>                           choice made (by consultant or client)
+│     └── <span class="concrete hl-green">DebriefEntry</span>                       post-workshop signal extraction
+│
+└── <span class="abstract">IntelligenceEntity</span>                     <span class="hl-purple">← derived, cross-engagement</span>
+      ├── <span class="concrete hl-purple">PainPattern</span>                        recurring pain point (aggregated)
+      ├── <span class="concrete hl-purple">Benchmark</span>                          industry KPI range (refined over time)
+      ├── <span class="concrete hl-purple">Outcome</span>                            deal result (from Salesforce)
+      ├── <span class="concrete hl-purple">Embedding</span>                          vector for similarity search (pgvector)
+      └── <span class="concrete hl-purple">ExternalSource</span>                     ingested publication (McKinsey, Gartner, etc.)
+</div>
+
+<h3>Inherited Properties</h3>
+<table class="r-tbl">
+<tr><th>Abstract Class</th><th>Inherited Properties</th><th>Inherited By</th></tr>
+<tr><td class="r-from">ConsultingEntity</td><td>created_at, updated_at</td><td>All 32 entities</td></tr>
+<tr><td class="r-from">EngagementArtifact</td><td>engagement_id → Engagement, domain</td><td>All 14 artifact entities</td></tr>
+<tr><td class="r-from">AssessmentArtifact</td><td>state: current | target</td><td>JourneyMap, ProcessMap, TechLandscape</td></tr>
+</table>
+
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- TAB: ENTITIES -->
+<!-- ══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-entities">
+
+<h2>Reference Data — Domain Knowledge</h2>
+<p class="lead">Pre-engagement knowledge that exists before any client work. Seeded from Git, queryable from database.</p>
+
+<div class="entity-grid tri">
+<div class="e-card ref"><div class="e-head"><span class="e-name">Domain</span><span class="e-badge b-ref">Reference</span></div>
+<div class="e-desc">A banking vertical with associated knowledge</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name">slug</td><td class="a-type">TEXT UNIQUE</td><td class="a-note">retail, commercial, wealth, investing, sme</td></tr>
+<tr><td class="a-name">name</td><td class="a-type">TEXT</td><td class="a-note">"Retail Banking"</td></tr>
+<tr><td class="a-name">description</td><td class="a-type">TEXT</td><td class="a-note">Domain overview</td></tr>
+</table></div>
+
+<div class="e-card ref"><div class="e-head"><span class="e-name">JourneyTemplate</span><span class="e-badge b-ref">Reference</span></div>
+<div class="e-desc">Standard journey before client customization</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">domain_id</td><td class="a-type">UUID → Domain</td><td class="a-note"></td></tr>
+<tr><td class="a-name">name</td><td class="a-type">TEXT</td><td class="a-note">"Retail Onboarding Journey"</td></tr>
+<tr><td class="a-name">journey_type</td><td class="a-type">ENUM</td><td class="a-note">customer | employee | operational</td></tr>
+<tr><td class="a-name">stages</td><td class="a-type">JSONB</td><td class="a-note">Standard stages + known friction patterns</td></tr>
+<tr><td class="a-name">benchmarks</td><td class="a-type">JSONB</td><td class="a-note">Typical KPIs for this journey</td></tr>
+</table></div>
+
+<div class="e-card ref"><div class="e-head"><span class="e-name">ProcessTemplate</span><span class="e-badge b-ref">Reference</span></div>
+<div class="e-desc">Standard operational process per domain</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">domain_id</td><td class="a-type">UUID → Domain</td><td class="a-note"></td></tr>
+<tr><td class="a-name">name</td><td class="a-type">TEXT</td><td class="a-note">"Lending Origination Process"</td></tr>
+<tr><td class="a-name">process_type</td><td class="a-type">ENUM</td><td class="a-note">origination | servicing | onboarding | payments | advisory | operations</td></tr>
+<tr><td class="a-name">steps</td><td class="a-type">JSONB</td><td class="a-note">Typical steps + common bottlenecks</td></tr>
+</table></div>
+
+<div class="e-card ref"><div class="e-head"><span class="e-name">Persona</span><span class="e-badge b-ref">Reference</span></div>
+<div class="e-desc">Customer/employee archetypes per domain</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">domain_id</td><td class="a-type">UUID → Domain</td><td class="a-note"></td></tr>
+<tr><td class="a-name">name</td><td class="a-type">TEXT</td><td class="a-note">"Digital-First Millennial"</td></tr>
+<tr><td class="a-name">persona_type</td><td class="a-type">ENUM</td><td class="a-note">customer | employee</td></tr>
+<tr><td class="a-name">demographics</td><td class="a-type">JSONB</td><td class="a-note">Age range, behaviors, preferences</td></tr>
+<tr><td class="a-name">pain_points</td><td class="a-type">TEXT[]</td><td class="a-note">Typical frustrations</td></tr>
+<tr><td class="a-name">goals</td><td class="a-type">TEXT[]</td><td class="a-note">What they want to achieve</td></tr>
+</table></div>
+
+<div class="e-card ref"><div class="e-head"><span class="e-name">CapabilityDefinition</span><span class="e-badge b-ref">Reference</span></div>
+<div class="e-desc">The taxonomy itself — BIAN-aligned, with probing questions per maturity level</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name">code</td><td class="a-type">TEXT UNIQUE</td><td class="a-note">"CAP-R-CE-01"</td></tr>
+<tr><td class="a-name">name</td><td class="a-type">TEXT</td><td class="a-note">"Digital Channel Availability"</td></tr>
+<tr><td class="a-name fk">domain_id</td><td class="a-type">UUID → Domain</td><td class="a-note"></td></tr>
+<tr><td class="a-name">category</td><td class="a-type">TEXT</td><td class="a-note">"Customer Channels & Engagement"</td></tr>
+<tr><td class="a-name">probing_questions</td><td class="a-type">JSONB</td><td class="a-note">[{level: 0, question: "Does this exist?"}, ...]</td></tr>
+<tr><td class="a-name">maturity_criteria</td><td class="a-type">JSONB</td><td class="a-note">What 0,1,2,3,4 looks like for this capability</td></tr>
+</table></div>
+
+<div class="e-card ref"><div class="e-head"><span class="e-name">UseCaseTemplate</span><span class="e-badge b-ref">Reference</span></div>
+<div class="e-desc">Backbase solution use cases — what we CAN do</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name">code</td><td class="a-type">TEXT UNIQUE</td><td class="a-note">"UC-R-01"</td></tr>
+<tr><td class="a-name">name</td><td class="a-type">TEXT</td><td class="a-note">"Digital Account Opening"</td></tr>
+<tr><td class="a-name fk">domain_id</td><td class="a-type">UUID → Domain</td><td class="a-note"></td></tr>
+<tr><td class="a-name">category</td><td class="a-type">ENUM</td><td class="a-note">acquisition | onboarding | servicing | lending | payments | investing | advisory | engagement | operations | compliance</td></tr>
+<tr><td class="a-name">description</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">problem_solved</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">backbase_capabilities</td><td class="a-type">TEXT[]</td><td class="a-note">Backbase platform capabilities used</td></tr>
+<tr><td class="a-name">complexity</td><td class="a-type">ENUM</td><td class="a-note">low | medium | high</td></tr>
+<tr><td class="a-name">typical_effort_weeks</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">kpis</td><td class="a-type">JSONB</td><td class="a-note">[{metric, typical_improvement}]</td></tr>
+</table></div>
+
+<div class="e-card ref"><div class="e-head"><span class="e-name">WorkshopKitTemplate</span><span class="e-badge b-ref">Reference</span></div>
+<div class="e-desc">Facilitation playbooks — agenda, exercises, probing questions</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name">name</td><td class="a-type">TEXT</td><td class="a-note">"Capability Assessment"</td></tr>
+<tr><td class="a-name">workshop_type</td><td class="a-type">ENUM</td><td class="a-note">strategic_alignment | capability_assessment | customer_experience | architecture | use_case_validation | executive_readout | ...</td></tr>
+<tr><td class="a-name">duration</td><td class="a-type">TEXT</td><td class="a-note">"90 min"</td></tr>
+<tr><td class="a-name">ideal_attendees</td><td class="a-type">TEXT[]</td><td class="a-note"></td></tr>
+<tr><td class="a-name">agenda</td><td class="a-type">JSONB</td><td class="a-note">[{time, activity, method, facilitator_note}]</td></tr>
+<tr><td class="a-name">exercises</td><td class="a-type">JSONB</td><td class="a-note">[{name, description, template, duration}]</td></tr>
+<tr><td class="a-name">probing_questions</td><td class="a-type">TEXT[]</td><td class="a-note"></td></tr>
+<tr><td class="a-name">capture_template</td><td class="a-type">TEXT[]</td><td class="a-note">What to record</td></tr>
+</table></div>
+</div>
+
+<h2>Core Entities</h2>
+<p class="lead">The actors and containers that anchor every engagement.</p>
+<div class="entity-grid">
+
+<div class="e-card core"><div class="e-head"><span class="e-name">Client</span><span class="e-badge b-core">Core</span></div>
+<div class="e-desc">A financial institution. Persists across engagements. Enriched over time.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name">slug</td><td class="a-type">TEXT UNIQUE</td><td class="a-note">"navy_federal"</td></tr>
+<tr><td class="a-name req">name</td><td class="a-type">TEXT</td><td class="a-note">Display name</td></tr>
+<tr><td class="a-name req">industry</td><td class="a-type">ENUM</td><td class="a-note">Credit Union | Retail Bank | Commercial Bank | Digital Bank | Universal Bank | Challenger Bank</td></tr>
+<tr><td class="a-name req">geography</td><td class="a-type">TEXT</td><td class="a-note">North America | EMEA | APAC | LATAM | MEA | Nordics</td></tr>
+<tr><td class="a-name">asset_size</td><td class="a-type">TEXT</td><td class="a-note">"$170B+"</td></tr>
+<tr><td class="a-name">asset_size_numeric</td><td class="a-type">BIGINT</td><td class="a-note">In millions, for range queries</td></tr>
+<tr><td class="a-name">tech_stack</td><td class="a-type">TEXT[]</td><td class="a-note">["Pershing", "FIS", "Custom CRM"]</td></tr>
+<tr><td class="a-name">core_banking</td><td class="a-type">TEXT</td><td class="a-note">Primary core system vendor</td></tr>
+<tr><td class="a-name">employee_count</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">member_customer_count</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">salesforce_account_id</td><td class="a-type">TEXT</td><td class="a-note">External Salesforce ID</td></tr>
+<tr><td class="a-name">profile_data</td><td class="a-type">JSONB</td><td class="a-note">Strategic priorities, competitive position, regulatory context</td></tr>
+</table></div>
+
+<div class="e-card core"><div class="e-head"><span class="e-name">Engagement</span><span class="e-badge b-core">Core</span></div>
+<div class="e-desc">A specific consulting engagement. Has lifecycle, produces artifacts, generates knowledge.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk req">client_id</td><td class="a-type">UUID → Client</td><td class="a-note"></td></tr>
+<tr><td class="a-name">slug</td><td class="a-type">TEXT</td><td class="a-note">"2026-02_investing_assessment"</td></tr>
+<tr><td class="a-name req">domain</td><td class="a-type">ENUM</td><td class="a-note">retail | commercial | wealth | investing | sme</td></tr>
+<tr><td class="a-name req">engagement_type</td><td class="a-type">ENUM</td><td class="a-note">assessment | ignite_inspire | hybrid | roi_only | deal_strategy</td></tr>
+<tr><td class="a-name req">journey_stage</td><td class="a-type">ENUM</td><td class="a-note">why_change | why_now | why_invest | why_stay</td></tr>
+<tr><td class="a-name">decision_maker</td><td class="a-type">ENUM</td><td class="a-note">ceo_board | cfo | cto_cdo | business_owner</td></tr>
+<tr><td class="a-name">forcing_function</td><td class="a-type">ENUM</td><td class="a-note">board_date | competitive | contract | regulatory | none</td></tr>
+<tr><td class="a-name">deal_value</td><td class="a-type">TEXT</td><td class="a-note">"$2.8M"</td></tr>
+<tr><td class="a-name">deal_value_numeric</td><td class="a-type">NUMERIC</td><td class="a-note">For aggregation</td></tr>
+<tr><td class="a-name req">stage</td><td class="a-type">ENUM</td><td class="a-note">prospecting | discovery | proposal | workshop | delivery | closed_won | closed_lost</td></tr>
+<tr><td class="a-name req">consultant</td><td class="a-type">TEXT</td><td class="a-note">Lead consultant name</td></tr>
+<tr><td class="a-name">consultant_id</td><td class="a-type">UUID → Consultant</td><td class="a-note"></td></tr>
+<tr><td class="a-name">status</td><td class="a-type">ENUM</td><td class="a-note">active | completed | paused | cancelled</td></tr>
+<tr><td class="a-name">qa_answers</td><td class="a-type">JSONB</td><td class="a-note">Full Scope Q&A responses</td></tr>
+<tr><td class="a-name">beliefs_needed</td><td class="a-type">TEXT[]</td><td class="a-note">What client needs to believe</td></tr>
+<tr><td class="a-name">salesforce_deal_id</td><td class="a-type">TEXT</td><td class="a-note">External SF Opportunity ID</td></tr>
+<tr><td class="a-name">started_at</td><td class="a-type">DATE</td><td class="a-note"></td></tr>
+<tr><td class="a-name">completed_at</td><td class="a-type">DATE</td><td class="a-note"></td></tr>
+</table></div>
+
+<div class="e-card core"><div class="e-head"><span class="e-name">Consultant</span><span class="e-badge b-core">Core</span></div>
+<div class="e-desc">A value consultant. Expertise inferred from engagement history.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name req">name</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">email</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">clerk_user_id</td><td class="a-type">TEXT</td><td class="a-note">Auth identity</td></tr>
+<tr><td class="a-name">region</td><td class="a-type">TEXT</td><td class="a-note">Primary region</td></tr>
+<tr><td class="a-name">active</td><td class="a-type">BOOLEAN</td><td class="a-note"></td></tr>
+</table></div>
+
+<div class="e-card core"><div class="e-head"><span class="e-name">EngagementFile</span><span class="e-badge b-core">Core</span></div>
+<div class="e-desc">File metadata. Actual file in Cloudflare R2.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note"></td></tr>
+<tr><td class="a-name req">filename</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name req">category</td><td class="a-type">ENUM</td><td class="a-note">transcript | workshop_capture | financial_data | deliverable | other</td></tr>
+<tr><td class="a-name">direction</td><td class="a-type">ENUM</td><td class="a-note">input | output</td></tr>
+<tr><td class="a-name">r2_key</td><td class="a-type">TEXT</td><td class="a-note">Object storage path</td></tr>
+<tr><td class="a-name">size_bytes</td><td class="a-type">BIGINT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">mime_type</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+</table></div>
+</div>
+
+<h2>Engagement Artifacts</h2>
+<p class="lead">Work products from engagements. Each has engagement_id (inherited). Assessment artifacts also have state (current | target).</p>
+
+<div class="entity-grid">
+<div class="e-card artifact"><div class="e-head"><span class="e-name">Workshop</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ EngagementArtifact</div>
+<div class="e-desc">A facilitated session. First-class entity — not JSONB. Instance of WorkshopKitTemplate.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">template_id</td><td class="a-type">UUID → WorkshopKitTemplate</td><td class="a-note">nullable</td></tr>
+<tr><td class="a-name">plan_version</td><td class="a-type">INT</td><td class="a-note">Which plan version added it</td></tr>
+<tr><td class="a-name req">name</td><td class="a-type">TEXT</td><td class="a-note">"Capability Assessment"</td></tr>
+<tr><td class="a-name req">workshop_type</td><td class="a-type">ENUM</td><td class="a-note">strategic_alignment | capability_assessment | customer_experience | architecture | use_case_validation | executive_readout | regulatory | value_realization | custom</td></tr>
+<tr><td class="a-name">sequence_position</td><td class="a-type">INT</td><td class="a-note">1, 2, 3... in the plan</td></tr>
+<tr><td class="a-name req">status</td><td class="a-type">ENUM</td><td class="a-note">planned | confirmed | completed | cancelled | adapted</td></tr>
+<tr><td class="a-name">duration_planned</td><td class="a-type">TEXT</td><td class="a-note">"90 min"</td></tr>
+<tr><td class="a-name">duration_actual</td><td class="a-type">TEXT</td><td class="a-note">"110 min"</td></tr>
+<tr><td class="a-name">attendees_planned</td><td class="a-type">TEXT[]</td><td class="a-note"></td></tr>
+<tr><td class="a-name">attendees_actual</td><td class="a-type">TEXT[]</td><td class="a-note"></td></tr>
+<tr><td class="a-name">facilitation_approach</td><td class="a-type">TEXT</td><td class="a-note">How to facilitate for this journey_stage</td></tr>
+<tr><td class="a-name">adaptation_notes</td><td class="a-type">TEXT</td><td class="a-note">What changed from the standard kit</td></tr>
+<tr><td class="a-name">completed_at</td><td class="a-type">TIMESTAMPTZ</td><td class="a-note"></td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">Discovery</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ EngagementArtifact</div>
+<div class="e-desc">Atomic unit of consulting intelligence. Pain point, evidence, metric, signal.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">workshop_id</td><td class="a-type">UUID → Workshop</td><td class="a-note">nullable — which workshop surfaced this</td></tr>
+<tr><td class="a-name fk">pain_pattern_id</td><td class="a-type">UUID → PainPattern</td><td class="a-note">nullable — links to cross-engagement pattern</td></tr>
+<tr><td class="a-name req">category</td><td class="a-type">ENUM</td><td class="a-note">pain_point | evidence | metric | stakeholder_signal | unconsidered_need | competitive_intel</td></tr>
+<tr><td class="a-name req">title</td><td class="a-type">TEXT</td><td class="a-note">"50% of DI accounts never funded"</td></tr>
+<tr><td class="a-name req">description</td><td class="a-type">TEXT</td><td class="a-note">Full detail, verbatim quotes</td></tr>
+<tr><td class="a-name">severity</td><td class="a-type">ENUM</td><td class="a-note">critical | high | medium | low</td></tr>
+<tr><td class="a-name">confidence</td><td class="a-type">REAL</td><td class="a-note">0.0–1.0</td></tr>
+<tr><td class="a-name">source_type</td><td class="a-type">ENUM</td><td class="a-note">transcript | workshop_debrief | financial_data | public_data</td></tr>
+<tr><td class="a-name">source_ref</td><td class="a-type">TEXT</td><td class="a-note">Filename or workshop ID</td></tr>
+<tr><td class="a-name">stakeholder_role</td><td class="a-type">TEXT</td><td class="a-note">CTO, CFO, etc.</td></tr>
+<tr><td class="a-name">metadata</td><td class="a-type">JSONB</td><td class="a-note">Quantification, lifecycle stage, affected journeys</td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">CapabilityScore</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ EngagementArtifact</div>
+<div class="e-desc">Maturity rating 0–4 per capability per layer. Both current and target in one row.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">capability_def_id</td><td class="a-type">UUID → CapabilityDefinition</td><td class="a-note">Which capability from the taxonomy</td></tr>
+<tr><td class="a-name">capability_code</td><td class="a-type">TEXT</td><td class="a-note">"CAP-R-CE-01"</td></tr>
+<tr><td class="a-name">capability_name</td><td class="a-type">TEXT</td><td class="a-note">"Digital Channel Availability"</td></tr>
+<tr><td class="a-name req">layer</td><td class="a-type">ENUM</td><td class="a-note">front | middle | back</td></tr>
+<tr><td class="a-name req">current_score</td><td class="a-type">REAL</td><td class="a-note">0.0–4.0</td></tr>
+<tr><td class="a-name">target_score</td><td class="a-type">REAL</td><td class="a-note">Desired state</td></tr>
+<tr><td class="a-name">gap</td><td class="a-type">REAL</td><td class="a-note">Computed: target − current</td></tr>
+<tr><td class="a-name">evidence_notes</td><td class="a-type">TEXT</td><td class="a-note">What justified this score</td></tr>
+<tr><td class="a-name">evidence_ids</td><td class="a-type">UUID[]</td><td class="a-note">→ Discovery rows</td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">JourneyMap</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ AssessmentArtifact (has state: current | target)</div>
+<div class="e-desc">Client-specific customer/employee journey. Instance of JourneyTemplate.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr class="inh"><td class="a-name">state</td><td class="a-type">ENUM</td><td class="a-note">current | target (inherited from AssessmentArtifact)</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">template_id</td><td class="a-type">UUID → JourneyTemplate</td><td class="a-note">nullable</td></tr>
+<tr><td class="a-name req">journey_name</td><td class="a-type">TEXT</td><td class="a-note">"Account Opening"</td></tr>
+<tr><td class="a-name">journey_type</td><td class="a-type">ENUM</td><td class="a-note">customer | employee | operational</td></tr>
+<tr><td class="a-name">stages</td><td class="a-type">JSONB</td><td class="a-note">[{name, channel, friction_points[], drop_off_rate}]</td></tr>
+<tr><td class="a-name">total_friction_points</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">value_leakage</td><td class="a-type">NUMERIC</td><td class="a-note">Estimated annual $ lost</td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">ProcessMap</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ AssessmentArtifact (has state: current | target)</div>
+<div class="e-desc">Client-specific operational process. The INSIDE view (vs JourneyMap = OUTSIDE view).</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr class="inh"><td class="a-name">state</td><td class="a-type">ENUM</td><td class="a-note">current | target (inherited)</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">template_id</td><td class="a-type">UUID → ProcessTemplate</td><td class="a-note">nullable</td></tr>
+<tr><td class="a-name req">process_name</td><td class="a-type">TEXT</td><td class="a-note">"Lending Origination"</td></tr>
+<tr><td class="a-name">process_type</td><td class="a-type">ENUM</td><td class="a-note">origination | servicing | onboarding | payments | advisory | operations</td></tr>
+<tr><td class="a-name">steps</td><td class="a-type">JSONB</td><td class="a-note">[{name, role, system, duration, type: manual|automated, bottleneck, pain_points[], automation_opportunity}]</td></tr>
+<tr><td class="a-name">total_steps</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">manual_steps</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">avg_cycle_time</td><td class="a-type">TEXT</td><td class="a-note">"3.2 days"</td></tr>
+<tr><td class="a-name">stp_rate</td><td class="a-type">REAL</td><td class="a-note">Straight-through processing rate (0–1)</td></tr>
+<tr><td class="a-name">handoff_count</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">linked_journey_ids</td><td class="a-type">UUID[]</td><td class="a-note">→ JourneyMap — which journeys this process supports</td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">TechLandscape</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ AssessmentArtifact (has state: current | target)</div>
+<div class="e-desc">Architecture view — systems, integrations, patterns.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr class="inh"><td class="a-name">state</td><td class="a-type">ENUM</td><td class="a-note">current | target (inherited)</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name">systems</td><td class="a-type">JSONB</td><td class="a-note">[{name, vendor, category, deployment, age_years, pain_points[]}]</td></tr>
+<tr><td class="a-name">integrations</td><td class="a-type">JSONB</td><td class="a-note">[{from, to, type: api|batch|manual, frequency, reliability}]</td></tr>
+<tr><td class="a-name">architecture_pattern</td><td class="a-type">ENUM</td><td class="a-note">monolith | soa | microservices | event_driven | hybrid</td></tr>
+<tr><td class="a-name">api_maturity</td><td class="a-type">ENUM</td><td class="a-note">none | internal_only | partner | open_banking</td></tr>
+<tr><td class="a-name">total_systems</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">batch_integration_pct</td><td class="a-type">REAL</td><td class="a-note">% of integrations that are batch</td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">ROIModel</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ FinancialArtifact</div>
+<div class="e-desc">Business case with scenarios. Config JSONB drives the Excel generator.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name">version</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name req">config</td><td class="a-type">JSONB</td><td class="a-note">Full roi_config.json</td></tr>
+<tr><td class="a-name">total_investment</td><td class="a-type">NUMERIC</td><td class="a-note"></td></tr>
+<tr><td class="a-name">conservative_npv</td><td class="a-type">NUMERIC</td><td class="a-note"></td></tr>
+<tr><td class="a-name">moderate_npv</td><td class="a-type">NUMERIC</td><td class="a-note"></td></tr>
+<tr><td class="a-name">aggressive_npv</td><td class="a-type">NUMERIC</td><td class="a-note"></td></tr>
+<tr><td class="a-name">payback_months</td><td class="a-type">INT</td><td class="a-note">Conservative scenario</td></tr>
+<tr><td class="a-name">assumptions</td><td class="a-type">JSONB</td><td class="a-note">[{assumption, source, confidence}]</td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">ValueLever</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ FinancialArtifact</div>
+<div class="e-desc">Individual ROI lever. First-class for cross-engagement analysis.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">roi_model_id</td><td class="a-type">UUID → ROIModel</td><td class="a-note"></td></tr>
+<tr><td class="a-name req">group</td><td class="a-type">TEXT</td><td class="a-note">"activation", "referral", "servicing"</td></tr>
+<tr><td class="a-name req">lever_name</td><td class="a-type">TEXT</td><td class="a-note">"Funded Account Increase"</td></tr>
+<tr><td class="a-name">lever_type</td><td class="a-type">ENUM</td><td class="a-note">revenue | cost_reduction | risk_reduction</td></tr>
+<tr><td class="a-name">baseline_value</td><td class="a-type">REAL</td><td class="a-note">Current state metric</td></tr>
+<tr><td class="a-name">target_value</td><td class="a-type">REAL</td><td class="a-note">Projected improvement</td></tr>
+<tr><td class="a-name">annual_value</td><td class="a-type">NUMERIC</td><td class="a-note">$ impact per year</td></tr>
+<tr><td class="a-name">confidence</td><td class="a-type">REAL</td><td class="a-note">0.0–1.0</td></tr>
+<tr><td class="a-name">assumption_source</td><td class="a-type">TEXT</td><td class="a-note">benchmark | client_data | estimate</td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">UseCase</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ PlanningArtifact</div>
+<div class="e-desc">Client-specific use case. Has full lifecycle: proposed → validated → prioritized → implemented.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">template_id</td><td class="a-type">UUID → UseCaseTemplate</td><td class="a-note">nullable</td></tr>
+<tr><td class="a-name">code</td><td class="a-type">TEXT</td><td class="a-note">"NFIS-UC-03"</td></tr>
+<tr><td class="a-name req">name</td><td class="a-type">TEXT</td><td class="a-note">"Guided Digital Account Funding"</td></tr>
+<tr><td class="a-name">category</td><td class="a-type">ENUM</td><td class="a-note">acquisition | onboarding | servicing | lending | payments | investing | advisory | engagement | operations | compliance</td></tr>
+<tr><td class="a-name">problem_statement</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">proposed_solution</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">backbase_capabilities</td><td class="a-type">TEXT[]</td><td class="a-note"></td></tr>
+<tr><td class="a-name">validation_status</td><td class="a-type">ENUM</td><td class="a-note">proposed | validated | deferred | rejected</td></tr>
+<tr><td class="a-name">priority</td><td class="a-type">ENUM</td><td class="a-note">must_have | should_have | nice_to_have | deferred</td></tr>
+<tr><td class="a-name">priority_score</td><td class="a-type">REAL</td><td class="a-note">From $100 exercise</td></tr>
+<tr><td class="a-name">business_impact</td><td class="a-type">ENUM</td><td class="a-note">high | medium | low</td></tr>
+<tr><td class="a-name">implementation_effort</td><td class="a-type">ENUM</td><td class="a-note">low | medium | high</td></tr>
+<tr><td class="a-name">is_lighthouse</td><td class="a-type">BOOLEAN</td><td class="a-note">Phase 1 proof-of-concept?</td></tr>
+<tr><td class="a-name">effort_weeks</td><td class="a-type">INT</td><td class="a-note">Client-specific estimate</td></tr>
+<tr><td class="a-name">addresses_pain_points</td><td class="a-type">UUID[]</td><td class="a-note">→ Discovery</td></tr>
+<tr><td class="a-name">addresses_capability_gaps</td><td class="a-type">UUID[]</td><td class="a-note">→ CapabilityScore</td></tr>
+<tr><td class="a-name">feeds_value_levers</td><td class="a-type">UUID[]</td><td class="a-note">→ ValueLever</td></tr>
+<tr><td class="a-name">roadmap_phase</td><td class="a-type">INT</td><td class="a-note">Which phase (1, 2, 3)</td></tr>
+<tr><td class="a-name">dependencies</td><td class="a-type">UUID[]</td><td class="a-note">→ UseCase (self)</td></tr>
+<tr><td class="a-name">implementation_status</td><td class="a-type">ENUM</td><td class="a-note">not_started | in_progress | completed | cancelled (nullable)</td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">Roadmap</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ PlanningArtifact</div>
+<div class="e-desc">Phased implementation plan.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name">version</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">total_phases</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">total_duration_months</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">total_investment</td><td class="a-type">NUMERIC</td><td class="a-note"></td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">RoadmapPhase</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ PlanningArtifact</div>
+<div class="e-desc">Individual phase with use cases, timeline, investment.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">roadmap_id</td><td class="a-type">UUID → Roadmap</td><td class="a-note"></td></tr>
+<tr><td class="a-name">phase_number</td><td class="a-type">INT</td><td class="a-note">1, 2, 3</td></tr>
+<tr><td class="a-name req">name</td><td class="a-type">TEXT</td><td class="a-note">"Foundation"</td></tr>
+<tr><td class="a-name">duration_months</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">investment</td><td class="a-type">NUMERIC</td><td class="a-note"></td></tr>
+<tr><td class="a-name">theme</td><td class="a-type">TEXT</td><td class="a-note">"Prove the model"</td></tr>
+<tr><td class="a-name">success_criteria</td><td class="a-type">TEXT[]</td><td class="a-note"></td></tr>
+<tr><td class="a-name">use_case_ids</td><td class="a-type">UUID[]</td><td class="a-note">→ UseCase</td></tr>
+<tr><td class="a-name">risks</td><td class="a-type">JSONB</td><td class="a-note">[{risk, mitigation, probability}]</td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">ApplicationPortfolio</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ TechArtifact</div>
+<div class="e-desc">Full application inventory with rationalization summary.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name">total_applications</td><td class="a-type">INT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">rationalization_summary</td><td class="a-type">JSONB</td><td class="a-note">{keep: 12, invest: 4, migrate: 6, consolidate: 8, retire: 5}</td></tr>
+<tr><td class="a-name">total_annual_cost</td><td class="a-type">NUMERIC</td><td class="a-note"></td></tr>
+<tr><td class="a-name">potential_savings</td><td class="a-type">NUMERIC</td><td class="a-note">From consolidation + retirement</td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">Application</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ TechArtifact</div>
+<div class="e-desc">Individual application with health assessment and rationalization disposition.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">portfolio_id</td><td class="a-type">UUID → ApplicationPortfolio</td><td class="a-note"></td></tr>
+<tr><td class="a-name req">name</td><td class="a-type">TEXT</td><td class="a-note">"Temenos T24"</td></tr>
+<tr><td class="a-name">vendor</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">category</td><td class="a-type">ENUM</td><td class="a-note">core_banking | digital_channels | crm | middleware | payments | lending | wealth | data | identity | compliance | other</td></tr>
+<tr><td class="a-name">annual_cost</td><td class="a-type">NUMERIC</td><td class="a-note"></td></tr>
+<tr><td class="a-name">business_fit</td><td class="a-type">ENUM</td><td class="a-note">strong | adequate | weak | poor</td></tr>
+<tr><td class="a-name">technical_health</td><td class="a-type">ENUM</td><td class="a-note">strong | adequate | weak | poor</td></tr>
+<tr><td class="a-name">disposition</td><td class="a-type">ENUM</td><td class="a-note">keep | invest | migrate | consolidate | retire</td></tr>
+<tr><td class="a-name">disposition_rationale</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">estimated_savings</td><td class="a-type">NUMERIC</td><td class="a-note">Annual savings from this disposition</td></tr>
+<tr><td class="a-name">dependencies</td><td class="a-type">TEXT[]</td><td class="a-note">Other apps that depend on this one</td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">Decision</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ EngagementArtifact</div>
+<div class="e-desc">A significant choice by consultant or client.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name req">decision_type</td><td class="a-type">ENUM</td><td class="a-note">scope_change | deliverable_selection | workshop_approach | roi_structure | client_go_nogo | vendor_choice | phasing</td></tr>
+<tr><td class="a-name">proposed_options</td><td class="a-type">JSONB</td><td class="a-note">What was on the table</td></tr>
+<tr><td class="a-name req">chosen_option</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">reason</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name req">decided_by</td><td class="a-type">ENUM</td><td class="a-note">consultant | client</td></tr>
+<tr><td class="a-name fk">caused_by_event_id</td><td class="a-type">UUID → EngagementEvent</td><td class="a-note">What triggered this decision</td></tr>
+</table></div>
+
+<div class="e-card artifact"><div class="e-head"><span class="e-name">DebriefEntry</span><span class="e-badge b-artifact">Artifact</span></div>
+<div class="e-parent">↑ EngagementArtifact</div>
+<div class="e-desc">Post-workshop signal extraction from consultant chat.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">workshop_id</td><td class="a-type">UUID → Workshop</td><td class="a-note"></td></tr>
+<tr><td class="a-name req">consultant_input</td><td class="a-type">TEXT</td><td class="a-note">Raw text</td></tr>
+<tr><td class="a-name">extracted_signals</td><td class="a-type">JSONB</td><td class="a-note">[{signal, category, confidence}]</td></tr>
+<tr><td class="a-name">plan_impact</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">follow_up</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name fk">caused_by_event_id</td><td class="a-type">UUID → EngagementEvent</td><td class="a-note"></td></tr>
+</table></div>
+</div>
+
+<h2>Aggregated Intelligence</h2>
+<p class="lead">Cross-engagement knowledge that compounds over time. These have a three-source model: seeded from domain knowledge, derived from engagements, and ingested from external research (McKinsey, Gartner, etc.). The <code>source_type</code> field tracks provenance.</p>
+
+<div class="entity-grid">
+
+<div class="e-card intel"><div class="e-head"><span class="e-name">PainPattern</span><span class="e-badge b-intel">Intelligence</span></div>
+<div class="e-parent">↑ IntelligenceEntity</div>
+<div class="e-desc">Recurring pain point aggregated across engagements + external research. Individual Discoveries link here via isInstanceOf. Frequency grows with each new instance. Confidence evolves: seeded (low) → engagement-validated (medium) → externally-corroborated (high).</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name req">name</td><td class="a-type">TEXT UNIQUE</td><td class="a-note">"Account Activation Failure"</td></tr>
+<tr><td class="a-name">description</td><td class="a-type">TEXT</td><td class="a-note">Pattern description</td></tr>
+<tr><td class="a-name">frequency</td><td class="a-type">INT</td><td class="a-note">How many engagements surfaced this</td></tr>
+<tr><td class="a-name">severity</td><td class="a-type">ENUM</td><td class="a-note">critical | high | medium (modal across instances)</td></tr>
+<tr><td class="a-name">industries</td><td class="a-type">TEXT[]</td><td class="a-note">Which industries see this</td></tr>
+<tr><td class="a-name">domains</td><td class="a-type">TEXT[]</td><td class="a-note">Which domains</td></tr>
+<tr><td class="a-name">avg_impact</td><td class="a-type">TEXT</td><td class="a-note">"$8-15M annual revenue leakage"</td></tr>
+<tr><td class="a-name">contributing_engagement_ids</td><td class="a-type">UUID[]</td><td class="a-note">Which engagements contributed</td></tr>
+<tr><td class="a-name req" style="color:var(--cyan)">source_type</td><td class="a-type">ENUM</td><td class="a-note"><strong>seeded</strong> (from domain knowledge files) | <strong>engagement</strong> (emerged from real data) | <strong>external</strong> (from published research) | <strong>hybrid</strong> (multiple sources corroborate)</td></tr>
+<tr><td class="a-name" style="color:var(--cyan)">source_detail</td><td class="a-type">JSONB</td><td class="a-note">[{type, reference, url, author, published, page, confidence_note}] — full citation for each source</td></tr>
+<tr><td class="a-name">seeded_from</td><td class="a-type">TEXT</td><td class="a-note">nullable — "knowledge/domains/retail/pain_points.md"</td></tr>
+<tr><td class="a-name">updated_at</td><td class="a-type">TIMESTAMPTZ</td><td class="a-note"></td></tr>
+</table></div>
+
+<div class="e-card intel"><div class="e-head"><span class="e-name">Benchmark</span><span class="e-badge b-intel">Intelligence</span></div>
+<div class="e-parent">↑ IntelligenceEntity</div>
+<div class="e-desc">Industry KPI range that sharpens over time. Confidence grows with sample size: Anecdotal (&lt;6) → Emerging (6-14) → Validated (≥15). External sources (McKinsey, Gartner) provide initial ranges; engagement data validates/refines them.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name req">metric</td><td class="a-type">TEXT</td><td class="a-note">"Digital Onboarding Completion Rate"</td></tr>
+<tr><td class="a-name req">domain</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">industry</td><td class="a-type">TEXT</td><td class="a-note">Optional industry filter</td></tr>
+<tr><td class="a-name req">value_range</td><td class="a-type">TEXT</td><td class="a-note">"35-55%"</td></tr>
+<tr><td class="a-name">p25</td><td class="a-type">REAL</td><td class="a-note">25th percentile</td></tr>
+<tr><td class="a-name">median</td><td class="a-type">REAL</td><td class="a-note"></td></tr>
+<tr><td class="a-name">p75</td><td class="a-type">REAL</td><td class="a-note">75th percentile</td></tr>
+<tr><td class="a-name req">unit</td><td class="a-type">TEXT</td><td class="a-note">percentage | USD | score | ratio | days</td></tr>
+<tr><td class="a-name">confidence</td><td class="a-type">REAL</td><td class="a-note">0.0-1.0</td></tr>
+<tr><td class="a-name">sample_size</td><td class="a-type">INT</td><td class="a-note">Anecdotal (&lt;6) | Emerging (6-14) | Validated (≥15)</td></tr>
+<tr><td class="a-name req" style="color:var(--cyan)">source_type</td><td class="a-type">ENUM</td><td class="a-note"><strong>seeded</strong> | <strong>engagement</strong> | <strong>external</strong> | <strong>hybrid</strong></td></tr>
+<tr><td class="a-name" style="color:var(--cyan)">source_detail</td><td class="a-type">JSONB</td><td class="a-note">[{type, reference, url, author, published, page, confidence_note}] — e.g., "McKinsey Digital Banking Report 2025, p.34"</td></tr>
+<tr><td class="a-name">seeded_from</td><td class="a-type">TEXT</td><td class="a-note">nullable — "knowledge/domains/retail/benchmarks.md"</td></tr>
+<tr><td class="a-name">updated_at</td><td class="a-type">TIMESTAMPTZ</td><td class="a-note"></td></tr>
+</table></div>
+
+<div class="e-card intel"><div class="e-head"><span class="e-name">Outcome</span><span class="e-badge b-intel">Intelligence</span></div>
+<div class="e-parent">↑ IntelligenceEntity</div>
+<div class="e-desc">Deal result from Salesforce stage changes. "Reached negotiation" is the leading indicator — won takes 1-2 years.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note"></td></tr>
+<tr><td class="a-name req">outcome_type</td><td class="a-type">ENUM</td><td class="a-note">reached_negotiation | closed_won | closed_lost | expanded | stalled | deferred</td></tr>
+<tr><td class="a-name">detected_at</td><td class="a-type">TIMESTAMPTZ</td><td class="a-note">When SF stage changed</td></tr>
+<tr><td class="a-name">deal_value_at_outcome</td><td class="a-type">NUMERIC</td><td class="a-note">Deal value at this point</td></tr>
+<tr><td class="a-name">days_from_engagement_start</td><td class="a-type">INT</td><td class="a-note">Time from start to outcome</td></tr>
+<tr><td class="a-name">salesforce_data</td><td class="a-type">JSONB</td><td class="a-note">Raw SF data at time of detection</td></tr>
+<tr><td class="a-name">created_at</td><td class="a-type">TIMESTAMPTZ</td><td class="a-note"></td></tr>
+</table></div>
+
+<div class="e-card intel"><div class="e-head"><span class="e-name">Embedding</span><span class="e-badge b-intel">Intelligence</span></div>
+<div class="e-parent">↑ IntelligenceEntity</div>
+<div class="e-desc">Vector for semantic similarity search via pgvector. Powers "find similar deals", "find similar pain points." IVFFlat indexed.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name req">source_type</td><td class="a-type">ENUM</td><td class="a-note">engagement_profile | discovery | debrief_entry | pain_pattern</td></tr>
+<tr><td class="a-name req">source_id</td><td class="a-type">UUID</td><td class="a-note">FK to source table</td></tr>
+<tr><td class="a-name req">embedding</td><td class="a-type">vector(1536)</td><td class="a-note">pgvector, IVFFlat indexed</td></tr>
+<tr><td class="a-name">content_hash</td><td class="a-type">TEXT</td><td class="a-note">Detect stale embeddings</td></tr>
+<tr><td class="a-name">created_at</td><td class="a-type">TIMESTAMPTZ</td><td class="a-note"></td></tr>
+</table></div>
+
+<div class="e-card intel"><div class="e-head"><span class="e-name">ExternalSource</span><span class="e-badge b-intel">Intelligence — Future</span></div>
+<div class="e-parent">↑ IntelligenceEntity</div>
+<div class="e-desc">Tracks ingested external publications. When a consultant drops a McKinsey PDF, the system extracts benchmarks and pain points. This entity tracks WHAT was ingested, WHEN, and HOW MANY items were extracted. Enables: "Are our benchmarks stale?"</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name req">title</td><td class="a-type">TEXT</td><td class="a-note">"McKinsey Digital Banking Report 2025"</td></tr>
+<tr><td class="a-name req">publisher</td><td class="a-type">TEXT</td><td class="a-note">"McKinsey & Company"</td></tr>
+<tr><td class="a-name">url</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>
+<tr><td class="a-name">published_date</td><td class="a-type">DATE</td><td class="a-note"></td></tr>
+<tr><td class="a-name">ingested_by</td><td class="a-type">UUID → Consultant</td><td class="a-note">Who uploaded/ingested it</td></tr>
+<tr><td class="a-name">ingested_at</td><td class="a-type">TIMESTAMPTZ</td><td class="a-note"></td></tr>
+<tr><td class="a-name">items_extracted</td><td class="a-type">INT</td><td class="a-note">How many benchmarks/patterns were pulled</td></tr>
+<tr><td class="a-name">domains</td><td class="a-type">TEXT[]</td><td class="a-note">Which domains it applies to</td></tr>
+<tr><td class="a-name fk">file_id</td><td class="a-type">UUID → EngagementFile</td><td class="a-note">nullable — if PDF was uploaded to R2</td></tr>
+</table></div>
+
+</div>
+
+<h3>Knowledge Source Lifecycle</h3>
+<div class="concept" style="background:var(--card);border-radius:14px;border:1px solid var(--border);padding:20px;margin:16px 0">
+<p style="font-size:0.82rem;color:var(--text);line-height:1.7">
+<strong>Day 0 — Seeded:</strong> Domain knowledge files (<code>pain_points.md</code>, <code>benchmarks.md</code>) are parsed into PainPattern and Benchmark rows with <code>source_type: seeded</code>, low confidence.<br><br>
+<strong>External ingestion:</strong> A consultant drops a McKinsey PDF. LLM extracts benchmarks and pain points. Items are created with <code>source_type: external</code>, high confidence but generic. An ExternalSource record tracks the publication.<br><br>
+<strong>Engagement validation:</strong> Real engagement discovers the same pain point or measures the same metric. Discovery links to PainPattern via <code>isInstanceOf</code>. Source becomes <code>hybrid</code>. Confidence increases. Range sharpens from estimates to real data.<br><br>
+<strong>Convergence:</strong> When seeded + external + engagement data all agree, that's the highest confidence. "McKinsey says 35-55%. Our own data from 18 engagements shows 38-52%. The benchmark is now validated."
+</p>
+</div>
+
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- TAB: RELATIONSHIPS -->
+<!-- ══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-relationships">
+<h2>Entity Relationships</h2>
+<p class="lead">Every relationship has a forward name, inverse name, and cardinality. Relationships marked with ★ are the most important for intelligence queries.</p>
+
+<table class="r-tbl">
+<tr><th>From</th><th>Forward →</th><th>To</th><th>← Inverse</th><th>Card.</th><th>Notes</th></tr>
+<tr><td class="r-from">Client</td><td class="r-verb">hasEngagement</td><td class="r-to">Engagement</td><td class="r-inv">isEngagementOf</td><td class="r-card">1→N</td><td>Multiple engagements over time</td></tr>
+<tr><td class="r-from">Consultant</td><td class="r-verb">leads</td><td class="r-to">Engagement</td><td class="r-inv">ledBy</td><td class="r-card">1→N</td><td>Expertise inferred from this</td></tr>
+<tr><td class="r-from">Engagement</td><td class="r-verb">hasEvent</td><td class="r-to">EngagementEvent</td><td class="r-inv">belongsTo</td><td class="r-card">1→N</td><td>Full timeline</td></tr>
+<tr style="background:#FFFBEB"><td class="r-from">EngagementEvent</td><td class="r-verb">★ causedEvent</td><td class="r-to">EngagementEvent</td><td class="r-inv">wasCausedBy</td><td class="r-card">1→N (self)</td><td><strong>Causal chain.</strong> Recursive CTE traversal.</td></tr>
+<tr><td class="r-from">Engagement</td><td class="r-verb">hasPlanVersion</td><td class="r-to">EngagementPlan</td><td class="r-inv">planFor</td><td class="r-card">1→N</td><td>Versioned snapshots</td></tr>
+<tr><td class="r-from">EngagementPlan</td><td class="r-verb">triggeredBy</td><td class="r-to">EngagementEvent</td><td class="r-inv">triggeredPlan</td><td class="r-card">N→1</td><td>What caused this version</td></tr>
+<tr><td class="r-from">Engagement</td><td class="r-verb">hasChoice</td><td class="r-to">EngagementChoice</td><td class="r-inv">choiceIn</td><td class="r-card">1→N</td><td>Auto-logged interactions</td></tr>
+<tr><td class="r-from">Engagement</td><td class="r-verb">hasFile</td><td class="r-to">EngagementFile</td><td class="r-inv">fileOf</td><td class="r-card">1→N</td><td></td></tr>
+<tr><td class="r-from">Engagement</td><td class="r-verb">conductedWorkshop</td><td class="r-to">Workshop</td><td class="r-inv">conductedIn</td><td class="r-card">1→N</td><td></td></tr>
+<tr><td class="r-from">WorkshopKitTemplate</td><td class="r-verb">instantiatedAs</td><td class="r-to">Workshop</td><td class="r-inv">basedOn</td><td class="r-card">1→N</td><td>Template → instance</td></tr>
+<tr style="background:#FFFBEB"><td class="r-from">Workshop</td><td class="r-verb">★ surfacedDiscovery</td><td class="r-to">Discovery</td><td class="r-inv">surfacedIn</td><td class="r-card">1→N</td><td>What was found in which workshop</td></tr>
+<tr><td class="r-from">Workshop</td><td class="r-verb">hasDebrief</td><td class="r-to">DebriefEntry</td><td class="r-inv">debriefOf</td><td class="r-card">1→N</td><td></td></tr>
+<tr style="background:#FFFBEB"><td class="r-from">Discovery</td><td class="r-verb">★ isInstanceOf</td><td class="r-to">PainPattern</td><td class="r-inv">hasInstance</td><td class="r-card">N→1</td><td>Individual → aggregated pattern</td></tr>
+<tr><td class="r-from">CapabilityDefinition</td><td class="r-verb">scoredAs</td><td class="r-to">CapabilityScore</td><td class="r-inv">scoresCapability</td><td class="r-card">1→N</td><td>Taxonomy → client scores</td></tr>
+<tr style="background:#FFFBEB"><td class="r-from">UseCase</td><td class="r-verb">★ addressesPainPoint</td><td class="r-to">Discovery</td><td class="r-inv">addressedBy</td><td class="r-card">N→N</td><td>Which pain points this solves</td></tr>
+<tr><td class="r-from">UseCase</td><td class="r-verb">closesGap</td><td class="r-to">CapabilityScore</td><td class="r-inv">closedBy</td><td class="r-card">N→N</td><td>Which gaps this addresses</td></tr>
+<tr style="background:#FFFBEB"><td class="r-from">UseCase</td><td class="r-verb">★ drivesLever</td><td class="r-to">ValueLever</td><td class="r-inv">drivenBy</td><td class="r-card">N→N</td><td>Use case → financial impact</td></tr>
+<tr><td class="r-from">ValueLever</td><td class="r-verb">contributesTo</td><td class="r-to">ROIModel</td><td class="r-inv">includesLever</td><td class="r-card">N→1</td><td></td></tr>
+<tr><td class="r-from">RoadmapPhase</td><td class="r-verb">includesUseCase</td><td class="r-to">UseCase</td><td class="r-inv">scheduledIn</td><td class="r-card">N→N</td><td></td></tr>
+<tr><td class="r-from">Roadmap</td><td class="r-verb">hasPhase</td><td class="r-to">RoadmapPhase</td><td class="r-inv">phaseOf</td><td class="r-card">1→N</td><td></td></tr>
+<tr><td class="r-from">JourneyTemplate</td><td class="r-verb">instantiatedAs</td><td class="r-to">JourneyMap</td><td class="r-inv">basedOn</td><td class="r-card">1→N</td><td></td></tr>
+<tr><td class="r-from">ProcessTemplate</td><td class="r-verb">instantiatedAs</td><td class="r-to">ProcessMap</td><td class="r-inv">basedOn</td><td class="r-card">1→N</td><td></td></tr>
+<tr><td class="r-from">UseCaseTemplate</td><td class="r-verb">instantiatedAs</td><td class="r-to">UseCase</td><td class="r-inv">basedOn</td><td class="r-card">1→N</td><td></td></tr>
+<tr><td class="r-from">ProcessMap</td><td class="r-verb">supportsJourney</td><td class="r-to">JourneyMap</td><td class="r-inv">supportedByProcess</td><td class="r-card">N→N</td><td>Inside view ↔ outside view</td></tr>
+<tr><td class="r-from">ProcessMap</td><td class="r-verb">revealsGap</td><td class="r-to">CapabilityScore</td><td class="r-inv">revealedByProcess</td><td class="r-card">N→N</td><td>Bottleneck → capability gap</td></tr>
+<tr><td class="r-from">ApplicationPortfolio</td><td class="r-verb">containsApp</td><td class="r-to">Application</td><td class="r-inv">partOfPortfolio</td><td class="r-card">1→N</td><td></td></tr>
+<tr><td class="r-from">Decision</td><td class="r-verb">triggeredBy</td><td class="r-to">EngagementEvent</td><td class="r-inv">triggeredDecision</td><td class="r-card">N→1</td><td></td></tr>
+<tr><td class="r-from">Engagement</td><td class="r-verb">hasOutcome</td><td class="r-to">Outcome</td><td class="r-inv">outcomeOf</td><td class="r-card">1→N</td><td>From Salesforce</td></tr>
+<tr><td class="r-from">Domain</td><td class="r-verb">hasTemplate</td><td class="r-to">JourneyTemplate / ProcessTemplate / Persona / CapabilityDefinition / UseCaseTemplate</td><td class="r-inv">belongsToDomain</td><td class="r-card">1→N</td><td>Domain-specific reference data</td></tr>
+<tr><td class="r-from">UseCase</td><td class="r-verb">dependsOn</td><td class="r-to">UseCase</td><td class="r-inv">prerequisiteFor</td><td class="r-card">N→N (self)</td><td>Implementation ordering</td></tr>
+<tr style="background:#FFFBEB"><td class="r-from">Embedding</td><td class="r-verb">★ represents</td><td class="r-to">Engagement / Discovery / DebriefEntry</td><td class="r-inv">embeddedAs</td><td class="r-card">1→1</td><td>pgvector similarity search</td></tr>
+<tr><td class="r-from">ExternalSource</td><td class="r-verb">contributed</td><td class="r-to">PainPattern / Benchmark</td><td class="r-inv">sourcedFrom</td><td class="r-card">1→N</td><td>Published research → extracted knowledge items. Tracked via source_detail JSONB.</td></tr>
+</table>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- TAB: EVENTS -->
+<!-- ══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-events">
+<h2>Event System</h2>
+<p class="lead">The event clock is append-only and immutable. Every significant action becomes an event. The <code>caused_by_event_id</code> self-reference creates causal chains traversable via SQL recursive CTE.</p>
+
+<div class="entity-grid full">
+<div class="e-card event"><div class="e-head"><span class="e-name">EngagementEvent</span><span class="e-badge b-event">Event Clock</span></div>
+<div class="e-desc">Immutable. Append-only. The backbone of institutional knowledge. Causal chains enable "why did this happen?" queries.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note"></td></tr>
+<tr><td class="a-name">sequence_num</td><td class="a-type">SERIAL</td><td class="a-note">Monotonic within engagement</td></tr>
+<tr><td class="a-name req">event_type</td><td class="a-type">ENUM (20 types)</td><td class="a-note">See below</td></tr>
+<tr><td class="a-name req">actor</td><td class="a-type">ENUM</td><td class="a-note">consultant | client | system | agent</td></tr>
+<tr><td class="a-name req">title</td><td class="a-type">TEXT</td><td class="a-note">Human-readable</td></tr>
+<tr><td class="a-name req">description</td><td class="a-type">TEXT</td><td class="a-note">Full detail</td></tr>
+<tr><td class="a-name">impact</td><td class="a-type">ENUM</td><td class="a-note">positive | negative | neutral</td></tr>
+<tr><td class="a-name">metadata</td><td class="a-type">JSONB</td><td class="a-note">Type-specific payload (flexible)</td></tr>
+<tr><td class="a-name fk">caused_by_event_id</td><td class="a-type">UUID → self</td><td class="a-note"><strong>CAUSAL CHAIN</strong>. "This event was caused by that event."</td></tr>
+<tr><td class="a-name">created_at</td><td class="a-type">TIMESTAMPTZ</td><td class="a-note">Immutable</td></tr>
+</table></div>
+</div>
+
+<h3>20 Event Types</h3>
+<div class="ev-grid">
+<div class="ev-type"><div class="ev-name">engagement_created</div><div class="ev-desc">New engagement initiated</div></div>
+<div class="ev-type"><div class="ev-name">workshop_planned</div><div class="ev-desc">Workshop added to plan</div></div>
+<div class="ev-type"><div class="ev-name">workshop_completed</div><div class="ev-desc">Workshop session finished</div></div>
+<div class="ev-type"><div class="ev-name">workshop_cancelled</div><div class="ev-desc">Workshop removed from plan</div></div>
+<div class="ev-type"><div class="ev-name">workshop_added</div><div class="ev-desc">New workshop added mid-engagement</div></div>
+<div class="ev-type"><div class="ev-name">plan_generated</div><div class="ev-desc">Initial plan from Q&A answers</div></div>
+<div class="ev-type"><div class="ev-name">plan_modified</div><div class="ev-desc">Plan changed (reorder, adapt, etc.)</div></div>
+<div class="ev-type"><div class="ev-name">debrief_submitted</div><div class="ev-desc">Post-workshop debrief captured</div></div>
+<div class="ev-type"><div class="ev-name">discovery_completed</div><div class="ev-desc">Transcript processed, evidence extracted</div></div>
+<div class="ev-type"><div class="ev-name">deliverable_generated</div><div class="ev-desc">Assessment output produced</div></div>
+<div class="ev-type"><div class="ev-name">deliverable_selected</div><div class="ev-desc">Consultant chose deliverables to generate</div></div>
+<div class="ev-type"><div class="ev-name">checkpoint_approved</div><div class="ev-desc">Agent suggestion accepted</div></div>
+<div class="ev-type"><div class="ev-name">checkpoint_overridden</div><div class="ev-desc">Agent suggestion rejected/modified</div></div>
+<div class="ev-type"><div class="ev-name">client_decision</div><div class="ev-desc">Client made a go/no-go/scope choice</div></div>
+<div class="ev-type"><div class="ev-name">scope_change</div><div class="ev-desc">Engagement scope expanded or reduced</div></div>
+<div class="ev-type"><div class="ev-name">file_uploaded</div><div class="ev-desc">Transcript or data file uploaded</div></div>
+<div class="ev-type"><div class="ev-name">pipeline_started</div><div class="ev-desc">Assessment engine began execution</div></div>
+<div class="ev-type"><div class="ev-name">pipeline_completed</div><div class="ev-desc">Pipeline finished all stages</div></div>
+<div class="ev-type"><div class="ev-name">stage_change</div><div class="ev-desc">Deal stage changed (from SF or manual)</div></div>
+<div class="ev-type"><div class="ev-name">outcome_detected</div><div class="ev-desc">Leading indicator reached (negotiation)</div></div>
+</div>
+
+<h3>Causal Chain Example</h3>
+<div class="q-card">
+<pre style="font-size:0.78rem;line-height:1.9;color:var(--text)">
+<strong>engagement_created</strong>                                    ← root cause
+  └─ <strong>plan_generated</strong> (6 workshops proposed)              caused_by: engagement_created
+      └─ <strong>workshop_completed</strong> (Strategic Alignment)       caused_by: plan_generated
+          └─ <strong>debrief_submitted</strong> ("CFO engaged early")    caused_by: workshop_completed
+              └─ <strong>plan_modified</strong> (added ROI framing)       caused_by: debrief_submitted
+                  └─ <strong>workshop_completed</strong> (CX + ROI)       caused_by: plan_modified
+                      └─ <strong>scope_change</strong> (expanded to full BC) caused_by: workshop_completed
+                          └─ <strong>outcome_detected</strong> (reached negotiation)
+</pre>
+<p style="font-size:0.72rem;color:var(--muted);margin-top:8px">Every event in this chain is queryable via recursive CTE. You can answer: "Why did the scope expand? Because the CX workshop revealed the opportunity. Why was ROI framing added? Because the CFO attended Workshop 1."</p>
+</div>
+
+<h3>Supporting Event Entities</h3>
+<div class="entity-grid">
+<div class="e-card event"><div class="e-head"><span class="e-name">EngagementPlan</span><span class="e-badge b-event">Versioned</span></div>
+<div class="e-desc">Snapshot of the workshop plan. New version on every modification. Old versions preserved.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note"></td></tr>
+<tr><td class="a-name">version</td><td class="a-type">INT</td><td class="a-note">Increments on every change</td></tr>
+<tr><td class="a-name req">workshops</td><td class="a-type">JSONB</td><td class="a-note">Ordered array of workshop references (now FKs to Workshop table)</td></tr>
+<tr><td class="a-name">deliverables</td><td class="a-type">JSONB</td><td class="a-note">Selected deliverables</td></tr>
+<tr><td class="a-name">status</td><td class="a-type">ENUM</td><td class="a-note">draft | active | completed | superseded</td></tr>
+<tr><td class="a-name">change_reason</td><td class="a-type">TEXT</td><td class="a-note">Why this version differs</td></tr>
+<tr><td class="a-name fk">caused_by_event_id</td><td class="a-type">UUID → EngagementEvent</td><td class="a-note">What triggered this version</td></tr>
+</table></div>
+
+<div class="e-card event"><div class="e-head"><span class="e-name">EngagementChoice</span><span class="e-badge b-event">Auto-captured</span></div>
+<div class="e-desc">Every consultant interaction auto-logged. Zero effort. Captures what consultants DO, not what they SAY.</div>
+<table class="a-tbl"><tr><th>Attr</th><th>Type</th><th>Notes</th></tr>
+<tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
+<tr><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note"></td></tr>
+<tr><td class="a-name req">action_type</td><td class="a-type">ENUM</td><td class="a-note">workshop_added | workshop_removed | workshop_reordered | deliverable_toggled | plan_accepted_as_is | plan_modified | checkpoint_approved | checkpoint_overridden | qa_answer_changed | file_uploaded</td></tr>
+<tr><td class="a-name req">action_data</td><td class="a-type">JSONB</td><td class="a-note">What changed</td></tr>
+<tr><td class="a-name">reason</td><td class="a-type">TEXT</td><td class="a-note">Optional 1-tap micro-capture</td></tr>
+<tr><td class="a-name">alternatives_shown</td><td class="a-type">JSONB</td><td class="a-note">What Cortex recommended but consultant didn't pick</td></tr>
+<tr><td class="a-name">source_page</td><td class="a-type">TEXT</td><td class="a-note">scope | engine | debrief | pipeline</td></tr>
+</table></div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- TAB: ENUMS -->
+<!-- ══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-enums">
+<h2>Enumerated Types</h2>
+<p class="lead">Fixed lists of allowed values. Ensures consistent vocabulary across all entities and queries. 18 enums total.</p>
+
+<div class="enum-grid">
+<div class="enum-card"><div class="enum-name">domain</div><div class="enum-vals"><span class="enum-v">retail</span><span class="enum-v">commercial</span><span class="enum-v">wealth</span><span class="enum-v">investing</span><span class="enum-v">sme</span></div></div>
+<div class="enum-card"><div class="enum-name">journey_stage</div><div class="enum-vals"><span class="enum-v">why_change</span><span class="enum-v">why_now</span><span class="enum-v">why_invest</span><span class="enum-v">why_stay</span></div></div>
+<div class="enum-card"><div class="enum-name">engagement_type</div><div class="enum-vals"><span class="enum-v">assessment</span><span class="enum-v">ignite_inspire</span><span class="enum-v">hybrid</span><span class="enum-v">roi_only</span><span class="enum-v">deal_strategy</span></div></div>
+<div class="enum-card"><div class="enum-name">deal_stage</div><div class="enum-vals"><span class="enum-v">prospecting</span><span class="enum-v">discovery</span><span class="enum-v">proposal</span><span class="enum-v">workshop</span><span class="enum-v">delivery</span><span class="enum-v">closed_won</span><span class="enum-v">closed_lost</span></div></div>
+<div class="enum-card"><div class="enum-name">decision_maker</div><div class="enum-vals"><span class="enum-v">ceo_board</span><span class="enum-v">cfo</span><span class="enum-v">cto_cdo</span><span class="enum-v">business_owner</span></div></div>
+<div class="enum-card"><div class="enum-name">forcing_function</div><div class="enum-vals"><span class="enum-v">board_date</span><span class="enum-v">competitive</span><span class="enum-v">contract</span><span class="enum-v">regulatory</span><span class="enum-v">none</span></div></div>
+<div class="enum-card"><div class="enum-name">discovery_category</div><div class="enum-vals"><span class="enum-v">pain_point</span><span class="enum-v">evidence</span><span class="enum-v">metric</span><span class="enum-v">stakeholder_signal</span><span class="enum-v">unconsidered_need</span><span class="enum-v">competitive_intel</span></div></div>
+<div class="enum-card"><div class="enum-name">maturity_layer</div><div class="enum-vals"><span class="enum-v">front</span><span class="enum-v">middle</span><span class="enum-v">back</span></div></div>
+<div class="enum-card"><div class="enum-name">outcome_type</div><div class="enum-vals"><span class="enum-v">reached_negotiation</span><span class="enum-v">closed_won</span><span class="enum-v">closed_lost</span><span class="enum-v">expanded</span><span class="enum-v">stalled</span><span class="enum-v">deferred</span></div></div>
+<div class="enum-card"><div class="enum-name">workshop_type</div><div class="enum-vals"><span class="enum-v">strategic_alignment</span><span class="enum-v">capability_assessment</span><span class="enum-v">customer_experience</span><span class="enum-v">employee_experience</span><span class="enum-v">architecture</span><span class="enum-v">use_case_validation</span><span class="enum-v">executive_readout</span><span class="enum-v">regulatory</span><span class="enum-v">value_realization</span><span class="enum-v">custom</span></div></div>
+<div class="enum-card"><div class="enum-name">file_category</div><div class="enum-vals"><span class="enum-v">transcript</span><span class="enum-v">workshop_capture</span><span class="enum-v">financial_data</span><span class="enum-v">deliverable</span><span class="enum-v">other</span></div></div>
+<div class="enum-card"><div class="enum-name">severity</div><div class="enum-vals"><span class="enum-v">critical</span><span class="enum-v">high</span><span class="enum-v">medium</span><span class="enum-v">low</span></div></div>
+<div class="enum-card"><div class="enum-name">artifact_state</div><div class="enum-vals"><span class="enum-v">current</span><span class="enum-v">target</span></div></div>
+<div class="enum-card"><div class="enum-name">process_type</div><div class="enum-vals"><span class="enum-v">origination</span><span class="enum-v">servicing</span><span class="enum-v">onboarding</span><span class="enum-v">payments</span><span class="enum-v">advisory</span><span class="enum-v">operations</span></div></div>
+<div class="enum-card"><div class="enum-name">use_case_category</div><div class="enum-vals"><span class="enum-v">acquisition</span><span class="enum-v">onboarding</span><span class="enum-v">servicing</span><span class="enum-v">lending</span><span class="enum-v">payments</span><span class="enum-v">investing</span><span class="enum-v">advisory</span><span class="enum-v">engagement</span><span class="enum-v">operations</span><span class="enum-v">compliance</span></div></div>
+<div class="enum-card"><div class="enum-name">app_disposition</div><div class="enum-vals"><span class="enum-v">keep</span><span class="enum-v">invest</span><span class="enum-v">migrate</span><span class="enum-v">consolidate</span><span class="enum-v">retire</span></div></div>
+<div class="enum-card"><div class="enum-name">lever_type</div><div class="enum-vals"><span class="enum-v">revenue</span><span class="enum-v">cost_reduction</span><span class="enum-v">risk_reduction</span></div></div>
+<div class="enum-card"><div class="enum-name">validation_status</div><div class="enum-vals"><span class="enum-v">proposed</span><span class="enum-v">validated</span><span class="enum-v">deferred</span><span class="enum-v">rejected</span></div></div>
+<div class="enum-card"><div class="enum-name">knowledge_source_type</div><div class="enum-vals"><span class="enum-v">seeded</span><span class="enum-v">engagement</span><span class="enum-v">external</span><span class="enum-v">hybrid</span></div></div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- TAB: QUERIES -->
+<!-- ══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-queries">
+<h2>Intelligence Queries</h2>
+<p class="lead">The questions the knowledge base must answer. Each shows the entity traversal path.</p>
+
+<div class="q-card"><div class="q-q">1. "What workshop sequences worked for situations like mine?"</div><div class="q-path"><em>Embedding</em> (cosine similarity on engagement profile) → <em>EngagementPlan</em> (get workshop sequence) → <em>Workshop</em> (types, order, adaptations) → <em>Outcome</em> (reached_negotiation or closed_won) → return winning sequences ranked by similarity</div></div>
+
+<div class="q-card"><div class="q-q">2. "What pain points should I probe for in this segment?"</div><div class="q-path"><em>PainPattern</em> (filter by industries + domains, ORDER BY frequency) → <em>Discovery</em> (contributing instances with severity + impact) → return patterns with real examples</div></div>
+
+<div class="q-card"><div class="q-q">3. "What ROI ranges are realistic for digital onboarding?"</div><div class="q-path"><em>ValueLever</em> (filter by lever_name LIKE 'onboarding') → <em>ROIModel</em> → <em>Outcome</em> (did the deal close?) → return ranges: AVG(annual_value), MIN, MAX, with confidence based on sample size</div></div>
+
+<div class="q-card"><div class="q-q">4. "Trace back: what caused this deal to expand?"</div><div class="q-path"><em>Outcome</em> (expanded) → <em>EngagementEvent</em> (scope_change) → recursive <code>caused_by_event_id</code> traversal → returns full chain: debrief → plan adaptation → workshop → original Q&A</div></div>
+
+<div class="q-card"><div class="q-q">5. "When consultants face a skeptical CTO, what do they change?"</div><div class="q-path"><em>EngagementChoice</em> (WHERE reason ILIKE '%CTO%' OR reason ILIKE '%skeptic%') → GROUP BY action_type + action_data → most common: workshop_reordered (Architecture moved up)</div></div>
+
+<div class="q-card"><div class="q-q">6. "What's the average capability score for credit unions in investing?"</div><div class="q-path"><em>CapabilityScore</em> (JOIN Engagement JOIN Client WHERE industry='Credit Union' AND domain='investing') → GROUP BY capability_name, layer → AVG(current_score), PERCENTILE → compare to <em>Benchmark</em></div></div>
+
+<div class="q-card"><div class="q-q">7. "Which engagements are most similar to my current situation?"</div><div class="q-path"><em>Embedding</em> (source_type='engagement_profile') → pgvector cosine similarity <code>&lt;=&gt;</code> → JOIN <em>Engagement</em> → JOIN <em>Outcome</em> → return ranked matches with what happened + what workshops were run</div></div>
+
+<div class="q-card"><div class="q-q">8. "Which use cases are most commonly chosen as lighthouse?"</div><div class="q-path"><em>UseCase</em> (WHERE is_lighthouse=true) → GROUP BY template_id → JOIN <em>UseCaseTemplate</em> → return: name, frequency, avg effort_weeks, avg priority_score, domains</div></div>
+
+<div class="q-card"><div class="q-q">9. "What applications do clients typically consolidate when adopting Backbase?"</div><div class="q-path"><em>Application</em> (WHERE disposition='consolidate') → GROUP BY category, vendor → return: most common consolidation targets with frequency and avg savings</div></div>
+
+<div class="q-card"><div class="q-q">10. "What's the journey friction → process bottleneck → ROI connection?"</div><div class="q-path"><em>JourneyMap</em> (friction_points) → <em>ProcessMap</em> (linked via linked_journey_ids, bottleneck steps) → <em>CapabilityScore</em> (gaps) → <em>UseCase</em> (solutions) → <em>ValueLever</em> ($ impact)</div></div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- TAB: DATA FLOW -->
+<!-- ══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-flow">
+<h2>Data Flow — How Knowledge Enters the System</h2>
+<p class="lead">Most data capture is automatic — zero extra consultant effort. Optional enrichment (debrief, micro-capture) takes seconds.</p>
+
+<table class="flow-tbl">
+<tr><th>Source</th><th>How Captured</th><th>Entities Created</th><th>Effort</th></tr>
+<tr><td><strong>Scope Q&A</strong></td><td>Consultant answers 5 questions</td><td>Engagement (qa_answers, journey_stage, decision_maker)</td><td class="effort-low">2 min (already doing it)</td></tr>
+<tr><td><strong>Plan generation</strong></td><td>System generates from Q&A</td><td>EngagementPlan v1, Workshop rows, EngagementEvent</td><td class="effort-zero">Zero — automatic</td></tr>
+<tr><td><strong>Plan modifications</strong></td><td>Consultant drags/adds/removes workshops</td><td>EngagementPlan v(N+1), EngagementChoice, EngagementEvent</td><td class="effort-zero">Zero — auto-logged</td></tr>
+<tr><td><strong>Micro-capture</strong></td><td>1-tap reason on plan change (optional)</td><td>EngagementChoice.reason populated</td><td class="effort-opt">1 second (optional)</td></tr>
+<tr><td><strong>File upload</strong></td><td>Consultant uploads transcripts to Engine</td><td>EngagementFile, EngagementEvent</td><td class="effort-low">Already doing it</td></tr>
+<tr><td><strong>Agent pipeline</strong></td><td>System runs assessment agents</td><td>Discovery, CapabilityScore, ROIModel, ValueLever, JourneyMap, ProcessMap, UseCase, Roadmap</td><td class="effort-zero">Zero — automatic</td></tr>
+<tr><td><strong>Transcript mining</strong></td><td>LLM extraction pass on transcripts</td><td>Discovery (stakeholder_signal, unconsidered_need)</td><td class="effort-zero">Zero — automatic</td></tr>
+<tr><td><strong>Workshop debrief</strong></td><td>Optional 2-min chat after workshops</td><td>DebriefEntry, Discovery, EngagementEvent</td><td class="effort-opt">2 min (optional)</td></tr>
+<tr><td><strong>Checkpoint decisions</strong></td><td>Consultant approves/overrides agents</td><td>Decision, EngagementChoice, EngagementEvent</td><td class="effort-zero">Zero — already doing it</td></tr>
+<tr><td><strong>Deliverable selection</strong></td><td>Consultant picks outputs to generate</td><td>EngagementChoice, EngagementEvent</td><td class="effort-zero">Zero — already doing it</td></tr>
+<tr><td><strong>Salesforce sync</strong></td><td>Nightly poll of deal stage</td><td>Outcome, EngagementEvent (stage_change)</td><td class="effort-zero">Zero — automatic</td></tr>
+<tr><td><strong>Aggregation jobs</strong></td><td>Periodic rollup after engagement completion</td><td>PainPattern (frequency++), Benchmark (refined)</td><td class="effort-zero">Zero — automatic</td></tr>
+<tr><td><strong>External research</strong></td><td>Consultant drops PDF/URL → LLM extracts benchmarks + pain points → consultant reviews</td><td>ExternalSource, PainPattern (source: external), Benchmark (source: external)</td><td class="effort-low">2-3 min (review extracted items)</td></tr>
+<tr><td><strong>Domain knowledge seed</strong></td><td>One-time parse of knowledge/domains/*.md files</td><td>PainPattern (source: seeded), Benchmark (source: seeded)</td><td class="effort-zero">Zero — one-time bootstrap</td></tr>
+<tr><td><strong>Embeddings</strong></td><td>After entity creation</td><td>Embedding (for similarity search)</td><td class="effort-zero">Zero — automatic</td></tr>
+</table>
+
+<h2 style="margin-top:40px">Data Flow — How Knowledge Exits the System</h2>
+<table class="flow-tbl">
+<tr><th>Query</th><th>Entity Traversal</th><th>Used By (UI Page)</th></tr>
+<tr><td>Similar deals</td><td>Embedding → cosine similarity → Engagement + Workshop + Outcome</td><td>Pipeline (home), Deal Detail, Scope context</td></tr>
+<tr><td>Workshop recommendations</td><td>Similar Engagement → EngagementPlan + EngagementChoice + Outcome</td><td>Scope plan generator</td></tr>
+<tr><td>Pain patterns</td><td>PainPattern (aggregated) or Discovery (raw)</td><td>Insights page, Workshop kit probing questions</td></tr>
+<tr><td>Benchmarks</td><td>Benchmark + CapabilityScore (real data)</td><td>Insights page, Capability assessment calibration</td></tr>
+<tr><td>Event chains</td><td>EngagementEvent recursive CTE on caused_by_event_id</td><td>Deal detail timeline, Insights decisions tab</td></tr>
+<tr><td>Decision patterns</td><td>Decision + EngagementChoice + Outcome (correlated)</td><td>Insights page, Plan recommendations</td></tr>
+<tr><td>Use case patterns</td><td>UseCase + UseCaseTemplate (is_lighthouse frequency, validation rate)</td><td>Use case validation workshop, Scope planning</td></tr>
+<tr><td>Value lever ranges</td><td>ValueLever across engagements (AVG, MIN, MAX by lever_name)</td><td>ROI model calibration, Insights benchmarks</td></tr>
+<tr><td>App rationalization patterns</td><td>Application (disposition by category/vendor)</td><td>Architecture workshop, Tech assessment</td></tr>
+</table>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- TAB: OBJECTIVES -->
+<!-- ══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-objectives">
+<h2>How the Ontology Maps to Product Objectives</h2>
+<p class="lead">Every product requirement traces to specific entities and relationships.</p>
+
+<div class="obj-grid">
+<div class="obj-card"><div class="obj-title">Composable skills, not fixed pipelines</div><div class="obj-how">Entities are modular — UseCase, Workshop, Discovery are independent units assembled in any combination based on context</div><div class="obj-entities"><span class="obj-e">Workshop</span><span class="obj-e">UseCase</span><span class="obj-e">EngagementPlan</span><span class="obj-e">EngagementChoice</span></div></div>
+
+<div class="obj-card"><div class="obj-title">Deal-stage aware (Riesterer lifecycle)</div><div class="obj-how">Engagement.journey_stage drives workshop selection AND facilitation approach (same workshop, different mode)</div><div class="obj-entities"><span class="obj-e">Engagement.journey_stage</span><span class="obj-e">Workshop.facilitation_approach</span></div></div>
+
+<div class="obj-card"><div class="obj-title">Learn from past engagements</div><div class="obj-how">Event chains + choice logs + outcomes = every engagement teaches the next</div><div class="obj-entities"><span class="obj-e">EngagementEvent</span><span class="obj-e">EngagementChoice</span><span class="obj-e">Outcome</span><span class="obj-e">Embedding</span></div></div>
+
+<div class="obj-card"><div class="obj-title">Propose workshop sequences</div><div class="obj-how">Embedding similarity → find winning sequences from similar engagements → recommend</div><div class="obj-entities"><span class="obj-e">Embedding</span><span class="obj-e">EngagementPlan</span><span class="obj-e">Workshop</span><span class="obj-e">Outcome</span></div></div>
+
+<div class="obj-card"><div class="obj-title">Adapt as you go</div><div class="obj-how">EngagementPlan versioned. DebriefEntry captures signals. Causal chains track WHY.</div><div class="obj-entities"><span class="obj-e">EngagementPlan</span><span class="obj-e">DebriefEntry</span><span class="obj-e">EngagementEvent.caused_by</span></div></div>
+
+<div class="obj-card"><div class="obj-title">Generate workshop kits</div><div class="obj-how">WorkshopKitTemplate → Workshop (adapted for journey_stage + client context)</div><div class="obj-entities"><span class="obj-e">WorkshopKitTemplate</span><span class="obj-e">Workshop</span><span class="obj-e">Engagement.journey_stage</span></div></div>
+
+<div class="obj-card"><div class="obj-title">Post-workshop: right deliverables</div><div class="obj-how">Workshop → Discovery → feeds all artifact entities → traceable chain to ROI</div><div class="obj-entities"><span class="obj-e">Discovery</span><span class="obj-e">CapabilityScore</span><span class="obj-e">JourneyMap</span><span class="obj-e">ProcessMap</span><span class="obj-e">UseCase</span><span class="obj-e">ROIModel</span></div></div>
+
+<div class="obj-card"><div class="obj-title">Knowledge compounds over time</div><div class="obj-how">PainPattern frequency grows. Benchmark confidence grows with sample_size. ValueLever ranges sharpen.</div><div class="obj-entities"><span class="obj-e">PainPattern</span><span class="obj-e">Benchmark</span><span class="obj-e">ValueLever</span><span class="obj-e">Embedding</span></div></div>
+
+<div class="obj-card"><div class="obj-title">Capture as byproduct, not task</div><div class="obj-how">EngagementChoice auto-logged. Transcript mining automatic. Salesforce sync automatic.</div><div class="obj-entities"><span class="obj-e">EngagementChoice</span><span class="obj-e">Discovery</span><span class="obj-e">Outcome</span></div></div>
+
+<div class="obj-card"><div class="obj-title">Event clock with causal chains</div><div class="obj-how">EngagementEvent.caused_by_event_id — recursive traversal via SQL CTE</div><div class="obj-entities"><span class="obj-e">EngagementEvent</span><span class="obj-e">caused_by_event_id</span></div></div>
+
+<div class="obj-card"><div class="obj-title">Current state → target state</div><div class="obj-how">AssessmentArtifact.state (current | target). Delta = the business case.</div><div class="obj-entities"><span class="obj-e">JourneyMap</span><span class="obj-e">ProcessMap</span><span class="obj-e">TechLandscape</span><span class="obj-e">CapabilityScore</span></div></div>
+
+<div class="obj-card"><div class="obj-title">Salesforce integration</div><div class="obj-how">Client.salesforce_account_id, Engagement.salesforce_deal_id, Outcome from SF stage changes</div><div class="obj-entities"><span class="obj-e">Client</span><span class="obj-e">Engagement</span><span class="obj-e">Outcome</span></div></div>
+</div>
+</div>
+
+</div><!-- /container -->
+
+<div style="text-align:center;padding:40px 0;color:#94A3B8;font-size:0.75rem;border-top:1px solid var(--border);margin-top:40px">
+  Cortex Ontology v1.1 — April 2026 — 33 entities · 36 relationships · 20 event types · 19 enumerations<br>
+  5 categories: Reference Data (7) · Core (4) · Events (3) · Artifacts (14) · Intelligence (5)<br>
+  Three-source knowledge model: Seeded (domain files) + External (McKinsey, Gartner, etc.) + Engagement-derived → Hybrid (validated)
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

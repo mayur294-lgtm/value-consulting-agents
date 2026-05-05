@@ -16,51 +16,51 @@
 
 | Token | Hex | RGB | Usage |
 |-------|-----|-----|-------|
-| **Primary Dark** | `#091C35` | rgb(9, 28, 53) | Dark backgrounds, primary text on light, section fills |
-| **Primary Blue** | `#3366FF` | rgb(51, 102, 255) | Primary accent, CTAs, links, highlights, header fills |
+| **Primary Dark** | `#001C3D` | rgb(0,28,61) | Dark backgrounds, primary text on light, section fills |
+| **Primary Blue** | `#1A5AFF` | rgb(26,90,255) | Primary accent, CTAs, links, highlights, header fills |
 | **White** | `#FFFFFF` | rgb(255, 255, 255) | Text on dark, light backgrounds |
 
 ### Accent Colors
 
 | Token | Hex | RGB | Usage |
 |-------|-----|-----|-------|
-| **Cyan** | `#69FEFF` | rgb(105, 254, 255) | Highlights, data viz accent, attention items |
-| **Red/Coral** | `#FF7262` | rgb(255, 114, 98) | Alerts, negative indicators, pain points |
+| **Cyan** | `#93B5FF` | rgb(105, 254, 255) | Highlights, data viz accent, attention items |
+| **Red/Coral** | `#E02020` | rgb(255, 114, 98) | Alerts, negative indicators, pain points |
 | **Red (alt)** | `#FF503C` / `#FF6047` | — | Alternative reds used in charts |
 
 ### Supporting Colors
 
 | Token | Hex | RGB | Usage |
 |-------|-----|-----|-------|
-| **Navy Heading** | `#181E41` | rgb(24, 30, 65) | Alternative heading color (darker navy) |
-| **Muted Blue-Grey** | `#3A495D` | rgb(58, 73, 93) | Card fills, secondary backgrounds, shapes |
-| **Light Blue** | `#E5EBFF` | rgb(229, 235, 255) | Light accent fills, table alternation |
-| **Off-White** | `#F5FAFF` | rgb(245, 250, 255) | Near-white backgrounds, subtle contrast |
-| **Light Grey** | `#F3F6F9` | rgb(243, 246, 249) | Content area backgrounds |
-| **Mid Blue** | `#7D9DFF` | rgb(125, 157, 255) | Secondary blue, hover states |
+| **Navy Heading** | `#001C3D` | rgb(24, 30, 65) | Alternative heading color (darker navy) |
+| **Muted Blue-Grey** | `#5C6E84` | rgb(58, 73, 93) | Card fills, secondary backgrounds, shapes |
+| **Light Blue** | `#EBF0FF` | rgb(229, 235, 255) | Light accent fills, table alternation |
+| **Off-White** | `#FFFFFF` | rgb(245, 250, 255) | Near-white backgrounds, subtle contrast |
+| **Light Grey** | `#F5F7F9` | rgb(243, 246, 249) | Content area backgrounds |
+| **Mid Blue** | `#93B5FF` | rgb(147,181,255) | Secondary blue, hover states |
 
 ### Data Visualization / Chart Colors
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| **Green** | `#26BC71` | Positive, success, growth, "Scheduled" badges |
-| **Amber** | `#FFAC09` | Warning, caution, pending items |
+| **Green** | `#2ECC71` | Positive, success, growth, "Scheduled" badges |
+| **Amber** | `#D97706` | Warning, caution, pending items |
 | **Coral** | `#FF6047` | Negative, risk, blockers |
-| **Cyan** | `#69FEFF` | Highlight, differentiation |
-| **Light Blue** | `#E5EBFF` | Tertiary chart color |
+| **Cyan** | `#93B5FF` | Highlight, differentiation |
+| **Light Blue** | `#EBF0FF` | Tertiary chart color |
 
 ### Theme Color Scheme (Official)
 
 ```
-dk1 (Dark 1):     #091C35   — Primary dark / backgrounds
+dk1 (Dark 1):     #001C3D   — Primary dark / backgrounds
 lt1 (Light 1):    #FFFFFF   — White
-dk2 (Dark 2):     #3366FF   — Primary blue
+dk2 (Dark 2):     #1A5AFF   — Primary blue
 lt2 (Light 2):    #000000   — Black
-accent1:          #69FEFF   — Cyan
+accent1:          #93B5FF   — Cyan
 accent2:          #FF503C   — Red
-accent3:          #E5EBFF   — Light blue
+accent3:          #EBF0FF   — Light blue
 accent4:          #C2FBFF   — Pale cyan
-accent5:          #F3F6F9   — Off-white
+accent5:          #F5F7F9   — Off-white
 accent6:          #FAE0DE   — Pale pink
 hlink:            #264EC7   — Hyperlink blue
 folHlink:         #0097A7   — Followed link teal
@@ -108,7 +108,7 @@ folHlink:         #0097A7   — Followed link teal
 
 ### CSS Font Stack
 ```css
-font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-family: 'Libre Franklin', 'Libre Franklin', Helvetica, Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 ```
 
 ---
@@ -121,7 +121,7 @@ The Backbase logo is a **text-based wordmark** rendered in the **Libre Franklin*
 **Rendering:**
 - Font: Libre Franklin (regular or light weight)
 - The "B" has a distinctive styling — use the font as-is
-- Color: White on dark backgrounds, `#091C35` on light backgrounds
+- Color: White on dark backgrounds, `#001C3D` on light backgrounds
 - Always accompanied by a **vertical divider line** (1px, same color as text)
 - Slide number appears to the right of the divider
 
@@ -155,19 +155,19 @@ The Backbase logo is a **text-based wordmark** rendered in the **Libre Franklin*
   font-family: 'Libre Franklin', sans-serif;
   font-size: 14px;
   font-weight: 400;
-  color: #FFFFFF; /* or #091C35 on light bg */
+  color: #FFFFFF; /* or #001C3D on light bg */
   letter-spacing: 0.5px;
 }
 .bb-divider {
   width: 1px;
   height: 16px;
-  background: rgba(255,255,255,0.4); /* or rgba(9,28,53,0.3) on light bg */
+  background: rgba(255,255,255,0.4); /* or rgba(0,28,61,0.3) on light bg */
 }
 .bb-page-num {
   font-family: 'Libre Franklin', sans-serif;
   font-size: 12px;
   font-weight: 400;
-  color: rgba(255,255,255,0.5); /* or rgba(9,28,53,0.4) on light bg */
+  color: rgba(255,255,255,0.5); /* or rgba(0,28,61,0.4) on light bg */
 }
 </style>
 ```
@@ -179,40 +179,40 @@ The Backbase logo is a **text-based wordmark** rendered in the **Libre Franklin*
 ### Layout Patterns (from Template)
 
 #### Cover Slide (Layout 0: "TITLE")
-- Background: `#091C35` (Primary Dark)
-- Blue accent square: top-left, approx 16x16px, `#3366FF`
+- Background: `#001C3D` (Primary Dark)
+- Blue accent square: top-left, approx 16x16px, `#1A5AFF`
 - Title: Libre Franklin Black, 45-55pt, White
-- Subtitle: Libre Franklin Light, 20-24pt, White or `#F5FAFF`
+- Subtitle: Libre Franklin Light, 20-24pt, White or `#FFFFFF`
 - Backbase wordmark: bottom-right (text, not image)
 - Optional: Client logo placeholder (center-right)
 
 #### Section/Chapter Divider (BLUE background — primary for Ignite)
-- **Background**: `#3366FF` (Primary Blue)
+- **Background**: `#1A5AFF` (Primary Blue)
 - **"Backbase" wordmark**: top-left, 32pt, white, Libre Franklin Regular
 - **Ghost number**: top-right, 120pt, bold, faded blue (`#5C85FF`), e.g. "01"
-- **Horizontal line**: white, with cyan `#69FEFF` accent square at left end
-- **Section label**: uppercase, 12pt, `#69FEFF` (cyan)
+- **Horizontal line**: white, with cyan `#93B5FF` accent square at left end
+- **Section label**: uppercase, 12pt, `#93B5FF` (cyan)
 - **Title**: 48pt, bold, white, below the line
-- **Subtitle** (optional): 18pt, `#69FEFF` (cyan)
+- **Subtitle** (optional): 18pt, `#93B5FF` (cyan)
 - **Footer**: "Backbase" bottom-right in light blue/white
-- Alternative dark variant (`#091C35`) exists but BLUE is the standard for Ignite
+- Alternative dark variant (`#001C3D`) exists but BLUE is the standard for Ignite
 
 #### Content Slide (WHITE background — DEFAULT for all content)
 - **Background**: `#FFFFFF` (White) — **this is the default, NOT dark**
 - **Title area**: top-left with blue accent square
-- **Title text**: `#091C35` (Primary Dark)
-- **Body text**: `#3A495D` (Muted Blue-Grey)
-- **Cards**: `#F3F6F9` background, `#E5EBFF` border, 12-16px border-radius
-- **Tables**: Blue `#3366FF` header, alternating white/`#F3F6F9` rows
+- **Title text**: `#001C3D` (Primary Dark)
+- **Body text**: `#5C6E84` (Muted Blue-Grey)
+- **Cards**: `#F5F7F9` background, `#EBF0FF` border, 12-16px border-radius
+- **Tables**: Blue `#1A5AFF` header, alternating white/`#F5F7F9` rows
 - **Content area**: below title, 4-column grid alignment
-- **Footer**: "Backbase | [n]" bottom-right in `#3A495D`
+- **Footer**: "Backbase | [n]" bottom-right in `#5C6E84`
 
 > **IMPORTANT**: Content slides use WHITE backgrounds by default. Dark backgrounds
 > are reserved for cover/closing slides only. Section dividers use BLUE backgrounds.
 
 ### Blue Accent Square
 A key Backbase brand element:
-- Small filled square: `#3366FF`
+- Small filled square: `#1A5AFF`
 - Size: ~16-20px
 - Position: Left of the title text, vertically centered with first line
 - Present on ALL slide types
@@ -233,7 +233,7 @@ A key Backbase brand element:
 ## 6. COMPONENT PATTERNS
 
 ### Cards
-- Background: `#3A495D` (on dark slides) or `#F3F6F9` (on light slides)
+- Background: `#5C6E84` (on dark slides) or `#F5F7F9` (on light slides)
 - Border: none (or 1px `rgba(255,255,255,0.06)` on dark)
 - Border-radius: 12-16px
 - Padding: 24-32px
@@ -241,26 +241,26 @@ A key Backbase brand element:
 - Body: Libre Franklin Regular/Light, 12-16pt
 
 ### Tables
-- Header row: `#3366FF` background, white text, 10-12pt uppercase
-- Body rows: alternating `#091C35` and `#0D1528` (dark) or white/`#F3F6F9` (light)
-- Text: 12-16pt, `#FFFFFF` (dark) or `#091C35` (light)
-- Border: 1px `rgba(255,255,255,0.06)` (dark) or `#E5EBFF` (light)
+- Header row: `#1A5AFF` background, white text, 10-12pt uppercase
+- Body rows: alternating `#001C3D` and `#0D1528` (dark) or white/`#F5F7F9` (light)
+- Text: 12-16pt, `#FFFFFF` (dark) or `#001C3D` (light)
+- Border: 1px `rgba(255,255,255,0.06)` (dark) or `#EBF0FF` (light)
 
 ### Badges/Status Tags
-- Scheduled/Done: `#26BC71` background with low opacity, green text
-- Pending/TBD: `#FFAC09` background with low opacity, amber text
+- Scheduled/Done: `#2ECC71` background with low opacity, green text
+- Pending/TBD: `#D97706` background with low opacity, amber text
 - Blocked/Risk: `#FF6047` background with low opacity, red text
 - Font: 10-11pt, uppercase, bold
 
 ### Numbered Circles
 - Size: 36-48px
-- Background: `#3366FF`
+- Background: `#1A5AFF`
 - Text: White, 15-18pt, Libre Franklin Bold
 - Used for objectives, step numbers
 
 ### Divider Lines
-- Horizontal: 1px, `rgba(255,255,255,0.1)` (dark) or `#E5EBFF` (light)
-- Blue accent line: 3px height, `#3366FF`, width ~60-100px
+- Horizontal: 1px, `rgba(255,255,255,0.1)` (dark) or `#EBF0FF` (light)
+- Blue accent line: 3px height, `#1A5AFF`, width ~60-100px
 
 ---
 
@@ -268,26 +268,26 @@ A key Backbase brand element:
 
 ### Dark Mode (Primary for Ignite Engagements)
 ```
-Background:       #091C35
-Card/Shape fill:   #3A495D or rgba(255,255,255,0.05)
+Background:       #001C3D
+Card/Shape fill:   #5C6E84 or rgba(255,255,255,0.05)
 Primary text:      #FFFFFF
-Secondary text:    #F5FAFF or rgba(255,255,255,0.7)
+Secondary text:    #FFFFFF or rgba(255,255,255,0.7)
 Muted text:        rgba(255,255,255,0.5)
-Accent:            #3366FF
-Highlight:         #69FEFF
+Accent:            #1A5AFF
+Highlight:         #93B5FF
 Borders:           rgba(255,255,255,0.06)
 ```
 
 ### Light Mode
 ```
 Background:       #FFFFFF
-Card/Shape fill:   #F3F6F9
-Primary text:      #091C35
-Secondary text:    #3A495D
-Muted text:        rgba(9,28,53,0.5)
-Accent:            #3366FF
-Highlight:         #69FEFF
-Borders:           #E5EBFF
+Card/Shape fill:   #F5F7F9
+Primary text:      #001C3D
+Secondary text:    #5C6E84
+Muted text:        rgba(0,28,61,0.5)
+Accent:            #1A5AFF
+Highlight:         #93B5FF
+Borders:           #EBF0FF
 ```
 
 ---
@@ -297,26 +297,26 @@ Borders:           #E5EBFF
 ```css
 :root {
   /* Primary */
-  --bb-dark: #091C35;
-  --bb-blue: #3366FF;
+  --bb-dark: #001C3D;
+  --bb-blue: #1A5AFF;
   --bb-white: #FFFFFF;
 
   /* Accent */
-  --bb-cyan: #69FEFF;
-  --bb-red: #FF7262;
-  --bb-green: #26BC71;
-  --bb-amber: #FFAC09;
+  --bb-cyan: #93B5FF;
+  --bb-red: #E02020;
+  --bb-green: #2ECC71;
+  --bb-amber: #D97706;
 
   /* Supporting */
-  --bb-navy-heading: #181E41;
-  --bb-muted: #3A495D;
-  --bb-light-blue: #E5EBFF;
-  --bb-off-white: #F5FAFF;
-  --bb-light-grey: #F3F6F9;
-  --bb-mid-blue: #7D9DFF;
+  --bb-navy-heading: #001C3D;
+  --bb-muted: #5C6E84;
+  --bb-light-blue: #EBF0FF;
+  --bb-off-white: #FFFFFF;
+  --bb-light-grey: #F5F7F9;
+  --bb-mid-blue: #93B5FF;
 
   /* Typography */
-  --bb-font-primary: 'Libre Franklin', 'Inter', -apple-system, sans-serif;
+  --bb-font-primary: 'Libre Franklin', 'Libre Franklin', Helvetica, Arial, -apple-system, sans-serif;
   --bb-font-size-mega: 90px;
   --bb-font-size-cover: 45px;
   --bb-font-size-section: 32px;
@@ -326,20 +326,20 @@ Borders:           #E5EBFF
   --bb-font-size-small: 12px;
 
   /* Dark mode surfaces */
-  --bb-surface-dark: #091C35;
-  --bb-surface-card-dark: #3A495D;
+  --bb-surface-dark: #001C3D;
+  --bb-surface-card-dark: #5C6E84;
   --bb-border-dark: rgba(255, 255, 255, 0.06);
   --bb-text-primary-dark: #FFFFFF;
-  --bb-text-secondary-dark: #F5FAFF;
+  --bb-text-secondary-dark: #FFFFFF;
   --bb-text-muted-dark: rgba(255, 255, 255, 0.5);
 
   /* Light mode surfaces */
   --bb-surface-light: #FFFFFF;
-  --bb-surface-card-light: #F3F6F9;
-  --bb-border-light: #E5EBFF;
-  --bb-text-primary-light: #091C35;
-  --bb-text-secondary-light: #3A495D;
-  --bb-text-muted-light: rgba(9, 28, 53, 0.5);
+  --bb-surface-card-light: #F5F7F9;
+  --bb-border-light: #EBF0FF;
+  --bb-text-primary-light: #001C3D;
+  --bb-text-secondary-light: #5C6E84;
+  --bb-text-muted-light: rgba(0,28,61, 0.5);
 }
 ```
 
@@ -351,21 +351,21 @@ The following colors were used in earlier outputs and need to be corrected:
 
 | What We Used | Correct Backbase Color | Notes |
 |--------------|----------------------|-------|
-| `#0B0F1A` (dark bg) | `#091C35` | Official primary dark |
-| `#141929` (navy) | `#091C35` | Use primary dark, not custom navy |
-| `#1C2238` (navy-2) | `#3A495D` | Official muted blue-grey for cards |
-| `#3B6BF5` (blue) | `#3366FF` | Official primary blue |
-| `#5A8AFF` (blue-light) | `#7D9DFF` | Mid-blue from template |
-| `#1A56FF` (old accent) | `#3366FF` | Correct to official blue |
-| `#1A1F36` (old dark) | `#091C35` | Correct to official dark |
+| `#001C3D` (dark bg) | `#001C3D` | Official primary dark |
+| `#001C3D` (navy) | `#001C3D` | Use primary dark, not custom navy |
+| `#5C6E84` (navy-2) | `#5C6E84` | Official muted blue-grey for cards |
+| `#1A5AFF` (blue) | `#1A5AFF` | Official primary blue |
+| `#93B5FF` (blue-light) | `#93B5FF` | Mid-blue from template |
+| `#1A5AFF` (old accent) | `#1A5AFF` | Correct to official blue |
+| `#001C3D` (old dark) | `#001C3D` | Correct to official dark |
 
 ---
 
 ## 10. DO's AND DON'Ts
 
 ### DO:
-- Use `#091C35` as the primary dark background (not approximate navies)
-- Use `#3366FF` as the primary accent blue
+- Use `#001C3D` as the primary dark background (not approximate navies)
+- Use `#1A5AFF` as the primary accent blue
 - Use Libre Franklin as the primary font (fall back to Inter if unavailable)
 - Include the blue accent square left of titles
 - Include "Backbase | [n]" footer on content slides
