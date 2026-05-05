@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cortex Knowledge Graph — Full Practice View</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--dark:#001C3D;--blue:#1A5AFF;--purple:#93B5FF;--green:#2ECC71;--amber:#D97706;--red:#E02020;--cyan:#93B5FF;--bg:#070B14}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Libre Franklin',system-ui,sans-serif;background:var(--bg);color:#E2E8F0;overflow:hidden;height:100vh}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(7,11,20,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.05);padding:8px 20px;display:flex;align-items:center;gap:12px}
+.topbar h1{font-size:0.88rem;font-weight:900;white-space:nowrap}
+.topbar h1 span{color:var(--cyan)}
+.legend{display:flex;gap:6px;flex:1;justify-content:center;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:3px;font-size:0.6rem;color:#64748B;cursor:pointer;padding:3px 7px;border-radius:5px;transition:all 0.15s}
+.leg:hover,.leg.on{background:rgba(255,255,255,0.05);color:#CBD5E1}
+.ld{width:7px;height:7px;border-radius:2px}
+.ctrls{display:flex;gap:5px}
+.btn{padding:4px 10px;font-size:0.65rem;font-weight:600;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#94A3B8;border-radius:5px;cursor:pointer;transition:all 0.15s}
+.btn:hover{background:rgba(255,255,255,0.06);color:#E2E8F0}
+.btn.on{background:var(--blue);border-color:var(--blue);color:#fff}
+#graph{width:100%;height:100vh}
+
+/* Left sidebar - node directory */
+.sidebar{position:fixed;left:0;top:42px;bottom:0;width:240px;background:rgba(7,11,20,0.95);backdrop-filter:blur(12px);border-right:1px solid rgba(255,255,255,0.05);z-index:150;overflow-y:auto;padding:12px 0}
+.sb-search{padding:0 12px 10px;position:sticky;top:0;background:rgba(7,11,20,0.98);z-index:2}
+.sb-search input{width:100%;padding:7px 10px 7px 28px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:6px;color:#E2E8F0;font-size:0.72rem;font-family:'Libre Franklin',sans-serif;outline:none}
+.sb-search input::placeholder{color:#3D4555}
+.sb-search input:focus{border-color:var(--blue)}
+.sb-search-icon{position:absolute;left:20px;top:8px;color:#3D4555;font-size:11px}
+.sb-group{padding:4px 12px}
+.sb-group-title{font-size:0.56rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#3D4555;padding:6px 0 4px;display:flex;align-items:center;gap:5px;cursor:pointer}
+.sb-group-title .ld{width:6px;height:6px;border-radius:2px}
+.sb-item{padding:4px 8px;font-size:0.68rem;color:#64748B;cursor:pointer;border-radius:4px;transition:all 0.1s;display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-item:hover{background:rgba(255,255,255,0.04);color:#CBD5E1}
+.sb-item.active{background:rgba(26,90,255,0.12);color:var(--blue)}
+.sb-item .sb-icon{font-size:10px;width:16px;text-align:center;flex-shrink:0}
+.sb-item .sb-count{margin-left:auto;font-size:0.55rem;color:#2D3345;font-weight:600;flex-shrink:0}
+.panel{position:fixed;right:-460px;top:0;bottom:0;width:440px;background:rgba(10,14,25,0.97);backdrop-filter:blur(16px);border-left:1px solid rgba(255,255,255,0.05);z-index:200;transition:right 0.3s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;padding-top:48px}
+.panel.open{right:0}
+.pcl{position:absolute;top:56px;right:12px;width:24px;height:24px;border-radius:5px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#64748B;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;z-index:10}
+.pcl:hover{color:#E2E8F0}
+.ph{padding:14px 18px 8px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.pt{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:5px}
+.pt .d{width:7px;height:7px;border-radius:2px;display:inline-block}
+.pn{font-size:1.15rem;font-weight:900;color:#fff;margin-top:2px}
+.pd{font-size:0.72rem;color:#64748B;margin-top:3px;line-height:1.45}
+.ps{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.pst{font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#3D4555;margin-bottom:6px}
+.pr{display:flex;gap:6px;padding:2px 0;font-size:0.7rem}
+.pk{font-weight:600;color:#94A3B8;min-width:110px;font-size:0.66rem}
+.pv{color:#CBD5E1;font-size:0.68rem;word-break:break-word}
+.pv.hl{color:var(--cyan);font-weight:600}
+.ri{padding:4px 6px;font-size:0.7rem;display:flex;align-items:center;gap:5px;cursor:pointer;border-radius:3px;margin:0 -6px}
+.ri:hover{background:rgba(255,255,255,0.03)}
+.ra{color:#3D4555;font-size:0.6rem;width:12px;text-align:center}
+.rv{color:var(--blue);font-weight:500;font-style:italic;font-size:0.64rem}
+.rt{color:#CBD5E1;font-weight:600;font-size:0.68rem}
+.tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:0.58rem;font-weight:600;margin:1px}
+.t-r{background:rgba(255,114,98,0.12);color:var(--red)}.t-a{background:rgba(255,172,9,0.12);color:var(--amber)}
+.t-g{background:rgba(38,188,113,0.12);color:var(--green)}.t-b{background:rgba(26,90,255,0.12);color:var(--blue)}
+.t-p{background:rgba(26,90,255,0.12);color:var(--purple)}.t-x{background:rgba(148,163,184,0.08);color:#94A3B8}
+.tooltip{position:fixed;padding:6px 10px;background:rgba(10,14,25,0.95);border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:0.66rem;color:#CBD5E1;pointer-events:none;z-index:300;max-width:260px;display:none}
+.tooltip .tn{font-weight:700;color:#fff}.tooltip .tc{font-size:0.54rem;color:#64748B;text-transform:uppercase}
+.sbar{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:14px;background:rgba(10,14,25,0.85);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:6px 16px;z-index:100}
+.sv{font-size:0.95rem;font-weight:900;color:var(--cyan)}.sl{font-size:0.5rem;color:#3D4555;text-transform:uppercase;letter-spacing:0.05em}
+.st{text-align:center}
+</style>
+</head>
+<body>
+<div class="topbar">
+<h1>Cortex <span>Practice Graph</span> — 10 Clients</h1>
+<div class="legend" id="legend">
+<div class="leg on" data-c="all"><div class="ld" style="background:#fff"></div>All</div>
+<div class="leg" data-c="client"><div class="ld" style="background:#1A5AFF"></div>Clients</div>
+<div class="leg" data-c="consultant"><div class="ld" style="background:#06B6D4"></div>Consultants</div>
+<div class="leg" data-c="engagement"><div class="ld" style="background:#93B5FF"></div>Engagements</div>
+<div class="leg" data-c="workshop"><div class="ld" style="background:#D97706"></div>Workshops</div>
+<div class="leg" data-c="discovery"><div class="ld" style="background:#E02020"></div>Discoveries</div>
+<div class="leg" data-c="usecase"><div class="ld" style="background:#93B5FF"></div>Use Cases</div>
+<div class="leg" data-c="pattern"><div class="ld" style="background:#D946EF"></div>Patterns</div>
+<div class="leg" data-c="outcome"><div class="ld" style="background:#EC4899"></div>Outcomes</div>
+</div>
+<div class="ctrls">
+<button class="btn" id="btn-labels">Labels</button>
+<button class="btn" id="btn-reset">Reset</button>
+</div>
+</div>
+
+<div class="sidebar" id="sidebar"></div>
+<svg id="graph" style="margin-left:240px;width:calc(100% - 240px)"></svg>
+<div class="panel" id="panel"><button class="pcl" id="pcl">&times;</button><div id="pc"></div></div>
+<div class="tooltip" id="tt"></div>
+<div class="sbar" id="sbar"></div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+const CC={client:'#1A5AFF',consultant:'#06B6D4',engagement:'#93B5FF',workshop:'#D97706',discovery:'#E02020',capability:'#2ECC71',usecase:'#93B5FF',financial:'#D97706',outcome:'#EC4899',decision:'#7C3AED',pattern:'#D946EF',benchmark:'#0891B2',roadmap:'#0EA5E9',tech:'#6366F1'};
+
+// ═══════════════════════════════════════════════════
+// 10 CLIENTS WITH FULL DATA
+// ═══════════════════════════════════════════════════
+
+const N=[], L=[];
+function n(id,type,label,cat,props){N.push({id,type,label,cat:cat||type,props:props||{}})}
+function l(s,t,label,type){L.push({source:s,target:t,label,type:type||'default'})}
+
+// ── CONSULTANTS ────────────────────────────
+n('c_mayur','consultant','Mayur P.','consultant',{region:'Global',deals:'6',domains:'Wealth, Investing, Retail'});
+n('c_sarah','consultant','Sarah K.','consultant',{region:'EMEA',deals:'4',domains:'Retail, SME'});
+n('c_ahmed','consultant','Ahmed R.','consultant',{region:'MEA + APAC',deals:'3',domains:'Commercial, Corporate'});
+n('c_maria','consultant','Maria L.','consultant',{region:'LATAM',deals:'2',domains:'Retail'});
+n('c_james','consultant','James T.','consultant',{region:'APAC',deals:'3',domains:'Wealth, Retail'});
+n('c_erik','consultant','Erik S.','consultant',{region:'Nordics',deals:'2',domains:'Retail, Wealth'});
+
+// ── CLIENTS ────────────────────────────────
+n('cl_nfcu','client','Navy Federal CU','client',{industry:'Credit Union',geography:'North America',assets:'$170B+',members:'15M+',tech:'Pershing, FIS',domain:'Investing'});
+n('cl_sfcu','client','SchoolsFirst FCU','client',{industry:'Credit Union',geography:'North America',assets:'$28B',members:'1.3M',tech:'Symitar, Snowflake',domain:'Retail'});
+n('cl_aib','client','Allied Irish Banks','client',{industry:'Retail Bank',geography:'EMEA',assets:'$95B',tech:'Temenos T24, SAP',domain:'Retail & SME'});
+n('cl_mashreq','client','Mashreq Bank','client',{industry:'Commercial Bank',geography:'MEA',assets:'$45B',tech:'Finastra, Oracle',domain:'Corporate'});
+n('cl_santander','client','Santander Chile','client',{industry:'Retail Bank',geography:'LATAM',assets:'$62B',tech:'Unknown (prospecting)',domain:'Retail'});
+n('cl_dbs','client','DBS Bank','client',{industry:'Digital Bank',geography:'APAC',assets:'$400B+',tech:'In-house, AWS',domain:'Wealth'});
+n('cl_nordea','client','Nordea','client',{industry:'Universal Bank',geography:'Nordics',assets:'$600B+',tech:'Core Nordic, Salesforce',domain:'Retail & Wealth'});
+n('cl_pentagon','client','Pentagon FCU','client',{industry:'Credit Union',geography:'North America',assets:'$35B',tech:'Pershing, Fiserv',domain:'Investing'});
+n('cl_becu','client','BECU','client',{industry:'Credit Union',geography:'North America',assets:'$30B',tech:'Symitar, Custom',domain:'Investing'});
+n('cl_firsttech','client','First Tech FCU','client',{industry:'Credit Union',geography:'North America',assets:'$17B',tech:'Pershing, Custom CRM',domain:'Investing'});
+
+// ── ENGAGEMENTS ────────────────────────────
+n('e_nfis','engagement','NFIS Wealth Assessment','engagement',{type:'Value Assessment',domain:'Investing',stage:'Why Change',deal:'$2.8M',status:'Delivery',started:'2026-02',workshops:'6'});
+n('e_sfcu','engagement','SchoolsFirst CLO','engagement',{type:'Ignite Inspire',domain:'Retail',stage:'Why Change',deal:'$1.4M',status:'Workshop',started:'2026-03',workshops:'4'});
+n('e_aib','engagement','AIB Retail Assessment','engagement',{type:'Detailed Assessment',domain:'Retail & SME',stage:'Why Now',deal:'$3.2M',status:'Discovery',started:'2026-03',workshops:'3 (planned 6)'});
+n('e_mashreq','engagement','Mashreq Commercial','engagement',{type:'Hybrid',domain:'Corporate',stage:'Why Invest',deal:'$1.8M',status:'Proposal',started:'2026-02',workshops:'4'});
+n('e_santander','engagement','Santander Retail','engagement',{type:'TBD (Prospecting)',domain:'Retail',stage:'Why Change',deal:'$2.1M',status:'Prospecting',started:'2026-04',workshops:'0'});
+n('e_dbs','engagement','DBS Multi-Country','engagement',{type:'Multi-Country Rollout',domain:'Wealth',stage:'Why Change',deal:'$4.5M',status:'Discovery',started:'2026-03',workshops:'2 (planned 8)'});
+n('e_nordea','engagement','Nordea Transformation','engagement',{type:'Full Transformation',domain:'Retail & Wealth',stage:'Why Invest',deal:'$5.2M',status:'Closed Won',started:'2026-01',workshops:'5'});
+n('e_pentagon','engagement','Pentagon Wealth Assessment','engagement',{type:'Value Assessment',domain:'Investing',stage:'Why Change',deal:'$2.1M',status:'Closed Won',started:'2025-09',workshops:'5'});
+n('e_becu','engagement','BECU Investment Review','engagement',{type:'Value Assessment',domain:'Investing',stage:'Why Now',deal:'$1.8M→$3.2M',status:'Expanded',started:'2025-11',workshops:'3→5'});
+n('e_firsttech','engagement','First Tech DI Assessment','engagement',{type:'Value Assessment',domain:'Investing',stage:'Why Change',deal:'$1.5M',status:'Closed Won',started:'2025-10',workshops:'4'});
+
+// ── WORKSHOPS (key ones per engagement) ────
+// NFIS
+n('w_nfis_1','workshop','NFIS: Strategic Alignment','workshop',{date:'2026-02-12',status:'Completed',key:'CDO aligned on Unified Frontline. CTO skeptical.'});
+n('w_nfis_2','workshop','NFIS: Capability Assessment','workshop',{date:'2026-02-18',status:'Completed',key:'Mirror moment: 1.8 vs 2.8 self-assessment'});
+n('w_nfis_3','workshop','NFIS: Executive Readout','workshop',{date:'2026-03-05',status:'Completed',key:'CFO approved. Decision: proceed Phase 1.'});
+// Pentagon
+n('w_pent_1','workshop','Pentagon: Capability Assessment','workshop',{date:'2025-09-15',status:'Completed',key:'Activation gap: 45% dormant accounts'});
+n('w_pent_2','workshop','Pentagon: Architecture','workshop',{date:'2025-09-22',status:'Completed',key:'Pershing integration pattern established'});
+// BECU
+n('w_becu_1','workshop','BECU: CX Deep Dive','workshop',{date:'2025-11-10',status:'Completed',key:'$12M revenue gap discovered. CFO attended.'});
+n('w_becu_2','workshop','BECU: Capability + ROI','workshop',{date:'2025-11-18',status:'Completed',key:'Combined session — CFO co-created ROI model'});
+// First Tech
+n('w_ft_1','workshop','First Tech: Capability Assessment','workshop',{date:'2025-10-08',status:'Completed',key:'Multi-vendor data silos. Unified Member Truth resonated.'});
+// AIB
+n('w_aib_1','workshop','AIB: Strategic Alignment','workshop',{date:'2026-03-10',status:'Completed',key:'Channel fragmentation is top priority. CTO champion.'});
+n('w_aib_2','workshop','AIB: CX Deep Dive','workshop',{date:'2026-03-18',status:'Completed',key:'70% of journeys start digital, finish in branch'});
+// Mashreq
+n('w_mash_1','workshop','Mashreq: Architecture','workshop',{date:'2026-02-20',status:'Completed',key:'Finastra integration complexity mapped'});
+// SchoolsFirst
+n('w_sfcu_1','workshop','SFCU: Strategic Alignment','workshop',{date:'2026-03-20',status:'Completed',key:'9-month activation dip identified. Travis team of 12.'});
+// DBS
+n('w_dbs_1','workshop','DBS: Strategic Alignment (Group)','workshop',{date:'2026-03-25',status:'Completed',key:'Priorities differ across SG, HK, IN markets'});
+// Nordea
+n('w_nord_1','workshop','Nordea: Use Case Validation','workshop',{date:'2026-01-20',status:'Completed',key:'Digital onboarding chosen as lighthouse'});
+
+// ── KEY DISCOVERIES (shared across engagements) ────
+n('d_activation_nfis','discovery','NFIS: 50% never funded','discovery',{severity:'Critical',client:'Navy Federal'});
+n('d_activation_pent','discovery','Pentagon: 45% dormant','discovery',{severity:'Critical',client:'Pentagon FCU'});
+n('d_activation_becu','discovery','BECU: 38% inactive','discovery',{severity:'Critical',client:'BECU'});
+n('d_activation_ft','discovery','First Tech: 42% unfunded','discovery',{severity:'Critical',client:'First Tech'});
+n('d_activation_sfcu','discovery','SFCU: 9-month activation dip','discovery',{severity:'High',client:'SchoolsFirst'});
+
+n('d_referral_nfis','discovery','NFIS: 51% referrals cold','discovery',{severity:'High',client:'Navy Federal'});
+n('d_referral_pent','discovery','Pentagon: 48% referrals cold','discovery',{severity:'High',client:'Pentagon FCU'});
+n('d_referral_becu','discovery','BECU: 44% referrals cold','discovery',{severity:'High',client:'BECU'});
+
+n('d_channel_aib','discovery','AIB: 70% digital→branch','discovery',{severity:'High',client:'Allied Irish Banks'});
+n('d_channel_sfcu','discovery','SFCU: Channel disconnect','discovery',{severity:'High',client:'SchoolsFirst'});
+n('d_channel_nord','discovery','Nordea: 4 portals, no unity','discovery',{severity:'High',client:'Nordea'});
+
+n('d_legacy_aib','discovery','AIB: Temenos batch-only','discovery',{severity:'Critical',client:'Allied Irish Banks'});
+n('d_legacy_mash','discovery','Mashreq: Finastra rigidity','discovery',{severity:'Critical',client:'Mashreq'});
+
+n('d_revenue_becu','discovery','BECU: $12M revenue gap','discovery',{severity:'Critical',client:'BECU'});
+n('d_awareness_nfis','discovery','NFIS: 36% member awareness','discovery',{severity:'Critical',client:'Navy Federal'});
+
+n('d_data_nfis','discovery','NFIS: NFCU/NFIS data siloed','discovery',{severity:'High',client:'Navy Federal'});
+n('d_data_ft','discovery','First Tech: Multi-vendor silos','discovery',{severity:'High',client:'First Tech'});
+n('d_data_dbs','discovery','DBS: Country-level data isolation','discovery',{severity:'High',client:'DBS'});
+
+// ── PAIN PATTERNS (cross-engagement) ──────
+n('pp_activation','pattern','Account Activation Failure','pattern',{frequency:'23 engagements',severity:'Critical',industries:'CU, Retail, Digital',avg_impact:'$8-15M/year',instances:'5 shown here'});
+n('pp_referral','pattern','Advisor Referral Leakage','pattern',{frequency:'18 engagements',severity:'High',industries:'CU, Wealth',avg_impact:'40-55% go cold',instances:'3 shown here'});
+n('pp_channel','pattern','Channel Fragmentation','pattern',{frequency:'28 engagements',severity:'High',industries:'Retail, Universal',avg_impact:'3-5 portals, no unified view',instances:'3 shown here'});
+n('pp_legacy','pattern','Legacy Core Rigidity','pattern',{frequency:'34 engagements',severity:'Critical',industries:'All',avg_impact:'6-18 month integration cycles',instances:'2 shown here'});
+n('pp_data','pattern','Data Silos / No Unified View','pattern',{frequency:'26 engagements',severity:'High',industries:'CU, Retail, Digital',avg_impact:'No single customer truth',instances:'3 shown here'});
+
+// ── USE CASE TEMPLATES (shared) ──────────
+n('uct_funding','usecase','UC: Digital Account Funding','usecase',{type:'Template',domain:'Investing',used_in:'4 engagements',lighthouse_rate:'64%',avg_effort:'8-12 weeks'});
+n('uct_referral','usecase','UC: Advisor Referral Engine','usecase',{type:'Template',domain:'Wealth/Investing',used_in:'3 engagements',avg_effort:'12 weeks'});
+n('uct_onboarding','usecase','UC: Digital Onboarding','usecase',{type:'Template',domain:'Retail',used_in:'6 engagements',lighthouse_rate:'71%',avg_effort:'10-14 weeks'});
+n('uct_dashboard','usecase','UC: Unified Dashboard','usecase',{type:'Template',domain:'Multi-domain',used_in:'5 engagements',avg_effort:'14-18 weeks'});
+n('uct_selfservice','usecase','UC: Self-Service Portal','usecase',{type:'Template',domain:'Retail/SME',used_in:'4 engagements',avg_effort:'12-16 weeks'});
+
+// ── OUTCOMES ──────────────────────────────
+n('o_nfis','outcome','NFIS: Reached Negotiation','outcome',{type:'reached_negotiation',deal:'$2.8M',days:'23 days',date:'2026-03-05'});
+n('o_pentagon','outcome','Pentagon: Closed Won','outcome',{type:'closed_won',deal:'$2.1M',days:'45 days',date:'2025-10-30'});
+n('o_becu','outcome','BECU: Expanded','outcome',{type:'expanded',deal:'$1.8M → $3.2M',days:'38 days',date:'2025-12-20'});
+n('o_firsttech','outcome','First Tech: Closed Won','outcome',{type:'closed_won',deal:'$1.5M',days:'52 days',date:'2025-12-01'});
+n('o_nordea','outcome','Nordea: Closed Won','outcome',{type:'closed_won',deal:'$5.2M',days:'60 days',date:'2026-02-28'});
+n('o_aib','outcome','AIB: In Progress','outcome',{type:'in_progress',deal:'$3.2M',days:'28+ days',date:'ongoing'});
+
+// ── BENCHMARKS ────────────────────────────
+n('bm_onboarding','benchmark','Benchmark: Onboarding 35-55%','benchmark',{metric:'Digital Onboarding Completion',range:'35-55%',confidence:'Validated (n=18)',domain:'Retail'});
+n('bm_activation','benchmark','Benchmark: Activation 40-65%','benchmark',{metric:'Account Activation (90-day)',range:'40-65%',confidence:'Emerging (n=12)',domain:'Investing'});
+n('bm_crosssell','benchmark','Benchmark: Cross-Sell 1.8-3.2','benchmark',{metric:'Cross-Sell Ratio',range:'1.8-3.2 products/customer',confidence:'Validated (n=22)',domain:'Retail'});
+
+// ═══════════════════════════════════════════════════
+// RELATIONSHIPS
+// ═══════════════════════════════════════════════════
+
+// Client → Engagement
+l('cl_nfcu','e_nfis','hasEngagement','client');
+l('cl_sfcu','e_sfcu','hasEngagement','client');
+l('cl_aib','e_aib','hasEngagement','client');
+l('cl_mashreq','e_mashreq','hasEngagement','client');
+l('cl_santander','e_santander','hasEngagement','client');
+l('cl_dbs','e_dbs','hasEngagement','client');
+l('cl_nordea','e_nordea','hasEngagement','client');
+l('cl_pentagon','e_pentagon','hasEngagement','client');
+l('cl_becu','e_becu','hasEngagement','client');
+l('cl_firsttech','e_firsttech','hasEngagement','client');
+
+// Consultant → Engagement
+l('c_mayur','e_nfis','leads','consultant');
+l('c_mayur','e_sfcu','leads','consultant');
+l('c_mayur','e_pentagon','leads','consultant');
+l('c_sarah','e_aib','leads','consultant');
+l('c_sarah','e_nordea','leads','consultant');
+l('c_ahmed','e_mashreq','leads','consultant');
+l('c_ahmed','e_dbs','leads','consultant');
+l('c_maria','e_santander','leads','consultant');
+l('c_james','e_dbs','leads','consultant');
+l('c_james','e_becu','leads','consultant');
+l('c_erik','e_nordea','leads','consultant');
+l('c_erik','e_firsttech','leads','consultant');
+
+// Engagement → Workshop
+l('e_nfis','w_nfis_1','conducted','workshop');l('e_nfis','w_nfis_2','conducted','workshop');l('e_nfis','w_nfis_3','conducted','workshop');
+l('e_pentagon','w_pent_1','conducted','workshop');l('e_pentagon','w_pent_2','conducted','workshop');
+l('e_becu','w_becu_1','conducted','workshop');l('e_becu','w_becu_2','conducted','workshop');
+l('e_firsttech','w_ft_1','conducted','workshop');
+l('e_aib','w_aib_1','conducted','workshop');l('e_aib','w_aib_2','conducted','workshop');
+l('e_mashreq','w_mash_1','conducted','workshop');
+l('e_sfcu','w_sfcu_1','conducted','workshop');
+l('e_dbs','w_dbs_1','conducted','workshop');
+l('e_nordea','w_nord_1','conducted','workshop');
+
+// Workshop → Discovery
+l('w_nfis_2','d_activation_nfis','surfaced','discovery');
+l('w_nfis_1','d_awareness_nfis','surfaced','discovery');
+l('w_nfis_2','d_referral_nfis','surfaced','discovery');
+l('w_nfis_2','d_data_nfis','surfaced','discovery');
+l('w_pent_1','d_activation_pent','surfaced','discovery');
+l('w_pent_1','d_referral_pent','surfaced','discovery');
+l('w_becu_1','d_activation_becu','surfaced','discovery');
+l('w_becu_1','d_referral_becu','surfaced','discovery');
+l('w_becu_1','d_revenue_becu','surfaced','discovery');
+l('w_ft_1','d_activation_ft','surfaced','discovery');
+l('w_ft_1','d_data_ft','surfaced','discovery');
+l('w_aib_2','d_channel_aib','surfaced','discovery');
+l('w_aib_1','d_legacy_aib','surfaced','discovery');
+l('w_mash_1','d_legacy_mash','surfaced','discovery');
+l('w_sfcu_1','d_activation_sfcu','surfaced','discovery');
+l('w_sfcu_1','d_channel_sfcu','surfaced','discovery');
+l('w_dbs_1','d_data_dbs','surfaced','discovery');
+l('w_nord_1','d_channel_nord','surfaced','discovery');
+
+// Discovery → Pain Pattern (THE CROSS-CLIENT LINKS)
+l('d_activation_nfis','pp_activation','isInstanceOf','pattern');
+l('d_activation_pent','pp_activation','isInstanceOf','pattern');
+l('d_activation_becu','pp_activation','isInstanceOf','pattern');
+l('d_activation_ft','pp_activation','isInstanceOf','pattern');
+l('d_activation_sfcu','pp_activation','isInstanceOf','pattern');
+l('d_referral_nfis','pp_referral','isInstanceOf','pattern');
+l('d_referral_pent','pp_referral','isInstanceOf','pattern');
+l('d_referral_becu','pp_referral','isInstanceOf','pattern');
+l('d_channel_aib','pp_channel','isInstanceOf','pattern');
+l('d_channel_sfcu','pp_channel','isInstanceOf','pattern');
+l('d_channel_nord','pp_channel','isInstanceOf','pattern');
+l('d_legacy_aib','pp_legacy','isInstanceOf','pattern');
+l('d_legacy_mash','pp_legacy','isInstanceOf','pattern');
+l('d_data_nfis','pp_data','isInstanceOf','pattern');
+l('d_data_ft','pp_data','isInstanceOf','pattern');
+l('d_data_dbs','pp_data','isInstanceOf','pattern');
+
+// Use Case Template → Engagements
+l('uct_funding','e_nfis','usedIn','usecase');
+l('uct_funding','e_pentagon','usedIn','usecase');
+l('uct_funding','e_becu','usedIn','usecase');
+l('uct_funding','e_firsttech','usedIn','usecase');
+l('uct_referral','e_nfis','usedIn','usecase');
+l('uct_referral','e_pentagon','usedIn','usecase');
+l('uct_referral','e_becu','usedIn','usecase');
+l('uct_onboarding','e_aib','usedIn','usecase');
+l('uct_onboarding','e_sfcu','usedIn','usecase');
+l('uct_onboarding','e_nordea','usedIn','usecase');
+l('uct_onboarding','e_santander','usedIn','usecase');
+l('uct_dashboard','e_nfis','usedIn','usecase');
+l('uct_dashboard','e_dbs','usedIn','usecase');
+l('uct_dashboard','e_nordea','usedIn','usecase');
+l('uct_selfservice','e_aib','usedIn','usecase');
+l('uct_selfservice','e_mashreq','usedIn','usecase');
+
+// Pain Pattern → Use Case Template (pattern drives solution)
+l('pp_activation','uct_funding','driveSolution','pattern');
+l('pp_referral','uct_referral','driveSolution','pattern');
+l('pp_channel','uct_dashboard','driveSolution','pattern');
+l('pp_channel','uct_onboarding','driveSolution','pattern');
+
+// Engagement → Outcome
+l('e_nfis','o_nfis','hasOutcome','outcome');
+l('e_pentagon','o_pentagon','hasOutcome','outcome');
+l('e_becu','o_becu','hasOutcome','outcome');
+l('e_firsttech','o_firsttech','hasOutcome','outcome');
+l('e_nordea','o_nordea','hasOutcome','outcome');
+l('e_aib','o_aib','hasOutcome','outcome');
+
+// Benchmarks contribute
+l('bm_activation','pp_activation','validates','benchmark');
+l('bm_onboarding','uct_onboarding','calibrates','benchmark');
+l('bm_crosssell','pp_channel','contextualizes','benchmark');
+
+// ═══════════════════════════════════════════════════
+// D3 RENDER
+// ═══════════════════════════════════════════════════
+const W=window.innerWidth-240,H=window.innerHeight;
+const svg=d3.select('#graph').attr('width',W).attr('height',H);
+const defs=svg.append('defs');
+Object.entries(CC).forEach(([k,c])=>{
+  defs.append('marker').attr('id',`a-${k}`).attr('viewBox','0 -5 10 10').attr('refX',26).attr('refY',0).attr('markerWidth',4).attr('markerHeight',4).attr('orient','auto').append('path').attr('d','M0,-4L10,0L0,4').attr('fill',c).attr('opacity',0.5);
+  const f=defs.append('filter').attr('id',`g-${k}`);f.append('feGaussianBlur').attr('stdDeviation',3).attr('result','b');f.append('feComposite').attr('in','SourceGraphic').attr('in2','b').attr('operator','over');
+});
+
+const gg=svg.append('g');
+const zm=d3.zoom().scaleExtent([0.1,5]).on('zoom',e=>gg.attr('transform',e.transform));
+svg.call(zm);
+
+const SZ={client:30,consultant:20,engagement:22,workshop:12,discovery:10,usecase:16,pattern:24,outcome:18,benchmark:14};
+const sim=d3.forceSimulation(N)
+  .force('link',d3.forceLink(L).id(d=>d.id).distance(d=>{if(d.type==='client')return 140;if(d.type==='consultant')return 160;if(d.type==='pattern')return 100;return 90}).strength(0.35))
+  .force('charge',d3.forceManyBody().strength(-300))
+  .force('center',d3.forceCenter(W/2,H/2))
+  .force('collision',d3.forceCollide(d=>(SZ[d.type]||12)+4));
+
+const lk=gg.append('g').selectAll('line').data(L).join('line')
+  .attr('stroke',d=>CC[d.type]||'#222').attr('stroke-width',d=>d.type==='client'||d.type==='consultant'?1.5:0.8).attr('stroke-opacity',d=>d.type==='pattern'?0.35:d.type==='client'?0.3:0.12)
+  .attr('marker-end',d=>`url(#a-${d.type})`);
+
+const ll=gg.append('g').selectAll('text').data(L).join('text').text(d=>d.label).attr('text-anchor','middle').attr('fill','#3D4555').attr('font-size','6px').attr('font-family',"'Libre Franklin'").attr('font-weight',500).attr('display','none');
+
+let showLbl=false;
+const nd=gg.append('g').selectAll('g').data(N).join('g')
+  .call(d3.drag().on('start',(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y}).on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y}).on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null}));
+
+nd.append('circle').attr('r',d=>SZ[d.type]||12).attr('fill',d=>CC[d.cat]||CC[d.type]||'#333').attr('fill-opacity',0.12).attr('stroke',d=>CC[d.cat]||CC[d.type]||'#333').attr('stroke-width',d=>d.type==='client'||d.type==='pattern'?2:1.2).attr('stroke-opacity',0.7).style('cursor','pointer').style('filter',d=>`url(#g-${d.cat||d.type})`);
+
+const IC={client:'🏦',consultant:'👤',engagement:'📋',workshop:'🎯',discovery:'🔍',usecase:'💡',pattern:'🔄',outcome:'🎉',benchmark:'📏'};
+nd.append('text').text(d=>IC[d.type]||'●').attr('text-anchor','middle').attr('dy','4px').attr('font-size',d=>(SZ[d.type]||12)>16?'12px':'8px').style('pointer-events','none');
+
+nd.append('text').text(d=>{const s=d.label;return s.length>18?s.slice(0,16)+'…':s}).attr('text-anchor','middle').attr('dy',d=>(SZ[d.type]||12)+10).attr('fill',d=>CC[d.cat]||CC[d.type]||'#555').attr('font-size','7px').attr('font-weight',600).attr('font-family',"'Libre Franklin'").style('pointer-events','none');
+
+const tt=document.getElementById('tt');
+nd.on('mouseover',(e,d)=>{tt.innerHTML=`<div class="tc">${d.type}</div><div class="tn">${d.label}</div>`;tt.style.display='block';tt.style.left=(e.clientX+12)+'px';tt.style.top=(e.clientY-6)+'px'}).on('mousemove',e=>{tt.style.left=(e.clientX+12)+'px';tt.style.top=(e.clientY-6)+'px'}).on('mouseout',()=>tt.style.display='none');
+
+nd.on('click',(e,d)=>{e.stopPropagation();hiNode(d.id);openP(d)});
+svg.on('click',()=>{resetHi();document.getElementById('panel').classList.remove('open')});
+
+function hiNode(id){
+  const c=new Set([id]);L.forEach(x=>{const s=typeof x.source==='string'?x.source:x.source.id;const t=typeof x.target==='string'?x.target:x.target.id;if(s===id)c.add(t);if(t===id)c.add(s)});
+  nd.select('circle').attr('fill-opacity',d=>c.has(d.id)?0.25:0.02).attr('stroke-opacity',d=>c.has(d.id)?1:0.05).attr('stroke-width',d=>d.id===id?3:c.has(d.id)?2:1);
+  nd.selectAll('text').attr('fill-opacity',d=>c.has(d.id)?1:0.08);
+  lk.attr('stroke-opacity',d=>{const s=typeof d.source==='string'?d.source:d.source.id;const t=typeof d.target==='string'?d.target:d.target.id;return(s===id||t===id)?0.6:0.015}).attr('stroke-width',d=>{const s=typeof d.source==='string'?d.source:d.source.id;const t=typeof d.target==='string'?d.target:d.target.id;return(s===id||t===id)?2.5:0.8});
+  ll.attr('display',d=>{const s=typeof d.source==='string'?d.source:d.source.id;const t=typeof d.target==='string'?d.target:d.target.id;return(s===id||t===id)?'block':'none'}).attr('fill','#94A3B8').attr('font-size','8px');
+}
+function resetHi(){
+  nd.select('circle').attr('fill-opacity',0.12).attr('stroke-opacity',0.7).attr('stroke-width',d=>d.type==='client'||d.type==='pattern'?2:1.2);
+  nd.selectAll('text').attr('fill-opacity',1);
+  lk.attr('stroke-opacity',d=>d.type==='pattern'?0.35:d.type==='client'?0.3:0.12).attr('stroke-width',d=>d.type==='client'||d.type==='consultant'?1.5:0.8);
+  ll.attr('display',showLbl?'block':'none');
+}
+
+function openP(d){
+  const col=CC[d.cat]||CC[d.type]||'#666';
+  const rels=[];L.forEach(x=>{const s=typeof x.source==='string'?x.source:x.source.id;const t=typeof x.target==='string'?x.target:x.target.id;if(s===d.id){const tn=N.find(n=>n.id===t);rels.push({dir:'→',verb:x.label,target:tn?tn.label:t,tid:t})}if(t===d.id){const sn=N.find(n=>n.id===s);rels.push({dir:'←',verb:x.label,target:sn?sn.label:s,tid:s})}});
+  let h=`<div class="ph"><div class="pt" style="color:${col}"><span class="d" style="background:${col}"></span>${d.type.toUpperCase()}</div><div class="pn">${d.label}</div></div>`;
+  if(d.props&&Object.keys(d.props).length){h+=`<div class="ps"><div class="pst">Properties</div>`;Object.entries(d.props).forEach(([k,v])=>{h+=`<div class="pr"><span class="pk">${k}</span><span class="pv">${v}</span></div>`});h+=`</div>`}
+  if(rels.length){h+=`<div class="ps"><div class="pst">Relationships (${rels.length})</div>`;rels.forEach(r=>{h+=`<div class="ri" onclick="window._go('${r.tid}')"><span class="ra">${r.dir}</span><span class="rv">${r.verb}</span><span class="rt">${r.target}</span></div>`});h+=`</div>`}
+  document.getElementById('pc').innerHTML=h;document.getElementById('panel').classList.add('open');
+}
+window._go=function(id){const nd2=N.find(x=>x.id===id);if(nd2){hiNode(id);openP(nd2);const sn=sim.nodes().find(x=>x.id===id);if(sn){const t=d3.zoomTransform(svg.node());svg.transition().duration(500).call(zm.transform,d3.zoomIdentity.translate(W/2-sn.x*t.k,H/2-sn.y*t.k).scale(t.k))}}};
+
+document.getElementById('pcl').addEventListener('click',()=>{document.getElementById('panel').classList.remove('open');resetHi()});
+document.getElementById('btn-labels').addEventListener('click',function(){showLbl=!showLbl;this.classList.toggle('on');ll.attr('display',showLbl?'block':'none')});
+document.getElementById('btn-reset').addEventListener('click',()=>{svg.transition().duration(500).call(zm.transform,d3.zoomIdentity);resetHi();document.getElementById('panel').classList.remove('open')});
+
+document.querySelectorAll('.leg').forEach(item=>{item.addEventListener('click',()=>{
+  const c=item.dataset.c;document.querySelectorAll('.leg').forEach(i=>i.classList.remove('on'));item.classList.add('on');
+  if(c==='all'){resetHi()}else{
+    nd.select('circle').attr('fill-opacity',d=>(d.cat===c||d.type===c)?0.25:0.02).attr('stroke-opacity',d=>(d.cat===c||d.type===c)?1:0.05);
+    nd.selectAll('text').attr('fill-opacity',d=>(d.cat===c||d.type===c)?1:0.06);
+    lk.attr('stroke-opacity',d=>{const s=N.find(n=>n.id===(typeof d.source==='string'?d.source:d.source.id));const t=N.find(n=>n.id===(typeof d.target==='string'?d.target:d.target.id));return(s&&(s.cat===c||s.type===c))||(t&&(t.cat===c||t.type===c))?0.4:0.015});
+  }
+})});
+
+sim.on('tick',()=>{lk.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);ll.attr('x',d=>(d.source.x+d.target.x)/2).attr('y',d=>(d.source.y+d.target.y)/2);nd.attr('transform',d=>`translate(${d.x},${d.y})`)});
+
+// ── SIDEBAR ────────────────────────────────
+const groups = [
+  {cat:'client',label:'Clients',icon:'🏦',color:'#1A5AFF'},
+  {cat:'consultant',label:'Consultants',icon:'👤',color:'#06B6D4'},
+  {cat:'engagement',label:'Engagements',icon:'📋',color:'#93B5FF'},
+  {cat:'workshop',label:'Workshops',icon:'🎯',color:'#D97706'},
+  {cat:'discovery',label:'Discoveries',icon:'🔍',color:'#E02020'},
+  {cat:'pattern',label:'Pain Patterns',icon:'🔄',color:'#D946EF'},
+  {cat:'usecase',label:'Use Cases',icon:'💡',color:'#93B5FF'},
+  {cat:'outcome',label:'Outcomes',icon:'🎉',color:'#EC4899'},
+  {cat:'benchmark',label:'Benchmarks',icon:'📏',color:'#0891B2'},
+];
+
+function renderSidebar(filter=''){
+  const sb=document.getElementById('sidebar');
+  let html=`<div class="sb-search"><span class="sb-search-icon">&#x1F50D;</span><input type="text" id="sb-input" placeholder="Search nodes..." value="${filter}" /></div>`;
+  groups.forEach(g=>{
+    const items=N.filter(n=>(n.type===g.cat||n.cat===g.cat)&&(!filter||n.label.toLowerCase().includes(filter.toLowerCase())));
+    if(items.length===0) return;
+    html+=`<div class="sb-group"><div class="sb-group-title"><div class="ld" style="background:${g.color}"></div>${g.label} (${items.length})</div>`;
+    items.forEach(item=>{
+      html+=`<div class="sb-item" data-id="${item.id}"><span class="sb-icon">${g.icon}</span>${item.label}</div>`;
+    });
+    html+=`</div>`;
+  });
+  sb.innerHTML=html;
+
+  // Wire up clicks
+  sb.querySelectorAll('.sb-item').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const id=el.dataset.id;
+      sb.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+      const node=N.find(x=>x.id===id);
+      if(node){
+        hiNode(id);
+        openP(node);
+        // Pan to node
+        const sn=sim.nodes().find(x=>x.id===id);
+        if(sn){
+          const t=d3.zoomTransform(svg.node());
+          const gW=W-240; // account for sidebar
+          svg.transition().duration(600).call(zm.transform,d3.zoomIdentity.translate(gW/2-sn.x*1.2,H/2-sn.y*1.2).scale(1.2));
+        }
+      }
+    });
+  });
+
+  // Wire up search
+  const input=document.getElementById('sb-input');
+  if(input){
+    input.addEventListener('input',function(){renderSidebar(this.value)});
+    if(filter) input.focus();
+  }
+}
+renderSidebar();
+
+// Stats
+document.getElementById('sbar').innerHTML=`
+<div class="st"><div class="sv">10</div><div class="sl">Clients</div></div>
+<div class="st"><div class="sv">10</div><div class="sl">Engagements</div></div>
+<div class="st"><div class="sv">6</div><div class="sl">Consultants</div></div>
+<div class="st"><div class="sv">14</div><div class="sl">Workshops</div></div>
+<div class="st"><div class="sv">17</div><div class="sl">Discoveries</div></div>
+<div class="st"><div class="sv">5</div><div class="sl">Patterns</div></div>
+<div class="st"><div class="sv">5</div><div class="sl">Use Cases</div></div>
+<div class="st"><div class="sv">6</div><div class="sl">Outcomes</div></div>
+`;
+
+setTimeout(()=>{const b=gg.node().getBBox();const s=0.75/Math.max(b.width/W,b.height/H);svg.transition().duration(1200).call(zm.transform,d3.zoomIdentity.translate(W/2-s*(b.x+b.width/2),H/2-s*(b.y+b.height/2)).scale(s))},2500);
+</script>
+</body>
+</html>

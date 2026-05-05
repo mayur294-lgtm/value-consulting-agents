@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backbase ROI Calculator — Seller Self-Service</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --navy: #001C3D;
+    --cyan: #00D2FF;
+    --orange: #FF6B35;
+    --blue: #60A5FA;
+    --green: #34D399;
+    --purple: #A78BFA;
+    --bg: #0B0E2C;
+    --card: rgba(255,255,255,0.06);
+    --card-border: rgba(255,255,255,0.08);
+  }
+  body {
+    font-family: 'Libre Franklin', -apple-system, sans-serif;
+    background: var(--bg);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 20px;
+  }
+  .bg-grid {
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 60px 60px; z-index: 0; pointer-events: none;
+  }
+
+  .header { text-align: center; margin-bottom: 32px; position: relative; z-index: 1; }
+  .header .tag {
+    display: inline-block; background: rgba(0,210,255,0.1);
+    border: 1px solid rgba(0,210,255,0.2);
+    color: var(--cyan); font-size: 11px; font-weight: 700;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 12px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .header h1 { font-size: 28px; font-weight: 900; margin-bottom: 6px; }
+  .header h1 span { color: var(--cyan); }
+  .header p { font-size: 14px; color: rgba(255,255,255,0.4); max-width: 520px; line-height: 1.5; }
+
+  .container {
+    display: grid; grid-template-columns: 380px 1fr;
+    gap: 28px; max-width: 1000px; width: 100%;
+    position: relative; z-index: 1;
+  }
+  @media (max-width: 800px) { .container { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 20px; padding: 28px;
+  }
+  .panel-title {
+    font-size: 12px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 24px;
+  }
+  .panel-title.cyan { color: var(--cyan); }
+  .panel-title.green { color: var(--green); }
+
+  /* Domain selector */
+  .domain-row { display: flex; gap: 8px; margin-bottom: 24px; }
+  .domain-btn {
+    flex: 1; padding: 10px 8px; border-radius: 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.45); font-size: 12px; font-weight: 600;
+    cursor: pointer; text-align: center; transition: all 0.2s;
+  }
+  .domain-btn:hover { border-color: rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); }
+  .domain-btn.active { background: rgba(0,210,255,0.1); border-color: rgba(0,210,255,0.3); color: var(--cyan); }
+
+  /* Inputs */
+  .input-group { margin-bottom: 22px; }
+  .input-group:last-child { margin-bottom: 0; }
+  .input-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .input-label label { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7); }
+  .input-label .value { font-size: 18px; font-weight: 900; color: var(--cyan); min-width: 70px; text-align: right; }
+
+  input[type="range"] {
+    -webkit-appearance: none; width: 100%; height: 5px;
+    border-radius: 3px; background: rgba(255,255,255,0.08); outline: none; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--cyan); cursor: pointer;
+    box-shadow: 0 0 12px rgba(0,210,255,0.4); transition: transform 0.15s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  .range-labels { display: flex; justify-content: space-between; margin-top: 4px; }
+  .range-labels span { font-size: 10px; color: rgba(255,255,255,0.2); }
+
+  /* Results */
+  .lever-result { padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .lever-result:last-of-type { border-bottom: none; }
+  .lever-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .lever-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .lever-name { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500; }
+  .lever-type { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; margin-left: auto; }
+  .lever-type.rev { background: rgba(0,210,255,0.1); color: var(--cyan); }
+  .lever-type.cost { background: rgba(52,211,153,0.1); color: var(--green); }
+  .lever-val { font-size: 24px; font-weight: 900; }
+  .lever-sub { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+
+  /* Total */
+  .total-card {
+    background: linear-gradient(135deg, rgba(0,210,255,0.1), rgba(26,31,113,0.3));
+    border: 1px solid rgba(0,210,255,0.2);
+    border-radius: 16px; padding: 24px; text-align: center; margin-top: 16px;
+  }
+  .total-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+  .total-value { font-size: 44px; font-weight: 900; background: linear-gradient(135deg, var(--cyan), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .total-sub { font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 6px; }
+
+  .scenario-row { display: flex; gap: 10px; margin-top: 16px; }
+  .scenario-card { flex: 1; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 14px; text-align: center; }
+  .scenario-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .scenario-val { font-size: 20px; font-weight: 900; }
+
+  .payback-row { display: flex; gap: 12px; margin-top: 16px; }
+  .payback-card { flex: 1; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 14px; text-align: center; }
+  .payback-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .payback-val { font-size: 18px; font-weight: 800; }
+
+  /* Assumptions */
+  .assumptions {
+    margin-top: 24px; max-width: 1000px; width: 100%;
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 14px; padding: 20px 24px; position: relative; z-index: 1;
+  }
+  .assumptions h3 { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+  .assumptions ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .assumptions li { font-size: 11px; color: rgba(255,255,255,0.35); padding-left: 14px; position: relative; }
+  .assumptions li::before { content: ''; position: absolute; left: 0; top: 5px; width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.15); }
+  .footer-note { margin-top: 16px; text-align: center; font-size: 11px; color: rgba(255,255,255,0.2); z-index: 1; position: relative; }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<div class="header">
+  <div class="tag">Seller Self-Service</div>
+  <h1>Backbase <span>ROI Calculator</span></h1>
+  <p>5 inputs. Real value levers. Defensible business case in 30 seconds.<br>For deals under $800K &mdash; no consultant needed.</p>
+</div>
+
+<div class="container">
+  <div class="panel">
+    <div class="panel-title cyan">Your Prospect</div>
+
+    <!-- Domain selector -->
+    <div class="domain-row">
+      <div class="domain-btn active" data-domain="retail" onclick="setDomain('retail')">Retail</div>
+      <div class="domain-btn" data-domain="wealth" onclick="setDomain('wealth')">Wealth</div>
+      <div class="domain-btn" data-domain="sme" onclick="setDomain('sme')">SME</div>
+    </div>
+
+    <!-- Input 1: Customer base / AUM -->
+    <div class="input-group" id="ig-customers">
+      <div class="input-label">
+        <label id="lbl-customers">Retail customers</label>
+        <span class="value" id="v-customers">200K</span>
+      </div>
+      <input type="range" id="customers" min="20000" max="2000000" value="200000" step="10000">
+      <div class="range-labels"><span>20K</span><span>2M</span></div>
+    </div>
+
+    <!-- Input 2: Products per customer / RM count -->
+    <div class="input-group" id="ig-metric2">
+      <div class="input-label">
+        <label id="lbl-metric2">Products per customer</label>
+        <span class="value" id="v-metric2">1.5</span>
+      </div>
+      <input type="range" id="metric2" min="10" max="35" value="15" step="1">
+      <div class="range-labels" id="rl-metric2"><span>1.0</span><span>3.5</span></div>
+    </div>
+
+    <!-- Input 3: Annual churn rate -->
+    <div class="input-group" id="ig-churn">
+      <div class="input-label">
+        <label id="lbl-churn">Annual churn rate (%)</label>
+        <span class="value" id="v-churn">10%</span>
+      </div>
+      <input type="range" id="churn" min="2" max="25" value="10" step="1">
+      <div class="range-labels"><span>2%</span><span>25%</span></div>
+    </div>
+
+    <!-- Input 4: Monthly call volume / advisory AUM -->
+    <div class="input-group" id="ig-metric4">
+      <div class="input-label">
+        <label id="lbl-metric4">Monthly call center volume</label>
+        <span class="value" id="v-metric4">25K</span>
+      </div>
+      <input type="range" id="metric4" min="1000" max="200000" value="25000" step="1000">
+      <div class="range-labels" id="rl-metric4"><span>1K</span><span>200K</span></div>
+    </div>
+
+    <!-- Input 5: Avg revenue per customer -->
+    <div class="input-group" id="ig-metric5">
+      <div class="input-label">
+        <label id="lbl-metric5">Avg annual revenue / customer</label>
+        <span class="value" id="v-metric5">$800</span>
+      </div>
+      <input type="range" id="metric5" min="100" max="5000" value="800" step="50">
+      <div class="range-labels" id="rl-metric5"><span>$100</span><span>$5K</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title green">5-Year Backbase Impact (Conservative)</div>
+
+    <div id="results-container">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="total-card">
+      <div class="total-label">Total 5-Year NPV</div>
+      <div class="total-value" id="r-total">&mdash;</div>
+      <div class="total-sub" id="r-total-sub">Conservative estimate &middot; 10% discount rate</div>
+    </div>
+
+    <div class="scenario-row">
+      <div class="scenario-card">
+        <div class="scenario-label" style="color:var(--green);">Conservative</div>
+        <div class="scenario-val" id="r-conservative" style="color:var(--green);">&mdash;</div>
+      </div>
+      <div class="scenario-card">
+        <div class="scenario-label" style="color:var(--cyan);">Base</div>
+        <div class="scenario-val" id="r-base" style="color:var(--cyan);">&mdash;</div>
+      </div>
+      <div class="scenario-card">
+        <div class="scenario-label" style="color:var(--orange);">Aspirational</div>
+        <div class="scenario-val" id="r-aspirational" style="color:var(--orange);">&mdash;</div>
+      </div>
+    </div>
+
+    <div class="payback-row">
+      <div class="payback-card">
+        <div class="payback-label">Payback Period</div>
+        <div class="payback-val" id="r-payback" style="color:var(--cyan);">&mdash;</div>
+      </div>
+      <div class="payback-card">
+        <div class="payback-label">Year 3 Annual Benefit</div>
+        <div class="payback-val" id="r-yr3" style="color:var(--green);">&mdash;</div>
+      </div>
+      <div class="payback-card">
+        <div class="payback-label">ROI %</div>
+        <div class="payback-val" id="r-roi" style="color:var(--orange);">&mdash;</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="assumptions">
+  <h3>Methodology &amp; Assumptions (Conservative)</h3>
+  <ul id="assumptions-list">
+    <!-- Populated by JS -->
+  </ul>
+</div>
+<div class="footer-note">Powered by Cortex AgenticOS &middot; Real Backbase value levers from 15+ bank engagements &middot; Q2 2026</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => {
+  if (Math.abs(n) >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+  if (Math.abs(n) >= 1e3) return '$' + (n/1e3).toFixed(0) + 'K';
+  return '$' + n.toFixed(0);
+};
+const fmtK = n => {
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+  return n.toString();
+};
+
+let domain = 'retail';
+
+// Effectiveness ramps per year (Year 1-5)
+const ramps = {
+  retail: [0.06, 0.32, 0.60, 0.75, 0.85],
+  wealth: [0.15, 0.35, 0.60, 0.85, 1.00],
+  sme:    [0.08, 0.30, 0.55, 0.70, 0.80],
+};
+
+// Churn ramp is delayed (trust-building)
+const churnRamps = {
+  retail: [0.00, 0.15, 0.40, 0.60, 0.75],
+  wealth: [0.00, 0.20, 0.45, 0.70, 0.85],
+  sme:    [0.00, 0.15, 0.35, 0.55, 0.70],
+};
+
+function setDomain(d) {
+  domain = d;
+  document.querySelectorAll('.domain-btn').forEach(b => b.classList.toggle('active', b.dataset.domain === d));
+  updateLabels();
+  calc();
+}
+
+function updateLabels() {
+  if (domain === 'retail') {
+    $('lbl-customers').textContent = 'Retail customers';
+    $('customers').min = 20000; $('customers').max = 2000000; $('customers').step = 10000;
+    $('lbl-metric2').textContent = 'Products per customer';
+    $('metric2').min = 10; $('metric2').max = 35; $('metric2').step = 1;
+    $('rl-metric2').innerHTML = '<span>1.0</span><span>3.5</span>';
+    $('lbl-churn').textContent = 'Annual churn rate (%)';
+    $('lbl-metric4').textContent = 'Monthly call center volume';
+    $('metric4').min = 1000; $('metric4').max = 200000; $('metric4').step = 1000;
+    $('rl-metric4').innerHTML = '<span>1K</span><span>200K</span>';
+    $('lbl-metric5').textContent = 'Avg annual revenue / customer';
+    $('metric5').min = 100; $('metric5').max = 5000; $('metric5').step = 50;
+    $('rl-metric5').innerHTML = '<span>$100</span><span>$5K</span>';
+  } else if (domain === 'wealth') {
+    $('lbl-customers').textContent = 'HNW clients managed';
+    $('customers').min = 200; $('customers').max = 20000; $('customers').step = 100;
+    $('lbl-metric2').textContent = 'Number of RMs / Advisors';
+    $('metric2').min = 5; $('metric2').max = 200; $('metric2').step = 1;
+    $('rl-metric2').innerHTML = '<span>5</span><span>200</span>';
+    $('lbl-churn').textContent = 'Annual client attrition (%)';
+    $('lbl-metric4').textContent = 'Avg AUM per client ($K)';
+    $('metric4').min = 100; $('metric4').max = 5000; $('metric4').step = 50;
+    $('rl-metric4').innerHTML = '<span>$100K</span><span>$5M</span>';
+    $('lbl-metric5').textContent = 'Blended fee rate (bps)';
+    $('metric5').min = 20; $('metric5').max = 120; $('metric5').step = 5;
+    $('rl-metric5').innerHTML = '<span>20 bps</span><span>120 bps</span>';
+  } else { // sme
+    $('lbl-customers').textContent = 'SME clients';
+    $('customers').min = 2000; $('customers').max = 200000; $('customers').step = 1000;
+    $('lbl-metric2').textContent = 'Products per SME client';
+    $('metric2').min = 10; $('metric2').max = 40; $('metric2').step = 1;
+    $('rl-metric2').innerHTML = '<span>1.0</span><span>4.0</span>';
+    $('lbl-churn').textContent = 'Annual churn rate (%)';
+    $('lbl-metric4').textContent = 'Monthly support interactions';
+    $('metric4').min = 500; $('metric4').max = 100000; $('metric4').step = 500;
+    $('rl-metric4').innerHTML = '<span>500</span><span>100K</span>';
+    $('lbl-metric5').textContent = 'Avg annual revenue / SME';
+    $('metric5').min = 500; $('metric5').max = 20000; $('metric5').step = 250;
+    $('rl-metric5').innerHTML = '<span>$500</span><span>$20K</span>';
+  }
+}
+
+function calc() {
+  const customers = +$('customers').value;
+  const m2 = +$('metric2').value;
+  const churn = +$('churn').value / 100;
+  const m4 = +$('metric4').value;
+  const m5 = +$('metric5').value;
+
+  // Display values
+  if (domain === 'retail') {
+    $('v-customers').textContent = fmtK(customers);
+    $('v-metric2').textContent = (m2/10).toFixed(1);
+    $('v-churn').textContent = $('churn').value + '%';
+    $('v-metric4').textContent = fmtK(m4);
+    $('v-metric5').textContent = '$' + m5;
+  } else if (domain === 'wealth') {
+    $('v-customers').textContent = fmtK(customers);
+    $('v-metric2').textContent = m2;
+    $('v-churn').textContent = $('churn').value + '%';
+    $('v-metric4').textContent = '$' + fmtK(m4) + 'K';
+    $('v-metric5').textContent = m5 + ' bps';
+  } else {
+    $('v-customers').textContent = fmtK(customers);
+    $('v-metric2').textContent = (m2/10).toFixed(1);
+    $('v-churn').textContent = $('churn').value + '%';
+    $('v-metric4').textContent = fmtK(m4);
+    $('v-metric5').textContent = '$' + fmtK(m5);
+  }
+
+  let levers = [];
+  let assumptions = [];
+
+  if (domain === 'retail') {
+    const revPerCustomer = m5;
+    const productsPerCustomer = m2 / 10;
+
+    // Lever 1: Cross-sell uplift
+    const digitalActive = customers * 0.4; // assume 40% digital active
+    const crossSellUplift = 0.15; // +0.15 products
+    const revPerProduct = 300;
+    const crossSell = digitalActive * crossSellUplift * revPerProduct;
+    levers.push({ name: 'Cross-Sell Uplift', type: 'rev', color: 'var(--cyan)', annual: crossSell,
+      sub: fmtK(Math.round(digitalActive)) + ' digital-active x +0.15 products x $300/product' });
+
+    // Lever 2: Churn reduction
+    const churnReduction = 0.10; // reduce churn by 10% of current rate
+    const retainedCustomers = customers * churn * churnReduction;
+    const churnValue = retainedCustomers * revPerCustomer;
+    levers.push({ name: 'Churn Reduction', type: 'rev', color: 'var(--blue)', annual: churnValue, isChurn: true,
+      sub: Math.round(retainedCustomers) + ' retained x $' + revPerCustomer + ' annual revenue' });
+
+    // Lever 3: Call center deflection
+    const annualCalls = m4 * 12;
+    const deflectionRate = 0.25;
+    const costPerCall = 6.50;
+    const ccSavings = annualCalls * deflectionRate * costPerCall;
+    levers.push({ name: 'Call Center Deflection', type: 'cost', color: 'var(--green)', annual: ccSavings,
+      sub: fmtK(Math.round(annualCalls * deflectionRate)) + ' deflected calls x $6.50/call' });
+
+    // Lever 4: Digital onboarding leakage
+    const annualApps = customers * 0.06; // 6% of base applies annually
+    const leakageReduction = 0.15;
+    const avgBalance = 5000;
+    const niiMargin = 0.025;
+    const onboarding = annualApps * leakageReduction * 0.6 * avgBalance * niiMargin;
+    levers.push({ name: 'Onboarding Leakage Recovery', type: 'rev', color: 'var(--purple)', annual: onboarding,
+      sub: Math.round(annualApps * leakageReduction * 0.6) + ' new funded accounts x $5K x 2.5% NII' });
+
+    assumptions = [
+      '40% digital-active customer assumption (industry median)',
+      'Cross-sell uplift: +0.15 products/customer at $300 revenue each',
+      'Churn reduction: 10% of current attrition prevented (delayed ramp Y2+)',
+      'Call deflection: 25% of volume at $6.50/call (NAM average)',
+      'Onboarding: 6% annual application rate, 15% leakage reduction',
+      'NII margin: 2.5% on $5K average new account balance',
+      'Effectiveness ramps: 6% Y1, 32% Y2, 60% Y3, 75% Y4, 85% Y5',
+      'Investment estimate based on deal size range for segment'
+    ];
+
+  } else if (domain === 'wealth') {
+    const rmCount = m2;
+    const aumPerClient = m4 * 1000;
+    const feeRate = m5 / 10000;
+    const totalAUM = customers * aumPerClient;
+    const rmCost = 120000;
+
+    // Lever 1: RM Productivity
+    const adminReduction = 0.35;
+    const adminPct = 0.50;
+    const rmProd = rmCount * rmCost * adminPct * adminReduction;
+    levers.push({ name: 'RM Productivity (Admin Freed)', type: 'cost', color: 'var(--green)', annual: rmProd,
+      sub: rmCount + ' RMs x $120K x 50% admin x 35% reduction' });
+
+    // Lever 2: Share of wallet
+    const sowImprovement = 0.05;
+    const sow = customers * aumPerClient * sowImprovement * feeRate;
+    levers.push({ name: 'Share of Wallet Consolidation', type: 'rev', color: 'var(--cyan)', annual: sow,
+      sub: '+5% share of wallet on ' + fmt(totalAUM) + ' AUM at ' + m5 + ' bps' });
+
+    // Lever 3: Client retention
+    const retImprovement = 0.02;
+    const churnVal = totalAUM * retImprovement * feeRate;
+    levers.push({ name: 'Client Retention', type: 'rev', color: 'var(--blue)', annual: churnVal, isChurn: true,
+      sub: '+2% retention on ' + fmt(totalAUM) + ' AUM at ' + m5 + ' bps' });
+
+    // Lever 4: Onboarding efficiency
+    const newClients = customers * 0.10;
+    const timeSaved = 3; // hours per onboarding
+    const onboardVal = newClients * timeSaved * (rmCost / 2080);
+    levers.push({ name: 'Onboarding Efficiency', type: 'cost', color: 'var(--purple)', annual: onboardVal,
+      sub: Math.round(newClients) + ' new clients x 3 hrs saved x $58/hr RM cost' });
+
+    assumptions = [
+      'RM loaded cost: $120K/year (NAM average)',
+      'Admin time: 50% of RM time, reduced by 35%',
+      'Share of wallet: +5% consolidation improvement',
+      'Retention: +2 percentage points improvement (delayed ramp)',
+      'Onboarding: 10% annual new client rate, 3 hrs saved per onboard',
+      'Effectiveness ramps: 15% Y1, 35% Y2, 60% Y3, 85% Y4, 100% Y5',
+      'RM hourly cost derived from annual ($120K / 2080 hrs)',
+      'Investment estimate based on deal size range for segment'
+    ];
+
+  } else { // SME
+    const revPerSME = m5;
+    const productsPerSME = m2 / 10;
+
+    // Lever 1: Cross-sell (SME products)
+    const digitalSME = customers * 0.35;
+    const crossSell = digitalSME * 0.12 * 500;
+    levers.push({ name: 'Cross-Sell / Product Penetration', type: 'rev', color: 'var(--cyan)', annual: crossSell,
+      sub: fmtK(Math.round(digitalSME * 0.12)) + ' additional product sales x $500 rev' });
+
+    // Lever 2: Churn reduction
+    const retainedSME = customers * churn * 0.08;
+    const churnVal = retainedSME * revPerSME;
+    levers.push({ name: 'SME Churn Reduction', type: 'rev', color: 'var(--blue)', annual: churnVal, isChurn: true,
+      sub: Math.round(retainedSME) + ' retained SMEs x $' + fmtK(revPerSME) + ' annual revenue' });
+
+    // Lever 3: Servicing cost avoidance
+    const annualInteractions = m4 * 12;
+    const deflection = annualInteractions * 0.30 * 8;
+    levers.push({ name: 'Digital Servicing Deflection', type: 'cost', color: 'var(--green)', annual: deflection,
+      sub: fmtK(Math.round(annualInteractions * 0.30)) + ' deflected interactions x $8/interaction' });
+
+    // Lever 4: STP / onboarding automation
+    const newSMEs = customers * 0.08;
+    const stpSavings = newSMEs * 0.25 * 200;
+    levers.push({ name: 'Onboarding STP Automation', type: 'cost', color: 'var(--purple)', annual: stpSavings,
+      sub: Math.round(newSMEs * 0.25) + ' STP-eligible x $200 manual cost saved' });
+
+    assumptions = [
+      '35% digital-active SME assumption',
+      'Cross-sell: 12% of digital SMEs adopt additional product at $500 revenue',
+      'Churn reduction: 8% of current attrition prevented (delayed ramp)',
+      'Deflection: 30% of interactions at $8/interaction',
+      'STP: 8% annual new SME rate, 25% become STP-eligible, $200 savings each',
+      'Effectiveness ramps: 8% Y1, 30% Y2, 55% Y3, 70% Y4, 80% Y5',
+      'SME interactions include calls, emails, branch visits',
+      'Investment estimate based on deal size range for segment'
+    ];
+  }
+
+  // Render levers
+  const rc = $('results-container');
+  rc.innerHTML = levers.map(l => `
+    <div class="lever-result">
+      <div class="lever-header">
+        <div class="lever-dot" style="background:${l.color}"></div>
+        <div class="lever-name">${l.name}</div>
+        <div class="lever-type ${l.type === 'rev' ? 'rev' : 'cost'}">${l.type === 'rev' ? 'Revenue' : 'Cost Savings'}</div>
+      </div>
+      <div class="lever-val" style="color:${l.color}">${fmt(l.annual)}<span style="font-size:14px; color:rgba(255,255,255,0.3);">/yr at full</span></div>
+      <div class="lever-sub">${l.sub}</div>
+    </div>
+  `).join('');
+
+  // Calculate 5-year NPV with ramps
+  const r = ramps[domain];
+  const cr = churnRamps[domain];
+  const discountRate = 0.10;
+  let totalNPV = 0;
+  let yr3Annual = 0;
+  let cumBenefit = 0;
+
+  // Estimate investment (based on deal segment sizing)
+  const investmentEstimate = domain === 'retail' ? 500000 : domain === 'wealth' ? 400000 : 350000;
+
+  for (let y = 0; y < 5; y++) {
+    let yearBenefit = 0;
+    levers.forEach(l => {
+      const ramp = l.isChurn ? cr[y] : r[y];
+      yearBenefit += l.annual * ramp;
+    });
+    if (y === 2) yr3Annual = yearBenefit;
+    const discounted = yearBenefit / Math.pow(1 + discountRate, y + 1);
+    totalNPV += discounted;
+    cumBenefit += yearBenefit;
+  }
+
+  totalNPV -= investmentEstimate; // subtract investment
+
+  // Scenarios (conservative = base * 0.7, aspirational = base * 1.4)
+  const conservativeNPV = totalNPV * 0.7;
+  const aspirationalNPV = totalNPV * 1.4;
+
+  // Payback: find year where cumulative benefit exceeds investment
+  let cumCheck = 0;
+  let paybackMonths = 60;
+  for (let y = 0; y < 5; y++) {
+    let yb = 0;
+    levers.forEach(l => { yb += l.annual * (l.isChurn ? cr[y] : r[y]); });
+    const prevCum = cumCheck;
+    cumCheck += yb;
+    if (cumCheck >= investmentEstimate && prevCum < investmentEstimate) {
+      const frac = (investmentEstimate - prevCum) / yb;
+      paybackMonths = Math.round((y + frac) * 12);
+    }
+  }
+
+  const roiPct = Math.round(((cumBenefit - investmentEstimate) / investmentEstimate) * 100);
+
+  $('r-total').textContent = fmt(Math.max(0, totalNPV));
+  $('r-total-sub').textContent = 'After ' + fmt(investmentEstimate) + ' investment · 10% discount rate';
+  $('r-conservative').textContent = fmt(Math.max(0, conservativeNPV));
+  $('r-base').textContent = fmt(Math.max(0, totalNPV));
+  $('r-aspirational').textContent = fmt(Math.max(0, aspirationalNPV));
+  $('r-payback').textContent = paybackMonths + ' months';
+  $('r-yr3').textContent = fmt(yr3Annual);
+  $('r-roi').textContent = roiPct + '%';
+
+  // Assumptions
+  $('assumptions-list').innerHTML = assumptions.map(a => `<li>${a}</li>`).join('');
+}
+
+// Bind sliders
+['customers', 'metric2', 'churn', 'metric4', 'metric5'].forEach(id => {
+  $(id).addEventListener('input', calc);
+});
+
+updateLabels();
+calc();
+</script>
+</body>
+</html>

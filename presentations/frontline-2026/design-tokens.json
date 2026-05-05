@@ -1,0 +1,42 @@
+{
+  "theme": "Backbase Unified Frontline 2026",
+  "source": "Master Template _ 2026.pptx + Gemini Agentic Blueprint",
+  "colors": {
+    "primary_navy": "#001C3D",
+    "action_blue": "#1A5AFF",
+    "semantic_red": "#E02020",
+    "surface_white": "#FFFFFF",
+    "background_gray": "#F5F7F9",
+    "text_main": "#001C3D",
+    "text_muted": "#5C6E84",
+    "success_green": "#2ECC71"
+  },
+  "typography": {
+    "level_1_label": {"font": "Libre Franklin", "fallback": "Helvetica, Arial", "size_pt": 18, "case": "UPPERCASE", "usage": "Captions, tags, small annotations above title"},
+    "level_2_title": {"font": "Libre Franklin Bold", "fallback": "Helvetica Bold, Arial Bold", "size_pt": 45, "weight": "Bold", "usage": "Slide headings"},
+    "level_3_subtitle": {"font": "Libre Franklin", "fallback": "Helvetica, Arial", "size_pt": 24, "usage": "Supporting headings"},
+    "level_4_body": {"font": "Libre Franklin", "fallback": "Helvetica, Arial", "size_pt": 20, "usage": "General content"}
+  },
+  "geometry": {
+    "canvas_width_inches": 20.0,
+    "canvas_height_inches": 11.25,
+    "canvas_aspect_ratio": "16:9",
+    "border_radius_px": 16,
+    "button_radius_px": 30,
+    "margins": {
+      "top_inches": 0.5,
+      "bottom_inches": 0.8,
+      "left_inches": 0.5,
+      "right_inches": 0.5
+    },
+    "content_safe_zone_inches": 0.5
+  },
+  "google_slides_compat": {
+    "text_width_buffer_pct": 15,
+    "autofit": false,
+    "word_wrap": true,
+    "resize_shape_to_fit_text": false,
+    "group_icons_with_labels": true,
+    "min_edge_margin_inches": 0.5
+  }
+}

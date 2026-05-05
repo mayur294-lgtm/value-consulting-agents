@@ -6,6 +6,49 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning follo
 
 ---
 
+## [1.3.0] - 2026-05-05 — Backbase Unified Frontline 2026 design system migration
+
+Replaces the ENGAGE Americas 2026 palette with the **Backbase Unified Frontline 2026** brand system (colors + typography). Layouts, dashboard components, and agent behavior are unchanged — only the visual tokens and a new pair of presentation skills.
+
+### Added
+
+- **`/frontline-html` skill** — single-file HTML deck builder using `tools/frontline_2026_html.py`. Keyboard + dot navigation, 17 slide layouts (Cover, Section Divider, Agenda, Content, Split Comparison, Showcase, Architecture, Stat Cards, Case Study, Statement, Tiles, Process Rows, Pillar Rows, Financial Table, Alert Cards, Architecture Stack, Context Stats). For brainstorming and previewing decks before final PPTX.
+- **`/frontline-slides` skill** — Google-Slides-compatible PPTX builder using `tools/frontline_2026_presenter.py`. 20"×11.25" canvas, 15% text-width buffer, autofit disabled, Libre Franklin throughout, no gradients/shadows/rotated text.
+- **`presentations/frontline-2026/`** — design tokens (`design-tokens.json`), layout positions (`slide-layouts.md`), Google Slides compat rules (`google-slides-rules.md`), and HTML component catalog (`html-components.md`).
+- **Brand chrome patterns** in `knowledge/design-system.md` Section 5: blue inverted-L corner accent (top-left of light panels) + Backbase wordmark footer (bottom-right with notched-B SVG + page number).
+
+### Changed (visual only — no functional changes to agents)
+
+- **Brand palette** swapped repo-wide:
+  - Primary dark: `#0F172A` → `#001C3D` (Frontline navy)
+  - Primary blue: `#3366FF` → `#1A5AFF` (Action Blue)
+  - Coral → Semantic Red: `#FF6B5E` → `#E02020`
+  - Sage → Success Green: `#93C47D` → `#2ECC71`
+  - Gold → Amber: `#E8B931` → `#D97706`
+  - Muted: `#334155` → `#5C6E84`
+  - Off-white body bg: `#F8FAFC` → pure white `#FFFFFF`
+- **Primary font**: Inter → **Libre Franklin** (Google Fonts)
+- **Card radius**: 12px → 16px (Frontline standard); pill buttons 30px
+- **Maturity scale L0–L4** rebuilt on new palette — gold removed, replaced by amber for L1
+- `knowledge/design-system.md` rewritten — Sections 1–4 (tokens, deprecation map, typography, CSS vars) updated; Sections 5–7 (layout patterns, components, breakpoints) retain bento grids, dark feature sections, heatmaps, swimlanes, phone frames, journey maps, value waterfalls — all auto-inherit new colors
+- Agent line-17 color hint updated in 5 agent files (`workshop-preparation`, `usecase-designer`, `ignite-workshop-synthesizer`, `roi-financial-modeler`, deprecated `roi-business-case-builder` left as-is)
+- 17 templates re-skinned: `templates/presentations/*.html`, `knowledge/Ignite Inspire/*-template.html`, `knowledge/Ignite Inspire/example-*-deck.html`, `knowledge/Ignite Inspire/agent-[0-6]-*.md`, `knowledge/Ignite Inspire/design-system.md`, `knowledge/Ignite Inspire/CLAUDE.md`
+- Web app: `web/src/index.css`, `web/src/data/mockData.ts`, `web/src/pages/Pipeline.tsx`, all `web/ontology*.html`
+- Standalone outputs re-skinned: `Cortex_Sales_ROI_Calculator.html`
+- `CLAUDE.md` "Custom Skills Available" section now documents `/frontline-html` and `/frontline-slides` (replaces `/presentation` documentation)
+
+### Deprecated
+
+- **`/presentation` and `/presentation-v2` skills** — moved to `.claude/commands/deprecated/`. Both now display a deprecation banner pointing to `/frontline-html` (preview) and `/frontline-slides` (final PPTX). Kept on disk only so historical engagements that linked to them still resolve.
+
+### Migration notes
+
+- Existing engagement outputs in `outputs/` and `engagements/*/` are intentionally NOT retroactively re-skinned — they are historical deliverables and should remain as published.
+- Agents read `knowledge/design-system.md` at runtime; future generations automatically pick up Frontline 2026 tokens.
+- Re-skin script: `/tmp/reskin_frontline2026.py` (idempotent; safe to re-run on any HTML/CSS/MD file).
+
+---
+
 ## [1.2.0] - 2026-04-13
 
 Major release covering 45 commits since v1.1.0 (Feb 3 → Apr 13). Three headline themes:

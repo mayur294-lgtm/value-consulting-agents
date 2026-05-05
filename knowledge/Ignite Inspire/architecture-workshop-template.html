@@ -8,23 +8,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --primary-dark: #091C35;
-    --primary-blue: #3366FF;
-    --cyan: #69FEFF;
+    --primary-dark: #001C3D;
+    --primary-blue: #1A5AFF;
+    --cyan: #93B5FF;
     --white: #FFFFFF;
-    --light-grey: #F3F6F9;
-    --light-blue: #E5EBFF;
-    --muted: #3A495D;
-    --green: #26BC71;
-    --amber: #FFAC09;
-    --red: #FF7262;
-    --text: #091C35;
+    --light-grey: #F5F7F9;
+    --light-blue: #EBF0FF;
+    --muted: #5C6E84;
+    --green: #2ECC71;
+    --amber: #D97706;
+    --red: #E02020;
+    --text: #001C3D;
     --text-light: #5A6A7E;
     --border: #E0E6ED;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Libre Franklin', 'Libre Franklin', Helvetica, Arial, -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 15px; line-height: 1.6; color: var(--text); background: var(--white);
   }
 
@@ -181,7 +181,7 @@
   .system-card.health-amber { border-left: 3px solid var(--amber); }
   .system-card.health-red { border-left: 3px solid var(--red); }
   /* AGENT: Apply target-state styling */
-  .system-card.backbase { background: rgba(51,102,255,0.06); border: 1px solid var(--primary-blue); border-left: 3px solid var(--primary-blue); }
+  .system-card.backbase { background: rgba(26,90,255,0.06); border: 1px solid var(--primary-blue); border-left: 3px solid var(--primary-blue); }
   .system-card.retained { border-left: 3px solid var(--green); }
   .system-card.retired { opacity: 0.4; }
   .system-card.retired .sys-name { text-decoration: line-through; }
@@ -190,7 +190,7 @@
   .badge-retain { background: rgba(38,188,113,0.12); color: var(--green); }
   .badge-retire { background: rgba(58,73,93,0.12); color: var(--muted); }
   .badge-rationalize { background: rgba(255,172,9,0.12); color: var(--amber); }
-  .badge-backbase { background: rgba(51,102,255,0.12); color: var(--primary-blue); }
+  .badge-backbase { background: rgba(26,90,255,0.12); color: var(--primary-blue); }
   /* Pain callout */
   .pain-callout {
     position: absolute; top: -6px; right: -6px; width: 20px; height: 20px;
@@ -209,7 +209,7 @@
     color: var(--green);
   }
   .integration-strip.backbase-int {
-    background: rgba(51,102,255,0.06); border-left-color: var(--primary-blue); border-right-color: var(--primary-blue);
+    background: rgba(26,90,255,0.06); border-left-color: var(--primary-blue); border-right-color: var(--primary-blue);
     color: var(--primary-blue);
   }
   .int-icon { font-size: 14px; }
@@ -229,7 +229,7 @@
   .fix-grid { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr; gap: 0; align-items: start; margin-bottom: 20px; }
   .fix-card { padding: 20px; border-radius: 12px; }
   .fix-card.problem { background: rgba(255,114,98,0.05); border: 1px solid rgba(255,114,98,0.15); border-left: 3px solid var(--red); }
-  .fix-card.solution { background: rgba(51,102,255,0.05); border: 1px solid var(--light-blue); border-left: 3px solid var(--primary-blue); }
+  .fix-card.solution { background: rgba(26,90,255,0.05); border: 1px solid var(--light-blue); border-left: 3px solid var(--primary-blue); }
   .fix-card.value { background: rgba(38,188,113,0.05); border: 1px solid rgba(38,188,113,0.15); border-left: 3px solid var(--green); }
   .fix-card .fix-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
   .fix-card.problem .fix-label { color: var(--red); }
@@ -275,7 +275,7 @@
   .bb-platform { border: 2px solid var(--primary-blue); border-radius: 16px; overflow: hidden; margin-bottom: 32px; }
   .bb-layer {
     padding: 20px 24px; border-bottom: 1px solid var(--light-blue);
-    background: rgba(51,102,255,0.03);
+    background: rgba(26,90,255,0.03);
   }
   .bb-layer:last-child { border-bottom: none; }
   .bb-layer-header {
@@ -284,7 +284,7 @@
   }
   .bb-capabilities { display: flex; flex-wrap: wrap; gap: 10px; }
   .bb-cap {
-    background: rgba(51,102,255,0.08); border: 1px solid var(--light-blue);
+    background: rgba(26,90,255,0.08); border: 1px solid var(--light-blue);
     border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600;
     color: var(--primary-blue);
   }
@@ -294,7 +294,7 @@
   }
   /* Backbase Integration Hub highlight */
   .bb-layer.integration-hub {
-    background: rgba(51,102,255,0.08); border-bottom: 2px solid var(--primary-blue);
+    background: rgba(26,90,255,0.08); border-bottom: 2px solid var(--primary-blue);
     border-top: 2px solid var(--primary-blue);
   }
   .bb-layer.integration-hub .bb-layer-header { font-size: 13px; color: var(--primary-blue); }
@@ -319,7 +319,7 @@
   }
   .roadmap-phase-header.phase-1 { background: var(--primary-blue); }
   .roadmap-phase-header.phase-2 { background: #5C85FF; }
-  .roadmap-phase-header.phase-3 { background: #7D9DFF; }
+  .roadmap-phase-header.phase-3 { background: #93B5FF; }
   .roadmap-phase-header .phase-time { font-size: 11px; font-weight: 400; opacity: 0.8; display: block; margin-top: 2px; }
   .roadmap-phase-body { padding: 16px 20px; }
   .roadmap-item { font-size: 13px; color: var(--text-light); padding: 4px 0 4px 16px; position: relative; line-height: 1.5; }
@@ -350,7 +350,7 @@
 
   /* === CO-CREATION / VALIDATION === */
   .validation-box {
-    background: rgba(51,102,255,0.04); border: 1px solid var(--light-blue);
+    background: rgba(26,90,255,0.04); border: 1px solid var(--light-blue);
     border-radius: 12px; padding: 20px 24px; margin-top: 24px;
   }
   .validation-box h4 { font-size: 13px; font-weight: 700; color: var(--primary-blue); margin-bottom: 10px; }

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cortex Knowledge Graph — Complete (32 Entity Types)</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060910}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Libre Franklin',system-ui,sans-serif;background:var(--bg);color:#E2E8F0;overflow:hidden;height:100vh}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,9,16,0.94);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.04);padding:6px 16px;display:flex;align-items:center;gap:10px}
+.topbar h1{font-size:0.82rem;font-weight:900;white-space:nowrap}
+.topbar h1 span{color:#93B5FF}
+.ctrls{display:flex;gap:4px;margin-left:auto}
+.btn{padding:3px 9px;font-size:0.6rem;font-weight:600;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.02);color:#94A3B8;border-radius:4px;cursor:pointer;transition:all 0.12s}
+.btn:hover{background:rgba(255,255,255,0.05);color:#E2E8F0}
+.btn.on{background:#1A5AFF;border-color:#1A5AFF;color:#fff}
+.sidebar{position:fixed;left:0;top:36px;bottom:0;width:220px;background:rgba(6,9,16,0.96);border-right:1px solid rgba(255,255,255,0.04);z-index:150;overflow-y:auto;padding:8px 0;font-size:0.65rem}
+.sb-search{padding:0 8px 8px;position:sticky;top:0;background:rgba(6,9,16,0.98);z-index:2}
+.sb-search input{width:100%;padding:6px 8px 6px 24px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:5px;color:#E2E8F0;font-size:0.68rem;font-family:inherit;outline:none}
+.sb-search input::placeholder{color:#2D3345}
+.sb-search input:focus{border-color:#1A5AFF}
+.sb-si{position:absolute;left:14px;top:7px;color:#2D3345;font-size:10px}
+.sb-g{padding:2px 8px}
+.sb-gt{font-size:0.52rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#2D3345;padding:5px 0 2px;display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none}
+.sb-gt .d{width:5px;height:5px;border-radius:2px}
+.sb-gt .cnt{margin-left:auto;font-size:0.48rem;color:#1D2335}
+.sb-i{padding:3px 6px;font-size:0.62rem;color:#4A5568;cursor:pointer;border-radius:3px;transition:all 0.1s;display:flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-i:hover{background:rgba(255,255,255,0.03);color:#CBD5E1}
+.sb-i.on{background:rgba(26,90,255,0.1);color:#1A5AFF}
+.sb-i .ic{font-size:8px;width:14px;text-align:center;flex-shrink:0}
+.sb-collapsed .sb-i{display:none}
+#graph{margin-left:220px;width:calc(100% - 220px);height:100vh}
+.panel{position:fixed;right:-420px;top:0;bottom:0;width:400px;background:rgba(8,12,22,0.97);backdrop-filter:blur(16px);border-left:1px solid rgba(255,255,255,0.04);z-index:200;transition:right 0.28s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;padding-top:36px}
+.panel.open{right:0}
+.pcl{position:absolute;top:42px;right:10px;width:22px;height:22px;border-radius:4px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:#4A5568;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;z-index:10}
+.pcl:hover{color:#E2E8F0}
+.ph{padding:12px 16px 6px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.pt{font-size:0.5rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:4px}
+.pt .d{width:6px;height:6px;border-radius:2px;display:inline-block}
+.pn{font-size:1.05rem;font-weight:900;color:#fff;margin-top:2px}
+.ps{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.pst{font-size:0.52rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#2D3345;margin-bottom:5px}
+.pr{display:flex;gap:5px;padding:2px 0;font-size:0.65rem}
+.pk{font-weight:600;color:#64748B;min-width:100px;font-size:0.6rem}
+.pv{color:#94A3B8;font-size:0.62rem;word-break:break-word}
+.pv.hl{color:#93B5FF;font-weight:600}
+.ri{padding:3px 5px;font-size:0.64rem;display:flex;align-items:center;gap:4px;cursor:pointer;border-radius:3px;margin:0 -5px}
+.ri:hover{background:rgba(255,255,255,0.03)}
+.ra{color:#2D3345;font-size:0.55rem;width:10px;text-align:center}
+.rv{color:#1A5AFF;font-weight:500;font-style:italic;font-size:0.58rem}
+.rt{color:#94A3B8;font-weight:600;font-size:0.62rem}
+.tooltip{position:fixed;padding:5px 9px;background:rgba(8,12,22,0.96);border:1px solid rgba(255,255,255,0.07);border-radius:5px;font-size:0.62rem;color:#CBD5E1;pointer-events:none;z-index:300;max-width:240px;display:none}
+.tooltip .tn{font-weight:700;color:#fff;font-size:0.66rem}.tooltip .tc{font-size:0.5rem;color:#4A5568;text-transform:uppercase}
+.sbar{position:fixed;bottom:10px;left:calc(220px + (100% - 220px)/2);transform:translateX(-50%);display:flex;gap:10px;background:rgba(8,12,22,0.88);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.04);border-radius:7px;padding:5px 14px;z-index:100}
+.st{text-align:center}.sv{font-size:0.85rem;font-weight:900;color:#93B5FF}.sl{font-size:0.45rem;color:#2D3345;text-transform:uppercase;letter-spacing:0.05em}
+</style>
+</head>
+<body>
+<div class="topbar">
+<h1>Cortex <span>Complete Knowledge Graph</span> — 32 Entity Types · 10 Clients</h1>
+<div class="ctrls">
+<button class="btn" id="btn-labels">Labels</button>
+<button class="btn" id="btn-reset">Reset</button>
+</div>
+</div>
+
+<div class="sidebar" id="sidebar"></div>
+<svg id="graph"></svg>
+<div class="panel" id="panel"><button class="pcl" id="pcl">&times;</button><div id="pc"></div></div>
+<div class="tooltip" id="tt"></div>
+<div class="sbar" id="sbar"></div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+// COLOR + CONFIG
+// ═══════════════════════════════════════════════════
+const CC={
+  domain:'#94A3B8',journey_template:'#94A3B8',process_template:'#94A3B8',persona:'#94A3B8',capability_definition:'#94A3B8',usecase_template:'#93B5FF',workshop_kit_template:'#94A3B8',
+  client:'#1A5AFF',consultant:'#06B6D4',engagement:'#0891B2',engagement_file:'#64748B',
+  engagement_event:'#F97316',engagement_plan:'#D97706',engagement_choice:'#FB923C',
+  workshop:'#D97706',discovery:'#E02020',capability_score:'#2ECC71',journey_map:'#0891B2',process_map:'#0D9488',tech_landscape:'#6366F1',roi_model:'#EAB308',value_lever:'#D97706',usecase:'#93B5FF',roadmap:'#0EA5E9',roadmap_phase:'#38BDF8',app_portfolio:'#818CF8',application:'#A78BFA',decision:'#7C3AED',debrief_entry:'#C084FC',
+  pain_pattern:'#D946EF',benchmark:'#0891B2',outcome:'#EC4899',embedding:'#6B7280'
+};
+const IC={
+  domain:'🌐',journey_template:'🗺️',process_template:'⚙️',persona:'👥',capability_definition:'📐',usecase_template:'💡',workshop_kit_template:'📦',
+  client:'🏦',consultant:'👤',engagement:'📋',engagement_file:'📎',
+  engagement_event:'⚡',engagement_plan:'📝',engagement_choice:'👆',
+  workshop:'🎯',discovery:'🔍',capability_score:'📊',journey_map:'🗺️',process_map:'⚙️',tech_landscape:'🏗️',roi_model:'💰',value_lever:'📈',usecase:'💡',roadmap:'🛣️',roadmap_phase:'📅',app_portfolio:'📱',application:'💻',decision:'⚖️',debrief_entry:'💬',
+  pain_pattern:'🔄',benchmark:'📏',outcome:'🎉',embedding:'🧬'
+};
+const SZ={
+  domain:20,journey_template:12,process_template:12,persona:12,capability_definition:12,usecase_template:14,workshop_kit_template:12,
+  client:28,consultant:18,engagement:20,engagement_file:8,
+  engagement_event:10,engagement_plan:12,engagement_choice:8,
+  workshop:12,discovery:9,capability_score:10,journey_map:11,process_map:11,tech_landscape:12,roi_model:14,value_lever:10,usecase:13,roadmap:13,roadmap_phase:10,app_portfolio:12,application:8,decision:11,debrief_entry:9,
+  pain_pattern:22,benchmark:14,outcome:16,embedding:10
+};
+
+const N=[],L=[];
+function n(id,type,label,props){N.push({id,type,label,props:props||{}})}
+function l(s,t,label,type){L.push({source:s,target:t,label,type:type||'default'})}
+
+// ═══════════════════════════════════════════════════
+// REFERENCE DATA
+// ═══════════════════════════════════════════════════
+
+// Domains
+n('dom_retail','domain','Retail Banking',{verticals:'Deposits, Loans, Cards, Payments',personas:4,journeys:6,capabilities:45});
+n('dom_commercial','domain','Corporate & Commercial',{verticals:'Cash Mgmt, Trade Finance, Lending',personas:3,journeys:5,capabilities:38});
+n('dom_wealth','domain','Wealth Management',{verticals:'Advisory, Portfolio, HNW',personas:3,journeys:4,capabilities:32});
+n('dom_investing','domain','Digital Investing',{verticals:'Self-directed, Robo, Mass-affluent',personas:3,journeys:5,capabilities:35});
+n('dom_sme','domain','SME Banking',{verticals:'Onboarding, Lending, Payments',personas:3,journeys:5,capabilities:30});
+
+// Journey Templates
+n('jt_onboarding','journey_template','Retail Onboarding Journey',{domain:'Retail',stages:7,known_friction:'ID verification, document upload, funding'});
+n('jt_lending','journey_template','Lending Application Journey',{domain:'Retail',stages:9,known_friction:'Document gathering, credit check wait, manual underwriting'});
+n('jt_investing','journey_template','Investment Account Journey',{domain:'Investing',stages:6,known_friction:'KYC, funding, first trade'});
+n('jt_advisory','journey_template','Advisory Referral Journey',{domain:'Wealth',stages:5,known_friction:'Handoff delay, context loss, scheduling'});
+n('jt_servicing','journey_template','Account Servicing Journey',{domain:'Retail',stages:8,known_friction:'Channel switching, repeat authentication'});
+
+// Process Templates
+n('pt_kyc','process_template','KYC/Onboarding Process',{domain:'All',typical_steps:12,common_bottleneck:'Manual document review'});
+n('pt_lending','process_template','Lending Origination Process',{domain:'Retail',typical_steps:15,common_bottleneck:'Underwriting queue'});
+n('pt_payments','process_template','Payment Processing',{domain:'All',typical_steps:8,common_bottleneck:'Batch settlement'});
+n('pt_advisory','process_template','Advisory Workflow',{domain:'Wealth',typical_steps:10,common_bottleneck:'CRM data entry'});
+
+// Personas
+n('per_digital','persona','Digital-First Customer',{type:'Customer',age:'25-40',behavior:'Mobile-first, low branch tolerance'});
+n('per_traditional','persona','Traditional Customer',{type:'Customer',age:'50+',behavior:'Branch-dependent, phone preference'});
+n('per_hni','persona','High Net Worth Individual',{type:'Customer',behavior:'Expects white-glove, multi-product'});
+n('per_advisor','persona','Branch Advisor',{type:'Employee',pain:'Multiple systems, no unified view'});
+n('per_ops','persona','Operations Staff',{type:'Employee',pain:'Manual processes, workarounds'});
+
+// Capability Definitions
+n('cd_digital_channel','capability_definition','Digital Channel Availability',{code:'CAP-CE-01',category:'Customer Channels',probing:'Does mobile/web exist? Feature parity?'});
+n('cd_onboarding','capability_definition','Digital Onboarding',{code:'CAP-CL-01',category:'Customer Lifecycle',probing:'End-to-end digital? Time to completion?'});
+n('cd_activation','capability_definition','Activation Orchestration',{code:'CAP-CL-03',category:'Customer Lifecycle',probing:'Funding flow? Exit-intent? Reminders?'});
+n('cd_advisor_enable','capability_definition','Advisor Enablement',{code:'CAP-AE-01',category:'Employee Enablement',probing:'CRM integration? Member context? Referral tracking?'});
+n('cd_data_integration','capability_definition','Cross-Entity Data Integration',{code:'CAP-DI-01',category:'Data Foundation',probing:'Single customer truth? Real-time? Siloed?'});
+n('cd_ai_decisioning','capability_definition','AI/ML Decisioning',{code:'CAP-AI-01',category:'AI & Agentic',probing:'Any ML in production? Predictive models?'});
+
+// Use Case Templates
+n('uct_funding','usecase_template','Digital Account Funding',{code:'UC-I-01',domain:'Investing',used_in:'4 engagements',lighthouse_rate:'64%'});
+n('uct_referral','usecase_template','Advisor Referral Engine',{code:'UC-W-01',domain:'Wealth',used_in:'3 engagements'});
+n('uct_onboarding','usecase_template','Digital Onboarding',{code:'UC-R-01',domain:'Retail',used_in:'6 engagements',lighthouse_rate:'71%'});
+n('uct_dashboard','usecase_template','Unified Dashboard',{code:'UC-X-01',domain:'Multi',used_in:'5 engagements'});
+n('uct_selfservice','usecase_template','Self-Service Portal',{code:'UC-R-03',domain:'Retail/SME',used_in:'4 engagements'});
+
+// Workshop Kit Templates
+n('wkt_strategic','workshop_kit_template','Strategic Alignment Kit',{duration:'90 min',exercises:3,probing_questions:7});
+n('wkt_capability','workshop_kit_template','Capability Assessment Kit',{duration:'90 min',exercises:3,probing_questions:7});
+n('wkt_cx','workshop_kit_template','CX Deep Dive Kit',{duration:'90 min',exercises:3,probing_questions:6});
+n('wkt_arch','workshop_kit_template','Architecture Review Kit',{duration:'90 min',exercises:3,probing_questions:6});
+n('wkt_usecase','workshop_kit_template','Use Case Validation Kit',{duration:'90 min',exercises:3,probing_questions:5});
+n('wkt_readout','workshop_kit_template','Executive Readout Kit',{duration:'60 min',exercises:0,probing_questions:4});
+
+// Domain → Templates
+l('dom_retail','jt_onboarding','hasTemplate','domain');l('dom_retail','jt_lending','hasTemplate','domain');l('dom_retail','jt_servicing','hasTemplate','domain');
+l('dom_investing','jt_investing','hasTemplate','domain');l('dom_wealth','jt_advisory','hasTemplate','domain');
+l('dom_retail','pt_kyc','hasProcess','domain');l('dom_retail','pt_lending','hasProcess','domain');l('dom_wealth','pt_advisory','hasProcess','domain');
+l('dom_retail','per_digital','hasPersona','domain');l('dom_retail','per_traditional','hasPersona','domain');l('dom_wealth','per_hni','hasPersona','domain');l('dom_retail','per_advisor','hasPersona','domain');l('dom_retail','per_ops','hasPersona','domain');
+l('dom_retail','cd_digital_channel','hasTaxonomy','domain');l('dom_retail','cd_onboarding','hasTaxonomy','domain');l('dom_investing','cd_activation','hasTaxonomy','domain');l('dom_wealth','cd_advisor_enable','hasTaxonomy','domain');l('dom_retail','cd_data_integration','hasTaxonomy','domain');l('dom_retail','cd_ai_decisioning','hasTaxonomy','domain');
+l('dom_investing','uct_funding','hasUseCase','domain');l('dom_wealth','uct_referral','hasUseCase','domain');l('dom_retail','uct_onboarding','hasUseCase','domain');l('dom_retail','uct_selfservice','hasUseCase','domain');
+
+// ═══════════════════════════════════════════════════
+// CORE ENTITIES
+// ═══════════════════════════════════════════════════
+
+// Consultants
+n('c_mayur','consultant','Mayur P.',{region:'Global',deals:6});
+n('c_sarah','consultant','Sarah K.',{region:'EMEA',deals:4});
+n('c_ahmed','consultant','Ahmed R.',{region:'MEA/APAC',deals:3});
+n('c_maria','consultant','Maria L.',{region:'LATAM',deals:2});
+n('c_james','consultant','James T.',{region:'APAC',deals:3});
+n('c_erik','consultant','Erik S.',{region:'Nordics',deals:2});
+
+// Clients
+n('cl_nfcu','client','Navy Federal CU',{industry:'Credit Union',geography:'NA',assets:'$170B+',tech:'Pershing, FIS'});
+n('cl_sfcu','client','SchoolsFirst FCU',{industry:'Credit Union',geography:'NA',assets:'$28B',tech:'Symitar, Snowflake'});
+n('cl_aib','client','Allied Irish Banks',{industry:'Retail Bank',geography:'EMEA',assets:'$95B',tech:'Temenos T24'});
+n('cl_mashreq','client','Mashreq Bank',{industry:'Commercial Bank',geography:'MEA',assets:'$45B',tech:'Finastra'});
+n('cl_santander','client','Santander Chile',{industry:'Retail Bank',geography:'LATAM',assets:'$62B',tech:'TBD'});
+n('cl_dbs','client','DBS Bank',{industry:'Digital Bank',geography:'APAC',assets:'$400B+',tech:'In-house, AWS'});
+n('cl_nordea','client','Nordea',{industry:'Universal Bank',geography:'Nordics',assets:'$600B+',tech:'Core Nordic'});
+n('cl_pentagon','client','Pentagon FCU',{industry:'Credit Union',geography:'NA',assets:'$35B',tech:'Pershing, Fiserv'});
+n('cl_becu','client','BECU',{industry:'Credit Union',geography:'NA',assets:'$30B',tech:'Symitar'});
+n('cl_firsttech','client','First Tech FCU',{industry:'Credit Union',geography:'NA',assets:'$17B',tech:'Pershing'});
+
+// Engagements
+n('e_nfis','engagement','NFIS Wealth Assessment',{domain:'Investing',stage:'Why Change',deal:'$2.8M',status:'Delivery'});
+n('e_sfcu','engagement','SchoolsFirst CLO',{domain:'Retail',stage:'Why Change',deal:'$1.4M',status:'Workshop'});
+n('e_aib','engagement','AIB Retail Assessment',{domain:'Retail & SME',stage:'Why Now',deal:'$3.2M',status:'Discovery'});
+n('e_mashreq','engagement','Mashreq Commercial',{domain:'Corporate',stage:'Why Invest',deal:'$1.8M',status:'Proposal'});
+n('e_santander','engagement','Santander Retail',{domain:'Retail',stage:'Why Change',deal:'$2.1M',status:'Prospecting'});
+n('e_dbs','engagement','DBS Multi-Country',{domain:'Wealth',stage:'Why Change',deal:'$4.5M',status:'Discovery'});
+n('e_nordea','engagement','Nordea Transformation',{domain:'Retail & Wealth',stage:'Why Invest',deal:'$5.2M',status:'Closed Won'});
+n('e_pentagon','engagement','Pentagon Assessment',{domain:'Investing',stage:'Why Change',deal:'$2.1M',status:'Closed Won'});
+n('e_becu','engagement','BECU Investment Review',{domain:'Investing',stage:'Why Now',deal:'$3.2M',status:'Expanded'});
+n('e_firsttech','engagement','First Tech Assessment',{domain:'Investing',stage:'Why Change',deal:'$1.5M',status:'Closed Won'});
+
+// Client → Engagement
+l('cl_nfcu','e_nfis','hasEngagement','client');l('cl_sfcu','e_sfcu','hasEngagement','client');l('cl_aib','e_aib','hasEngagement','client');l('cl_mashreq','e_mashreq','hasEngagement','client');l('cl_santander','e_santander','hasEngagement','client');l('cl_dbs','e_dbs','hasEngagement','client');l('cl_nordea','e_nordea','hasEngagement','client');l('cl_pentagon','e_pentagon','hasEngagement','client');l('cl_becu','e_becu','hasEngagement','client');l('cl_firsttech','e_firsttech','hasEngagement','client');
+
+// Consultant → Engagement
+l('c_mayur','e_nfis','leads','consultant');l('c_mayur','e_sfcu','leads','consultant');l('c_mayur','e_pentagon','leads','consultant');l('c_sarah','e_aib','leads','consultant');l('c_sarah','e_nordea','leads','consultant');l('c_ahmed','e_mashreq','leads','consultant');l('c_ahmed','e_dbs','leads','consultant');l('c_maria','e_santander','leads','consultant');l('c_james','e_dbs','leads','consultant');l('c_james','e_becu','leads','consultant');l('c_erik','e_nordea','leads','consultant');l('c_erik','e_firsttech','leads','consultant');
+
+// Engagement Files
+n('ef_nfis_t1','engagement_file','NFIS transcript_1.md',{category:'transcript',size:'42KB',direction:'input'});
+n('ef_nfis_t2','engagement_file','NFIS transcript_2.md',{category:'transcript',size:'38KB',direction:'input'});
+n('ef_nfis_dash','engagement_file','NFIS dashboard.html',{category:'deliverable',size:'342KB',direction:'output'});
+n('ef_nfis_xlsx','engagement_file','NFIS ROI_Model.xlsx',{category:'deliverable',size:'89KB',direction:'output'});
+n('ef_aib_t1','engagement_file','AIB transcript_1.md',{category:'transcript',size:'51KB',direction:'input'});
+n('ef_pentagon_dash','engagement_file','Pentagon dashboard.html',{category:'deliverable',size:'298KB',direction:'output'});
+n('ef_becu_t1','engagement_file','BECU transcript_1.md',{category:'transcript',size:'44KB',direction:'input'});
+l('e_nfis','ef_nfis_t1','hasFile','engagement_file');l('e_nfis','ef_nfis_t2','hasFile','engagement_file');l('e_nfis','ef_nfis_dash','hasFile','engagement_file');l('e_nfis','ef_nfis_xlsx','hasFile','engagement_file');l('e_aib','ef_aib_t1','hasFile','engagement_file');l('e_pentagon','ef_pentagon_dash','hasFile','engagement_file');l('e_becu','ef_becu_t1','hasFile','engagement_file');
+
+// ═══════════════════════════════════════════════════
+// EVENT SYSTEM
+// ═══════════════════════════════════════════════════
+
+// Engagement Events (key moments)
+n('ev_nfis_1','engagement_event','NFIS: Engagement Created',{type:'engagement_created',actor:'system',date:'2026-02-10'});
+n('ev_nfis_2','engagement_event','NFIS: Plan Generated',{type:'plan_generated',actor:'system',date:'2026-02-10',workshops:6});
+n('ev_nfis_3','engagement_event','NFIS: CFO Engaged Early',{type:'debrief_submitted',actor:'consultant',date:'2026-02-12',signal:'CFO asked about ROI in first 10 min'});
+n('ev_nfis_4','engagement_event','NFIS: Plan Modified',{type:'plan_modified',actor:'system',date:'2026-02-14',change:'Added ROI framing to CX workshop'});
+n('ev_nfis_5','engagement_event','NFIS: Scope Expanded',{type:'scope_change',actor:'client',date:'2026-02-16',from:'Journey only',to:'Full business case'});
+n('ev_nfis_6','engagement_event','NFIS: Pipeline Complete',{type:'pipeline_completed',actor:'system',date:'2026-03-01',outputs:10});
+n('ev_nfis_7','engagement_event','NFIS: Stage → Negotiation',{type:'stage_change',actor:'system',date:'2026-03-05',source:'Salesforce'});
+n('ev_becu_1','engagement_event','BECU: $12M Gap Found',{type:'discovery_completed',actor:'system',date:'2025-11-10'});
+n('ev_becu_2','engagement_event','BECU: Scope Expanded',{type:'scope_change',actor:'client',date:'2025-11-12',from:'$1.8M',to:'$3.2M'});
+n('ev_pent_1','engagement_event','Pentagon: Deal Won',{type:'outcome_detected',actor:'system',date:'2025-10-30'});
+
+// Causal chains
+l('ev_nfis_1','ev_nfis_2','caused','engagement_event');l('ev_nfis_2','ev_nfis_3','caused','engagement_event');l('ev_nfis_3','ev_nfis_4','caused','engagement_event');l('ev_nfis_4','ev_nfis_5','caused','engagement_event');l('ev_nfis_5','ev_nfis_6','caused','engagement_event');l('ev_nfis_6','ev_nfis_7','caused','engagement_event');
+l('ev_becu_1','ev_becu_2','caused','engagement_event');
+l('e_nfis','ev_nfis_1','hasEvent','engagement_event');l('e_becu','ev_becu_1','hasEvent','engagement_event');l('e_pentagon','ev_pent_1','hasEvent','engagement_event');
+
+// Engagement Plans
+n('ep_nfis_v1','engagement_plan','NFIS Plan v1',{version:1,workshops:6,status:'superseded'});
+n('ep_nfis_v2','engagement_plan','NFIS Plan v2 (adapted)',{version:2,workshops:6,status:'active',change:'Added ROI framing to CX workshop'});
+n('ep_becu_v1','engagement_plan','BECU Plan v1',{version:1,workshops:3,status:'superseded'});
+n('ep_becu_v2','engagement_plan','BECU Plan v2 (expanded)',{version:2,workshops:5,status:'active',change:'Added ROI + Architecture after $12M discovery'});
+n('ep_aib_v1','engagement_plan','AIB Plan v1',{version:1,workshops:6,status:'active'});
+l('e_nfis','ep_nfis_v1','hasPlan','engagement_plan');l('e_nfis','ep_nfis_v2','hasPlan','engagement_plan');l('ev_nfis_4','ep_nfis_v2','triggered','engagement_plan');
+l('e_becu','ep_becu_v1','hasPlan','engagement_plan');l('e_becu','ep_becu_v2','hasPlan','engagement_plan');l('ev_becu_2','ep_becu_v2','triggered','engagement_plan');
+l('e_aib','ep_aib_v1','hasPlan','engagement_plan');
+
+// Engagement Choices
+n('ec_nfis_1','engagement_choice','NFIS: Accepted Plan as-is',{action:'plan_accepted_as_is',page:'scope'});
+n('ec_nfis_2','engagement_choice','NFIS: Override Cap. Checkpoint',{action:'checkpoint_overridden',reason:'Added 3 unconsidered needs'});
+n('ec_becu_1','engagement_choice','BECU: Added Architecture WS',{action:'workshop_added',reason:'Integration risk surfaced'});
+n('ec_aib_1','engagement_choice','AIB: Moved Arch before UC',{action:'workshop_reordered',reason:'CTO needs convincing first'});
+n('ec_nordea_1','engagement_choice','Nordea: Selected full report',{action:'deliverable_toggled',choice:'full_7_act'});
+l('e_nfis','ec_nfis_1','hasChoice','engagement_choice');l('e_nfis','ec_nfis_2','hasChoice','engagement_choice');l('e_becu','ec_becu_1','hasChoice','engagement_choice');l('e_aib','ec_aib_1','hasChoice','engagement_choice');l('e_nordea','ec_nordea_1','hasChoice','engagement_choice');
+
+// ═══════════════════════════════════════════════════
+// WORKSHOPS (per engagement)
+// ═══════════════════════════════════════════════════
+n('w_nfis_sa','workshop','NFIS: Strategic Alignment',{date:'2026-02-12',status:'Completed'});
+n('w_nfis_cap','workshop','NFIS: Capability Assessment',{date:'2026-02-18',status:'Completed',key:'Mirror moment: 1.8 vs 2.8'});
+n('w_nfis_cx','workshop','NFIS: CX Deep Dive',{date:'2026-02-20',status:'Completed'});
+n('w_nfis_arch','workshop','NFIS: Architecture',{date:'2026-02-22',status:'Completed'});
+n('w_nfis_uc','workshop','NFIS: Use Case Validation',{date:'2026-02-25',status:'Completed'});
+n('w_nfis_ro','workshop','NFIS: Executive Readout',{date:'2026-03-05',status:'Completed'});
+n('w_pent_cap','workshop','Pentagon: Capability Assessment',{date:'2025-09-15',status:'Completed'});
+n('w_pent_arch','workshop','Pentagon: Architecture',{date:'2025-09-22',status:'Completed',key:'Pershing integration pattern'});
+n('w_pent_ro','workshop','Pentagon: Executive Readout',{date:'2025-10-10',status:'Completed'});
+n('w_becu_cx','workshop','BECU: CX Deep Dive',{date:'2025-11-10',status:'Completed',key:'$12M gap discovered'});
+n('w_becu_cap','workshop','BECU: Capability + ROI',{date:'2025-11-18',status:'Completed',key:'Co-created with CFO'});
+n('w_ft_cap','workshop','First Tech: Capability Assessment',{date:'2025-10-08',status:'Completed'});
+n('w_aib_sa','workshop','AIB: Strategic Alignment',{date:'2026-03-10',status:'Completed'});
+n('w_aib_cx','workshop','AIB: CX Deep Dive',{date:'2026-03-18',status:'Completed'});
+n('w_sfcu_sa','workshop','SFCU: Strategic Alignment',{date:'2026-03-20',status:'Completed'});
+n('w_dbs_sa','workshop','DBS: Strategic Alignment (Group)',{date:'2026-03-25',status:'Completed'});
+n('w_mash_arch','workshop','Mashreq: Architecture',{date:'2026-02-20',status:'Completed'});
+n('w_nord_uc','workshop','Nordea: Use Case Validation',{date:'2026-01-20',status:'Completed'});
+n('w_nord_ro','workshop','Nordea: Executive Readout',{date:'2026-02-15',status:'Completed'});
+
+// Engagement → Workshop
+l('e_nfis','w_nfis_sa','conducted','workshop');l('e_nfis','w_nfis_cap','conducted','workshop');l('e_nfis','w_nfis_cx','conducted','workshop');l('e_nfis','w_nfis_arch','conducted','workshop');l('e_nfis','w_nfis_uc','conducted','workshop');l('e_nfis','w_nfis_ro','conducted','workshop');
+l('e_pentagon','w_pent_cap','conducted','workshop');l('e_pentagon','w_pent_arch','conducted','workshop');l('e_pentagon','w_pent_ro','conducted','workshop');
+l('e_becu','w_becu_cx','conducted','workshop');l('e_becu','w_becu_cap','conducted','workshop');
+l('e_firsttech','w_ft_cap','conducted','workshop');
+l('e_aib','w_aib_sa','conducted','workshop');l('e_aib','w_aib_cx','conducted','workshop');
+l('e_sfcu','w_sfcu_sa','conducted','workshop');l('e_dbs','w_dbs_sa','conducted','workshop');l('e_mashreq','w_mash_arch','conducted','workshop');
+l('e_nordea','w_nord_uc','conducted','workshop');l('e_nordea','w_nord_ro','conducted','workshop');
+
+// Workshop → Kit Template
+l('wkt_strategic','w_nfis_sa','instantiated','workshop_kit_template');l('wkt_capability','w_nfis_cap','instantiated','workshop_kit_template');l('wkt_cx','w_nfis_cx','instantiated','workshop_kit_template');l('wkt_arch','w_nfis_arch','instantiated','workshop_kit_template');l('wkt_usecase','w_nfis_uc','instantiated','workshop_kit_template');l('wkt_readout','w_nfis_ro','instantiated','workshop_kit_template');
+l('wkt_capability','w_pent_cap','instantiated','workshop_kit_template');l('wkt_arch','w_pent_arch','instantiated','workshop_kit_template');l('wkt_readout','w_pent_ro','instantiated','workshop_kit_template');
+l('wkt_cx','w_becu_cx','instantiated','workshop_kit_template');l('wkt_capability','w_becu_cap','instantiated','workshop_kit_template');
+l('wkt_capability','w_ft_cap','instantiated','workshop_kit_template');
+l('wkt_strategic','w_aib_sa','instantiated','workshop_kit_template');l('wkt_cx','w_aib_cx','instantiated','workshop_kit_template');
+l('wkt_strategic','w_sfcu_sa','instantiated','workshop_kit_template');l('wkt_strategic','w_dbs_sa','instantiated','workshop_kit_template');
+l('wkt_arch','w_mash_arch','instantiated','workshop_kit_template');l('wkt_usecase','w_nord_uc','instantiated','workshop_kit_template');l('wkt_readout','w_nord_ro','instantiated','workshop_kit_template');
+
+// ═══════════════════════════════════════════════════
+// DISCOVERIES
+// ═══════════════════════════════════════════════════
+n('d_act_nfis','discovery','NFIS: 50% never funded',{severity:'Critical',source:'Workshop'});
+n('d_act_pent','discovery','Pentagon: 45% dormant',{severity:'Critical',source:'Workshop'});
+n('d_act_becu','discovery','BECU: 38% inactive',{severity:'Critical',source:'Workshop'});
+n('d_act_ft','discovery','First Tech: 42% unfunded',{severity:'Critical',source:'Workshop'});
+n('d_act_sfcu','discovery','SFCU: 9-month activation dip',{severity:'High',source:'Workshop'});
+n('d_ref_nfis','discovery','NFIS: 51% referrals cold',{severity:'High',source:'Transcript'});
+n('d_ref_pent','discovery','Pentagon: 48% referrals cold',{severity:'High',source:'Workshop'});
+n('d_ref_becu','discovery','BECU: 44% referrals cold',{severity:'High',source:'Workshop'});
+n('d_chan_aib','discovery','AIB: 70% digital→branch',{severity:'High',source:'Workshop'});
+n('d_chan_sfcu','discovery','SFCU: Channel disconnect',{severity:'High',source:'Workshop'});
+n('d_chan_nord','discovery','Nordea: 4 portals',{severity:'High',source:'Workshop'});
+n('d_leg_aib','discovery','AIB: Temenos batch-only',{severity:'Critical',source:'Workshop'});
+n('d_leg_mash','discovery','Mashreq: Finastra rigidity',{severity:'Critical',source:'Workshop'});
+n('d_rev_becu','discovery','BECU: $12M revenue gap',{severity:'Critical',source:'Workshop'});
+n('d_aware_nfis','discovery','NFIS: 36% awareness',{severity:'Critical',source:'Transcript'});
+n('d_data_nfis','discovery','NFIS: Data siloed',{severity:'High',source:'Workshop'});
+n('d_data_ft','discovery','First Tech: Multi-vendor silos',{severity:'High',source:'Workshop'});
+n('d_data_dbs','discovery','DBS: Country data isolation',{severity:'High',source:'Workshop'});
+n('d_cto_nfis','discovery','NFIS: CTO skeptical',{severity:'High',category:'stakeholder_signal'});
+n('d_cfo_nfis','discovery','NFIS: CFO engaged early',{severity:'High',category:'stakeholder_signal'});
+n('d_onb_aib','discovery','AIB: 45min onboarding',{severity:'Critical',source:'Workshop'});
+n('d_onb_nord','discovery','Nordea: 3-day onboarding',{severity:'High',source:'Workshop'});
+n('d_onb_sfcu','discovery','SFCU: Manual KYC process',{severity:'Critical',source:'Workshop'});
+
+// Workshop → Discovery
+l('w_nfis_cap','d_act_nfis','surfaced','discovery');l('w_nfis_sa','d_aware_nfis','surfaced','discovery');l('w_nfis_cap','d_ref_nfis','surfaced','discovery');l('w_nfis_cap','d_data_nfis','surfaced','discovery');l('w_nfis_sa','d_cto_nfis','surfaced','discovery');l('w_nfis_sa','d_cfo_nfis','surfaced','discovery');
+l('w_pent_cap','d_act_pent','surfaced','discovery');l('w_pent_cap','d_ref_pent','surfaced','discovery');
+l('w_becu_cx','d_act_becu','surfaced','discovery');l('w_becu_cx','d_ref_becu','surfaced','discovery');l('w_becu_cx','d_rev_becu','surfaced','discovery');
+l('w_ft_cap','d_act_ft','surfaced','discovery');l('w_ft_cap','d_data_ft','surfaced','discovery');
+l('w_aib_cx','d_chan_aib','surfaced','discovery');l('w_aib_sa','d_leg_aib','surfaced','discovery');l('w_aib_cx','d_onb_aib','surfaced','discovery');
+l('w_mash_arch','d_leg_mash','surfaced','discovery');
+l('w_sfcu_sa','d_act_sfcu','surfaced','discovery');l('w_sfcu_sa','d_chan_sfcu','surfaced','discovery');l('w_sfcu_sa','d_onb_sfcu','surfaced','discovery');
+l('w_dbs_sa','d_data_dbs','surfaced','discovery');
+l('w_nord_uc','d_chan_nord','surfaced','discovery');l('w_nord_uc','d_onb_nord','surfaced','discovery');
+
+// ═══════════════════════════════════════════════════
+// CAPABILITY SCORES
+// ═══════════════════════════════════════════════════
+n('cs_nfis_act','capability_score','NFIS Activation: 0.8',{capability:'Activation Orchestration',layer:'Middle',current:'0.8',target:'3.0'});
+n('cs_nfis_dig','capability_score','NFIS Digital: 2.1',{capability:'Digital Channel',layer:'Front',current:'2.1',target:'3.5'});
+n('cs_nfis_adv','capability_score','NFIS Advisor: 1.2',{capability:'Advisor Enablement',layer:'Middle',current:'1.2',target:'3.0'});
+n('cs_nfis_data','capability_score','NFIS Data: 1.4',{capability:'Data Integration',layer:'Back',current:'1.4',target:'3.5'});
+n('cs_pent_act','capability_score','Pentagon Activation: 1.0',{capability:'Activation Orchestration',layer:'Middle',current:'1.0',target:'3.0'});
+n('cs_becu_act','capability_score','BECU Activation: 1.2',{capability:'Activation Orchestration',layer:'Middle',current:'1.2',target:'3.0'});
+n('cs_ft_data','capability_score','First Tech Data: 1.1',{capability:'Data Integration',layer:'Back',current:'1.1',target:'3.0'});
+n('cs_aib_onb','capability_score','AIB Onboarding: 1.5',{capability:'Digital Onboarding',layer:'Front',current:'1.5',target:'3.5'});
+n('cs_aib_chan','capability_score','AIB Channel: 1.8',{capability:'Digital Channel',layer:'Front',current:'1.8',target:'3.5'});
+n('cs_nord_onb','capability_score','Nordea Onboarding: 2.0',{capability:'Digital Onboarding',layer:'Front',current:'2.0',target:'3.5'});
+n('cs_sfcu_onb','capability_score','SFCU Onboarding: 1.3',{capability:'Digital Onboarding',layer:'Front',current:'1.3',target:'3.0'});
+
+l('e_nfis','cs_nfis_act','assessed','capability_score');l('e_nfis','cs_nfis_dig','assessed','capability_score');l('e_nfis','cs_nfis_adv','assessed','capability_score');l('e_nfis','cs_nfis_data','assessed','capability_score');
+l('e_pentagon','cs_pent_act','assessed','capability_score');l('e_becu','cs_becu_act','assessed','capability_score');l('e_firsttech','cs_ft_data','assessed','capability_score');
+l('e_aib','cs_aib_onb','assessed','capability_score');l('e_aib','cs_aib_chan','assessed','capability_score');l('e_nordea','cs_nord_onb','assessed','capability_score');l('e_sfcu','cs_sfcu_onb','assessed','capability_score');
+// Discovery → Capability
+l('d_act_nfis','cs_nfis_act','revealsGap','discovery');l('d_aware_nfis','cs_nfis_dig','revealsGap','discovery');l('d_ref_nfis','cs_nfis_adv','revealsGap','discovery');l('d_data_nfis','cs_nfis_data','revealsGap','discovery');
+l('d_act_pent','cs_pent_act','revealsGap','discovery');l('d_act_becu','cs_becu_act','revealsGap','discovery');l('d_data_ft','cs_ft_data','revealsGap','discovery');
+l('d_onb_aib','cs_aib_onb','revealsGap','discovery');l('d_chan_aib','cs_aib_chan','revealsGap','discovery');l('d_onb_nord','cs_nord_onb','revealsGap','discovery');l('d_onb_sfcu','cs_sfcu_onb','revealsGap','discovery');
+// CapDef → Score
+l('cd_activation','cs_nfis_act','scoredAs','capability_definition');l('cd_activation','cs_pent_act','scoredAs','capability_definition');l('cd_activation','cs_becu_act','scoredAs','capability_definition');
+l('cd_digital_channel','cs_nfis_dig','scoredAs','capability_definition');l('cd_digital_channel','cs_aib_chan','scoredAs','capability_definition');
+l('cd_advisor_enable','cs_nfis_adv','scoredAs','capability_definition');l('cd_data_integration','cs_nfis_data','scoredAs','capability_definition');l('cd_data_integration','cs_ft_data','scoredAs','capability_definition');
+l('cd_onboarding','cs_aib_onb','scoredAs','capability_definition');l('cd_onboarding','cs_nord_onb','scoredAs','capability_definition');l('cd_onboarding','cs_sfcu_onb','scoredAs','capability_definition');
+
+// ═══════════════════════════════════════════════════
+// JOURNEY MAPS + PROCESS MAPS
+// ═══════════════════════════════════════════════════
+n('jm_nfis_cur','journey_map','NFIS Funding Journey (current)',{state:'current',friction:8,drop_off:'50%',leakage:'$8.2M/yr'});
+n('jm_nfis_tgt','journey_map','NFIS Funding Journey (target)',{state:'target',friction:2,drop_off:'15%',improvement:'70% reduction'});
+n('jm_aib_cur','journey_map','AIB Onboarding (current)',{state:'current',friction:6,drop_off:'35%',time:'45 min'});
+n('jm_aib_tgt','journey_map','AIB Onboarding (target)',{state:'target',friction:2,drop_off:'10%',time:'8 min'});
+n('jm_becu_cur','journey_map','BECU Investment Journey (current)',{state:'current',friction:7,leakage:'$12M/yr'});
+n('jm_nord_cur','journey_map','Nordea Onboarding (current)',{state:'current',friction:5,time:'3 days'});
+n('jm_nord_tgt','journey_map','Nordea Onboarding (target)',{state:'target',friction:1,time:'10 min'});
+
+l('e_nfis','jm_nfis_cur','mapped','journey_map');l('e_nfis','jm_nfis_tgt','mapped','journey_map');l('e_aib','jm_aib_cur','mapped','journey_map');l('e_aib','jm_aib_tgt','mapped','journey_map');l('e_becu','jm_becu_cur','mapped','journey_map');l('e_nordea','jm_nord_cur','mapped','journey_map');l('e_nordea','jm_nord_tgt','mapped','journey_map');
+l('jt_investing','jm_nfis_cur','basedOn','journey_template');l('jt_onboarding','jm_aib_cur','basedOn','journey_template');l('jt_investing','jm_becu_cur','basedOn','journey_template');l('jt_onboarding','jm_nord_cur','basedOn','journey_template');
+
+n('pm_nfis_cur','process_map','NFIS ACH Funding (current)',{state:'current',steps:9,manual:7,stp:'22%',cycle:'3.2 days'});
+n('pm_nfis_tgt','process_map','NFIS Funding (target)',{state:'target',steps:4,manual:1,stp:'85%',cycle:'4 hours'});
+n('pm_aib_cur','process_map','AIB KYC Process (current)',{state:'current',steps:14,manual:9,stp:'15%',cycle:'45 min'});
+n('pm_aib_tgt','process_map','AIB KYC Process (target)',{state:'target',steps:6,manual:2,stp:'78%',cycle:'8 min'});
+n('pm_sfcu_cur','process_map','SFCU Onboarding Process (current)',{state:'current',steps:12,manual:8,stp:'20%'});
+
+l('e_nfis','pm_nfis_cur','mapped','process_map');l('e_nfis','pm_nfis_tgt','mapped','process_map');l('e_aib','pm_aib_cur','mapped','process_map');l('e_aib','pm_aib_tgt','mapped','process_map');l('e_sfcu','pm_sfcu_cur','mapped','process_map');
+l('pm_nfis_cur','jm_nfis_cur','supportsJourney','process_map');l('pm_aib_cur','jm_aib_cur','supportsJourney','process_map');
+l('pt_kyc','pm_aib_cur','basedOn','process_template');l('pt_kyc','pm_sfcu_cur','basedOn','process_template');
+
+// ═══════════════════════════════════════════════════
+// TECH LANDSCAPE + APP PORTFOLIO
+// ═══════════════════════════════════════════════════
+n('tl_nfis_cur','tech_landscape','NFIS Tech (current)',{state:'current',systems:8,integrations:14,batch_pct:'78%',pattern:'Monolith + batch files'});
+n('tl_nfis_tgt','tech_landscape','NFIS Tech (target)',{state:'target',systems:6,integrations:10,batch_pct:'20%',pattern:'Event-driven + APIs'});
+n('tl_aib_cur','tech_landscape','AIB Tech (current)',{state:'current',systems:12,integrations:22,batch_pct:'65%',pattern:'SOA + Temenos'});
+n('tl_mash_cur','tech_landscape','Mashreq Tech (current)',{state:'current',systems:14,integrations:28,batch_pct:'55%',pattern:'SOA + Finastra'});
+
+l('e_nfis','tl_nfis_cur','assessed','tech_landscape');l('e_nfis','tl_nfis_tgt','assessed','tech_landscape');l('e_aib','tl_aib_cur','assessed','tech_landscape');l('e_mashreq','tl_mash_cur','assessed','tech_landscape');
+
+n('ap_aib','app_portfolio','AIB App Portfolio',{total_apps:35,keep:12,invest:4,migrate:6,consolidate:8,retire:5,annual_cost:'$4.2M',potential_savings:'$1.8M'});
+n('app_aib_t24','application','Temenos T24',{vendor:'Temenos',category:'Core Banking',disposition:'Keep',fit:'Adequate',health:'Weak'});
+n('app_aib_sap','application','SAP Portal',{vendor:'SAP',category:'Digital Channels',disposition:'Consolidate',fit:'Weak',savings:'$400K/yr'});
+n('app_aib_crm','application','Custom CRM',{vendor:'In-house',category:'CRM',disposition:'Migrate',fit:'Poor',savings:'$200K/yr'});
+n('ap_mash','app_portfolio','Mashreq App Portfolio',{total_apps:42,keep:15,consolidate:12,retire:8,potential_savings:'$2.1M'});
+n('app_mash_fina','application','Finastra Essence',{vendor:'Finastra',category:'Core Banking',disposition:'Keep',fit:'Adequate'});
+
+l('e_aib','ap_aib','inventoried','app_portfolio');l('ap_aib','app_aib_t24','containsApp','application');l('ap_aib','app_aib_sap','containsApp','application');l('ap_aib','app_aib_crm','containsApp','application');
+l('e_mashreq','ap_mash','inventoried','app_portfolio');l('ap_mash','app_mash_fina','containsApp','application');
+
+// ═══════════════════════════════════════════════════
+// USE CASES (client-specific)
+// ═══════════════════════════════════════════════════
+n('uc_nfis_fund','usecase','NFIS: Guided Account Funding',{priority:'Must Have',lighthouse:true,phase:1,effort:'8 weeks',score:'$34'});
+n('uc_nfis_ref','usecase','NFIS: Advisor Referral Engine',{priority:'Should Have',phase:1,effort:'12 weeks'});
+n('uc_nfis_dash','usecase','NFIS: Unified Member Dashboard',{priority:'Should Have',phase:2,effort:'16 weeks'});
+n('uc_pent_fund','usecase','Pentagon: Digital Funding',{priority:'Must Have',lighthouse:true,phase:1,effort:'10 weeks'});
+n('uc_pent_ref','usecase','Pentagon: Referral Engine',{priority:'Should Have',phase:1,effort:'12 weeks'});
+n('uc_becu_fund','usecase','BECU: Account Activation Fix',{priority:'Must Have',lighthouse:true,phase:1,effort:'8 weeks'});
+n('uc_ft_dash','usecase','First Tech: Unified Truth',{priority:'Must Have',lighthouse:true,phase:1,effort:'14 weeks'});
+n('uc_aib_onb','usecase','AIB: Digital Onboarding',{priority:'Must Have',lighthouse:true,phase:1,effort:'12 weeks'});
+n('uc_aib_self','usecase','AIB: Self-Service Portal',{priority:'Should Have',phase:2,effort:'14 weeks'});
+n('uc_nord_onb','usecase','Nordea: Digital Onboarding',{priority:'Must Have',lighthouse:true,phase:1,effort:'10 weeks'});
+n('uc_nord_dash','usecase','Nordea: Unified Dashboard',{priority:'Should Have',phase:2,effort:'16 weeks'});
+n('uc_sfcu_onb','usecase','SFCU: Digital Onboarding',{priority:'Must Have',phase:1,effort:'12 weeks'});
+n('uc_mash_self','usecase','Mashreq: Self-Service Portal',{priority:'Must Have',phase:1,effort:'14 weeks'});
+
+// UseCase → Template
+l('uct_funding','uc_nfis_fund','instantiated','usecase_template');l('uct_referral','uc_nfis_ref','instantiated','usecase_template');l('uct_dashboard','uc_nfis_dash','instantiated','usecase_template');
+l('uct_funding','uc_pent_fund','instantiated','usecase_template');l('uct_referral','uc_pent_ref','instantiated','usecase_template');
+l('uct_funding','uc_becu_fund','instantiated','usecase_template');l('uct_dashboard','uc_ft_dash','instantiated','usecase_template');
+l('uct_onboarding','uc_aib_onb','instantiated','usecase_template');l('uct_selfservice','uc_aib_self','instantiated','usecase_template');
+l('uct_onboarding','uc_nord_onb','instantiated','usecase_template');l('uct_dashboard','uc_nord_dash','instantiated','usecase_template');
+l('uct_onboarding','uc_sfcu_onb','instantiated','usecase_template');l('uct_selfservice','uc_mash_self','instantiated','usecase_template');
+
+// UseCase → Discovery (addresses)
+l('uc_nfis_fund','d_act_nfis','addresses','usecase');l('uc_nfis_ref','d_ref_nfis','addresses','usecase');l('uc_nfis_dash','d_aware_nfis','addresses','usecase');
+l('uc_pent_fund','d_act_pent','addresses','usecase');l('uc_becu_fund','d_act_becu','addresses','usecase');l('uc_ft_dash','d_data_ft','addresses','usecase');
+l('uc_aib_onb','d_onb_aib','addresses','usecase');l('uc_aib_self','d_chan_aib','addresses','usecase');l('uc_nord_onb','d_onb_nord','addresses','usecase');l('uc_nord_dash','d_chan_nord','addresses','usecase');
+l('uc_sfcu_onb','d_onb_sfcu','addresses','usecase');l('uc_mash_self','d_leg_mash','addresses','usecase');
+
+// UseCase → CapabilityScore (closes gap)
+l('uc_nfis_fund','cs_nfis_act','closesGap','usecase');l('uc_nfis_ref','cs_nfis_adv','closesGap','usecase');l('uc_nfis_dash','cs_nfis_dig','closesGap','usecase');
+l('uc_aib_onb','cs_aib_onb','closesGap','usecase');l('uc_nord_onb','cs_nord_onb','closesGap','usecase');l('uc_sfcu_onb','cs_sfcu_onb','closesGap','usecase');
+
+// ═══════════════════════════════════════════════════
+// FINANCIAL: ROI MODELS + VALUE LEVERS
+// ═══════════════════════════════════════════════════
+n('roi_nfis','roi_model','NFIS ROI: $4.2M NPV',{conservative:'$4.2M',moderate:'$7.8M',investment:'$2.8M',payback:'14 months'});
+n('roi_pent','roi_model','Pentagon ROI: $3.1M NPV',{conservative:'$3.1M',investment:'$2.1M',payback:'16 months'});
+n('roi_becu','roi_model','BECU ROI: $5.8M NPV',{conservative:'$5.8M',investment:'$3.2M',payback:'12 months'});
+n('roi_aib','roi_model','AIB ROI: $6.5M NPV',{conservative:'$6.5M',investment:'$3.2M',payback:'11 months'});
+n('roi_nord','roi_model','Nordea ROI: $12.4M NPV',{conservative:'$12.4M',investment:'$5.2M',payback:'10 months'});
+
+n('vl_nfis_fund','value_lever','NFIS Funding: $3.2M/yr',{group:'Activation',type:'Revenue',baseline:'50%',target:'75%'});
+n('vl_nfis_ref','value_lever','NFIS Referral: $1.8M/yr',{group:'Advisory',type:'Revenue',baseline:'49%',target:'80%'});
+n('vl_nfis_aware','value_lever','NFIS Awareness: $2.1M/yr',{group:'Acquisition',type:'Revenue',baseline:'36%',target:'60%'});
+n('vl_pent_fund','value_lever','Pentagon Funding: $2.4M/yr',{group:'Activation',type:'Revenue'});
+n('vl_becu_act','value_lever','BECU Activation: $4.1M/yr',{group:'Activation',type:'Revenue'});
+n('vl_aib_onb','value_lever','AIB Onboarding: $2.8M/yr',{group:'Onboarding',type:'Cost Reduction'});
+n('vl_aib_app','value_lever','AIB App Savings: $1.8M/yr',{group:'Rationalization',type:'Cost Reduction'});
+n('vl_nord_onb','value_lever','Nordea Onboarding: $4.5M/yr',{group:'Onboarding',type:'Revenue'});
+
+l('e_nfis','roi_nfis','modeled','roi_model');l('e_pentagon','roi_pent','modeled','roi_model');l('e_becu','roi_becu','modeled','roi_model');l('e_aib','roi_aib','modeled','roi_model');l('e_nordea','roi_nord','modeled','roi_model');
+l('vl_nfis_fund','roi_nfis','contributesTo','value_lever');l('vl_nfis_ref','roi_nfis','contributesTo','value_lever');l('vl_nfis_aware','roi_nfis','contributesTo','value_lever');
+l('vl_pent_fund','roi_pent','contributesTo','value_lever');l('vl_becu_act','roi_becu','contributesTo','value_lever');
+l('vl_aib_onb','roi_aib','contributesTo','value_lever');l('vl_aib_app','roi_aib','contributesTo','value_lever');l('vl_nord_onb','roi_nord','contributesTo','value_lever');
+// UseCase → ValueLever
+l('uc_nfis_fund','vl_nfis_fund','drives','usecase');l('uc_nfis_ref','vl_nfis_ref','drives','usecase');l('uc_nfis_dash','vl_nfis_aware','drives','usecase');
+l('uc_pent_fund','vl_pent_fund','drives','usecase');l('uc_becu_fund','vl_becu_act','drives','usecase');
+l('uc_aib_onb','vl_aib_onb','drives','usecase');l('uc_nord_onb','vl_nord_onb','drives','usecase');
+
+// ═══════════════════════════════════════════════════
+// ROADMAPS
+// ═══════════════════════════════════════════════════
+n('rm_nfis','roadmap','NFIS Roadmap',{phases:3,total_months:27,investment:'$2.8M'});
+n('rp_nfis_1','roadmap_phase','NFIS Phase 1: Foundation',{months:6,investment:'$800K',theme:'Lighthouse — Funding + Referral'});
+n('rp_nfis_2','roadmap_phase','NFIS Phase 2: Scale',{months:9,investment:'$1.2M',theme:'Unified Dashboard + IRA'});
+n('rp_nfis_3','roadmap_phase','NFIS Phase 3: Transform',{months:12,investment:'$800K',theme:'AI Advisory'});
+n('rm_aib','roadmap','AIB Roadmap',{phases:3,total_months:24,investment:'$3.2M'});
+n('rp_aib_1','roadmap_phase','AIB Phase 1: Digital First',{months:6,investment:'$1.0M',theme:'Onboarding + Self-Service'});
+n('rm_nord','roadmap','Nordea Roadmap',{phases:3,total_months:30,investment:'$5.2M'});
+n('rp_nord_1','roadmap_phase','Nordea Phase 1: Foundation',{months:8,investment:'$1.8M',theme:'Onboarding + Unified Dashboard'});
+
+l('e_nfis','rm_nfis','planned','roadmap');l('rm_nfis','rp_nfis_1','hasPhase','roadmap_phase');l('rm_nfis','rp_nfis_2','hasPhase','roadmap_phase');l('rm_nfis','rp_nfis_3','hasPhase','roadmap_phase');
+l('e_aib','rm_aib','planned','roadmap');l('rm_aib','rp_aib_1','hasPhase','roadmap_phase');
+l('e_nordea','rm_nord','planned','roadmap');l('rm_nord','rp_nord_1','hasPhase','roadmap_phase');
+// UseCase → Phase
+l('uc_nfis_fund','rp_nfis_1','scheduledIn','roadmap_phase');l('uc_nfis_ref','rp_nfis_1','scheduledIn','roadmap_phase');l('uc_nfis_dash','rp_nfis_2','scheduledIn','roadmap_phase');
+l('uc_aib_onb','rp_aib_1','scheduledIn','roadmap_phase');l('uc_aib_self','rp_aib_1','scheduledIn','roadmap_phase');
+l('uc_nord_onb','rp_nord_1','scheduledIn','roadmap_phase');l('uc_nord_dash','rp_nord_1','scheduledIn','roadmap_phase');
+
+// ═══════════════════════════════════════════════════
+// DECISIONS
+// ═══════════════════════════════════════════════════
+n('dec_nfis_scope','decision','NFIS: Expanded to full BC',{type:'Scope Change',chosen:'Full business case',reason:'CFO engaged + gaps larger than expected',by:'Client'});
+n('dec_nfis_roi','decision','NFIS: Per-product ROI',{type:'ROI Structure',chosen:'Per-product (not per-channel)',reason:'Similar deals showed better close rate',by:'Consultant'});
+n('dec_nfis_go','decision','NFIS: Proceed Phase 1',{type:'Go/No-Go',chosen:'Proceed',reason:'14-month payback. CFO + CTO aligned.',by:'Client'});
+n('dec_becu_expand','decision','BECU: Expanded scope',{type:'Scope Change',chosen:'$1.8M → $3.2M',reason:'$12M gap found in CX workshop',by:'Client'});
+n('dec_nord_go','decision','Nordea: Full program',{type:'Go/No-Go',chosen:'Full $5.2M program',reason:'Board approved after Readout',by:'Client'});
+n('dec_aib_reorder','decision','AIB: Moved Architecture up',{type:'Workshop Order',chosen:'Architecture before Use Cases',reason:'CTO needs convincing before demos',by:'Consultant'});
+
+l('e_nfis','dec_nfis_scope','recorded','decision');l('e_nfis','dec_nfis_roi','recorded','decision');l('e_nfis','dec_nfis_go','recorded','decision');l('e_becu','dec_becu_expand','recorded','decision');l('e_nordea','dec_nord_go','recorded','decision');l('e_aib','dec_aib_reorder','recorded','decision');
+l('d_cfo_nfis','dec_nfis_scope','influenced','decision');l('d_rev_becu','dec_becu_expand','influenced','decision');l('roi_nfis','dec_nfis_go','justified','decision');l('roi_nord','dec_nord_go','justified','decision');l('d_cto_nfis','dec_aib_reorder','influenced','decision');
+
+// ═══════════════════════════════════════════════════
+// DEBRIEF ENTRIES
+// ═══════════════════════════════════════════════════
+n('db_nfis_1','debrief_entry','NFIS WS1 Debrief',{workshop:'Strategic Alignment',input:'CFO showed up unexpectedly. Asked about ROI in first 10 min.',signals:'CFO engaged early; CTO skeptical',plan_impact:'Added ROI framing to CX workshop'});
+n('db_nfis_2','debrief_entry','NFIS WS2 Debrief',{workshop:'Capability Assessment',input:'Room went silent when activation score was shown. 1.8 vs 2.8 self-assessment.',signals:'Mirror moment triggered; 3 unconsidered needs found',plan_impact:'Added regulatory discussion'});
+n('db_becu_1','debrief_entry','BECU WS1 Debrief',{workshop:'CX Deep Dive',input:'CFO attended. $12M revenue gap discovered. Scope expansion on the spot.',signals:'CFO champion; massive opportunity sized',plan_impact:'Expanded from journey-only to full BC'});
+n('db_aib_1','debrief_entry','AIB WS1 Debrief',{workshop:'Strategic Alignment',input:'CTO is a strong champion. Channel fragmentation is top priority for CEO.',signals:'CTO champion (unusual); CEO aligned',plan_impact:'Moved Architecture up in sequence'});
+
+l('w_nfis_sa','db_nfis_1','hasDebrief','debrief_entry');l('w_nfis_cap','db_nfis_2','hasDebrief','debrief_entry');l('w_becu_cx','db_becu_1','hasDebrief','debrief_entry');l('w_aib_sa','db_aib_1','hasDebrief','debrief_entry');
+
+// ═══════════════════════════════════════════════════
+// PAIN PATTERNS (cross-engagement)
+// ═══════════════════════════════════════════════════
+n('pp_act','pain_pattern','Account Activation Failure',{frequency:23,severity:'Critical',industries:'CU, Retail, Digital',avg_impact:'$8-15M/yr'});
+n('pp_ref','pain_pattern','Advisor Referral Leakage',{frequency:18,severity:'High',industries:'CU, Wealth',avg_impact:'40-55% go cold'});
+n('pp_chan','pain_pattern','Channel Fragmentation',{frequency:28,severity:'High',industries:'Retail, Universal',avg_impact:'3-5 portals'});
+n('pp_leg','pain_pattern','Legacy Core Rigidity',{frequency:34,severity:'Critical',industries:'All',avg_impact:'6-18mo integration'});
+n('pp_data','pain_pattern','Data Silos',{frequency:26,severity:'High',industries:'CU, Retail, Digital',avg_impact:'No single truth'});
+n('pp_onb','pain_pattern','Manual Onboarding',{frequency:31,severity:'Critical',industries:'CU, Retail',avg_impact:'45-60min, 35% abandon'});
+
+l('d_act_nfis','pp_act','isInstanceOf','pain_pattern');l('d_act_pent','pp_act','isInstanceOf','pain_pattern');l('d_act_becu','pp_act','isInstanceOf','pain_pattern');l('d_act_ft','pp_act','isInstanceOf','pain_pattern');l('d_act_sfcu','pp_act','isInstanceOf','pain_pattern');
+l('d_ref_nfis','pp_ref','isInstanceOf','pain_pattern');l('d_ref_pent','pp_ref','isInstanceOf','pain_pattern');l('d_ref_becu','pp_ref','isInstanceOf','pain_pattern');
+l('d_chan_aib','pp_chan','isInstanceOf','pain_pattern');l('d_chan_sfcu','pp_chan','isInstanceOf','pain_pattern');l('d_chan_nord','pp_chan','isInstanceOf','pain_pattern');
+l('d_leg_aib','pp_leg','isInstanceOf','pain_pattern');l('d_leg_mash','pp_leg','isInstanceOf','pain_pattern');
+l('d_data_nfis','pp_data','isInstanceOf','pain_pattern');l('d_data_ft','pp_data','isInstanceOf','pain_pattern');l('d_data_dbs','pp_data','isInstanceOf','pain_pattern');
+l('d_onb_aib','pp_onb','isInstanceOf','pain_pattern');l('d_onb_sfcu','pp_onb','isInstanceOf','pain_pattern');l('d_onb_nord','pp_onb','isInstanceOf','pain_pattern');
+
+// Pattern → UseCase Template (drives solution)
+l('pp_act','uct_funding','drivesSolution','pain_pattern');l('pp_ref','uct_referral','drivesSolution','pain_pattern');l('pp_chan','uct_dashboard','drivesSolution','pain_pattern');l('pp_onb','uct_onboarding','drivesSolution','pain_pattern');l('pp_data','uct_dashboard','drivesSolution','pain_pattern');
+
+// ═══════════════════════════════════════════════════
+// BENCHMARKS
+// ═══════════════════════════════════════════════════
+n('bm_onb','benchmark','Onboarding: 35-55%',{metric:'Completion Rate',domain:'Retail',confidence:'Validated',sample:18});
+n('bm_act','benchmark','Activation: 40-65%',{metric:'90-day Activation',domain:'Investing',confidence:'Emerging',sample:12});
+n('bm_cross','benchmark','Cross-Sell: 1.8-3.2',{metric:'Products/Customer',domain:'Retail',confidence:'Validated',sample:22});
+n('bm_ref','benchmark','Referral: 15-35%',{metric:'Conversion Rate',domain:'Wealth',confidence:'Emerging',sample:11});
+n('bm_nps','benchmark','NPS Digital: 25-55',{metric:'NPS Score',domain:'Retail',confidence:'Emerging',sample:16});
+n('bm_cost','benchmark','Cost/Onboarding: $150-350',{metric:'Cost per Application',domain:'Retail',confidence:'Emerging',sample:14});
+
+l('bm_act','pp_act','validates','benchmark');l('bm_onb','pp_onb','validates','benchmark');l('bm_ref','pp_ref','validates','benchmark');
+// Engagement scores contribute to benchmarks
+l('cs_nfis_act','bm_act','contributesTo','benchmark');l('cs_pent_act','bm_act','contributesTo','benchmark');l('cs_becu_act','bm_act','contributesTo','benchmark');
+l('cs_aib_onb','bm_onb','contributesTo','benchmark');l('cs_nord_onb','bm_onb','contributesTo','benchmark');l('cs_sfcu_onb','bm_onb','contributesTo','benchmark');
+
+// ═══════════════════════════════════════════════════
+// OUTCOMES
+// ═══════════════════════════════════════════════════
+n('o_nfis','outcome','NFIS: Reached Negotiation',{type:'reached_negotiation',deal:'$2.8M',days:23});
+n('o_pent','outcome','Pentagon: Closed Won',{type:'closed_won',deal:'$2.1M',days:45});
+n('o_becu','outcome','BECU: Expanded',{type:'expanded',deal:'$1.8M→$3.2M',days:38});
+n('o_ft','outcome','First Tech: Closed Won',{type:'closed_won',deal:'$1.5M',days:52});
+n('o_nord','outcome','Nordea: Closed Won',{type:'closed_won',deal:'$5.2M',days:60});
+n('o_aib','outcome','AIB: In Progress',{type:'in_progress',deal:'$3.2M',days:'ongoing'});
+
+l('e_nfis','o_nfis','hasOutcome','outcome');l('e_pentagon','o_pent','hasOutcome','outcome');l('e_becu','o_becu','hasOutcome','outcome');l('e_firsttech','o_ft','hasOutcome','outcome');l('e_nordea','o_nord','hasOutcome','outcome');l('e_aib','o_aib','hasOutcome','outcome');
+l('dec_nfis_go','o_nfis','ledTo','decision');l('dec_becu_expand','o_becu','ledTo','decision');l('dec_nord_go','o_nord','ledTo','decision');
+
+// ═══════════════════════════════════════════════════
+// EMBEDDINGS (representative)
+// ═══════════════════════════════════════════════════
+n('emb_nfis','embedding','NFIS Profile Embedding',{source:'engagement_profile',dimensions:1536,similarity_matches:'Pentagon (92%), BECU (87%), First Tech (84%)'});
+n('emb_aib','embedding','AIB Profile Embedding',{source:'engagement_profile',dimensions:1536,similarity_matches:'Nordea (78%), Metro Bank (72%)'});
+l('e_nfis','emb_nfis','embeddedAs','embedding');l('e_aib','emb_aib','embeddedAs','embedding');
+
+// ═══════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════
+const W=window.innerWidth-220,H=window.innerHeight;
+const svg=d3.select('#graph').attr('width',W).attr('height',H);
+const defs=svg.append('defs');
+Object.entries(CC).forEach(([k,c])=>{defs.append('marker').attr('id',`a-${k}`).attr('viewBox','0 -5 10 10').attr('refX',22).attr('refY',0).attr('markerWidth',3.5).attr('markerHeight',3.5).attr('orient','auto').append('path').attr('d','M0,-4L10,0L0,4').attr('fill',c).attr('opacity',0.4)});
+const gg=svg.append('g');
+const zm=d3.zoom().scaleExtent([0.08,6]).on('zoom',e=>gg.attr('transform',e.transform));svg.call(zm);
+
+const sim=d3.forceSimulation(N).force('link',d3.forceLink(L).id(d=>d.id).distance(d=>{const t=d.type;if(t==='client'||t==='consultant')return 160;if(t==='pain_pattern'||t==='benchmark')return 100;if(t==='engagement_event')return 60;return 80}).strength(0.3)).force('charge',d3.forceManyBody().strength(-200)).force('center',d3.forceCenter(W/2,H/2)).force('collision',d3.forceCollide(d=>(SZ[d.type]||10)+2));
+
+const lk=gg.append('g').selectAll('line').data(L).join('line').attr('stroke',d=>CC[d.type]||'#1a1e2e').attr('stroke-width',0.6).attr('stroke-opacity',0.1).attr('marker-end',d=>`url(#a-${d.type})`);
+let showLbl=false;
+const ll=gg.append('g').selectAll('text').data(L).join('text').text(d=>d.label).attr('text-anchor','middle').attr('fill','#2D3345').attr('font-size','5px').attr('font-family',"'Libre Franklin'").attr('font-weight',500).attr('display','none');
+
+const nd=gg.append('g').selectAll('g').data(N).join('g').call(d3.drag().on('start',(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y}).on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y}).on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null}));
+nd.append('circle').attr('r',d=>SZ[d.type]||10).attr('fill',d=>CC[d.type]||'#222').attr('fill-opacity',0.1).attr('stroke',d=>CC[d.type]||'#222').attr('stroke-width',d=>SZ[d.type]>18?1.5:0.8).attr('stroke-opacity',0.6).style('cursor','pointer');
+nd.append('text').text(d=>IC[d.type]||'●').attr('text-anchor','middle').attr('dy','3px').attr('font-size',d=>(SZ[d.type]||10)>14?'10px':'7px').style('pointer-events','none');
+nd.append('text').text(d=>d.label.length>20?d.label.slice(0,18)+'…':d.label).attr('text-anchor','middle').attr('dy',d=>(SZ[d.type]||10)+9).attr('fill',d=>CC[d.type]||'#333').attr('font-size','6px').attr('font-weight',600).attr('font-family',"'Libre Franklin'").style('pointer-events','none');
+
+const tt=document.getElementById('tt');
+nd.on('mouseover',(e,d)=>{tt.innerHTML=`<div class="tc">${d.type.replace(/_/g,' ')}</div><div class="tn">${d.label}</div>`;tt.style.display='block';tt.style.left=(e.clientX+12)+'px';tt.style.top=(e.clientY-6)+'px'}).on('mousemove',e=>{tt.style.left=(e.clientX+12)+'px';tt.style.top=(e.clientY-6)+'px'}).on('mouseout',()=>tt.style.display='none');
+nd.on('click',(e,d)=>{e.stopPropagation();hiNode(d.id);openP(d);highlightSidebar(d.id)});
+svg.on('click',()=>{resetHi();document.getElementById('panel').classList.remove('open');document.querySelectorAll('.sb-i').forEach(x=>x.classList.remove('on'))});
+
+function hiNode(id){const c=new Set([id]);L.forEach(x=>{const s=typeof x.source==='string'?x.source:x.source.id;const t=typeof x.target==='string'?x.target:x.target.id;if(s===id)c.add(t);if(t===id)c.add(s)});nd.select('circle').attr('fill-opacity',d=>c.has(d.id)?0.2:0.02).attr('stroke-opacity',d=>c.has(d.id)?0.9:0.04).attr('stroke-width',d=>d.id===id?2.5:c.has(d.id)?1.2:0.5);nd.selectAll('text').attr('fill-opacity',d=>c.has(d.id)?1:0.06);lk.attr('stroke-opacity',d=>{const s=typeof d.source==='string'?d.source:d.source.id;const t=typeof d.target==='string'?d.target:d.target.id;return(s===id||t===id)?0.5:0.01}).attr('stroke-width',d=>{const s=typeof d.source==='string'?d.source:d.source.id;const t=typeof d.target==='string'?d.target:d.target.id;return(s===id||t===id)?2:0.5});ll.attr('display',d=>{const s=typeof d.source==='string'?d.source:d.source.id;const t=typeof d.target==='string'?d.target:d.target.id;return(s===id||t===id)?'block':'none'}).attr('fill','#64748B').attr('font-size','7px')}
+function resetHi(){nd.select('circle').attr('fill-opacity',0.1).attr('stroke-opacity',0.6).attr('stroke-width',d=>SZ[d.type]>18?1.5:0.8);nd.selectAll('text').attr('fill-opacity',1);lk.attr('stroke-opacity',0.1).attr('stroke-width',0.6);ll.attr('display',showLbl?'block':'none')}
+
+function openP(d){const col=CC[d.type]||'#666';const rels=[];L.forEach(x=>{const s=typeof x.source==='string'?x.source:x.source.id;const t=typeof x.target==='string'?x.target:x.target.id;if(s===d.id){const tn=N.find(n=>n.id===t);rels.push({dir:'→',verb:x.label,target:tn?tn.label:t,tid:t})}if(t===d.id){const sn=N.find(n=>n.id===s);rels.push({dir:'←',verb:x.label,target:sn?sn.label:s,tid:s})}});
+let h=`<div class="ph"><div class="pt" style="color:${col}"><span class="d" style="background:${col}"></span>${d.type.replace(/_/g,' ').toUpperCase()}</div><div class="pn">${d.label}</div></div>`;
+if(d.props&&Object.keys(d.props).length){h+=`<div class="ps"><div class="pst">Properties</div>`;Object.entries(d.props).forEach(([k,v])=>{const hl=k==='annual_value'||k==='conservative'||k==='deal'||k==='payback'||k==='lighthouse';h+=`<div class="pr"><span class="pk">${k}</span><span class="pv${hl?' hl':''}">${v}</span></div>`});h+=`</div>`}
+if(rels.length){h+=`<div class="ps"><div class="pst">Relationships (${rels.length})</div>`;rels.forEach(r=>{h+=`<div class="ri" onclick="window._go('${r.tid}')"><span class="ra">${r.dir}</span><span class="rv">${r.verb}</span><span class="rt">${r.target}</span></div>`});h+=`</div>`}
+document.getElementById('pc').innerHTML=h;document.getElementById('panel').classList.add('open')}
+
+window._go=function(id){const n2=N.find(x=>x.id===id);if(n2){hiNode(id);openP(n2);highlightSidebar(id);const sn=sim.nodes().find(x=>x.id===id);if(sn){const t=d3.zoomTransform(svg.node());svg.transition().duration(500).call(zm.transform,d3.zoomIdentity.translate(W/2-sn.x*1.5,H/2-sn.y*1.5).scale(1.5))}}};
+
+document.getElementById('pcl').addEventListener('click',()=>{document.getElementById('panel').classList.remove('open');resetHi()});
+document.getElementById('btn-labels').addEventListener('click',function(){showLbl=!showLbl;this.classList.toggle('on');ll.attr('display',showLbl?'block':'none')});
+document.getElementById('btn-reset').addEventListener('click',()=>{svg.transition().duration(500).call(zm.transform,d3.zoomIdentity);resetHi();document.getElementById('panel').classList.remove('open')});
+
+document.querySelectorAll('.leg').forEach(item=>{item.addEventListener('click',()=>{const c=item.dataset.c;document.querySelectorAll('.leg').forEach(i=>i.classList.remove('on'));item.classList.add('on');if(c==='all'){resetHi()}else{nd.select('circle').attr('fill-opacity',d=>d.type===c?0.2:0.015).attr('stroke-opacity',d=>d.type===c?0.9:0.03);nd.selectAll('text').attr('fill-opacity',d=>d.type===c?1:0.04);lk.attr('stroke-opacity',d=>{const s=N.find(n=>n.id===(typeof d.source==='string'?d.source:d.source.id));const t=N.find(n=>n.id===(typeof d.target==='string'?d.target:d.target.id));return(s&&s.type===c)||(t&&t.type===c)?0.35:0.008})}})});
+
+sim.on('tick',()=>{lk.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);ll.attr('x',d=>(d.source.x+d.target.x)/2).attr('y',d=>(d.source.y+d.target.y)/2);nd.attr('transform',d=>`translate(${d.x},${d.y})`)});
+
+// ── SIDEBAR ────────────────────────────
+const sidebarGroups=[
+  {type:'client',label:'Clients',icon:'🏦',color:CC.client},
+  {type:'consultant',label:'Consultants',icon:'👤',color:CC.consultant},
+  {type:'engagement',label:'Engagements',icon:'📋',color:CC.engagement},
+  {type:'workshop',label:'Workshops',icon:'🎯',color:CC.workshop},
+  {type:'discovery',label:'Discoveries',icon:'🔍',color:CC.discovery},
+  {type:'capability_score',label:'Capability Scores',icon:'📊',color:CC.capability_score},
+  {type:'journey_map',label:'Journey Maps',icon:'🗺️',color:CC.journey_map},
+  {type:'process_map',label:'Process Maps',icon:'⚙️',color:CC.process_map},
+  {type:'tech_landscape',label:'Tech Landscapes',icon:'🏗️',color:CC.tech_landscape},
+  {type:'usecase',label:'Use Cases',icon:'💡',color:CC.usecase},
+  {type:'value_lever',label:'Value Levers',icon:'📈',color:CC.value_lever},
+  {type:'roi_model',label:'ROI Models',icon:'💰',color:CC.roi_model},
+  {type:'roadmap_phase',label:'Roadmap Phases',icon:'📅',color:CC.roadmap_phase},
+  {type:'decision',label:'Decisions',icon:'⚖️',color:CC.decision},
+  {type:'debrief_entry',label:'Debriefs',icon:'💬',color:CC.debrief_entry},
+  {type:'pain_pattern',label:'Pain Patterns',icon:'🔄',color:CC.pain_pattern},
+  {type:'benchmark',label:'Benchmarks',icon:'📏',color:CC.benchmark},
+  {type:'outcome',label:'Outcomes',icon:'🎉',color:CC.outcome},
+  {type:'engagement_event',label:'Events',icon:'⚡',color:CC.engagement_event},
+  {type:'engagement_plan',label:'Plans',icon:'📝',color:CC.engagement_plan},
+  {type:'engagement_choice',label:'Choices',icon:'👆',color:CC.engagement_choice},
+  {type:'engagement_file',label:'Files',icon:'📎',color:CC.engagement_file},
+  {type:'app_portfolio',label:'App Portfolios',icon:'📱',color:CC.app_portfolio},
+  {type:'application',label:'Applications',icon:'💻',color:CC.application},
+  {type:'embedding',label:'Embeddings',icon:'🧬',color:CC.embedding},
+  {type:'domain',label:'Domains',icon:'🌐',color:CC.domain},
+  {type:'journey_template',label:'Journey Templates',icon:'🗺️',color:CC.journey_template},
+  {type:'process_template',label:'Process Templates',icon:'⚙️',color:CC.process_template},
+  {type:'persona',label:'Personas',icon:'👥',color:CC.persona},
+  {type:'capability_definition',label:'Capability Defs',icon:'📐',color:CC.capability_definition},
+  {type:'usecase_template',label:'Use Case Templates',icon:'💡',color:CC.usecase_template},
+  {type:'workshop_kit_template',label:'Workshop Kits',icon:'📦',color:CC.workshop_kit_template},
+  {type:'roadmap',label:'Roadmaps',icon:'🛣️',color:CC.roadmap},
+];
+
+function renderSB(filter=''){
+  const sb=document.getElementById('sidebar');
+  let h=`<div class="sb-search"><span class="sb-si">🔍</span><input type="text" id="sbi" placeholder="Search ${N.length} nodes..." value="${filter}"/></div>`;
+  sidebarGroups.forEach(g=>{
+    const items=N.filter(n=>n.type===g.type&&(!filter||n.label.toLowerCase().includes(filter.toLowerCase())));
+    if(!items.length)return;
+    h+=`<div class="sb-g"><div class="sb-gt"><div class="d" style="background:${g.color}"></div>${g.label}<span class="cnt">${items.length}</span></div>`;
+    items.forEach(i=>{h+=`<div class="sb-i" data-id="${i.id}"><span class="ic">${g.icon}</span>${i.label}</div>`});
+    h+=`</div>`;
+  });
+  sb.innerHTML=h;
+  sb.querySelectorAll('.sb-i').forEach(el=>{el.addEventListener('click',()=>{
+    document.querySelectorAll('.sb-i').forEach(x=>x.classList.remove('on'));el.classList.add('on');
+    const id=el.dataset.id,node=N.find(x=>x.id===id);
+    if(node){hiNode(id);openP(node);const sn=sim.nodes().find(x=>x.id===id);if(sn){svg.transition().duration(500).call(zm.transform,d3.zoomIdentity.translate(W/2-sn.x*1.5,H/2-sn.y*1.5).scale(1.5))}}
+  })});
+  const inp=document.getElementById('sbi');if(inp){inp.addEventListener('input',function(){renderSB(this.value)});if(filter)inp.focus()}
+}
+
+function highlightSidebar(id){document.querySelectorAll('.sb-i').forEach(x=>{x.classList.toggle('on',x.dataset.id===id)})}
+renderSB();
+
+// Stats
+document.getElementById('sbar').innerHTML=`
+<div class="st"><div class="sv">${N.length}</div><div class="sl">Nodes</div></div>
+<div class="st"><div class="sv">${L.length}</div><div class="sl">Relationships</div></div>
+<div class="st"><div class="sv">${new Set(N.map(n=>n.type)).size}</div><div class="sl">Entity Types</div></div>
+<div class="st"><div class="sv">${N.filter(n=>n.type==='client').length}</div><div class="sl">Clients</div></div>
+`;
+
+setTimeout(()=>{const b=gg.node().getBBox();const s=0.65/Math.max(b.width/W,b.height/H);svg.transition().duration(1500).call(zm.transform,d3.zoomIdentity.translate(W/2-s*(b.x+b.width/2),H/2-s*(b.y+b.height/2)).scale(s))},3000);
+</script>
+</body>
+</html>

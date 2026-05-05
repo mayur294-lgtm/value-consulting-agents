@@ -279,51 +279,44 @@ When resolving merge conflicts:
 
 ## Custom Skills Available
 
-### /presentation - Prezi-Style Interactive Presentation Builder
+### /frontline-html and /frontline-slides — Backbase Unified Frontline 2026 Presentation Builders
 
-Transform ANY content into stunning, interactive Prezi-style HTML presentations.
+Two paired skills for the **Backbase Unified Frontline 2026** design system. They replace the legacy `/presentation` and `/presentation-v2` skills (now in `.claude/commands/deprecated/`).
 
-**What It Can Transform:**
-- Consulting reports and value assessments
-- Business reviews and financial reports
-- Strategy decks and roadmaps
-- Research findings and survey results
-- Training materials and onboarding docs
-- Project updates and status reports
-- Any content that needs visual storytelling
+| Skill | Output | Use When |
+|-------|--------|----------|
+| `/frontline-html` | Single-file `.html` (15–120 KB) with keyboard + dot navigation | Brainstorming, iterating on content, internal previews |
+| `/frontline-slides` | Google-Slides-compatible `.pptx` (50–150 KB), 20"×11.25" canvas | Final shareable deck for Google Slides import |
 
-**Key Features:**
-- Single-file HTML with all CSS/JS inline (zero dependencies)
-- 12+ scene types: titles, stats, cards, comparisons, timelines, flywheels, matrices
-- Smooth Prezi-style zoom/fade transitions
-- Staggered element animations for complex content
-- Light theme option for dense information
-- Mobile responsive out of the box
-- One-click deploy to GitHub Pages
+**Workflow:** draft with `/frontline-html` → finalise with `/frontline-slides`.
 
-**Usage:**
-```
-/presentation
-```
-Then provide your content (PDF path, bullet points, transcript, or description).
+**Brand tokens (Frontline 2026 — the only permitted palette for new presentations):**
+- Navy `#001C3D` — primary dark backgrounds
+- Action Blue `#1A5AFF` — accents, CTAs, AI-assist icons
+- Semantic Red `#E02020` — warnings, "from" state labels
+- Background Gray `#F5F7F9` — "from" state cards, soft surfaces
+- Text Muted `#5C6E84` — captions, disclaimers
+- Success Green `#2ECC71` — positive metrics
+- Surface White `#FFFFFF` — clean backgrounds
+- **Font:** Libre Franklin (Google Fonts), Helvetica/Arial fallback
+- **Radius:** 16px cards, 30px pill buttons
+- **Chrome:** blue inverted-L corner accent on light slides + Backbase wordmark footer (notched B)
 
-**Templates:** `/templates/presentations/`
-- `prezi-template.html` - Starter template with scene type examples
-- `example-ack2026-day2.html` - Full 34-scene sales kickoff example
+**Available layouts (17 methods across both builders):**
+Cover · Section Divider · Agenda · Content · Split Comparison (From/To) · Showcase · Architecture · Stat Cards · Case Study · Statement · Tiles · Process Rows · Pillar Rows · Financial Table · Alert Cards · Architecture Stack · Context Stats.
 
-**Design System (Consistent Branding):**
-- See `knowledge/design-system.md` for the unified design system
-- Primary: #3366FF (Backbase blue) - highlights, CTAs
-- Dark: #091C35 (Backbase dark) - backgrounds
-- Typography: Libre Franklin primary, Inter fallback, mega titles 50-120px
-- Animations: Scale transitions, staggered reveals, glow effects
+**Tone & content rules (CRITICAL):**
+1. No bullet-point soup — **maximum 4 key points per slide**
+2. "So What" headers — outcomes, not labels (e.g. "Unifying 50% of the bank's manual work", not "Our Platform")
+3. Three Operational Powers (when explaining how the product works): **Nexus** (data), **Orchestration** (workflows), **Sentinel** (intelligence)
 
-**Narrative Structure:**
-1. Hook (1-2 scenes) - Bold opening
-2. Context (2-4 scenes) - Set the stage
-3. Content (15-30 scenes) - Main material
-4. Climax (2-3 scenes) - Key insight
-5. Close (1-2 scenes) - Call to action
+**Tools:** `tools/frontline_2026_html.py` and `tools/frontline_2026_presenter.py` — pure-Python builders. The slides builder requires `python-pptx`.
+
+**Tokens reference:** `presentations/frontline-2026/design-tokens.json`, `slide-layouts.md`, `google-slides-rules.md`, `html-components.md`.
+
+**Do NOT use these skills for:**
+- Assessment dashboards → use `/generate-assessment-html`
+- Schroders/SEB-style executive briefings → use `/executive-briefing` family
 
 ### /generate-roi-questionnaire - ROI Questionnaire Generator
 

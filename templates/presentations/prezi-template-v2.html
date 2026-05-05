@@ -11,31 +11,31 @@
 
         :root {
             /* Backbase Brand Colors (from Master Template 2022) */
-            --bb-blue: #3366FF;
+            --bb-blue: #1A5AFF;
             --bb-blue-bright: #4C7AFF;
             --bb-blue-light: #E8EEFE;
             --bb-blue-border: #B8C9F0;
-            --bb-navy: #091C35;
-            --bb-dark: #091C35;
-            --bb-cyan: #69FEFF;
-            --bb-coral: #FF7262;
+            --bb-navy: #001C3D;
+            --bb-dark: #001C3D;
+            --bb-cyan: #93B5FF;
+            --bb-coral: #E02020;
             --bb-gray: #6B7280;
             --bb-gray-light: #9CA3AF;
             --bb-light: #F5F6FA;
             --bb-white: #FFFFFF;
             --bb-text: #1F2937;
             --bb-text-light: #4B5563;
-            --bb-glow: rgba(51, 102, 255, 0.3);
-            --bb-red: #FF7262;
+            --bb-glow: rgba(26,90,255, 0.3);
+            --bb-red: #E02020;
             --bb-red-light: #FEE2E2;
-            --bb-green: #10B981;
+            --bb-green: #2ECC71;
             --bb-green-light: #D1FAE5;
-            --bb-orange: #F59E0B;
+            --bb-orange: #D97706;
             --bb-orange-light: #FEF3C7;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Libre Franklin', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bb-navy);
             overflow: hidden;
             color: white;
@@ -54,8 +54,8 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             background-image:
-                linear-gradient(rgba(51, 102, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(51, 102, 255, 0.03) 1px, transparent 1px);
+                linear-gradient(rgba(26,90,255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(26,90,255, 0.03) 1px, transparent 1px);
             background-size: 60px 60px;
             z-index: 0;
         }
@@ -64,7 +64,7 @@
             position: fixed;
             width: 800px; height: 800px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(51, 102, 255, 0.2) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(26,90,255, 0.2) 0%, transparent 70%);
             filter: blur(100px);
             z-index: 0;
             animation: floatGlow 20s ease-in-out infinite;
@@ -136,7 +136,7 @@
 
         .section-label {
             display: inline-block;
-            background: rgba(51, 102, 255, 0.2);
+            background: rgba(26,90,255, 0.2);
             color: var(--bb-blue);
             padding: 8px 20px;
             border-radius: 30px;
@@ -347,7 +347,7 @@
             transition: all 0.6s ease;
         }
         .phase-card.primary {
-            background: rgba(51, 102, 255, 0.1);
+            background: rgba(26,90,255, 0.1);
             border-color: var(--bb-blue);
         }
 
@@ -384,8 +384,8 @@
         }
 
         .superpower-card {
-            background: linear-gradient(135deg, rgba(51, 102, 255, 0.1) 0%, rgba(9, 28, 53, 0.8) 100%);
-            border: 1px solid rgba(51, 102, 255, 0.3);
+            background: linear-gradient(135deg, rgba(26,90,255, 0.1) 0%, rgba(0,28,61, 0.8) 100%);
+            border: 1px solid rgba(26,90,255, 0.3);
             border-radius: 20px;
             padding: 24px;
             width: 180px;
@@ -558,11 +558,11 @@
             font-weight: 600;
             font-size: 14px;
         }
-        .tier-bar.t1 { background: rgba(51, 102, 255, 0.3); width: 30%; }
-        .tier-bar.t2 { background: rgba(51, 102, 255, 0.25); width: 45%; }
-        .tier-bar.t3 { background: rgba(51, 102, 255, 0.2); width: 60%; }
-        .tier-bar.t4 { background: rgba(51, 102, 255, 0.15); width: 80%; }
-        .tier-bar.t5 { background: rgba(51, 102, 255, 0.1); width: 100%; }
+        .tier-bar.t1 { background: rgba(26,90,255, 0.3); width: 30%; }
+        .tier-bar.t2 { background: rgba(26,90,255, 0.25); width: 45%; }
+        .tier-bar.t3 { background: rgba(26,90,255, 0.2); width: 60%; }
+        .tier-bar.t4 { background: rgba(26,90,255, 0.15); width: 80%; }
+        .tier-bar.t5 { background: rgba(26,90,255, 0.1); width: 100%; }
 
         /* ============================================ */
         /* Capability Map (Interactive F/M/B Heatmap)   */
@@ -579,7 +579,7 @@
             cursor: pointer; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.15);
             background: rgba(255,255,255,0.04); user-select: none; white-space: nowrap;
         }
-        .cap-problem:hover { border-color: var(--bb-blue); background: rgba(51,102,255,0.12); }
+        .cap-problem:hover { border-color: var(--bb-blue); background: rgba(26,90,255,0.12); }
         .cap-problem.active { background: var(--bb-blue); border-color: var(--bb-blue); color: white; }
         .cap-problem.sev-critical { border-color: rgba(230,57,70,0.4); }
         .cap-problem.sev-critical.active { background: #E63946; border-color: #E63946; }
@@ -619,7 +619,7 @@
             border-radius: 10px; cursor: pointer; transition: all 0.25s ease;
         }
         .cap-row:hover { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.05); }
-        .cap-item.expanded .cap-row { border-color: var(--bb-blue); background: rgba(51,102,255,0.06); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+        .cap-item.expanded .cap-row { border-color: var(--bb-blue); background: rgba(26,90,255,0.06); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 
         /* Capability name & domain */
         .cap-name { font-size: 13px; font-weight: 700; line-height: 1.3; }
@@ -653,7 +653,7 @@
         /* Expandable detail panel */
         .cap-detail {
             display: none; padding: 20px 16px; margin-top: -1px;
-            background: rgba(9,28,53,0.7); border: 1px solid var(--bb-blue);
+            background: rgba(0,28,61,0.7); border: 1px solid var(--bb-blue);
             border-top: none; border-radius: 0 0 10px 10px;
             animation: capDetailIn 0.3s ease;
         }
@@ -672,12 +672,12 @@
             background: rgba(255,255,255,0.03); border-radius: 6px; margin-bottom: 3px;
             font-size: 12px; border-left: 3px solid transparent;
         }
-        .cap-probing-item.pass { border-left-color: #10B981; }
+        .cap-probing-item.pass { border-left-color: #2ECC71; }
         .cap-probing-item.fail { border-left-color: #E63946; }
         .cap-probing-gate { font-weight: 700; color: var(--bb-blue); min-width: 36px; font-size: 11px; }
         .cap-probing-q { flex: 1; color: rgba(255,255,255,0.8); }
         .cap-probing-result { font-weight: 700; font-size: 11px; }
-        .cap-probing-result.pass { color: #10B981; }
+        .cap-probing-result.pass { color: #2ECC71; }
         .cap-probing-result.fail { color: #E63946; }
         .cap-probing-ev { font-size: 10px; color: var(--bb-gray); margin-left: 4px; }
 
@@ -685,15 +685,15 @@
         .cap-evidence-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
         .cap-ev-tag {
             display: inline-block; padding: 3px 8px; border-radius: 4px;
-            background: rgba(51,102,255,0.12); color: var(--bb-blue); font-size: 10px; font-weight: 700;
+            background: rgba(26,90,255,0.12); color: var(--bb-blue); font-size: 10px; font-weight: 700;
         }
         .cap-notes { font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.5; }
         .cap-confidence {
             display: inline-block; padding: 2px 8px; border-radius: 4px;
             font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .cap-confidence.high { background: rgba(16,185,129,0.15); color: #10B981; }
-        .cap-confidence.medium { background: rgba(245,158,11,0.15); color: #F59E0B; }
+        .cap-confidence.high { background: rgba(16,185,129,0.15); color: #2ECC71; }
+        .cap-confidence.medium { background: rgba(245,158,11,0.15); color: #D97706; }
         .cap-confidence.low { background: rgba(230,57,70,0.15); color: #E63946; }
 
         /* Layer detail bars in expanded view */
@@ -756,7 +756,7 @@
             overflow: visible;
         }
         .chart-svg text {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Libre Franklin', sans-serif;
             fill: rgba(255,255,255,0.8);
         }
         .chart-svg .chart-bar {
@@ -828,8 +828,8 @@
             margin-top: 16px;
             padding: 8px 20px;
             border-radius: 8px;
-            background: rgba(51, 102, 255, 0.15);
-            border: 1px solid rgba(51, 102, 255, 0.3);
+            background: rgba(26,90,255, 0.15);
+            border: 1px solid rgba(26,90,255, 0.3);
             color: var(--bb-blue);
             font-size: 12px;
             font-weight: 600;
@@ -837,7 +837,7 @@
             font-family: inherit;
             transition: all 0.2s;
         }
-        .chart-edit-btn:hover { background: rgba(51, 102, 255, 0.25); }
+        .chart-edit-btn:hover { background: rgba(26,90,255, 0.25); }
         body.edit-mode .chart-edit-btn { display: inline-flex; align-items: center; gap: 6px; }
 
         /* Chart Editor Modal */
@@ -1085,15 +1085,15 @@
             border-radius: 4px;
         }
         body.edit-mode .editable {
-            border-bottom: 2px dashed rgba(51, 102, 255, 0.3);
+            border-bottom: 2px dashed rgba(26,90,255, 0.3);
         }
         body.edit-mode .editable:hover {
-            border-color: rgba(51, 102, 255, 0.6);
+            border-color: rgba(26,90,255, 0.6);
         }
         .editable:focus {
             outline: none;
             border-bottom: 2px solid var(--bb-blue);
-            background: rgba(51, 102, 255, 0.08);
+            background: rgba(26,90,255, 0.08);
         }
 
         /* Edit Toggle Button */
@@ -1122,7 +1122,7 @@
             position: fixed;
             top: 0; left: 0; right: 0;
             height: 56px;
-            background: rgba(9, 28, 53, 0.97);
+            background: rgba(0,28,61, 0.97);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
@@ -1232,7 +1232,7 @@
         .slide-thumb:hover { background: rgba(255,255,255,0.06); }
         .slide-thumb.active {
             border-color: var(--bb-blue);
-            background: rgba(51, 102, 255, 0.1);
+            background: rgba(26,90,255, 0.1);
         }
         .slide-thumb.dragging {
             opacity: 0.4;
@@ -1269,7 +1269,7 @@
         .slide-thumb-type {
             font-size: 10px;
             color: var(--bb-blue-bright);
-            background: rgba(51, 102, 255, 0.15);
+            background: rgba(26,90,255, 0.15);
             padding: 2px 6px;
             border-radius: 4px;
             text-transform: uppercase;
@@ -1316,7 +1316,7 @@
         }
         .modal-option:hover {
             border-color: var(--bb-blue);
-            background: rgba(51, 102, 255, 0.1);
+            background: rgba(26,90,255, 0.1);
         }
         .modal-option-icon { font-size: 24px; margin-bottom: 8px; }
         .modal-option-name { font-size: 12px; font-weight: 600; }
@@ -1378,7 +1378,7 @@
         .scene.gradient-theme .scene-content { color: white; }
         .scene.gradient-theme .mega-title .blue { color: var(--bb-navy); }
         .scene.gradient-theme .mega-title .white { color: white; }
-        .scene.gradient-theme .section-label { background: rgba(9,28,53,0.3); color: white; }
+        .scene.gradient-theme .section-label { background: rgba(0,28,61,0.3); color: white; }
         .scene.gradient-theme .subtitle { color: rgba(255,255,255,0.85); }
 
         /* ============================================ */
@@ -1408,7 +1408,7 @@
         .journey-stage-header:last-child { border-right: none; }
         .journey-lane-label {
             padding: 14px 16px;
-            background: rgba(51,102,255,0.08);
+            background: rgba(26,90,255,0.08);
             font-size: 12px;
             font-weight: 700;
             color: var(--bb-blue);
@@ -1477,7 +1477,7 @@
 
         /* Dark theme journey map overrides */
         .scene:not(.light-theme) .journey-lane-label {
-            background: rgba(51,102,255,0.12);
+            background: rgba(26,90,255,0.12);
             color: var(--bb-cyan);
             border-color: rgba(255,255,255,0.06);
         }
@@ -1620,12 +1620,12 @@
         }
         .overview-card:hover {
             border-color: var(--bb-blue);
-            box-shadow: 0 4px 16px rgba(51,102,255,0.12);
+            box-shadow: 0 4px 16px rgba(26,90,255,0.12);
             transform: translateY(-2px);
         }
         .overview-card.selected {
             border-color: var(--bb-blue);
-            box-shadow: 0 0 0 3px rgba(51,102,255,0.15);
+            box-shadow: 0 0 0 3px rgba(26,90,255,0.15);
         }
 
         .overview-card-preview {
@@ -2061,7 +2061,7 @@
         }
         .overview-card.selected-card {
             border-color: var(--bb-blue);
-            box-shadow: 0 0 0 3px rgba(51,102,255,0.2);
+            box-shadow: 0 0 0 3px rgba(26,90,255,0.2);
         }
 
         /* ============================== */
@@ -2125,7 +2125,7 @@
         /* SPEAKER VIEW (popup window)    */
         /* ============================== */
         .speaker-view-container {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Libre Franklin', sans-serif;
             background: #1a1a1a;
             color: white;
             min-height: 100vh;
@@ -2170,13 +2170,13 @@
             font-weight: 600;
             cursor: pointer;
             font-family: inherit;
-            box-shadow: 0 4px 20px rgba(51,102,255,0.4);
+            box-shadow: 0 4px 20px rgba(26,90,255,0.4);
             transition: all 0.2s ease;
             z-index: 3000;
         }
         .overview-add-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 28px rgba(51,102,255,0.5);
+            box-shadow: 0 6px 28px rgba(26,90,255,0.5);
         }
         body:not(.overview-mode) .overview-add-btn { display: none; }
 
@@ -2414,7 +2414,7 @@
                 <p style="color: #6B7280; margin-bottom: 16px; font-size: 13px;">Copy this JSON and paste it into your Google Apps Script web app to create editable Google Slides.</p>
                 <textarea id="googleSlidesJson" readonly style="width: 100%; height: 250px; font-family: monospace; font-size: 11px; padding: 12px; border: 1px solid #E5E7EB; border-radius: 8px; background: #F9FAFB; resize: vertical;"></textarea>
                 <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
-                    <a href="https://script.google.com" target="_blank" style="color: #1A56FF; font-size: 13px;">Open Google Apps Script →</a>
+                    <a href="https://script.google.com" target="_blank" style="color: #1A5AFF; font-size: 13px;">Open Google Apps Script →</a>
                     <div style="display: flex; gap: 10px;">
                         <button class="toolbar-btn" onclick="ExportCtrl.closeGoogleSlidesModal()">Close</button>
                         <button class="toolbar-btn primary" onclick="ExportCtrl.copyGoogleSlidesJson()">📋 Copy JSON</button>
@@ -2437,23 +2437,23 @@
                 </div>
                 <div class="brand-row">
                     <label>Primary</label>
-                    <input type="color" id="brandPrimary" value="#3366FF" />
-                    <span class="color-hex" id="brandPrimaryHex">#3366FF</span>
+                    <input type="color" id="brandPrimary" value="#1A5AFF" />
+                    <span class="color-hex" id="brandPrimaryHex">#1A5AFF</span>
                 </div>
                 <div class="brand-row">
                     <label>Navy / Dark</label>
-                    <input type="color" id="brandNavy" value="#091C35" />
-                    <span class="color-hex" id="brandNavyHex">#091C35</span>
+                    <input type="color" id="brandNavy" value="#001C3D" />
+                    <span class="color-hex" id="brandNavyHex">#001C3D</span>
                 </div>
                 <div class="brand-row">
                     <label>Cyan Accent</label>
-                    <input type="color" id="brandCyan" value="#69FEFF" />
-                    <span class="color-hex" id="brandCyanHex">#69FEFF</span>
+                    <input type="color" id="brandCyan" value="#93B5FF" />
+                    <span class="color-hex" id="brandCyanHex">#93B5FF</span>
                 </div>
                 <div class="brand-row">
                     <label>Coral / Alert</label>
-                    <input type="color" id="brandCoral" value="#FF7262" />
-                    <span class="color-hex" id="brandCoralHex">#FF7262</span>
+                    <input type="color" id="brandCoral" value="#E02020" />
+                    <span class="color-hex" id="brandCoralHex">#E02020</span>
                 </div>
                 <div class="brand-row">
                     <label>Font</label>
@@ -2521,12 +2521,12 @@
         "brandName": "Backbase",
         "speaker": { "name": "Presenter", "initials": "P" },
         "brand": {
-            "primary": "#3366FF",
-            "navy": "#091C35",
-            "cyan": "#69FEFF",
-            "coral": "#FF7262",
-            "green": "#10B981",
-            "orange": "#F59E0B",
+            "primary": "#1A5AFF",
+            "navy": "#001C3D",
+            "cyan": "#93B5FF",
+            "coral": "#E02020",
+            "green": "#2ECC71",
+            "orange": "#D97706",
             "logoText": "Backbase",
             "fontFamily": "Inter"
         },
@@ -3350,7 +3350,7 @@
 
             // Color helper used by all chart renderers
             _chartColor(name) {
-                const map = { blue: '#3366FF', green: '#10B981', red: '#FF7262', orange: '#F59E0B', gray: '#6B7280', navy: '#091C35', cyan: '#69FEFF', coral: '#FF7262', purple: '#8B5CF6', teal: '#14B8A6', pink: '#EC4899' };
+                const map = { blue: '#1A5AFF', green: '#2ECC71', red: '#E02020', orange: '#D97706', gray: '#6B7280', navy: '#001C3D', cyan: '#93B5FF', coral: '#E02020', purple: '#7C3AED', teal: '#0891B2', pink: '#EC4899' };
                 return map[name] || map.blue;
             },
 
@@ -4402,8 +4402,8 @@
                 </div>
             </div>
         </div>
-        <div class="modal-overlay" id="googleSlidesModal"><div class="modal" style="max-width:700px;"><h3>📊 Export for Google Slides</h3><p style="color:#6B7280;margin-bottom:16px;font-size:13px;">Copy this JSON and paste it into your Google Apps Script web app to create editable Google Slides.</p><textarea id="googleSlidesJson" readonly style="width:100%;height:250px;font-family:monospace;font-size:11px;padding:12px;border:1px solid #E5E7EB;border-radius:8px;background:#F9FAFB;resize:vertical;"></textarea><div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;"><a href="https://script.google.com" target="_blank" style="color:#1A56FF;font-size:13px;">Open Google Apps Script →</a><div style="display:flex;gap:10px;"><button class="toolbar-btn" onclick="ExportCtrl.closeGoogleSlidesModal()">Close</button><button class="toolbar-btn primary" onclick="ExportCtrl.copyGoogleSlidesJson()">📋 Copy JSON</button></div></div><div style="margin-top:16px;padding:12px;background:#F3F4F6;border-radius:8px;font-size:12px;color:#6B7280;"><strong style="color:#374151;">First time setup?</strong> Deploy the Apps Script as a web app, then paste this JSON there.</div></div></div>
-        <div class="brand-panel-overlay" id="brandPanelOverlay"><div class="brand-panel"><h3>Brand Settings</h3><p class="brand-panel-sub">Customize colors and identity.</p><div class="brand-row"><label>Logo Text</label><input type="text" id="brandLogoInput"/></div><div class="brand-row"><label>Primary</label><input type="color" id="brandPrimary" value="#3366FF"/><span class="color-hex" id="brandPrimaryHex">#3366FF</span></div><div class="brand-row"><label>Navy / Dark</label><input type="color" id="brandNavy" value="#091C35"/><span class="color-hex" id="brandNavyHex">#091C35</span></div><div class="brand-row"><label>Cyan Accent</label><input type="color" id="brandCyan" value="#69FEFF"/><span class="color-hex" id="brandCyanHex">#69FEFF</span></div><div class="brand-row"><label>Coral / Alert</label><input type="color" id="brandCoral" value="#FF7262"/><span class="color-hex" id="brandCoralHex">#FF7262</span></div><div class="brand-row"><label>Font</label><input type="text" id="brandFontInput" placeholder="Inter"/></div><div class="brand-panel-actions"><button id="brandResetBtn">Reset</button><button id="brandCancelBtn">Cancel</button><button class="primary" id="brandApplyBtn">Apply</button></div></div></div>
+        <div class="modal-overlay" id="googleSlidesModal"><div class="modal" style="max-width:700px;"><h3>📊 Export for Google Slides</h3><p style="color:#6B7280;margin-bottom:16px;font-size:13px;">Copy this JSON and paste it into your Google Apps Script web app to create editable Google Slides.</p><textarea id="googleSlidesJson" readonly style="width:100%;height:250px;font-family:monospace;font-size:11px;padding:12px;border:1px solid #E5E7EB;border-radius:8px;background:#F9FAFB;resize:vertical;"></textarea><div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;"><a href="https://script.google.com" target="_blank" style="color:#1A5AFF;font-size:13px;">Open Google Apps Script →</a><div style="display:flex;gap:10px;"><button class="toolbar-btn" onclick="ExportCtrl.closeGoogleSlidesModal()">Close</button><button class="toolbar-btn primary" onclick="ExportCtrl.copyGoogleSlidesJson()">📋 Copy JSON</button></div></div><div style="margin-top:16px;padding:12px;background:#F3F4F6;border-radius:8px;font-size:12px;color:#6B7280;"><strong style="color:#374151;">First time setup?</strong> Deploy the Apps Script as a web app, then paste this JSON there.</div></div></div>
+        <div class="brand-panel-overlay" id="brandPanelOverlay"><div class="brand-panel"><h3>Brand Settings</h3><p class="brand-panel-sub">Customize colors and identity.</p><div class="brand-row"><label>Logo Text</label><input type="text" id="brandLogoInput"/></div><div class="brand-row"><label>Primary</label><input type="color" id="brandPrimary" value="#1A5AFF"/><span class="color-hex" id="brandPrimaryHex">#1A5AFF</span></div><div class="brand-row"><label>Navy / Dark</label><input type="color" id="brandNavy" value="#001C3D"/><span class="color-hex" id="brandNavyHex">#001C3D</span></div><div class="brand-row"><label>Cyan Accent</label><input type="color" id="brandCyan" value="#93B5FF"/><span class="color-hex" id="brandCyanHex">#93B5FF</span></div><div class="brand-row"><label>Coral / Alert</label><input type="color" id="brandCoral" value="#E02020"/><span class="color-hex" id="brandCoralHex">#E02020</span></div><div class="brand-row"><label>Font</label><input type="text" id="brandFontInput" placeholder="Inter"/></div><div class="brand-panel-actions"><button id="brandResetBtn">Reset</button><button id="brandCancelBtn">Cancel</button><button class="primary" id="brandApplyBtn">Apply</button></div></div></div>
         <div class="shortcuts-overlay" id="shortcutsOverlay"><div class="shortcuts-panel"><h3>Keyboard Shortcuts</h3><div class="shortcut-group"><div class="shortcut-group-title">Navigation</div><div class="shortcut-row"><span class="shortcut-desc">Next/Previous</span><kbd>&rarr;</kbd> <kbd>&larr;</kbd></div><div class="shortcut-row"><span class="shortcut-desc">Overview</span><kbd>Esc</kbd></div></div><div class="shortcut-group"><div class="shortcut-group-title">Editing</div><div class="shortcut-row"><span class="shortcut-desc">Undo/Redo</span><kbd>Ctrl+Z</kbd> <kbd>Ctrl+Y</kbd></div><div class="shortcut-row"><span class="shortcut-desc">Save</span><kbd>Ctrl+S</kbd></div></div><div style="text-align:right;margin-top:16px;"><button class="toolbar-btn" id="closeShortcutsBtn">Close</button></div></div></div>
         <div class="notes-panel" id="notesPanel"><div class="notes-panel-header" id="notesPanelHeader"><span class="toggle-icon">&#9660;</span><span>Speaker Notes</span></div><textarea class="notes-textarea" id="notesTextarea" placeholder="Add speaker notes..."></textarea></div>
     </div>
@@ -5134,7 +5134,7 @@ ${json}
         // BRAND CONTROLLER
         // ==========================================
         const BrandCtrl = {
-            defaults: { primary: '#3366FF', navy: '#091C35', cyan: '#69FEFF', coral: '#FF7262', green: '#10B981', orange: '#F59E0B', logoText: 'Backbase', fontFamily: 'Inter' },
+            defaults: { primary: '#1A5AFF', navy: '#001C3D', cyan: '#93B5FF', coral: '#E02020', green: '#2ECC71', orange: '#D97706', logoText: 'Backbase', fontFamily: 'Inter' },
 
             init() {
                 document.getElementById('overviewBrandBtn').onclick = () => this.open();
@@ -5390,10 +5390,10 @@ ${json}
                 win.document.write(`<!DOCTYPE html><html><head><title>Speaker View</title>
                     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
                     <style>
-                        body { font-family: 'Inter', sans-serif; background: #1a1a1a; color: white; padding: 24px; margin: 0; }
+                        body { font-family: 'Libre Franklin', sans-serif; background: #1a1a1a; color: white; padding: 24px; margin: 0; }
                         .header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
                         .header h2 { font-size: 18px; margin: 0; }
-                        .slide-num { background: rgba(51,102,255,0.2); color: #4C7AFF; padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; }
+                        .slide-num { background: rgba(26,90,255,0.2); color: #4C7AFF; padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; }
                         .notes { background: #222; border-radius: 12px; padding: 24px; font-size: 16px; line-height: 1.6; white-space: pre-wrap; min-height: 200px; }
                         .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6B7280; margin-bottom: 8px; }
                         .timer { font-size: 32px; font-weight: 700; color: #4C7AFF; text-align: center; margin-top: 20px; }
