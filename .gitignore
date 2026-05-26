@@ -23,6 +23,7 @@ build/
 
 # Claude Code local settings (agents and commands ARE tracked)
 .claude/settings.local.json
+.claude/worktrees/
 
 # Engagement data (client-confidential — never commit)
 engagements/
