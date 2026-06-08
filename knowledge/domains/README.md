@@ -11,6 +11,7 @@ This directory contains specialized knowledge for each banking domain vertical t
 | [sme/](sme/) | Small & medium business banking | Digital Onboarding, Loan Origination, Payments |
 | [wealth/](wealth/) | Wealth management & advisory | Onboarding, Portfolio, Client Engagement |
 | [corporate/](corporate/) | Large enterprise & transaction banking | Payments, Treasury, Trade Finance |
+| [apa-matrix/](apa-matrix/) | **Cross-LOB AI/agentic use-case matrix** — 4 LOBs × 9 domains × 65 process simulations. Default lens for any AI use-case work | Automation potential (HIGH/MED/LOW); per-process Value Bleed → Banking OS Sim → Elastic Ops Business Case |
 
 ## Benchmark Source
 
