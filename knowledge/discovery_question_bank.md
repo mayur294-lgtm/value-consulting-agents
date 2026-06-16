@@ -366,5 +366,37 @@ A comprehensive set of discovery questions organized by domain, journey, and val
 
 ---
 
+## Banking OS Discovery (added 2026-06-09)
+
+**Source:** Banking OS Value Proposition v4.0 — canonical positioning
+**Companion doc:** `knowledge/banking_os.md`
+
+These 7 high-signal questions surface the fragmentation, whitespace, governance, and AI-relationship-layer threats that map directly to the 4 Banking OS solutions. Use early in discovery to scope which solution lands best.
+
+| Question | What it reveals | Where it leads |
+|---|---|---|
+| "What happens between when a customer submits a request and when it is resolved?" | Loop breakage, whitespace pain | Customer Resolution Loops, Elastic Operations |
+| "How many separate systems does your frontline run on today?" | Degree of fragmentation | Unified Frontline value, operating model positioning |
+| "What percentage of your operations team's time goes to exception handling?" | Whitespace pain, manual coordination cost | Customer Resolution Loops, Elastic Operations |
+| "When your regulator asks how you govern AI decisions, what do you show them?" | Governance maturity | Sentinel, Decision Authority, Decision Tokens |
+| "How are you thinking about customers moving their financial conversations to AI engines such ChatGPT or Claude?" | AI relationship-layer threat awareness | Relationship Intelligence, fight-back positioning |
+| "What is your drop-off rate between application start and funding?" | Origination friction | Customer Resolution Loops, front-to-back orchestration |
+| "Are you scaling operations by adding headcount or by adding capacity?" | Operating model maturity | Elastic Operations, progressive autonomy |
+
+### Customer Intent Leakage Assessment — discovery scope
+
+When the prospect engages on Customer Resolution Loops, use the 4 leakage types to scope the first Mission:
+
+| Leakage type | Discovery probe |
+|---|---|
+| **Time leakage** | "How long does it take to resolve a [card dispute / KYC issue / payment inquiry] end-to-end?" |
+| **Contact leakage** | "How often does a customer have to call back or check status on the same request?" |
+| **Evidence leakage** | "How much information has to be re-collected or re-keyed during a typical resolution?" |
+| **Ownership leakage** | "When a case crosses team boundaries, who owns it? How often does it bounce back?" |
+
+Then prioritize the broken loop by: customer pain × operational cost × speed to proof.
+
+---
+
 *Classification: Internal - Value Consulting Use Only*
-*Last Updated: 2025-09-16*
+*Last Updated: 2026-06-09*

@@ -2,6 +2,24 @@
 
 This directory contains the foundational consulting knowledge that powers the Value Consulting Agent System.
 
+---
+
+## ⭐ Canonical positioning narrative
+
+**`banking_os.md`** is the **current canonical positioning narrative** (Banking OS v4.0 — June 2026). All new POVs, ROI models, capability assessments, and roadmaps Cortex generates should use this file as the source for Backbase positioning, language rules, the 4 solutions × 2 blocks framework, persona playbooks, and discovery questions.
+
+**`conversational_banking.md`** is the deep-dive on that specific solution.
+
+### Positioning convention
+
+- **Top-level positioning file = canonical and current.** Cortex agents use it for new work.
+- **`positioning_history/` = archive.** When a new positioning version supersedes the current one, the current file moves to `positioning_history/` with a version suffix, and the new version replaces it at the top level.
+- **`backbase_platform_lexicon.md`** is the **product capability reference** — product lines, customer lifecycle stages, four quadrants, domain variations. It is stable and slow-changing. It complements (does not compete with) the positioning narrative.
+
+See `positioning_history/README.md` for the full convention.
+
+---
+
 ## Structure
 
 ### `/principles/`

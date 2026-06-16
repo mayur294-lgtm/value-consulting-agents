@@ -1,6 +1,13 @@
 # Backbase Platform Lexicon & Architecture Reference
 
-A comprehensive reference guide for Backbase terminology, platform architecture, and product capabilities. This document serves as the authoritative source for Value Consulting engagements.
+A comprehensive reference guide for Backbase terminology, platform architecture, and product capabilities. This document serves as the **product capability reference** for Value Consulting engagements — stable, slow-changing knowledge about what Backbase products exist and how they map to the banking lifecycle.
+
+> **Companion files:**
+> - **`banking_os.md`** — ⭐ **canonical current positioning narrative** (Banking OS v4.0, June 2026). Use this for the 4 solutions × 2 blocks framework, the four operational powers (Nexus / Orchestration / Sentinel / Intelligence), Elastic Operations outcomes, persona playbooks, pricing, language rules, and the final-check rubric. **Cortex agents producing new POVs, ROI models, capability assessments, and roadmaps should anchor to `banking_os.md`.**
+> - **`conversational_banking.md`** — deep-dive on that specific solution.
+> - **This file** — product/lifecycle reference. Use for product line definitions (Digital Banking, Digital Lending, Digital Engage, Grand Central, etc.), customer lifecycle stage definitions (Acquire / Activate / Expand / Retain), and the four-quadrant platform organization.
+
+The lexicon and the positioning narrative complement each other. The lexicon describes *what Backbase products exist and how they map to the banking lifecycle*. The Banking OS narrative describes *how Backbase positions its operating model and solutions to the market*.
 
 ---
 
