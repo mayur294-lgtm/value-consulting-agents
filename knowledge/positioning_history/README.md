@@ -24,6 +24,14 @@ When a new version of the positioning narrative supersedes the current one:
 - Archived files are **reference-only** — for understanding what was said in past engagements, not for generating new content.
 - If a consultant explicitly asks for the prior framing (e.g., to maintain continuity in an existing client engagement), use the archived version and flag the choice in the engagement journal.
 
+## When to consult an archive — confidence guide
+
+| Situation | Relevance of an archived narrative |
+|---|---|
+| Generating a fresh POV for a new prospect | **Low** — use the current file at top level instead |
+| Mid-engagement continuity with a client pitched on the prior framing | **Medium** — quote the archived version for consistency but flag the framing gap in the engagement journal |
+| Historical analysis of how Backbase positioning has evolved | **High** — archives are the primary source for this question |
+
 ## Archive log
 
 *(No archived versions yet. The current canonical narrative is `knowledge/banking_os.md` v4.0 — June 2026.)*
