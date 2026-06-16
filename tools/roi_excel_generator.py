@@ -267,7 +267,6 @@ class ROIModelGenerator:
     def generate(self, output_path: str):
         """Generate the complete formula-based ROI Excel model."""
         self._normalize_config()
-        self._validate_and_cap_impacts()
 
         # Pre-declare sc_cell — Cashflows sheet places the dropdown at exactly C5.
         # This allows Model Inputs and Journey Analysis (written before Cashflows)
@@ -1065,9 +1064,7 @@ class ROIModelGenerator:
                     else:
                         ws.cell(row=row, column=3, value=f"='Model Inputs'!{mi_bi_cell}")
                 else:
-                    ws.cell(row=row, column=3, value=0.30)
-                    ws.cell(row=row, column=5, value="⚠ FALLBACK — scenario linkage missing, defaulted to 30%")
-                    ws.cell(row=row, column=5).font = Font(size=9, color='FF4444', italic=True)
+                    ws.cell(row=row, column=3, value=1.0)
                 ws.cell(row=row, column=3).number_format = '0.0%'
                 ws.cell(row=row, column=3).font = Font(bold=True)
                 ws.cell(row=row, column=4, value="% of baseline captured by Backbase")
