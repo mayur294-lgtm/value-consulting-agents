@@ -22,14 +22,17 @@ import json
 CANVAS_W = Inches(20.0)
 CANVAS_H = Inches(11.25)
 
-# Colors
-PRIMARY_NAVY = RGBColor(0x00, 0x1C, 0x3D)
-ACTION_BLUE = RGBColor(0x1A, 0x5A, 0xFF)
+# Colors — reconciled to canonical Frontline 2026 tokens
+# (knowledge/design-system/frontline-tokens.json). The prior values
+# #001C3D / #1A5AFF were the drifted palette flagged as superseded in the
+# token file; navy/blue/red are now the canonical Theme-1 hexes.
+PRIMARY_NAVY = RGBColor(0x04, 0x13, 0x26)   # token navy  (was #001C3D)
+ACTION_BLUE = RGBColor(0x33, 0x67, 0xFF)    # token blue  (was #1A5AFF)
 SURFACE_WHITE = RGBColor(0xFF, 0xFF, 0xFF)
-BG_GRAY = RGBColor(0xF5, 0xF7, 0xF9)
-TEXT_MAIN = RGBColor(0x00, 0x1C, 0x3D)
-TEXT_MUTED = RGBColor(0x5C, 0x6E, 0x84)
-SUCCESS_GREEN = RGBColor(0x2E, 0xCC, 0x71)
+BG_GRAY = RGBColor(0xF3, 0xF6, 0xF9)        # token off_white (was #F5F7F9)
+TEXT_MAIN = RGBColor(0x04, 0x13, 0x26)      # token text_main (was #001C3D)
+TEXT_MUTED = RGBColor(0x6B, 0x77, 0x86)     # token text_muted (was #5C6E84)
+SUCCESS_GREEN = RGBColor(0x2E, 0xCC, 0x71)  # token green
 
 # Fonts
 FONT_PRIMARY = "Libre Franklin"
@@ -44,8 +47,9 @@ SIZE_CAPTION = Pt(14)  # Smaller annotations
 SIZE_LEGAL = Pt(10)    # Disclaimers
 SIZE_AGENDA = Pt(24)   # Agenda items
 
-# Semantic red (from Master Template)
-SEMANTIC_RED = RGBColor(0xE0, 0x20, 0x20)
+# Semantic red — canonical token red #FF503C (was #E02020 / HTML used #DC2626).
+# Flip back to RGBColor(0xDC, 0x26, 0x26) if pinning to the Schroders HTML crimson.
+SEMANTIC_RED = RGBColor(0xFF, 0x50, 0x3C)
 
 # Margins (safe zone — 0.5" per Master Template)
 MARGIN_TOP = Inches(0.5)
@@ -77,6 +81,21 @@ class Frontline2026Presenter:
         self.output_path = output_path or "frontline_2026_output.pptx"
         self.slides = []
 
+        # Strip the template's slide-number / footer / date placeholders from
+        # every master and layout, so they can't render a stray "N / total" in
+        # the corner of generated slides (we draw our own footer).
+        from pptx.enum.shapes import PP_PLACEHOLDER
+        _kill = {PP_PLACEHOLDER.SLIDE_NUMBER, PP_PLACEHOLDER.FOOTER,
+                 PP_PLACEHOLDER.DATE}
+        for master in self.prs.slide_masters:
+            for sp in list(master.placeholders):
+                if sp.placeholder_format.type in _kill:
+                    sp._element.getparent().remove(sp._element)
+            for layout in master.slide_layouts:
+                for sp in list(layout.placeholders):
+                    if sp.placeholder_format.type in _kill:
+                        sp._element.getparent().remove(sp._element)
+
         # Resolve logo path — use correct wordmark with notched B
         base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         if logo_path and os.path.exists(logo_path):
@@ -96,6 +115,10 @@ class Frontline2026Presenter:
         """Add a blank slide with chrome (top bar, blue accent, footer)."""
         layout = self.prs.slide_layouts[6]  # Blank layout
         slide = self.prs.slides.add_slide(layout)
+        # Strip any inherited placeholders (e.g. the template slide-number
+        # field that renders a stray "N / total" in the footer).
+        for ph in list(slide.placeholders):
+            ph._element.getparent().remove(ph._element)
         self.slides.append(slide)
         self._add_slide_chrome(slide, dark=dark)
         return slide
@@ -146,22 +169,23 @@ class Frontline2026Presenter:
                 fill_color=line_color, shape_name="AxisX"
             )
 
-        # Footer: logo on bottom-right, page number to its right
-        footer_y = Inches(10.5)
+        # Footer: logo bottom-right, page number to its right.
+        # The wordmark is ~5.9:1, so a fixed WIDTH (not height) is set to keep
+        # it from running into the page number (the old overlap bug).
+        footer_y = Inches(10.55)
+        logo_w = Inches(1.5)
+        logo_x = Inches(17.1)
 
-        # Backbase logo — bottom-right (before page number)
         logo_path = self.logo_white if dark else self.logo_dark
         if os.path.exists(logo_path):
             slide.shapes.add_picture(
-                logo_path,
-                Inches(16.5), footer_y,
-                height=Inches(0.35)
+                logo_path, logo_x, footer_y, width=logo_w
             )
 
-        # Page number — far right, next to logo
+        # Page number — far right, clear of the logo
         num_color = SURFACE_WHITE if dark else TEXT_MUTED
         self._add_textbox(
-            slide, Inches(18.5), footer_y, Inches(0.75), Inches(0.4),
+            slide, Inches(18.85), footer_y, Inches(0.6), Inches(0.35),
             text=f"{slide_num}",
             font_size=SIZE_CAPTION, font_color=num_color,
             alignment=PP_ALIGN.RIGHT, apply_buffer=False,
@@ -318,9 +342,102 @@ class Frontline2026Presenter:
 
         return shape
 
+    def _set_fill_transparency(self, shape, pct_opaque: float):
+        """Make a solid-filled shape partly transparent (frosted-glass panels).
+        pct_opaque: 0-100 (e.g. 82 = 82% opaque / 18% see-through)."""
+        from pptx.oxml.ns import qn
+        spPr = shape._element.spPr
+        solidFill = spPr.find(qn('a:solidFill'))
+        if solidFill is None:
+            return
+        srgb = solidFill.find(qn('a:srgbClr'))
+        if srgb is None:
+            return
+        # drop any existing alpha then append
+        for old in srgb.findall(qn('a:alpha')):
+            srgb.remove(old)
+        alpha = srgb.makeelement(qn('a:alpha'), {'val': str(int(pct_opaque * 1000))})
+        srgb.append(alpha)
+
+    def _add_rich_title(self, slide, left, top, width, height, text,
+                        base_color=TEXT_MAIN, highlight_color=SEMANTIC_RED,
+                        font_size=SIZE_H2, bold=True, alignment=PP_ALIGN.LEFT,
+                        apply_buffer=False, line_spacing=1.05):
+        """Title text with **highlighted** segments rendered in highlight_color.
+        Mirrors the HTML decks' two-tone headings (key words in red/blue)."""
+        if apply_buffer:
+            width = int(width * TEXT_WIDTH_BUFFER)
+        box = slide.shapes.add_textbox(left, top, width, height)
+        tf = box.text_frame
+        tf.auto_size = MSO_AUTO_SIZE.NONE
+        tf.word_wrap = True
+        p = tf.paragraphs[0]
+        p.alignment = alignment
+        try:
+            p.line_spacing = line_spacing
+        except Exception:
+            pass
+        for i, seg in enumerate(str(text).split('**')):
+            if not seg:
+                continue
+            run = p.add_run()
+            run.text = seg
+            run.font.name = FONT_PRIMARY
+            run.font.size = font_size
+            run.font.bold = bold
+            run.font.color.rgb = highlight_color if (i % 2 == 1) else base_color
+        return box, tf
+
     # ──────────────────────────────────────────
     # Slide Layout Methods
     # ──────────────────────────────────────────
+
+    def add_cover_photo_slide(self, section_label: str, title: str,
+                              subtitle: str = "", date: str = "",
+                              image_path: str = None, highlight: str = "blue"):
+        """Photo cover — full-bleed image with a frosted-glass left panel
+        carrying the logo, label, two-tone title (**...**), subtitle and date.
+        Matches the Schroders decision-paper cover."""
+        slide = self._add_blank_slide(dark=False)
+        self._set_slide_bg(slide, PRIMARY_NAVY)
+        hl = ACTION_BLUE if highlight == "blue" else SEMANTIC_RED
+
+        # Full-bleed image
+        if image_path and os.path.exists(image_path):
+            slide.shapes.add_picture(image_path, 0, 0, CANVAS_W, CANVAS_H)
+
+        # Frosted-glass left panel (~52% width), slightly transparent
+        panel = self._add_rect(slide, 0, 0, Inches(10.4), CANVAS_H,
+                               fill_color=SURFACE_WHITE, shape_name="CoverPanel")
+        self._set_fill_transparency(panel, 86)
+
+        # Logo top-left
+        if os.path.exists(self.logo_dark):
+            slide.shapes.add_picture(self.logo_dark, Inches(1.5), Inches(0.9),
+                                     width=Inches(2.4))
+
+        # Section label
+        self._add_textbox(slide, Inches(1.55), Inches(3.9), Inches(7.5), Inches(0.4),
+            text=section_label, font_size=SIZE_BODY, font_color=TEXT_MAIN,
+            apply_buffer=False)
+
+        # Two-tone title
+        self._add_rich_title(slide, Inches(1.5), Inches(4.55), Inches(8.6), Inches(1.4),
+            text=title, base_color=PRIMARY_NAVY, highlight_color=hl,
+            font_size=SIZE_H1, bold=True)
+
+        # Subtitle (supports a single **bold-accent** tail)
+        if subtitle:
+            self._add_rich_title(slide, Inches(1.55), Inches(6.45), Inches(7.6), Inches(0.9),
+                text=subtitle, base_color=TEXT_MUTED, highlight_color=hl,
+                font_size=SIZE_CAPTION, bold=False, line_spacing=1.3)
+
+        # Date
+        if date:
+            self._add_textbox(slide, Inches(1.55), Inches(8.6), Inches(6.0), Inches(0.4),
+                text=date, font_size=SIZE_BODY, font_color=TEXT_MAIN,
+                apply_buffer=False)
+        return slide
 
     def add_cover_slide(self, section_label: str, title: str, subtitle: str = ""):
         """Layout 1: Title/Cover — navy background, white text."""
@@ -779,26 +896,38 @@ class Frontline2026Presenter:
     # ──────────────────────────────────────────
 
     def add_tiles_slide(self, title: str, subtitle: str = "", section_label: str = "",
-                        tiles: list = None, columns: int = 3):
-        """Grid of colored tiles/cards. Each tile: {title, body, stat, pill, accent}
-        accent: blue/red/green/amber/purple/cyan"""
+                        tiles: list = None, columns: int = 3,
+                        style: str = "card", highlight: str = "red"):
+        """Grid of tiles. Each tile: {title, body, stat, pill, accent, note}
+        accent: blue/red/green/amber/purple/cyan
+
+        style='card'   — grey cards with top accent bar + pill (default).
+        style='column' — white columns separated by hairline dividers, large
+                         accent-coloured stat, navy title, muted body, optional
+                         bold note. Matches the HTML decks' stat-strip style.
+        highlight='red'|'blue' — colour of **...** segments in the title.
+        """
         slide = self._add_blank_slide()
         self._set_slide_bg(slide, SURFACE_WHITE)
         tiles = tiles or []
+        hl_color = SEMANTIC_RED if highlight == "red" else ACTION_BLUE
 
         # Section label
         if section_label:
-            self._add_textbox(slide, Inches(1.17), Inches(1.14), Inches(5.0), Inches(0.3),
-                text=section_label.upper(), font_size=SIZE_LABEL, font_color=TEXT_MUTED)
+            self._add_textbox(slide, Inches(1.17), Inches(1.14), Inches(10.0), Inches(0.3),
+                text=section_label.upper(), font_size=SIZE_LABEL, font_color=TEXT_MUTED,
+                apply_buffer=False)
 
-        # Title
+        # Title (two-tone — **...** rendered in hl_color)
         y_title = Inches(1.14) if not section_label else Inches(1.5)
-        self._add_textbox(slide, Inches(1.17), y_title, Inches(17.68), Inches(0.76),
-            text=title, font_size=SIZE_H2, font_color=TEXT_MAIN, bold=True)
+        self._add_rich_title(slide, Inches(1.17), y_title, Inches(17.68), Inches(0.8),
+            text=title, base_color=TEXT_MAIN, highlight_color=hl_color,
+            font_size=SIZE_H2, bold=True)
 
         if subtitle:
-            self._add_textbox(slide, Inches(1.17), y_title + Inches(0.85), Inches(17.58), Inches(0.4),
-                text=subtitle, font_size=SIZE_CAPTION, font_color=TEXT_MUTED)
+            self._add_textbox(slide, Inches(1.17), y_title + Inches(0.82), Inches(17.58), Inches(0.4),
+                text=subtitle, font_size=SIZE_CAPTION, font_color=TEXT_MUTED,
+                apply_buffer=False)
 
         # Color map
         accent_colors = {
@@ -806,6 +935,57 @@ class Frontline2026Presenter:
             'amber': RGBColor(0xD9, 0x77, 0x06), 'purple': RGBColor(0x7B, 0x2F, 0xFF),
             'cyan': RGBColor(0x08, 0x91, 0xB2)
         }
+
+        # ── Column style: white columns + hairline dividers + big stat ──
+        if style == "column":
+            n = len(tiles)
+            cols = min(columns, n) if n > 0 else columns
+            grid_left = Inches(1.17)
+            grid_width = Inches(17.68)
+            col_w = int(grid_width / cols)
+            # Header rule under the title block
+            rule_y = y_title + Inches(1.5)
+            self._add_rect(slide, grid_left, rule_y, grid_width, Inches(0.012),
+                fill_color=RGBColor(0xE2, 0xE8, 0xF0), shape_name="HeaderRule")
+            col_top = rule_y + Inches(0.55)
+            col_h = Inches(5.2)
+            for i, t in enumerate(tiles):
+                x = int(grid_left + i * col_w)
+                accent = accent_colors.get(t.get('accent', 'blue'), ACTION_BLUE)
+                if i > 0:
+                    self._add_rect(slide, x, col_top, Inches(0.012), col_h,
+                        fill_color=RGBColor(0xDD, 0xE4, 0xF7), shape_name=f"ColDiv_{i}")
+                inner_x = int(x + Inches(0.4))
+                inner_w = int(col_w - Inches(0.8))
+                cy = col_top
+                stat = t.get('stat', '')
+                if stat:
+                    self._add_textbox(slide, inner_x, cy, inner_w, Inches(0.9),
+                        text=stat, font_size=Pt(40), font_color=accent, bold=True,
+                        apply_buffer=False)
+                    cy = int(cy + Inches(1.05))
+                tile_title = t.get('title', '')
+                if tile_title:
+                    self._add_textbox(slide, inner_x, cy, inner_w, Inches(0.35),
+                        text=tile_title, font_size=Pt(14), font_color=TEXT_MAIN,
+                        bold=True, apply_buffer=False)
+                    cy = int(cy + Inches(0.55))
+                body = t.get('body', '')
+                if isinstance(body, list):
+                    body_lines = body
+                else:
+                    body_lines = str(body).split('\n')
+                if body and any(body_lines):
+                    self._add_multiline_textbox(slide, inner_x, cy, inner_w, Inches(2.0),
+                        lines=body_lines, font_size=Pt(11), font_color=TEXT_MUTED,
+                        line_spacing=1.25, apply_buffer=False)
+                    cy = int(cy + Inches(0.42) * len(body_lines))
+                note = t.get('note', '')
+                if note:
+                    self._add_textbox(slide, inner_x, int(cy + Inches(0.15)), inner_w, Inches(0.7),
+                        text=note, font_size=Pt(11), font_color=TEXT_MAIN, bold=True,
+                        apply_buffer=False)
+            return slide
 
         # Tile grid — compact height based on content
         n = len(tiles)
@@ -884,7 +1064,7 @@ class Frontline2026Presenter:
         return slide
 
     def add_process_rows_slide(self, title: str, subtitle: str = "", section_label: str = "",
-                                rows: list = None, footer_text: str = ""):
+                                rows: list = None, footer_text: str = "", highlight: str = "red"):
         """Before → After process comparison rows.
         Each row: {label, before, after, saving}"""
         slide = self._add_blank_slide()
@@ -892,11 +1072,14 @@ class Frontline2026Presenter:
         rows = rows or []
 
         if section_label:
-            self._add_textbox(slide, Inches(1.17), Inches(1.14), Inches(5.0), Inches(0.3),
-                text=section_label.upper(), font_size=SIZE_LABEL, font_color=TEXT_MUTED)
+            self._add_textbox(slide, Inches(1.17), Inches(1.14), Inches(10.0), Inches(0.3),
+                text=section_label.upper(), font_size=SIZE_LABEL, font_color=TEXT_MUTED,
+                apply_buffer=False)
 
-        self._add_textbox(slide, Inches(1.17), Inches(1.5), Inches(17.68), Inches(0.76),
-            text=title, font_size=SIZE_H2, font_color=TEXT_MAIN, bold=True)
+        self._add_rich_title(slide, Inches(1.17), Inches(1.5), Inches(17.68), Inches(0.8),
+            text=title, base_color=TEXT_MAIN,
+            highlight_color=(SEMANTIC_RED if highlight == "red" else ACTION_BLUE),
+            font_size=SIZE_H2, bold=True)
 
         if subtitle:
             self._add_textbox(slide, Inches(1.17), Inches(2.35), Inches(17.58), Inches(0.4),
@@ -1099,7 +1282,7 @@ class Frontline2026Presenter:
         return slide
 
     def add_pillar_rows_slide(self, title: str, subtitle: str = "", section_label: str = "",
-                               columns: list = None, rows: list = None):
+                               columns: list = None, rows: list = None, highlight: str = "red"):
         """Three-column pillar flow (What → Why → What To Do).
         columns: [left_header, mid_header, right_header]
         rows: [{left, left_detail, mid, mid_detail, right, right_detail}]"""
@@ -1109,11 +1292,14 @@ class Frontline2026Presenter:
         rows = rows or []
 
         if section_label:
-            self._add_textbox(slide, Inches(1.17), Inches(1.14), Inches(5.0), Inches(0.3),
-                text=section_label.upper(), font_size=SIZE_LABEL, font_color=TEXT_MUTED)
+            self._add_textbox(slide, Inches(1.17), Inches(1.14), Inches(10.0), Inches(0.3),
+                text=section_label.upper(), font_size=SIZE_LABEL, font_color=TEXT_MUTED,
+                apply_buffer=False)
 
-        self._add_textbox(slide, Inches(1.17), Inches(1.5), Inches(17.68), Inches(0.76),
-            text=title, font_size=SIZE_H2, font_color=TEXT_MAIN, bold=True)
+        self._add_rich_title(slide, Inches(1.17), Inches(1.5), Inches(17.68), Inches(0.8),
+            text=title, base_color=TEXT_MAIN,
+            highlight_color=(SEMANTIC_RED if highlight == "red" else ACTION_BLUE),
+            font_size=SIZE_H2, bold=True)
 
         if subtitle:
             self._add_textbox(slide, Inches(1.17), Inches(2.35), Inches(17.58), Inches(0.4),
@@ -1189,7 +1375,8 @@ class Frontline2026Presenter:
 
     def add_financial_table_slide(self, title: str, subtitle: str = "", section_label: str = "",
                                    headers: list = None, rows: list = None,
-                                   total_row: list = None, footer_text: str = ""):
+                                   total_row: list = None, footer_text: str = "",
+                                   highlight: str = "blue"):
         """Financial table with headers, rows, total row."""
         slide = self._add_blank_slide()
         self._set_slide_bg(slide, SURFACE_WHITE)
@@ -1197,11 +1384,14 @@ class Frontline2026Presenter:
         rows = rows or []
 
         if section_label:
-            self._add_textbox(slide, Inches(1.17), Inches(1.14), Inches(5.0), Inches(0.3),
-                text=section_label.upper(), font_size=SIZE_LABEL, font_color=TEXT_MUTED)
+            self._add_textbox(slide, Inches(1.17), Inches(1.14), Inches(10.0), Inches(0.3),
+                text=section_label.upper(), font_size=SIZE_LABEL, font_color=TEXT_MUTED,
+                apply_buffer=False)
 
-        self._add_textbox(slide, Inches(1.17), Inches(1.5), Inches(17.68), Inches(0.76),
-            text=title, font_size=SIZE_H2, font_color=TEXT_MAIN, bold=True)
+        self._add_rich_title(slide, Inches(1.17), Inches(1.5), Inches(17.68), Inches(0.8),
+            text=title, base_color=TEXT_MAIN,
+            highlight_color=(SEMANTIC_RED if highlight == "red" else ACTION_BLUE),
+            font_size=SIZE_H2, bold=True)
 
         if subtitle:
             self._add_textbox(slide, Inches(1.17), Inches(2.35), Inches(17.58), Inches(0.4),
@@ -1869,18 +2059,12 @@ class Frontline2026Presenter:
     # ──────────────────────────────────────────
 
     def save(self, path: str = None):
-        """Save the presentation to disk. Updates slide numbers to include total."""
-        total = len(self.slides)
-        # Update all slide number text boxes with "N / Total" format
-        for slide in self.prs.slides:
-            for shape in slide.shapes:
-                if shape.name and shape.name.startswith("SlideNumber_"):
-                    num = shape.name.split("_")[1]
-                    tf = shape.text_frame
-                    for para in tf.paragraphs:
-                        for run in para.runs:
-                            run.text = f"{num} / {total}"
+        """Save the presentation to disk.
 
+        Footer shows the plain slide number (the chrome already wrote it). The
+        old "N / Total" rewrite was removed — it wrapped in the footer box and
+        was consistently deleted by hand in delivered decks.
+        """
         out = path or self.output_path
         self.prs.save(out)
         return out

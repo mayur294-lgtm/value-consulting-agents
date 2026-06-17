@@ -8,7 +8,7 @@ All positions in inches from top-left origin. All text boxes include 15% width b
 
 ## Layout 1: Title / Cover
 
-Navy background (`#001C3D`), white text.
+Navy background (`#041326`), white text.
 
 | Element | Left | Top | Width | Height | Style |
 |---------|------|-----|-------|--------|-------|
@@ -20,7 +20,7 @@ Navy background (`#001C3D`), white text.
 
 ## Layout 2: Section Divider
 
-Navy background (`#001C3D`), white text. Used to introduce new sections.
+Navy background (`#041326`), white text. Used to introduce new sections.
 
 | Element | Left | Top | Width | Height | Style |
 |---------|------|-----|-------|--------|-------|
@@ -72,7 +72,7 @@ Two-column layout for before/after comparisons.
 | Right Column Label | 10.55" | 4.27" | 8.07" | 0.4" | Libre Franklin Bold 14pt, action_blue, uppercase |
 | Right Column Body | 10.55" | 5.17" | 8.07" | 3.23" | Libre Franklin Regular 14pt, navy |
 
-Left column background: `#F5F7F9`. Right column background: `#FFFFFF`.
+Left column background: `#F3F6F9`. Right column background: `#FFFFFF`.
 
 ---
 
