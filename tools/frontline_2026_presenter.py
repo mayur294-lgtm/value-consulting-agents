@@ -1567,11 +1567,11 @@ class Frontline2026Presenter:
         for li, layer in enumerate(layers):
             y = int(start_y + li * (layer_h + layer_gap))
             is_dark = layer.get('dark', False)
-            bg_hex = layer.get('bg_hex', '#F0F4FF' if not is_dark else '#001C3D')
+            bg_hex = layer.get('bg_hex', '#F0F4FF' if not is_dark else '#041326')
             bg_r, bg_g, bg_b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
             bg_color = RGBColor(bg_r, bg_g, bg_b)
             text_c = SURFACE_WHITE if is_dark else TEXT_MAIN
-            accent_hex = layer.get('accent_hex', '#1A5AFF')
+            accent_hex = layer.get('accent_hex', '#3367FF')
             acc_r, acc_g, acc_b = int(accent_hex[1:3], 16), int(accent_hex[3:5], 16), int(accent_hex[5:7], 16)
             accent_color = RGBColor(acc_r, acc_g, acc_b)
 
@@ -1646,7 +1646,7 @@ class Frontline2026Presenter:
 
         for ri, pillar in enumerate(pillars):
             y = int(start_y + ri * (row_h + row_gap))
-            accent_hex = pillar.get('accent', '#1A5AFF')
+            accent_hex = pillar.get('accent', '#3367FF')
             ar, ag, ab = int(accent_hex[1:3], 16), int(accent_hex[3:5], 16), int(accent_hex[5:7], 16)
             accent_c = RGBColor(ar, ag, ab)
 
@@ -1827,8 +1827,8 @@ class Frontline2026Presenter:
                     for ii, item in enumerate(items):
                         ix = int(base_x + ii * (item_w + item_gap))
                         i_bg = item.get('bg', '#EBF0FF' if side == 'right' else '#F5F7F9')
-                        i_border = item.get('border', '#1A5AFF' if side == 'right' else '#D1D5DB')
-                        i_color = item.get('color', '#001C3D')
+                        i_border = item.get('border', '#3367FF' if side == 'right' else '#D1D5DB')
+                        i_color = item.get('color', '#041326')
                         is_dark = item.get('dark', False)
 
                         ibr, ibg, ibb = int(i_bg[1:3], 16), int(i_bg[3:5], 16), int(i_bg[5:7], 16)

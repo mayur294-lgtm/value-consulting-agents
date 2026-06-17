@@ -457,7 +457,7 @@ A subtle inverted-L mark sits in the top-left of light panels and slides; comple
 - Amber `#D97706` on navy passes WCAG AA at large text sizes only; use `#F59E0B` lightened for body copy on navy
 
 ### Google Slides Compatibility (slide-format outputs only)
-For PPTX outputs (`/frontline-slides`), follow the rules in `presentations/frontline-2026/google-slides-rules.md`:
+For PPTX outputs (`/frontline-slides-pptx`), follow the rules in `presentations/frontline-2026/google-slides-rules.md`:
 - 20"×11.25" canvas
 - 15% text-width buffer (prevents wrapping on import)
 - Autofit disabled
@@ -476,8 +476,8 @@ This design system applies to ALL engagement types:
 | **Ignite Assess** | Interactive HTML dashboard (sidebar + panels) | `/generate-assessment-html` — uses Section 5 layouts + Frontline 2026 colors |
 | **Ignite Inspire** | Interactive HTML dashboard (sidebar + panels) | `/generate-assessment-html` |
 | **Hybrid (Assess + Inspire)** | Single interactive HTML dashboard | `/generate-assessment-html` |
-| **Workshop / Sales Decks (HTML preview)** | Single-file `.html` deck | `/frontline-html` — uses Frontline 2026 slide layouts |
-| **Workshop / Sales Decks (final PPTX)** | Google-Slides-compatible `.pptx` | `/frontline-slides` |
+| **Workshop / Sales Decks (HTML preview)** | Single-file `.html` deck | `/frontline-slides-html` — uses Frontline 2026 slide layouts |
+| **Workshop / Sales Decks (final PPTX)** | Google-Slides-compatible `.pptx` | `/frontline-slides-pptx` |
 | **Prototypes** | Phone/browser frame HTML | This file (colors + component patterns from Section 5) |
 
 For slide-format outputs, the brand colors and typography in this file are authoritative; layout positions are defined in `presentations/frontline-2026/slide-layouts.md`.
