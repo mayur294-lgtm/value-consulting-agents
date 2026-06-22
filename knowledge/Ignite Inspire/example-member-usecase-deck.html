@@ -7,17 +7,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --primary-dark: #001C3D;
-    --primary-blue: #1A5AFF;
+    --primary-dark: #041326;
+    --primary-blue: #3367FF;
     --cyan: #93B5FF;
     --white: #FFFFFF;
-    --light-grey: #F5F7F9;
+    --light-grey: #F3F6F9;
     --light-blue: #EBF0FF;
-    --muted: #5C6E84;
+    --muted: #6B7786;
     --green: #2ECC71;
     --amber: #D97706;
-    --red: #E02020;
-    --text: #001C3D;
+    --red: #FF503C;
+    --text: #041326;
     --text-light: #5A6A7E;
     --border: #E0E6ED;
   }
@@ -84,7 +84,7 @@
   .data-table tbody td { padding: 12px 16px; border-bottom: 1px solid var(--light-blue); }
   .data-table tbody tr:nth-child(even) { background: var(--light-grey); }
   .badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; }
-  .badge-p1 { background: rgba(26,90,255,0.12); color: var(--primary-blue); }
+  .badge-p1 { background: rgba(51,103,255,0.12); color: var(--primary-blue); }
   .badge-p2 { background: rgba(58,73,93,0.12); color: var(--muted); }
   .badge-p3 { background: rgba(90,106,126,0.08); color: var(--text-light); }
 
@@ -138,7 +138,7 @@
   .proto-badge { display: inline-block; background: var(--primary-blue); color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; padding: 6px 16px; border-radius: 20px; margin-bottom: 8px; }
   .proto-title { display: block; font-size: 16px; font-weight: 600; color: var(--text); margin-top: 4px; }
 
-  .phone-frame { width: 375px; height: 812px; margin: 0 auto; background: var(--white); border-radius: 40px; box-shadow: 0 8px 40px rgba(0,28,61,0.15); border: 12px solid var(--primary-dark); overflow: hidden; position: relative; }
+  .phone-frame { width: 375px; height: 812px; margin: 0 auto; background: var(--white); border-radius: 40px; box-shadow: 0 8px 40px rgba(4,19,38,0.15); border: 12px solid var(--primary-dark); overflow: hidden; position: relative; }
   .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 150px; height: 30px; background: var(--primary-dark); border-radius: 0 0 20px 20px; z-index: 10; }
   .phone-screen { width: 100%; height: 100%; position: relative; overflow: hidden; }
 
@@ -150,18 +150,18 @@
   .screen .screen-header p { font-size: 14px; opacity: 0.85; margin-top: 4px; }
   .screen .screen-body { flex: 1; padding: 20px; overflow-y: auto; }
   .screen .screen-footer { padding: 16px 20px; border-top: 1px solid #EBF0FF; }
-  .screen .proto-btn { width: 100%; padding: 14px; background: #1A5AFF; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: default; font-family: inherit; }
-  .screen .proto-btn-outline { width: 100%; padding: 14px; background: transparent; color: #1A5AFF; border: 2px solid #1A5AFF; border-radius: 12px; font-size: 16px; font-weight: 600; margin-top: 10px; cursor: default; font-family: inherit; }
-  .screen .proto-input { width: 100%; padding: 12px 14px; background: #F5F7F9; border: 1px solid #EBF0FF; border-radius: 10px; font-size: 15px; color: #001C3D; margin-bottom: 14px; font-family: inherit; }
-  .screen .proto-label { display: block; font-size: 13px; font-weight: 600; color: #001C3D; margin-bottom: 6px; }
-  .screen .proto-card { background: #F5F7F9; border: 1px solid #EBF0FF; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-  .screen .proto-card.selected { border-color: #1A5AFF; background: #F0F4FF; }
-  .screen .proto-card h4 { font-size: 15px; font-weight: 700; color: #001C3D; margin-bottom: 4px; }
+  .screen .proto-btn { width: 100%; padding: 14px; background: #3367FF; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: default; font-family: inherit; }
+  .screen .proto-btn-outline { width: 100%; padding: 14px; background: transparent; color: #3367FF; border: 2px solid #3367FF; border-radius: 12px; font-size: 16px; font-weight: 600; margin-top: 10px; cursor: default; font-family: inherit; }
+  .screen .proto-input { width: 100%; padding: 12px 14px; background: #F3F6F9; border: 1px solid #EBF0FF; border-radius: 10px; font-size: 15px; color: #041326; margin-bottom: 14px; font-family: inherit; }
+  .screen .proto-label { display: block; font-size: 13px; font-weight: 600; color: #041326; margin-bottom: 6px; }
+  .screen .proto-card { background: #F3F6F9; border: 1px solid #EBF0FF; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .screen .proto-card.selected { border-color: #3367FF; background: #F0F4FF; }
+  .screen .proto-card h4 { font-size: 15px; font-weight: 700; color: #041326; margin-bottom: 4px; }
   .screen .proto-card p { font-size: 13px; color: #5A6A7E; }
   .screen .proto-success { text-align: center; padding: 40px 20px; }
   .screen .proto-checkmark { width: 80px; height: 80px; border-radius: 50%; background: #2ECC71; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #fff; font-size: 36px; font-weight: 700; }
   .screen .proto-progress { height: 4px; background: #EBF0FF; border-radius: 2px; margin-bottom: 20px; }
-  .screen .proto-progress-fill { height: 100%; background: #1A5AFF; border-radius: 2px; }
+  .screen .proto-progress-fill { height: 100%; background: #3367FF; border-radius: 2px; }
   .screen .status-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 14px; color: #5A6A7E; }
   .screen .status-check { color: #2ECC71; font-weight: 700; }
 
@@ -451,13 +451,13 @@
           </div>
           <div class="screen-body">
             <div style="text-align:center; padding-top:20px;">
-              <div style="width:80px; height:80px; background:#F5F7F9; border-radius:50%; margin:0 auto 20px; display:flex; align-items:center; justify-content:center;">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1A5AFF" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <div style="width:80px; height:80px; background:#F3F6F9; border-radius:50%; margin:0 auto 20px; display:flex; align-items:center; justify-content:center;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#3367FF" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
               </div>
-              <h3 style="font-size:18px; font-weight:700; color:#001C3D; margin-bottom:8px;">Open Your Account</h3>
+              <h3 style="font-size:18px; font-weight:700; color:#041326; margin-bottom:8px;">Open Your Account</h3>
               <p style="font-size:14px; color:#5A6A7E; margin-bottom:24px;">100% digital. Shariah-compliant. Under 10 minutes.</p>
-              <div style="background:#F5F7F9; border-radius:12px; padding:16px; text-align:left;">
-                <div style="font-size:13px; font-weight:600; color:#001C3D; margin-bottom:10px;">You'll need:</div>
+              <div style="background:#F3F6F9; border-radius:12px; padding:16px; text-align:left;">
+                <div style="font-size:13px; font-weight:600; color:#041326; margin-bottom:10px;">You'll need:</div>
                 <div style="font-size:13px; color:#5A6A7E; padding:4px 0;">&#10003; Emirates ID</div>
                 <div style="font-size:13px; color:#5A6A7E; padding:4px 0;">&#10003; UAE mobile number</div>
                 <div style="font-size:13px; color:#5A6A7E; padding:4px 0;">&#10003; About 8 minutes</div>
@@ -522,9 +522,9 @@
           </div>
           <div class="screen-body">
             <div class="proto-progress"><div class="proto-progress-fill" style="width:60%"></div></div>
-            <div style="background:#F5F7F9; border:3px dashed #EBF0FF; border-radius:16px; padding:40px 20px; text-align:center; margin-bottom:20px;">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1A5AFF" stroke-width="2" style="margin-bottom:12px;"><rect x="2" y="3" width="20" height="14" rx="2"/><circle cx="12" cy="10" r="3"/></svg>
-              <h4 style="font-size:15px; color:#001C3D;">Scan Front of Emirates ID</h4>
+            <div style="background:#F3F6F9; border:3px dashed #EBF0FF; border-radius:16px; padding:40px 20px; text-align:center; margin-bottom:20px;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3367FF" stroke-width="2" style="margin-bottom:12px;"><rect x="2" y="3" width="20" height="14" rx="2"/><circle cx="12" cy="10" r="3"/></svg>
+              <h4 style="font-size:15px; color:#041326;">Scan Front of Emirates ID</h4>
               <p style="font-size:12px; color:#5A6A7E; margin-top:6px;">Position your ID within the frame</p>
             </div>
             <div style="background:#E8F5E9; border-radius:10px; padding:12px 16px; font-size:13px; color:#2E7D32;">
@@ -543,7 +543,7 @@
           <div class="screen-body">
             <div class="proto-progress"><div class="proto-progress-fill" style="width:80%"></div></div>
             <div class="proto-card" style="margin-bottom:16px;">
-              <div style="font-size:11px; font-weight:700; color:#1A5AFF; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Your Details</div>
+              <div style="font-size:11px; font-weight:700; color:#3367FF; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Your Details</div>
               <div style="font-size:13px; color:#5A6A7E; line-height:1.8;">
                 Khalid Ahmed Al-Rashid<br>
                 Emirates ID: 784-1995-XXXXXXX-X<br>
@@ -551,12 +551,12 @@
               </div>
             </div>
             <div style="background:#FFF8E1; border:1px solid #FFE082; border-radius:12px; padding:16px; margin-bottom:16px;">
-              <div style="font-size:13px; font-weight:700; color:#001C3D; margin-bottom:8px;">Shariah Disclosure</div>
+              <div style="font-size:13px; font-weight:700; color:#041326; margin-bottom:8px;">Shariah Disclosure</div>
               <p style="font-size:12px; color:#5A6A7E; line-height:1.6;">This account operates under Mudarabah principles. Profits are shared according to a pre-agreed ratio. The bank acts as Mudarib (investment manager) and you as Rabb al-Mal (capital provider).</p>
             </div>
             <div style="display:flex; align-items:center; gap:10px; padding:8px 0;">
-              <div style="width:20px; height:20px; border:2px solid #1A5AFF; border-radius:4px; background:#1A5AFF; display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px;">&#10003;</div>
-              <span style="font-size:13px; color:#001C3D;">I accept the Shariah-compliant terms</span>
+              <div style="width:20px; height:20px; border:2px solid #3367FF; border-radius:4px; background:#3367FF; display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px;">&#10003;</div>
+              <span style="font-size:13px; color:#041326;">I accept the Shariah-compliant terms</span>
             </div>
           </div>
           <div class="screen-footer"><div class="proto-btn">Confirm &amp; Open Account</div></div>
@@ -576,7 +576,7 @@
             <div class="status-row"><span class="status-check">&#10003;</span> Identity verified</div>
             <div class="status-row"><span class="status-check">&#10003;</span> Shariah compliance confirmed</div>
             <div class="status-row"><span class="status-check">&#10003;</span> Account created in core system</div>
-            <div class="status-row"><span style="color:#1A5AFF; font-weight:700;">&#8635;</span> Ordering debit card...</div>
+            <div class="status-row"><span style="color:#3367FF; font-weight:700;">&#8635;</span> Ordering debit card...</div>
           </div>
           <div class="screen-footer"><div class="proto-btn">Continue</div></div>
         </div>
@@ -590,11 +590,11 @@
           <div class="screen-body">
             <div class="proto-success">
               <div class="proto-checkmark">&#10003;</div>
-              <h3 style="font-size:20px; font-weight:700; color:#001C3D;">You're all set, Khalid!</h3>
+              <h3 style="font-size:20px; font-weight:700; color:#041326;">You're all set, Khalid!</h3>
               <p style="font-size:14px; color:#5A6A7E; margin-top:8px;">Your Al Islami Current Account is ready.</p>
             </div>
             <div class="proto-card">
-              <div style="font-size:11px; font-weight:700; color:#1A5AFF; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Your Account</div>
+              <div style="font-size:11px; font-weight:700; color:#3367FF; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Your Account</div>
               <div style="font-size:14px; color:#5A6A7E; line-height:1.8;">
                 Al Islami Current Account<br>
                 IBAN: AE07 0240 XXXX XXXX XXXX XXX<br>
@@ -791,10 +791,10 @@
             <div class="proto-input">150,000</div>
             <div class="proto-label">Tenure</div>
             <div class="proto-input">48 months</div>
-            <div style="background:#F5F7F9; border-radius:12px; padding:20px; margin-top:16px;">
-              <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:14px;"><span style="color:#5A6A7E;">Monthly Payment</span><span style="font-weight:700; color:#001C3D;">AED 3,750</span></div>
-              <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:14px;"><span style="color:#5A6A7E;">Profit Rate (flat)</span><span style="font-weight:700; color:#001C3D;">3.99% p.a.</span></div>
-              <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:14px; border-top:1px solid #EBF0FF; margin-top:6px; padding-top:10px;"><span style="color:#5A6A7E;">Total Cost</span><span style="font-weight:700; color:#1A5AFF;">AED 180,000</span></div>
+            <div style="background:#F3F6F9; border-radius:12px; padding:20px; margin-top:16px;">
+              <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:14px;"><span style="color:#5A6A7E;">Monthly Payment</span><span style="font-weight:700; color:#041326;">AED 3,750</span></div>
+              <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:14px;"><span style="color:#5A6A7E;">Profit Rate (flat)</span><span style="font-weight:700; color:#041326;">3.99% p.a.</span></div>
+              <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:14px; border-top:1px solid #EBF0FF; margin-top:6px; padding-top:10px;"><span style="color:#5A6A7E;">Total Cost</span><span style="font-weight:700; color:#3367FF;">AED 180,000</span></div>
             </div>
           </div>
           <div class="screen-footer"><div class="proto-btn">Continue</div></div>
@@ -826,9 +826,9 @@
           </div>
           <div class="screen-body">
             <div class="proto-progress"><div class="proto-progress-fill" style="width:66%"></div></div>
-            <div style="background:#F5F7F9; border:2px dashed #EBF0FF; border-radius:16px; padding:32px 20px; text-align:center; margin-bottom:16px;">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1A5AFF" stroke-width="2" style="margin-bottom:10px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <h4 style="font-size:14px; color:#001C3D;">Salary Certificate</h4>
+            <div style="background:#F3F6F9; border:2px dashed #EBF0FF; border-radius:16px; padding:32px 20px; text-align:center; margin-bottom:16px;">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#3367FF" stroke-width="2" style="margin-bottom:10px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <h4 style="font-size:14px; color:#041326;">Salary Certificate</h4>
               <p style="font-size:12px; color:#5A6A7E; margin-top:4px;">Upload or take a photo</p>
             </div>
             <div style="background:#E8F5E9; border-radius:10px; padding:12px 16px; font-size:13px; color:#2E7D32;">
@@ -847,12 +847,12 @@
           <div class="screen-body">
             <div class="proto-progress"><div class="proto-progress-fill" style="width:83%"></div></div>
             <div style="background:#FFF8E1; border:1px solid #FFE082; border-radius:12px; padding:16px; margin-bottom:16px;">
-              <div style="font-size:13px; font-weight:700; color:#001C3D; margin-bottom:8px;">Murabaha Contract Terms</div>
+              <div style="font-size:13px; font-weight:700; color:#041326; margin-bottom:8px;">Murabaha Contract Terms</div>
               <p style="font-size:12px; color:#5A6A7E; line-height:1.6;">DIB purchases the asset/commodity at AED 150,000 and sells it to you at AED 180,000 (including agreed profit). Payment in 48 equal monthly instalments of AED 3,750. This structure is reviewed and approved by DIB's Shariah Board.</p>
             </div>
             <div style="display:flex; align-items:center; gap:10px; padding:8px 0;">
-              <div style="width:20px; height:20px; border:2px solid #1A5AFF; border-radius:4px; background:#1A5AFF; display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px;">&#10003;</div>
-              <span style="font-size:13px; color:#001C3D;">I accept the Murabaha terms</span>
+              <div style="width:20px; height:20px; border:2px solid #3367FF; border-radius:4px; background:#3367FF; display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px;">&#10003;</div>
+              <span style="font-size:13px; color:#041326;">I accept the Murabaha terms</span>
             </div>
           </div>
           <div class="screen-footer"><div class="proto-btn">Submit Application</div></div>
@@ -883,10 +883,10 @@
           <div class="screen-body">
             <div class="proto-success">
               <div class="proto-checkmark">&#10003;</div>
-              <h3 style="font-size:18px; font-weight:700; color:#001C3D;">Financing Approved</h3>
+              <h3 style="font-size:18px; font-weight:700; color:#041326;">Financing Approved</h3>
             </div>
             <div class="proto-card">
-              <div style="font-size:11px; font-weight:700; color:#1A5AFF; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Your Financing</div>
+              <div style="font-size:11px; font-weight:700; color:#3367FF; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Your Financing</div>
               <div style="font-size:14px; color:#5A6A7E; line-height:1.8;">
                 Amount: AED 150,000<br>
                 Monthly: AED 3,750 x 48 months<br>
@@ -1036,37 +1036,37 @@
             <div class="proto-card">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                  <div style="font-size:14px; font-weight:700; color:#001C3D;">Omar (You)</div>
+                  <div style="font-size:14px; font-weight:700; color:#041326;">Omar (You)</div>
                   <div style="font-size:12px; color:#5A6A7E;">Current &amp; Savings</div>
                 </div>
-                <div style="font-size:16px; font-weight:900; color:#1A5AFF;">AED 85,000</div>
+                <div style="font-size:16px; font-weight:900; color:#3367FF;">AED 85,000</div>
               </div>
             </div>
             <div class="proto-card">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                  <div style="font-size:14px; font-weight:700; color:#001C3D;">Fatima</div>
+                  <div style="font-size:14px; font-weight:700; color:#041326;">Fatima</div>
                   <div style="font-size:12px; color:#5A6A7E;">Johara Ladies Account</div>
                 </div>
-                <div style="font-size:16px; font-weight:900; color:#1A5AFF;">AED 32,500</div>
+                <div style="font-size:16px; font-weight:900; color:#3367FF;">AED 32,500</div>
               </div>
             </div>
             <div class="proto-card">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                  <div style="font-size:14px; font-weight:700; color:#001C3D;">Ahmed (Son, 16)</div>
+                  <div style="font-size:14px; font-weight:700; color:#041326;">Ahmed (Son, 16)</div>
                   <div style="font-size:12px; color:#5A6A7E;">Youth Account</div>
                 </div>
-                <div style="font-size:16px; font-weight:900; color:#1A5AFF;">AED 7,200</div>
+                <div style="font-size:16px; font-weight:900; color:#3367FF;">AED 7,200</div>
               </div>
             </div>
             <div class="proto-card">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                  <div style="font-size:14px; font-weight:700; color:#001C3D;">Sara (Daughter, 12)</div>
+                  <div style="font-size:14px; font-weight:700; color:#041326;">Sara (Daughter, 12)</div>
                   <div style="font-size:12px; color:#5A6A7E;">Youth Account</div>
                 </div>
-                <div style="font-size:16px; font-weight:900; color:#1A5AFF;">AED 2,800</div>
+                <div style="font-size:16px; font-weight:900; color:#3367FF;">AED 2,800</div>
               </div>
             </div>
           </div>
@@ -1119,13 +1119,13 @@
             <div class="proto-card">
               <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                 <h4>Ahmed's University</h4>
-                <span style="font-size:12px; font-weight:700; color:#1A5AFF;">32%</span>
+                <span style="font-size:12px; font-weight:700; color:#3367FF;">32%</span>
               </div>
-              <div style="height:6px; background:#EBF0FF; border-radius:3px; margin-bottom:8px;"><div style="height:100%; width:32%; background:#1A5AFF; border-radius:3px;"></div></div>
+              <div style="height:6px; background:#EBF0FF; border-radius:3px; margin-bottom:8px;"><div style="height:100%; width:32%; background:#3367FF; border-radius:3px;"></div></div>
               <div style="font-size:12px; color:#5A6A7E;">AED 32,000 of AED 100,000</div>
             </div>
-            <div style="margin-top:20px; padding:16px; background:#F5F7F9; border:2px dashed #EBF0FF; border-radius:12px; text-align:center;">
-              <span style="font-size:14px; color:#1A5AFF; font-weight:600;">+ Create New Goal</span>
+            <div style="margin-top:20px; padding:16px; background:#F3F6F9; border:2px dashed #EBF0FF; border-radius:12px; text-align:center;">
+              <span style="font-size:14px; color:#3367FF; font-weight:600;">+ Create New Goal</span>
             </div>
           </div>
           <div class="screen-footer"><div class="proto-btn">Contribute Now</div></div>
@@ -1141,22 +1141,22 @@
           <div class="screen-body">
             <div style="text-align:center; margin-bottom:20px;">
               <div style="font-size:14px; color:#5A6A7E;">Total Spending</div>
-              <div style="font-size:28px; font-weight:900; color:#001C3D;">AED 18,750</div>
+              <div style="font-size:28px; font-weight:900; color:#041326;">AED 18,750</div>
             </div>
             <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #EBF0FF; font-size:14px;">
-              <span style="color:#5A6A7E;">Housing</span><span style="font-weight:600; color:#001C3D;">AED 8,000</span>
+              <span style="color:#5A6A7E;">Housing</span><span style="font-weight:600; color:#041326;">AED 8,000</span>
             </div>
             <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #EBF0FF; font-size:14px;">
-              <span style="color:#5A6A7E;">Groceries</span><span style="font-weight:600; color:#001C3D;">AED 3,200</span>
+              <span style="color:#5A6A7E;">Groceries</span><span style="font-weight:600; color:#041326;">AED 3,200</span>
             </div>
             <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #EBF0FF; font-size:14px;">
-              <span style="color:#5A6A7E;">Education</span><span style="font-weight:600; color:#001C3D;">AED 4,500</span>
+              <span style="color:#5A6A7E;">Education</span><span style="font-weight:600; color:#041326;">AED 4,500</span>
             </div>
             <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #EBF0FF; font-size:14px;">
-              <span style="color:#5A6A7E;">Transport</span><span style="font-weight:600; color:#001C3D;">AED 1,800</span>
+              <span style="color:#5A6A7E;">Transport</span><span style="font-weight:600; color:#041326;">AED 1,800</span>
             </div>
             <div style="display:flex; justify-content:space-between; padding:10px 0; font-size:14px;">
-              <span style="color:#5A6A7E;">Other</span><span style="font-weight:600; color:#001C3D;">AED 1,250</span>
+              <span style="color:#5A6A7E;">Other</span><span style="font-weight:600; color:#041326;">AED 1,250</span>
             </div>
           </div>
           <div class="screen-footer"><div class="proto-btn">Set Budget Limits</div></div>
@@ -1204,17 +1204,17 @@
           <div class="screen-body">
             <div class="proto-card" style="border-left:3px solid #2ECC71;">
               <div style="font-size:12px; color:#2ECC71; font-weight:600; margin-bottom:4px;">Goal Milestone</div>
-              <p style="font-size:13px; color:#001C3D;">Hajj Fund reached 68% — AED 16,000 to go!</p>
+              <p style="font-size:13px; color:#041326;">Hajj Fund reached 68% — AED 16,000 to go!</p>
               <div style="font-size:11px; color:#5A6A7E; margin-top:4px;">Today, 9:15 AM</div>
             </div>
             <div class="proto-card" style="border-left:3px solid #D97706;">
               <div style="font-size:12px; color:#D97706; font-weight:600; margin-bottom:4px;">Spending Alert</div>
-              <p style="font-size:13px; color:#001C3D;">Ahmed spent AED 180 at Dubai Mall</p>
+              <p style="font-size:13px; color:#041326;">Ahmed spent AED 180 at Dubai Mall</p>
               <div style="font-size:11px; color:#5A6A7E; margin-top:4px;">Yesterday, 4:32 PM</div>
             </div>
-            <div class="proto-card" style="border-left:3px solid #1A5AFF;">
-              <div style="font-size:12px; color:#1A5AFF; font-weight:600; margin-bottom:4px;">Allowance Sent</div>
-              <p style="font-size:13px; color:#001C3D;">AED 500 sent to Ahmed's account</p>
+            <div class="proto-card" style="border-left:3px solid #3367FF;">
+              <div style="font-size:12px; color:#3367FF; font-weight:600; margin-bottom:4px;">Allowance Sent</div>
+              <p style="font-size:13px; color:#041326;">AED 500 sent to Ahmed's account</p>
               <div style="font-size:11px; color:#5A6A7E; margin-top:4px;">1 Jan 2026</div>
             </div>
           </div>

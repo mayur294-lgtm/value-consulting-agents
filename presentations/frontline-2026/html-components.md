@@ -10,12 +10,12 @@ Components for the HTML preview builder. All use the design tokens from `design-
 @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --primary-navy: #001C3D;
-  --action-blue: #1A5AFF;
+  --primary-navy: #041326;
+  --action-blue: #3367FF;
   --surface-white: #FFFFFF;
-  --bg-gray: #F5F7F9;
-  --text-main: #001C3D;
-  --text-muted: #5C6E84;
+  --bg-gray: #F3F6F9;
+  --text-main: #041326;
+  --text-muted: #6B7786;
   --success-green: #2ECC71;
   --radius: 16px;
   --radius-pill: 30px;

@@ -1,35 +1,73 @@
 {
-  "theme": "Backbase Unified Frontline 2026",
-  "source": "Master Template _ 2026.pptx + Gemini Agentic Blueprint",
+  "$schema": "Frontline 2026 Design Tokens — canonical source of truth",
+  "version": "2026.04",
+  "theme": "Backbase Frontline 2026",
+  "provenance": {
+    "source": "Backbase Master Template _ 2026.pptx — extracted from ppt/theme/theme1.xml on 2026-04-29",
+    "verified_against": "ppt/theme/theme1.xml (primary) and ppt/theme/theme2.xml (secondary/dark variant)",
+    "supersedes": [
+      "presentations/frontline-2026/design-tokens.json (drifted: #001C3D / #1A5AFF — present in NEITHER master theme; appears to have been hand-typed from a screenshot)",
+      "presentations/backbase-slides-app/engine.js prior values (used Theme 2 values #091C35 / #3366FF — visually identical but secondary palette)",
+      "Sparekassen Danmark DSD template original (was actually correct — matched Theme 1)"
+    ],
+    "note_two_palettes": "The Master Template ships TWO palettes. Theme 1 is canonical (primary). Theme 2 is a documented secondary variant — its navy/blue are one digit off and visually imperceptible. Use Theme 1 unless you have a specific reason for Theme 2."
+  },
   "colors": {
-    "primary_navy": "#001C3D",
-    "action_blue": "#1A5AFF",
-    "semantic_red": "#E02020",
-    "surface_white": "#FFFFFF",
-    "background_gray": "#F5F7F9",
-    "text_main": "#001C3D",
-    "text_muted": "#5C6E84",
-    "success_green": "#2ECC71"
+    "navy":            { "hex": "#041326", "usage": "Primary dark surface — covers, chapter dividers, hero sections, table headers, dark CTA. Also primary body text on light surfaces." },
+    "navy_secondary":  { "hex": "#091C35", "usage": "Secondary dark surface (Master Template Theme 2). Use only when paired with Theme 2 elements." },
+    "blue":            { "hex": "#3367FF", "usage": "Action / accent — buttons, part numbers, links, lever tags, sidebar active state." },
+    "blue_dark":       { "hex": "#264EC7", "usage": "Hover / pressed state for blue, secondary blue for emphasis." },
+    "blue_light":      { "hex": "#E5EBFF", "usage": "Soft blue background for callouts, light cards, inline highlights." },
+    "cyan":            { "hex": "#69FEFF", "usage": "Combined / total figures, bright accent on navy backgrounds." },
+    "cyan_light":      { "hex": "#C2FBFF", "usage": "Soft cyan background for cards and accents." },
+    "teal":            { "hex": "#0097A7", "usage": "Tertiary accent in chart palette." },
+    "red":             { "hex": "#FF503C", "usage": "Semantic warning / 'from' state — current pain points, friction." },
+    "red_light":       { "hex": "#FAE0DE", "usage": "Soft red background for warning callouts." },
+    "green":           { "hex": "#2ECC71", "usage": "Success / positive metrics — ROI, efficiency gains. (Not in Master Template themes — adopted from active engine for ROI sentiment.)" },
+    "amber":           { "hex": "#B45309", "usage": "Caution / risk indicators." },
+    "white":           { "hex": "#FFFFFF", "usage": "Surface white — light slides, cards." },
+    "off_white":       { "hex": "#F3F6F9", "usage": "Page background, 'from' state cards, soft surfaces." },
+    "border":          { "hex": "#CED2D7", "usage": "Card borders, table dividers, subtle separators. (Not in Master Template themes — neutral gray adopted from engine.)" },
+    "text_main":       { "hex": "#041326", "usage": "Primary body text on light surfaces. Same hex as navy, used for text role." },
+    "text_muted":      { "hex": "#6B7786", "usage": "Secondary text, captions." }
   },
   "typography": {
-    "level_1_label": {"font": "Libre Franklin", "fallback": "Helvetica, Arial", "size_pt": 18, "case": "UPPERCASE", "usage": "Captions, tags, small annotations above title"},
-    "level_2_title": {"font": "Libre Franklin Bold", "fallback": "Helvetica Bold, Arial Bold", "size_pt": 45, "weight": "Bold", "usage": "Slide headings"},
-    "level_3_subtitle": {"font": "Libre Franklin", "fallback": "Helvetica, Arial", "size_pt": 24, "usage": "Supporting headings"},
-    "level_4_body": {"font": "Libre Franklin", "fallback": "Helvetica, Arial", "size_pt": 20, "usage": "General content"}
+    "family":   { "primary": "Libre Franklin", "fallback": "Helvetica, Arial, sans-serif" },
+    "sizes_pt": {
+      "level_1_label":    { "size": 18, "case": "UPPERCASE", "usage": "Captions, eyebrows, tags, small annotations above titles" },
+      "level_2_title":    { "size": 45, "weight": "Bold",    "usage": "Slide headings" },
+      "level_3_subtitle": { "size": 24,                       "usage": "Supporting headings" },
+      "level_4_body":     { "size": 20,                       "usage": "General slide content" }
+    },
+    "sizes_html": {
+      "h1":   "clamp(38px, 5.5vw, 58px)",
+      "h2":   "clamp(26px, 3.5vw, 38px)",
+      "h3":   "1.25rem",
+      "h4":   "1.0625rem",
+      "body": "1rem",
+      "lead": "1rem",
+      "caption": "13px"
+    }
   },
   "geometry": {
-    "canvas_width_inches": 20.0,
-    "canvas_height_inches": 11.25,
-    "canvas_aspect_ratio": "16:9",
-    "border_radius_px": 16,
-    "button_radius_px": 30,
-    "margins": {
-      "top_inches": 0.5,
-      "bottom_inches": 0.8,
-      "left_inches": 0.5,
-      "right_inches": 0.5
+    "slides": {
+      "canvas_width_inches": 13.333,
+      "canvas_height_inches": 7.5,
+      "canvas_aspect_ratio": "16:9",
+      "engine_canvas_width_inches": 20.0,
+      "engine_canvas_height_inches": 11.25,
+      "margins_inches": { "top": 0.5, "bottom": 0.8, "left": 0.5, "right": 0.5 },
+      "content_safe_zone_inches": 0.5
     },
-    "content_safe_zone_inches": 0.5
+    "long_form": {
+      "outer_max_width_px": 1080,
+      "outer_padding_x_px": 40,
+      "sidebar_width_px": 272,
+      "top_nav_height_px": 65,
+      "page_print_format": "A4 landscape, 5mm margins, printBackground:true (Puppeteer)"
+    },
+    "radius_px": { "card": 16, "button": 30, "long_form_card": 0 },
+    "spacing_rem": { "1": 0.25, "2": 0.5, "3": 1.0, "4": 1.5, "5": 2.0, "6": 3.0, "7": 4.0, "8": 6.0 }
   },
   "google_slides_compat": {
     "text_width_buffer_pct": 15,
@@ -37,6 +75,18 @@
     "word_wrap": true,
     "resize_shape_to_fit_text": false,
     "group_icons_with_labels": true,
-    "min_edge_margin_inches": 0.5
-  }
+    "min_edge_margin_inches": 0.5,
+    "no_gradients": true,
+    "no_drop_shadows": true,
+    "no_rotated_text": true
+  },
+  "consumed_by": [
+    ".claude/commands/frontline-slides-html.md",
+    ".claude/commands/frontline-slides-pptx.md",
+    ".claude/commands/frontline-long-form.md",
+    "presentations/backbase-slides-app/engine.js",
+    "presentations/backbase-slides-app/deck-template.html",
+    "tools/frontline_slides_pptx.py",
+    "templates/long-form/document-template.html"
+  ]
 }

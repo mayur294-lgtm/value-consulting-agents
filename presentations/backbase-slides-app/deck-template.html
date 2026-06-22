@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DECK_TITLE</title>
+<style>
+/* ===== RESET & BASE ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap');
+html,body{width:100%;height:100%;background:#000;font-family:'Libre Franklin',Arial,Helvetica,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+
+/* ===== DESIGN TOKENS ===== */
+:root{
+  --bb-navy:#041326;
+  --bb-blue:#3367FF;
+  --bb-cyan:#69FEFF;
+  --bb-red:#FF503C;
+  --bb-light-blue:#E5EBFF;
+  --bb-off-white:#F3F6F9;
+  --bb-white:#FFFFFF;
+  --bb-black:#000000;
+}
+
+/* ===== THEME SYSTEM ===== */
+[data-theme="navy"]{--t-bg:#041326;--t-text:#fff;--t-text-muted:rgba(255,255,255,0.6);--t-grid:rgba(255,255,255,0.35)}
+[data-theme="blue"]{--t-bg:#3367FF;--t-text:#fff;--t-text-muted:rgba(255,255,255,0.6);--t-grid:rgba(255,255,255,0.35)}
+[data-theme="white"]{--t-bg:#fff;--t-text:#041326;--t-text-muted:rgba(9,28,53,0.45);--t-grid:#CED2D7}
+
+/* ===== PRESENTATION CONTAINER ===== */
+.pres-container{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;position:relative}
+.slide-viewport{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative;cursor:none}
+.slide-viewport:hover{cursor:default}
+.slide-frame{position:relative;aspect-ratio:16/9;overflow:hidden;background:#fff}
+
+/* ===== SLIDE BASE ===== */
+.slide{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity 0.35s ease;pointer-events:none;font-size:min(1.67vw,1.67vh * 16/9);background:var(--t-bg,#fff)}
+.slide.active{opacity:1;pointer-events:auto}
+.slide img.slide-bg{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ===== SHARED: GRID LINES ===== */
+.grid-lines{position:absolute;inset:0;pointer-events:none;z-index:1}
+.gl-v{position:absolute;top:0;bottom:0;width:1px;background:var(--t-grid)}
+.gl-h{position:absolute;left:0;right:0;height:1px;background:var(--t-grid)}
+
+/* ===== SHARED: MOTIF ===== */
+.slide-motif{position:absolute;width:1.253%;height:2.211%;transform:translate(-100%,-100%)}
+.slide-motif svg{display:block;width:100%;height:100%}
+
+/* ===== SHARED: FOOTER ===== */
+.slide-footer{position:absolute;left:89.25%;top:96.54%;width:6.5%;height:1.865%;display:flex;align-items:center}
+.slide-footer-logo{width:100%;height:100%;color:#000}
+.slide-footer-logo svg{width:100%;height:100%;display:block}
+.slide-footer-num{position:absolute;left:98.55%;top:96.54%;transform:translateX(-50%);font-size:0.5em;font-weight:700;color:#041326}
+[data-theme="navy"] .slide-footer-logo{color:#fff}
+[data-theme="navy"] .slide-footer-num{color:#fff}
+.bb-logo{display:block}
+
+/* ===== SHARED: TYPOGRAPHY ===== */
+.t-label{font-size:0.75em;font-weight:400;letter-spacing:0.12em;text-transform:uppercase;color:#041326}
+[data-theme="navy"] .t-label,[data-theme="blue"] .t-label{color:rgba(255,255,255,0.8)}
+.t-title{font-size:1.875em;font-weight:300;line-height:1.2;color:var(--t-text)}
+.t-subtitle{font-size:1em;font-weight:300;line-height:1.5}
+[data-theme="white"] .t-subtitle{color:var(--bb-blue)}
+[data-theme="navy"] .t-subtitle,[data-theme="blue"] .t-subtitle{color:var(--t-text-muted)}
+.t-body{font-size:0.85em;font-weight:300;color:var(--t-text);line-height:1.8}
+.t-body ul{padding-left:1.5em;list-style:disc}
+.t-body li{margin-bottom:0.5em}
+
+/* ===================================================================
+   TEMPLATE: COVER - COLOR BLOCK
+   Navy bg with blue glow gradient, Backbase logo top-left, large title
+   =================================================================== */
+.layout-cover-color-block{background:#041326;background-image:radial-gradient(ellipse at 80% 95%,rgba(51,102,255,0.22) 0%,rgba(51,102,255,0.05) 35%,transparent 60%)}
+.layout-cover-color-block .cover-logo{position:absolute;left:8%;top:7%;height:4.5%}
+.layout-cover-color-block .cover-logo svg{height:100%;width:auto;display:block}
+.layout-cover-color-block .slide-motif{left:54.1%;top:21.54%}
+.layout-cover-color-block .cover-label{position:absolute;left:8%;top:25.5%;font-size:0.75em;font-weight:400;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.8)}
+.layout-cover-color-block .cover-title{position:absolute;left:8%;top:32%;bottom:35%;width:80%;font-size:3em;font-weight:300;line-height:1.05;color:#fff;display:flex;align-items:flex-start;flex-direction:column;justify-content:flex-start;overflow:hidden}
+.layout-cover-color-block .cover-date{position:absolute;left:8%;bottom:30%;font-size:1em;font-weight:300;color:rgba(255,255,255,0.7)}
+.layout-cover-color-block .partner-logo{position:absolute;right:8%;top:7%;height:4.5%;display:flex;align-items:center;padding:0 1.2em;border:1px dashed rgba(255,255,255,0.3);color:rgba(255,255,255,0.4);font-size:0.6em;font-weight:300}
+
+/* ===================================================================
+   TEMPLATE: CHAPTER - NUMBERED
+   Full-bleed theme bg, large number left, label+title right
+   =================================================================== */
+.layout-chapter-numbered{background:var(--t-bg)}
+.layout-chapter-numbered[data-theme="navy"]{background:#041326;background-image:radial-gradient(ellipse at 80% 95%,rgba(51,102,255,0.15) 0%,transparent 55%)}
+.layout-chapter-numbered .slide-motif{left:4.13%;top:21.54%}
+.layout-chapter-numbered .chapter-number{position:absolute;left:4.13%;top:11.5%;width:22.87%;height:53.36%;display:flex;align-items:center;justify-content:center;font-size:7em;font-weight:300;color:var(--bb-blue)}
+.layout-chapter-numbered[data-theme="blue"] .chapter-number{color:#fff}
+.layout-chapter-numbered .chapter-label{position:absolute;left:29%;top:25%}
+.layout-chapter-numbered .chapter-title{position:absolute;left:29%;top:32%;width:62%;font-size:2.8em;font-weight:300;line-height:1.2;color:var(--t-text)}
+.layout-chapter-numbered .chapter-subtitle{position:absolute;left:29%;top:55%;width:60%;font-size:1em;font-weight:300;color:var(--t-text-muted);line-height:1.5}
+
+/* ===================================================================
+   TEMPLATE: CHAPTER - STANDARD
+   Full-bleed theme bg, label+title (no number column)
+   =================================================================== */
+.layout-chapter-standard{background:var(--t-bg)}
+.layout-chapter-standard[data-theme="navy"]{background:#041326;background-image:radial-gradient(ellipse at 80% 95%,rgba(51,102,255,0.15) 0%,transparent 55%)}
+.layout-chapter-standard .slide-motif{left:4.13%;top:21.54%}
+.layout-chapter-standard .chapter-label{position:absolute;left:5.8%;top:25%}
+.layout-chapter-standard .chapter-title{position:absolute;left:5.8%;top:32%;width:85%;font-size:2.8em;font-weight:300;line-height:1.2;color:var(--t-text)}
+.layout-chapter-standard .chapter-subtitle{position:absolute;left:5.8%;top:55%;width:60%;font-size:1em;font-weight:300;color:var(--t-text-muted);line-height:1.5}
+
+/* ===================================================================
+   TEMPLATE: CONTENT - STANDARD
+   White or navy bg, label+title+subtitle+body, footer with logo+number
+   =================================================================== */
+.layout-content-standard{background:var(--t-bg)}
+.layout-content-standard[data-theme="navy"]{background-image:radial-gradient(ellipse at 80% 95%,rgba(51,102,255,0.12) 0%,transparent 50%)}
+.layout-content-standard .slide-motif{left:2.9%;top:5.15%}
+.layout-content-standard .content-label{position:absolute;left:5.8%;top:10%}
+.layout-content-standard .content-title{position:absolute;left:5.8%;top:15%;width:88%}
+.layout-content-standard .content-subtitle{position:absolute;left:5.8%;top:24%;width:70%}
+.layout-content-standard .content-body{position:absolute;left:5.8%;top:34%;width:88%;bottom:7.5%;display:flex;flex-direction:column;justify-content:center;gap:0.9em}
+.layout-content-standard .content-body.body-only{top:15%}
+.layout-content-standard .content-body.no-subtitle{top:26%}
+/* Body fills the region from below the subtitle to just above the footer, and
+   centres its blocks vertically — content is never top-anchored with dead space
+   below. Author bodies should size tiles/text to occupy this space, not hug the top. */
+
+/* ===================================================================
+   TEMPLATE: THANK YOU
+   Navy bg with blue glow, large "Thank you" text
+   =================================================================== */
+.layout-thank-you{background:#041326}
+.layout-thank-you .cover-bg{position:absolute;inset:0}
+.layout-thank-you .cover-bg img{width:100%;height:100%;object-fit:cover}
+.layout-thank-you .cover-logo{position:absolute;left:8%;top:7%;height:4.5%}
+.layout-thank-you .cover-logo svg{height:100%;width:auto;display:block}
+.layout-thank-you .slide-motif{left:2.9%;top:26.11%}
+.layout-thank-you .thankyou-text{position:absolute;left:5.8%;top:35%;width:85%;font-size:6em;font-weight:300;line-height:1.15;color:#fff}
+
+/* ===================================================================
+   TEMPLATE: TOC (Table of Contents)
+   White bg, label+title left, numbered/non-numbered rows right
+   =================================================================== */
+.layout-toc{background:var(--t-bg,#fff)}
+.layout-toc .slide-motif{left:2.9%;top:5.15%}
+.layout-toc .toc-label{position:absolute;left:5.8%;top:10%}
+.layout-toc .toc-title{position:absolute;left:5.8%;top:15%;width:30%}
+.layout-toc .toc-rows{position:absolute;left:40%;right:2.9%;top:5.15%;bottom:5.15%;display:flex;flex-direction:column}
+.layout-toc .toc-row{flex:1;display:flex;align-items:center;border-bottom:1px solid var(--t-grid,#CED2D7);padding:0 1.5em;gap:1em}
+.layout-toc .toc-row:last-child{border-bottom:none}
+.layout-toc .toc-num{font-size:1.5em;font-weight:300;color:var(--bb-blue);min-width:2em}
+.layout-toc .toc-entry{font-size:0.95em;font-weight:300;color:var(--t-text,#041326)}
+
+/* ===================================================================
+   TEMPLATE: CONTENT - COLUMNS
+   White bg, label header, N equal columns below divider
+   =================================================================== */
+.layout-content-columns{background:var(--t-bg,#fff)}
+.layout-content-columns .slide-motif{left:2.9%;top:5.15%}
+.layout-content-columns .columns-label{position:absolute;left:5.8%;top:10%}
+.layout-content-columns .columns-title{position:absolute;left:5.8%;top:15%;width:88%}
+.layout-content-columns .columns-row{position:absolute;left:2.9%;right:2.9%;top:32.42%;bottom:5.15%;display:flex}
+.layout-content-columns .col-item{flex:1;padding:1.2em 1.2em;border-right:1px solid var(--t-grid,#CED2D7);display:flex;flex-direction:column;gap:0.5em}
+.layout-content-columns .col-item:last-child{border-right:none}
+.layout-content-columns .col-icon{width:2em;height:2em;display:flex;align-items:center;justify-content:center;color:var(--bb-blue)}
+.layout-content-columns .col-icon svg{width:100%;height:100%}
+.layout-content-columns .col-subtitle{font-size:0.85em;font-weight:500;color:var(--bb-blue)}
+.layout-content-columns .col-body{font-size:0.72em;font-weight:300;color:var(--t-text-muted);line-height:1.6}
+
+/* ===================================================================
+   TEMPLATE: OVERVIEW - ABOUT
+   White bg, label+title+subtitle left, image right, stats row bottom
+   =================================================================== */
+.layout-overview-about{background:var(--t-bg,#fff)}
+.layout-overview-about .slide-motif{left:2.9%;top:5.15%}
+.layout-overview-about .about-label{position:absolute;left:5.8%;top:10%}
+.layout-overview-about .about-title{position:absolute;left:5.8%;top:15%;width:40%}
+.layout-overview-about .about-subtitle{position:absolute;left:5.8%;top:28%;width:40%}
+.layout-overview-about .about-image{position:absolute;left:59.45%;right:2.9%;top:5.15%;bottom:25.15%;background:var(--bb-off-white);display:flex;align-items:center;justify-content:center;color:var(--t-text-muted);font-size:0.8em;font-weight:300;overflow:hidden}
+.layout-overview-about .about-image img{width:100%;height:100%;object-fit:cover}
+.layout-overview-about .about-stats{position:absolute;left:2.9%;right:2.9%;bottom:5.15%;height:20%;display:flex;border-top:1px solid var(--t-grid,#CED2D7)}
+.layout-overview-about .stat-item{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 1em;border-right:1px solid var(--t-grid,#CED2D7)}
+.layout-overview-about .stat-item:last-child{border-right:none}
+.layout-overview-about .stat-value{font-size:1.6em;font-weight:500;color:var(--bb-blue)}
+.layout-overview-about .stat-label{font-size:0.7em;font-weight:400;color:var(--t-text,#041326);margin-top:0.2em}
+
+/* ===================================================================
+   TEMPLATE: OVERVIEW - STATS (4/5 stat variant with image)
+   Label + title + subtitle left, image right, stat row bottom
+   =================================================================== */
+.layout-overview-stats{background:var(--t-bg,#fff)}
+.layout-overview-stats .slide-motif{left:2.9%;top:5.15%}
+.layout-overview-stats .about-label{position:absolute;left:5.8%;top:10%}
+.layout-overview-stats .about-title{position:absolute;left:5.8%;top:15%;width:38%}
+.layout-overview-stats .about-subtitle{position:absolute;left:5.8%;top:28%;width:38%;font-size:0.85em;font-weight:400;line-height:1.6;color:var(--t-text,#041326)}
+.layout-overview-stats .about-image{position:absolute;left:50%;right:2.9%;top:5.15%;bottom:25.15%;background:var(--bb-off-white);display:flex;align-items:center;justify-content:center;color:var(--t-text-muted);font-size:0.8em;font-weight:300;overflow:hidden}
+.layout-overview-stats .about-image img{width:100%;height:100%;object-fit:cover}
+.layout-overview-stats .about-stats{position:absolute;left:2.9%;right:2.9%;bottom:5.15%;height:20%;display:flex;border-top:1px solid var(--t-grid,#CED2D7)}
+.layout-overview-stats .stat-item{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 1em;border-right:1px solid var(--t-grid,#CED2D7)}
+.layout-overview-stats .stat-item:last-child{border-right:none}
+.layout-overview-stats .stat-value{font-size:1.6em;font-weight:500;color:var(--bb-blue)}
+.layout-overview-stats .stat-label{font-size:0.7em;font-weight:400;color:var(--t-text,#041326);margin-top:0.2em}
+
+/* ===================================================================
+   TEMPLATE: PRODUCT
+   White bg, label+title+bullets left, screenshot right
+   =================================================================== */
+.layout-product{background:var(--t-bg,#fff)}
+.layout-product .slide-motif{left:2.9%;top:5.15%}
+.layout-product .product-label{position:absolute;left:5.8%;top:10%}
+.layout-product .product-title{position:absolute;left:5.8%;top:15%;width:40%}
+.layout-product .product-subtitle{position:absolute;left:5.8%;top:28%;width:40%}
+.layout-product .product-body{position:absolute;left:5.8%;top:53%;width:40%}
+.layout-product .product-image{position:absolute;left:50%;right:2.9%;top:5.15%;bottom:5.15%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.layout-product .product-image.has-bg{background:var(--bb-light-blue)}
+.layout-product .product-image img{max-width:100%;max-height:100%;object-fit:contain}
+.layout-product .product-image .placeholder{color:var(--t-text-muted);font-size:0.8em;font-weight:300}
+
+/* ===================================================================
+   TEMPLATE: COVER - PHOTO
+   Full-bleed photo, dark overlay, frosted panel, logo+label+title+date
+   =================================================================== */
+.layout-cover-photo{background:#041326;--t-grid:#ffffff}
+.layout-cover-photo .cover-bg{position:absolute;inset:0}
+.layout-cover-photo .cover-bg img{width:100%;height:100%;object-fit:cover}
+.layout-cover-photo .cover-overlay{position:absolute;inset:0;background:rgba(4,19,38,0.1)}
+.layout-cover-photo .cover-panel{position:absolute;left:4.13%;top:21.54%;right:45.9%;bottom:7.35%;background:rgba(255,255,255,0.6)}
+.layout-cover-photo .cover-logo{position:absolute;left:8%;top:7%;height:4.5%}
+.layout-cover-photo .cover-logo svg{height:100%;width:auto;display:block}
+.layout-cover-photo .slide-motif{left:54.1%;top:21.54%;transform:translate(-100%,0) rotate(-90deg)}
+.layout-cover-photo .cover-label{position:absolute;left:8%;top:25.5%;font-size:0.75em;font-weight:400;letter-spacing:0.12em;text-transform:uppercase;color:#041326}
+.layout-cover-photo .cover-title{position:absolute;left:8%;top:32%;bottom:35%;width:42%;font-size:2.6em;font-weight:300;line-height:1.05;color:#041326;overflow:hidden}
+.layout-cover-photo .cover-date{position:absolute;left:8%;bottom:30%;font-size:1em;font-weight:300;color:rgba(9,28,53,0.6)}
+.layout-cover-photo[data-theme="navy"]{--t-grid:#6b7786}
+.layout-cover-photo[data-theme="navy"] .cover-panel{display:none}
+.layout-cover-photo[data-theme="navy"] .cover-label{color:rgba(255,255,255,0.8)}
+.layout-cover-photo[data-theme="navy"] .cover-title{color:#fff}
+.layout-cover-photo[data-theme="navy"] .cover-date{color:rgba(255,255,255,0.7)}
+.layout-cover-photo .cover-partner{position:absolute;left:60%;top:4%;right:6%;height:14%;display:flex;align-items:center;justify-content:center}
+.layout-cover-photo .cover-partner img{max-width:80%;max-height:70%;object-fit:contain}
+.layout-cover-photo .cover-partner.placeholder{background:#C8CDD4;border-radius:3px}
+
+/* ===================================================================
+   TEMPLATE: STATEMENT - TEXT
+   Light color band across middle, large text with highlighted words
+   =================================================================== */
+.layout-statement{background:var(--t-bg,#fff)}
+.layout-statement .slide-motif{left:2.9%;top:5.15%}
+.layout-statement .statement-band{position:absolute;inset:0;clip-path:polygon(32.7% 25.13%,97.1% 25.13%,97.1% 65.9%,58% 65.9%,58% 73%,2.9% 73%,2.9% 32.23%,32.7% 32.23%)}
+.layout-statement .statement-band.band-blue{background:var(--bb-light-blue)}
+.layout-statement .statement-band.band-red{background:#FFEFEC}
+.layout-statement .statement-band.band-dark{background:rgba(51,102,255,0.15)}
+.layout-statement .statement-label{position:absolute;left:5.8%;top:27.27%}
+.layout-statement .statement-text{position:absolute;left:5.8%;right:5.8%;top:37%;font-size:1.5em;font-weight:400;line-height:1.5;color:var(--t-text,#041326)}
+.layout-statement .statement-text .hl{color:var(--bb-blue)}
+.layout-statement.accent-red .statement-text .hl{color:var(--bb-red)}
+.layout-statement[data-theme="navy"]{background:#041326;background-image:radial-gradient(ellipse at 80% 95%,rgba(51,102,255,0.15) 0%,transparent 55%)}
+.layout-statement[data-theme="navy"] .statement-text{color:#fff}
+.layout-statement[data-theme="navy"] .statement-text .hl{color:var(--bb-blue)}
+.layout-statement[data-theme="navy"] .statement-band.band-dark{background:rgba(255,255,255,0.06)}
+
+/* ===================================================================
+   TEMPLATE: STATEMENT - STAT
+   Big number left + description right, on color band
+   =================================================================== */
+.layout-statement-stat{background:var(--t-bg,#fff)}
+.layout-statement-stat .slide-motif{left:2.9%;top:5.15%}
+.layout-statement-stat .stat-band{position:absolute;inset:0;clip-path:polygon(32.7% 25.13%,97.1% 25.13%,97.1% 65.9%,58% 65.9%,58% 73%,2.9% 73%,2.9% 32.23%,32.7% 32.23%)}
+.layout-statement-stat .stat-band.band-blue{background:var(--bb-light-blue)}
+.layout-statement-stat .stat-band.band-red{background:#FFEFEC}
+.layout-statement-stat .stat-label{position:absolute;left:5.8%;top:27.27%}
+.layout-statement-stat .stat-content{position:absolute;left:5.8%;right:5.8%;top:32.23%;bottom:34.1%;display:flex;align-items:center}
+.layout-statement-stat .stat-number{font-size:5em;font-weight:700;margin-right:0.4em;flex-shrink:0}
+.layout-statement-stat .stat-unit{font-size:0.55em}
+.layout-statement-stat .stat-number.num-blue{color:var(--bb-blue)}
+.layout-statement-stat .stat-number.num-red{color:var(--bb-red)}
+.layout-statement-stat .stat-desc{flex:1}
+.layout-statement-stat .stat-desc-text{font-size:1em;font-weight:300;line-height:1.5;color:var(--t-text,#041326)}
+.layout-statement-stat .stat-desc-text .hl{color:var(--bb-blue)}
+.layout-statement-stat.accent-red .stat-desc-text .hl{color:var(--bb-red)}
+.layout-statement-stat .stat-source{font-size:0.7em;font-weight:400;color:var(--t-text-muted);margin-top:0.8em}
+
+/* ===================================================================
+   TEMPLATE: TESTIMONIAL
+   White bg, image left, company logo + quote + author on right half
+   =================================================================== */
+.layout-testimonial{background:var(--t-bg,#fff)}
+.layout-testimonial .slide-motif{left:2.9%;top:5.15%}
+.layout-testimonial .testimonial-image{position:absolute;left:5.8%;top:20%;width:21%;bottom:32%;background:var(--bb-off-white);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.layout-testimonial .testimonial-image img{width:100%;height:100%;object-fit:cover}
+.layout-testimonial .testimonial-image .placeholder-icon{width:3em;height:3em;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.layout-testimonial .testimonial-image .placeholder-icon svg{display:block;width:1.3em;height:1.3em;color:#c0c4cc}
+.layout-testimonial .testimonial-label{position:absolute;left:33%;top:8.5%;padding-left:1em}
+.layout-testimonial .testimonial-content{position:absolute;left:33%;right:2.9%;top:12%;bottom:5.15%;display:flex;flex-direction:column;justify-content:center;padding:0 1em;border-left:1px solid var(--t-grid,#CED2D7)}
+.layout-testimonial .testimonial-logo{font-size:1.8em;font-weight:800;color:var(--t-text,#041326);margin-bottom:1em;letter-spacing:0.05em}
+.layout-testimonial .testimonial-quote{font-size:1.05em;font-weight:300;color:var(--t-text,#041326);line-height:1.6;margin-bottom:1.5em}
+.layout-testimonial .testimonial-author{border-top:1px solid var(--t-grid,#CED2D7);padding-top:1em}
+.layout-testimonial .testimonial-name{font-size:0.9em;font-weight:400;color:var(--bb-blue)}
+.layout-testimonial .testimonial-title{font-size:0.75em;font-weight:300;color:var(--t-text-muted)}
+
+/* ===================================================================
+   TEMPLATE: TEAM
+   White bg, grid of photo+name+title cards, multiple density variants
+   =================================================================== */
+.layout-team{background:var(--t-bg,#fff)}
+.layout-team .slide-motif{left:2.9%;top:5.15%}
+.layout-team .team-label{position:absolute;left:5.8%;top:10%}
+.layout-team .team-title{position:absolute;left:5.8%;top:15%;width:88%}
+.layout-team .team-grid{position:absolute;left:2.9%;right:2.9%;top:32.42%;bottom:5.15%;display:grid;gap:1px;background:var(--t-grid,#CED2D7)}
+.layout-team .team-cell{background:#fff;display:flex;align-items:stretch;gap:0;padding:0}
+.layout-team .team-photo{width:35.49%;background:var(--bb-off-white);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.layout-team .team-photo img{width:100%;height:100%;object-fit:cover}
+.layout-team .team-photo .placeholder-icon{width:2.2em;height:2.2em;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.layout-team .team-photo .placeholder-icon svg{display:block;width:1em;height:1em;color:#c0c4cc}
+.layout-team .team-info{display:flex;flex-direction:column;justify-content:center;padding:0 1em}
+.layout-team .team-name{font-size:0.75em;font-weight:400;color:var(--bb-blue)}
+.layout-team .team-role{font-size:0.6em;font-weight:300;color:var(--t-text-muted)}
+.layout-team .team-grid.team-5{grid-template-columns:repeat(5,1fr);grid-template-rows:52% 1fr}
+.layout-team .team-grid.team-5 .team-cell{flex-direction:column;align-items:flex-start;padding:0}
+.layout-team .team-grid.team-5 .team-photo{width:100%;height:auto;flex:1;min-height:0}
+.layout-team .team-grid.team-5 .team-info{padding:0.5em 0.8em}
+.layout-team .team-grid.team-feature{grid-template-columns:40% 30% 30%}
+.layout-team .team-grid.team-feature .team-cell{padding:0}
+.layout-team .team-grid.team-feature .team-photo{width:50%;height:100%;min-height:0}
+.layout-team .team-grid.team-feature .team-info{padding:1em;display:flex;flex-direction:column;justify-content:center}
+.layout-team .team-grid.team-feature .team-label-cell{grid-row:1/-1;background:#fff;display:flex;align-items:flex-start;padding:1.5em}
+
+/* ===================================================================
+   TEMPLATE: AGENDA TABLE
+   Navy bg, table layout with session/time/location/speaker columns
+   =================================================================== */
+.layout-agenda-table{background:#041326;background-image:radial-gradient(ellipse at 80% 95%,rgba(51,102,255,0.15) 0%,transparent 55%)}
+.layout-agenda-table .slide-motif{left:2.9%;top:5.15%}
+.layout-agenda-table .agenda-label{position:absolute;left:5.8%;top:14%}
+.layout-agenda-table .agenda-title{position:absolute;left:5.8%;top:19%;width:80%}
+.layout-agenda-table .agenda-table{position:absolute;left:2.9%;right:2.9%;top:30%;bottom:5.15%;display:flex;flex-direction:column}
+.layout-agenda-table .agenda-header{display:flex;padding:0.4em 1em;border-bottom:1px solid rgba(255,255,255,0.15)}
+.layout-agenda-table .agenda-header span{flex:1;font-size:0.65em;font-weight:500;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em}
+.layout-agenda-table .agenda-row{display:flex;padding:0.45em 1em;border-bottom:1px solid rgba(255,255,255,0.08);align-items:center}
+.layout-agenda-table .agenda-row.highlight{background:rgba(51,102,255,0.12)}
+.layout-agenda-table .agenda-row span{flex:1;font-size:0.7em;font-weight:300;color:rgba(255,255,255,0.85)}
+
+/* ===================================================================
+   TEMPLATE: ROADMAP TIMELINE
+   White bg, Gantt-style timeline with colored bars per quarter
+   =================================================================== */
+.layout-roadmap{background:var(--t-bg,#fff)}
+.layout-roadmap .slide-motif{left:2.9%;top:5.15%}
+.layout-roadmap .roadmap-label{position:absolute;left:5.8%;top:10%}
+.layout-roadmap .roadmap-title{position:absolute;left:5.8%;top:15%;width:80%}
+.layout-roadmap .roadmap-chart{position:absolute;left:2.9%;right:2.9%;top:25%;bottom:5.15%;display:flex;flex-direction:column}
+.layout-roadmap .roadmap-months{display:flex;align-items:center;padding:0.8em 0 0.8em 15%;border-bottom:1px solid var(--t-grid,#CED2D7);flex-shrink:0}
+.layout-roadmap .roadmap-month{flex:1;text-align:center;font-size:0.7em;font-weight:600;color:var(--t-text,#041326)}
+.layout-roadmap .roadmap-rows{display:flex;flex-direction:column;flex:1}
+.layout-roadmap .roadmap-row{display:flex;align-items:center;flex:1;border-bottom:1px solid var(--t-grid,#CED2D7)}
+.layout-roadmap .roadmap-row:last-child{border-bottom:none}
+.layout-roadmap .roadmap-row-label{width:15%;padding-left:3.08%;font-size:0.7em;font-weight:400;color:var(--t-text,#041326);flex-shrink:0}
+.layout-roadmap .roadmap-row-track{flex:1;position:relative;height:100%}
+.layout-roadmap .roadmap-bar{position:absolute;height:60%;top:20%;border-radius:0.2em;display:flex;align-items:center;padding:0 0.5em;font-size:0.6em;font-weight:500;color:#fff;white-space:nowrap;overflow:visible;text-overflow:clip}
+.layout-roadmap .roadmap-dividers{position:absolute;inset:0;padding-left:15%;display:flex;pointer-events:none}
+.layout-roadmap .roadmap-divider{flex:1;border-right:1px solid var(--t-grid,#CED2D7)}
+.layout-roadmap .roadmap-divider:first-child{border-left:1px solid var(--t-grid,#CED2D7)}
+.layout-roadmap .roadmap-divider:last-child{border-right:none}
+.layout-roadmap .roadmap-bar.bar-blue{background:var(--bb-blue)}
+.layout-roadmap .roadmap-bar.bar-navy{background:var(--bb-navy)}
+.layout-roadmap .roadmap-bar.bar-cyan{background:#2BBCC4}
+.layout-roadmap .roadmap-bar.bar-red{background:var(--bb-red)}
+
+/* ===== SLIDE PREVIEW (for overview & presenter clones) ===== */
+.thumb-render{width:1920px;height:1080px;position:absolute;top:0;left:0;transform-origin:top left;overflow:hidden}
+.thumb-render .slide{font-size:32px!important;opacity:1!important;pointer-events:none!important}
+
+/* ===== UI CHROME ===== */
+.progress-bar{position:fixed;bottom:0;left:0;height:3px;background:var(--bb-blue);transition:width 0.35s ease;z-index:1000}
+.slide-counter{position:fixed;bottom:8px;right:16px;font-size:12px;color:rgba(255,255,255,0.45);z-index:1000;font-family:'Libre Franklin',Arial,sans-serif;font-weight:300;user-select:none}
+.fullscreen-hint{position:fixed;top:12px;right:16px;font-size:11px;color:rgba(255,255,255,0.3);z-index:1000;font-family:'Libre Franklin',Arial,sans-serif;font-weight:300;transition:opacity 0.5s ease;user-select:none}
+
+/* ===== OVERVIEW MODE ===== */
+.overview-overlay{position:fixed;inset:0;background:var(--bb-navy);z-index:2000;display:none;overflow-y:auto;padding:40px}
+.overview-overlay.open{display:block}
+.overview-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:1400px;margin:0 auto}
+.overview-thumb{position:relative;aspect-ratio:16/9;cursor:pointer;overflow:hidden;border:2px solid transparent;transition:border-color 0.2s,transform 0.2s;background:#111}
+.overview-thumb:hover{border-color:rgba(255,255,255,0.3);transform:scale(1.02)}
+.overview-thumb.current{border-color:var(--bb-blue)}
+.overview-thumb .thumb-num{position:absolute;bottom:6px;right:8px;font-size:11px;color:rgba(255,255,255,0.6);font-family:'Libre Franklin',Arial,sans-serif;font-weight:300;z-index:1}
+.overview-thumb .thumb-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);padding:3px 8px;font-size:9px;color:rgba(255,255,255,0.5);text-align:center;font-family:'Libre Franklin',Arial,sans-serif;font-weight:300;z-index:1}
+.overview-title{text-align:center;color:#fff;font-size:14px;font-weight:300;margin-bottom:30px;opacity:0.5;font-family:'Libre Franklin',Arial,sans-serif}
+
+/* ===== PRESENTER MODE ===== */
+.presenter-overlay{position:fixed;inset:0;background:var(--bb-navy);z-index:2000;display:none;padding:20px;font-family:'Libre Franklin',Arial,sans-serif}
+.presenter-overlay.open{display:grid;grid-template-columns:65% 35%;grid-template-rows:60% 40%;gap:16px}
+.presenter-current{position:relative;border:1px solid rgba(255,255,255,0.1);overflow:hidden;aspect-ratio:16/9;align-self:end}
+.presenter-next{position:relative;border:1px solid rgba(255,255,255,0.1);overflow:hidden;aspect-ratio:16/9}
+.presenter-next-label{position:absolute;top:8px;left:10px;font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;z-index:1}
+.presenter-notes{grid-column:1/3;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:16px;overflow-y:auto;display:flex;flex-direction:column}
+.presenter-notes-label{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.presenter-notes textarea{flex:1;background:transparent;border:none;color:rgba(255,255,255,0.8);font-size:14px;font-weight:300;line-height:1.6;resize:none;outline:none;font-family:'Libre Franklin',Arial,sans-serif}
+.presenter-info{position:absolute;top:8px;right:12px;display:flex;gap:16px;font-size:12px;color:rgba(255,255,255,0.5);font-weight:300}
+.presenter-info .timer{font-variant-numeric:tabular-nums}
+
+/* ===== GOTO DIALOG ===== */
+.goto-dialog{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bb-navy);border:1px solid rgba(255,255,255,0.15);padding:24px 32px;z-index:3000;display:none;text-align:center;min-width:220px}
+.goto-dialog.open{display:block}
+.goto-dialog label{display:block;font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-family:'Libre Franklin',Arial,sans-serif}
+.goto-dialog input{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:24px;width:80px;padding:8px;text-align:center;outline:none;font-family:'Libre Franklin',Arial,sans-serif;font-weight:300}
+.goto-dialog input:focus{border-color:var(--bb-blue)}
+.goto-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2999;display:none}
+.goto-backdrop.open{display:block}
+
+/* ===== RESPONSIVE SLIDE SCALING ===== */
+@media(min-aspect-ratio:16/9){.slide-frame{height:100%;width:auto;aspect-ratio:16/9}}
+@media(max-aspect-ratio:16/9){.slide-frame{width:100%;height:auto;aspect-ratio:16/9}}
+.slide{font-size:min(1.67vw,1.67vh * 16/9)}
+</style>
+</head>
+<body>
+
+<div class="pres-container">
+  <div class="slide-viewport" id="slideViewport">
+    <div class="slide-frame" id="slideFrame">
+      <!-- Slides rendered here by JS -->
+    </div>
+  </div>
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="slide-counter" id="slideCounter"></div>
+<div class="fullscreen-hint" id="fullscreenHint">Press F for fullscreen · O overview · P presenter</div>
+
+<!-- Overview -->
+<div class="overview-overlay" id="overviewOverlay">
+  <div class="overview-title">Click a slide to jump — press O or Escape to close</div>
+  <div class="overview-grid" id="overviewGrid"></div>
+</div>
+
+<!-- Presenter -->
+<div class="presenter-overlay" id="presenterOverlay">
+  <div class="presenter-current" id="presenterCurrent"></div>
+  <div class="presenter-next" id="presenterNext">
+    <div class="presenter-next-label">Next</div>
+  </div>
+  <div class="presenter-notes">
+    <div class="presenter-notes-label">Speaker Notes</div>
+    <textarea id="presenterNotes" placeholder="No notes for this slide"></textarea>
+  </div>
+  <div class="presenter-info">
+    <span id="presenterSlideInfo"></span>
+    <span class="timer" id="presenterTimer">00:00</span>
+  </div>
+</div>
+
+<!-- Goto -->
+<div class="goto-backdrop" id="gotoBackdrop"></div>
+<div class="goto-dialog" id="gotoDialog">
+  <label>Go to slide</label>
+  <input type="number" id="gotoInput" min="1">
+</div>
+
+<script src="slides.js"></script>
+<script src="../backbase-slides-app/engine.js"></script>
+</body>
+</html>

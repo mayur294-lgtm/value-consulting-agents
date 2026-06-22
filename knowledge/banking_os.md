@@ -685,3 +685,34 @@ Eastern Bank · Danske Bank · EverBank · BECU · Standard Bank · Alliant · M
 | **Cortex agents producing POVs / value levers / ROI** | Section 5 (architecture) + Section 6 (4 solutions × 2 blocks) + Section 12 (personas) + Section 18 (Leakage Assessment) + Section 19 (final-check rubric) |
 | **Cortex agents producing capability assessments / roadmaps** | Section 5 (6-layer architecture maps to capability dimensions) + Section 10 (outcomes that ROI ties to) + Section 9 (progressive autonomy = maturity scale) |
 | **Content / messaging** | Section 1 (hierarchy) + Section 2 (4 pillars) + Section 17 (language rules) + Section 19 (final check) |
+
+---
+
+## Applying this narrative — the From→To scaffold & per-pipeline guide
+
+*Added June 2026 from the Frontline 2026 narrative spine — the delivery mechanics that complement the substance above. Substance, numbers, and vocabulary remain governed by the earlier sections (esp. §2 pillars, §10 outcomes **with their caveats**, §17 language rules). This section only adds **how to open and apply** the story — do not restate the §10 figures without their caveats.*
+
+### The From→To signature device (open every deliverable on it)
+
+Open every narrative on the pain, resolve to the unified state — then map the client's *own* discovery findings onto the scaffold:
+
+- **FROM — frontline fragmentation.** The client's specific version of the whitespace problem (§3): their handoffs, exceptions, manual coordination, systems-per-journey. Use *their* measured numbers where you have them; fall back to the §3 directional anchors only as conversation framing, never as fact.
+- **TO — a Unified Frontline that runs the bank as one.** Customers, employees and AI agents on one shared truth and one execution engine, governed and auditable (§4–§5).
+- **The value of crossing over** ties to the §10 outcome ranges — always carried with the §10 caveat, or replaced by the bank-specific business case.
+
+The client's fragmentation becomes the FROM; the Banking OS becomes the TO. The scaffold is engagement-type-agnostic — cold pitch, workshop, assessment, or negotiation deck.
+
+**The wedge (use to reframe "we're already doing AI"):** AI bolted onto a fragmented frontline amplifies the mess — faster and more expensive. The OS underneath comes first: shared truth, an execution engine, explicit authorization (Pillar 1, §4).
+
+### How each Cortex pipeline applies the narrative
+
+| Pipeline / agent | Apply the From→To narrative by… |
+|---|---|
+| Discovery / transcript interpreter | Cluster findings into the **FROM** picture — name the client's specific fragmentation, handoffs, exceptions |
+| Ignite workshops (strategy / member / employee / architecture) | Use **FROM→To** as the workshop arc; Pillar 1's AI-amplifies-fragmentation stance as the AI-readiness framing |
+| Capability / value assessment | Maturity = distance from a Unified Frontline; gaps = where the frontline isn't "running as one" (maps to §5 layers, §9 autonomy) |
+| Journey builder | Current journeys as fragmented swimlanes (FROM) → unified, orchestrated future state (TO) |
+| ROI / business case | Outcomes-first hero; tie levers to "one execution engine" efficiency and lifecycle ownership; size against the bank's measured data, not §10 directionals |
+| Narrative assembler / frontline decks / executive briefing / long-form | Open on FROM→To, anchor on the AI-Native Banking OS, close on the mission line; dark/architecture visual language |
+| Prototype | Show the Unified Frontline literally — one shared truth, web→mobile continuity, agents + audit trail |
+| Deal-desk / negotiation | The Banking OS is *what they're buying*; price defends the OS, not a feature list (§13) |

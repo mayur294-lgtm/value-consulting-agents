@@ -8,17 +8,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --primary-dark: #001C3D;
-    --primary-blue: #1A5AFF;
+    --primary-dark: #041326;
+    --primary-blue: #3367FF;
     --cyan: #93B5FF;
     --white: #FFFFFF;
-    --light-grey: #F5F7F9;
+    --light-grey: #F3F6F9;
     --light-blue: #EBF0FF;
-    --muted: #5C6E84;
+    --muted: #6B7786;
     --green: #2ECC71;
     --amber: #D97706;
-    --red: #E02020;
-    --text: #001C3D;
+    --red: #FF503C;
+    --text: #041326;
     --text-light: #5A6A7E;
     --border: #E0E6ED;
   }
@@ -177,12 +177,12 @@
      PRIORITY BADGES
      ═══════════════════════════════════════════════════ */
   .badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; }
-  .badge-p1 { background: rgba(26,90,255,0.12); color: var(--primary-blue); }
+  .badge-p1 { background: rgba(51,103,255,0.12); color: var(--primary-blue); }
   .badge-p2 { background: rgba(58,73,93,0.12); color: var(--muted); }
   .badge-p3 { background: rgba(90,106,126,0.08); color: var(--text-light); }
   .badge-tablestakes { background: rgba(38,188,113,0.12); color: var(--green); }
   .badge-ootb { background: rgba(38,188,113,0.12); color: var(--green); }
-  .badge-config { background: rgba(26,90,255,0.12); color: var(--primary-blue); }
+  .badge-config { background: rgba(51,103,255,0.12); color: var(--primary-blue); }
   .badge-extension { background: rgba(255,172,9,0.12); color: var(--amber); }
   .badge-custom { background: rgba(255,114,98,0.12); color: var(--red); }
 
@@ -264,7 +264,7 @@
      ═══════════════════════════════════════════════════ */
   .roadmap-phases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 32px 0; }
   .phase-card { background: var(--light-grey); border: 1px solid var(--light-blue); border-radius: 12px; padding: 24px; position: relative; overflow: hidden; }
-  .phase-card .phase-num { position: absolute; top: -10px; right: 16px; font-size: 72px; font-weight: 900; color: rgba(26,90,255,0.06); line-height: 1; }
+  .phase-card .phase-num { position: absolute; top: -10px; right: 16px; font-size: 72px; font-weight: 900; color: rgba(51,103,255,0.06); line-height: 1; }
   .phase-card .phase-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary-blue); margin-bottom: 4px; }
   .phase-card h3 { font-size: 18px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
   .phase-card .phase-timeline { font-size: 12px; font-weight: 600; color: var(--text-light); margin-bottom: 16px; }
@@ -272,7 +272,7 @@
   .phase-card ul { list-style: none; padding: 0; }
   .phase-card ul li { font-size: 12px; color: var(--text-light); padding: 2px 0 2px 14px; position: relative; }
   .phase-card ul li::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--primary-blue); position: absolute; left: 0; top: 9px; }
-  .phase-card .phase-promise { background: rgba(26,90,255,0.06); border-radius: 8px; padding: 12px; margin-top: 16px; font-size: 13px; font-style: italic; color: var(--muted); }
+  .phase-card .phase-promise { background: rgba(51,103,255,0.06); border-radius: 8px; padding: 12px; margin-top: 16px; font-size: 13px; font-style: italic; color: var(--muted); }
   .phase-card .phase-metric { font-size: 12px; color: var(--primary-blue); font-weight: 600; margin-top: 8px; }
 
   /* ═══════════════════════════════════════════════════
@@ -320,12 +320,12 @@
   .proto-title { display: block; font-size: 16px; font-weight: 600; color: var(--text); margin-top: 4px; }
 
   /* Phone Frame */
-  .phone-frame { width: 375px; height: 812px; margin: 0 auto; background: var(--white); border-radius: 40px; box-shadow: 0 8px 40px rgba(0,28,61,0.15); border: 12px solid var(--primary-dark); overflow: hidden; position: relative; }
+  .phone-frame { width: 375px; height: 812px; margin: 0 auto; background: var(--white); border-radius: 40px; box-shadow: 0 8px 40px rgba(4,19,38,0.15); border: 12px solid var(--primary-dark); overflow: hidden; position: relative; }
   .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 150px; height: 30px; background: var(--primary-dark); border-radius: 0 0 20px 20px; z-index: 10; }
   .phone-screen { width: 100%; height: 100%; position: relative; overflow: hidden; }
 
   /* Browser Frame */
-  .browser-frame { width: 100%; max-width: 1160px; margin: 0 auto; background: var(--white); border-radius: 12px; box-shadow: 0 8px 40px rgba(0,28,61,0.15); border: 1px solid var(--border); overflow: hidden; }
+  .browser-frame { width: 100%; max-width: 1160px; margin: 0 auto; background: var(--white); border-radius: 12px; box-shadow: 0 8px 40px rgba(4,19,38,0.15); border: 1px solid var(--border); overflow: hidden; }
   .browser-chrome { height: 40px; background: var(--light-grey); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 12px; }
   .browser-dots { display: flex; gap: 6px; }
   .browser-dots .dot { width: 12px; height: 12px; border-radius: 50%; }
@@ -350,18 +350,18 @@
   .browser-screen .screen .screen-body { padding: 24px 32px; }
   .screen .screen-footer { padding: 16px 20px; border-top: 1px solid #EBF0FF; }
   .browser-screen .screen .screen-footer { padding: 16px 32px; }
-  .screen .proto-btn { width: 100%; padding: 14px; background: #1A5AFF; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: default; font-family: inherit; }
-  .screen .proto-btn-outline { width: 100%; padding: 14px; background: transparent; color: #1A5AFF; border: 2px solid #1A5AFF; border-radius: 12px; font-size: 16px; font-weight: 600; margin-top: 10px; cursor: default; font-family: inherit; }
-  .screen .proto-input { width: 100%; padding: 12px 14px; background: #F5F7F9; border: 1px solid #EBF0FF; border-radius: 10px; font-size: 15px; color: #001C3D; margin-bottom: 14px; font-family: inherit; }
-  .screen .proto-label { display: block; font-size: 13px; font-weight: 600; color: #001C3D; margin-bottom: 6px; }
-  .screen .proto-card { background: #F5F7F9; border: 1px solid #EBF0FF; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-  .screen .proto-card.selected { border-color: #1A5AFF; background: #F0F4FF; }
-  .screen .proto-card h4 { font-size: 15px; font-weight: 700; color: #001C3D; margin-bottom: 4px; }
+  .screen .proto-btn { width: 100%; padding: 14px; background: #3367FF; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: default; font-family: inherit; }
+  .screen .proto-btn-outline { width: 100%; padding: 14px; background: transparent; color: #3367FF; border: 2px solid #3367FF; border-radius: 12px; font-size: 16px; font-weight: 600; margin-top: 10px; cursor: default; font-family: inherit; }
+  .screen .proto-input { width: 100%; padding: 12px 14px; background: #F3F6F9; border: 1px solid #EBF0FF; border-radius: 10px; font-size: 15px; color: #041326; margin-bottom: 14px; font-family: inherit; }
+  .screen .proto-label { display: block; font-size: 13px; font-weight: 600; color: #041326; margin-bottom: 6px; }
+  .screen .proto-card { background: #F3F6F9; border: 1px solid #EBF0FF; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .screen .proto-card.selected { border-color: #3367FF; background: #F0F4FF; }
+  .screen .proto-card h4 { font-size: 15px; font-weight: 700; color: #041326; margin-bottom: 4px; }
   .screen .proto-card p { font-size: 13px; color: #5A6A7E; }
   .screen .proto-success { text-align: center; padding: 40px 20px; }
   .screen .proto-checkmark { width: 80px; height: 80px; border-radius: 50%; background: #2ECC71; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #fff; font-size: 36px; font-weight: 700; }
   .screen .proto-progress { height: 4px; background: #EBF0FF; border-radius: 2px; margin-bottom: 20px; }
-  .screen .proto-progress-fill { height: 100%; background: #1A5AFF; border-radius: 2px; }
+  .screen .proto-progress-fill { height: 100%; background: #3367FF; border-radius: 2px; }
 
   /* Prototype Navigation */
   .proto-nav { display: flex; justify-content: center; align-items: center; gap: 24px; margin-top: 20px; }
@@ -378,7 +378,7 @@
   /* ═══════════════════════════════════════════════════
      STANDARD SLIDE IMAGE (from brand-assets)
      ═══════════════════════════════════════════════════ */
-  .bb-slide-img { width: 100%; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,28,61,0.1); }
+  .bb-slide-img { width: 100%; border-radius: 12px; box-shadow: 0 4px 24px rgba(4,19,38,0.1); }
 </style>
 </head>
 <body>
@@ -1225,13 +1225,13 @@
     <!-- AGENT: Build target state with Backbase positioned as hub -->
     <div class="arch-layer">
       <div class="arch-layer-label">Experience Layer (Backbase)</div>
-      <div class="arch-system" style="background: rgba(26,90,255,0.1); border-color: var(--primary-blue);">Backbase Digital Banking</div>
-      <div class="arch-system" style="background: rgba(26,90,255,0.1); border-color: var(--primary-blue);">Backbase Assist</div>
+      <div class="arch-system" style="background: rgba(51,103,255,0.1); border-color: var(--primary-blue);">Backbase Digital Banking</div>
+      <div class="arch-system" style="background: rgba(51,103,255,0.1); border-color: var(--primary-blue);">Backbase Assist</div>
     </div>
     <div class="arch-strip blue"></div>
     <div class="arch-layer">
       <div class="arch-layer-label">Integration Hub (Backbase)</div>
-      <div class="arch-system" style="background: rgba(26,90,255,0.1); border-color: var(--primary-blue);">Grand Central</div>
+      <div class="arch-system" style="background: rgba(51,103,255,0.1); border-color: var(--primary-blue);">Grand Central</div>
     </div>
     <div class="arch-strip blue"></div>
     <div class="arch-layer">
@@ -1307,31 +1307,31 @@
   <div class="scatter-container">
     <svg viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg" style="max-width: 700px;">
       <!-- Grid background -->
-      <rect x="60" y="20" width="520" height="420" fill="#F5F7F9" rx="8"/>
+      <rect x="60" y="20" width="520" height="420" fill="#F3F6F9" rx="8"/>
 
       <!-- Quadrant fills -->
       <rect x="60" y="20" width="260" height="210" fill="rgba(38,188,113,0.08)" rx="8"/>
-      <rect x="320" y="20" width="260" height="210" fill="rgba(26,90,255,0.08)"/>
+      <rect x="320" y="20" width="260" height="210" fill="rgba(51,103,255,0.08)"/>
       <rect x="60" y="230" width="260" height="210" fill="rgba(58,73,93,0.05)"/>
       <rect x="320" y="230" width="260" height="210" fill="rgba(255,114,98,0.08)" rx="8"/>
 
       <!-- Quadrant labels -->
       <text x="190" y="50" text-anchor="middle" font-family="Libre Franklin" font-size="13" font-weight="700" fill="#2ECC71" opacity="0.6">QUICK WINS</text>
-      <text x="450" y="50" text-anchor="middle" font-family="Libre Franklin" font-size="13" font-weight="700" fill="#1A5AFF" opacity="0.6">STRATEGIC</text>
-      <text x="190" y="430" text-anchor="middle" font-family="Libre Franklin" font-size="13" font-weight="700" fill="#5C6E84" opacity="0.4">FILL</text>
-      <text x="450" y="430" text-anchor="middle" font-family="Libre Franklin" font-size="13" font-weight="700" fill="#E02020" opacity="0.6">DEPRIORITIZE</text>
+      <text x="450" y="50" text-anchor="middle" font-family="Libre Franklin" font-size="13" font-weight="700" fill="#3367FF" opacity="0.6">STRATEGIC</text>
+      <text x="190" y="430" text-anchor="middle" font-family="Libre Franklin" font-size="13" font-weight="700" fill="#6B7786" opacity="0.4">FILL</text>
+      <text x="450" y="430" text-anchor="middle" font-family="Libre Franklin" font-size="13" font-weight="700" fill="#FF503C" opacity="0.6">DEPRIORITIZE</text>
 
       <!-- Grid lines -->
       <line x1="60" y1="230" x2="580" y2="230" stroke="#EBF0FF" stroke-width="2" stroke-dasharray="6,4"/>
       <line x1="320" y1="20" x2="320" y2="440" stroke="#EBF0FF" stroke-width="2" stroke-dasharray="6,4"/>
 
       <!-- Axes -->
-      <line x1="60" y1="440" x2="580" y2="440" stroke="#001C3D" stroke-width="1.5"/>
-      <line x1="60" y1="20" x2="60" y2="440" stroke="#001C3D" stroke-width="1.5"/>
+      <line x1="60" y1="440" x2="580" y2="440" stroke="#041326" stroke-width="1.5"/>
+      <line x1="60" y1="20" x2="60" y2="440" stroke="#041326" stroke-width="1.5"/>
 
       <!-- Axis labels -->
-      <text x="320" y="475" text-anchor="middle" font-family="Libre Franklin" font-size="12" font-weight="600" fill="#5C6E84">Implementation Complexity &#8594;</text>
-      <text x="15" y="230" text-anchor="middle" font-family="Libre Franklin" font-size="12" font-weight="600" fill="#5C6E84" transform="rotate(-90 15 230)">Business Value &#8594;</text>
+      <text x="320" y="475" text-anchor="middle" font-family="Libre Franklin" font-size="12" font-weight="600" fill="#6B7786">Implementation Complexity &#8594;</text>
+      <text x="15" y="230" text-anchor="middle" font-family="Libre Franklin" font-size="12" font-weight="600" fill="#6B7786" transform="rotate(-90 15 230)">Business Value &#8594;</text>
 
       <!-- Scale marks -->
       <text x="60" y="455" text-anchor="middle" font-family="Libre Franklin" font-size="10" fill="#5A6A7E">1</text>
@@ -1349,25 +1349,25 @@
       <!-- AGENT: Plot use cases as circles. Formula: cx = 60 + (complexity-1)*130, cy = 440 - (value-1)*105 -->
       <!-- AGENT: Member UCs = filled circle, Employee UCs = outlined circle -->
       <!-- AGENT: Example dots below — REPLACE with actual use cases and coordinates -->
-      <circle cx="190" cy="65" r="10" fill="#1A5AFF" stroke="#1A5AFF" stroke-width="2"/>
-      <text x="205" y="70" font-family="Libre Franklin" font-size="10" font-weight="600" fill="#001C3D">[UC-M01]</text>
+      <circle cx="190" cy="65" r="10" fill="#3367FF" stroke="#3367FF" stroke-width="2"/>
+      <text x="205" y="70" font-family="Libre Franklin" font-size="10" font-weight="600" fill="#041326">[UC-M01]</text>
 
-      <circle cx="320" cy="125" r="10" fill="#1A5AFF" stroke="#1A5AFF" stroke-width="2"/>
-      <text x="335" y="130" font-family="Libre Franklin" font-size="10" font-weight="600" fill="#001C3D">[UC-M02]</text>
+      <circle cx="320" cy="125" r="10" fill="#3367FF" stroke="#3367FF" stroke-width="2"/>
+      <text x="335" y="130" font-family="Libre Franklin" font-size="10" font-weight="600" fill="#041326">[UC-M02]</text>
 
-      <circle cx="450" cy="65" r="10" fill="none" stroke="#1A5AFF" stroke-width="2"/>
-      <text x="465" y="70" font-family="Libre Franklin" font-size="10" font-weight="600" fill="#001C3D">[UC-E01]</text>
+      <circle cx="450" cy="65" r="10" fill="none" stroke="#3367FF" stroke-width="2"/>
+      <text x="465" y="70" font-family="Libre Franklin" font-size="10" font-weight="600" fill="#041326">[UC-E01]</text>
 
       <!-- AGENT: Add all use case dots with correct coordinates -->
     </svg>
   </div>
   <div class="scatter-legend">
-    <div class="scatter-legend-item"><div class="dot" style="background: #1A5AFF;"></div> Member/Customer UC (filled)</div>
-    <div class="scatter-legend-item"><div class="dot" style="background: none; border: 2px solid #1A5AFF;"></div> Employee UC (outlined)</div>
+    <div class="scatter-legend-item"><div class="dot" style="background: #3367FF;"></div> Member/Customer UC (filled)</div>
+    <div class="scatter-legend-item"><div class="dot" style="background: none; border: 2px solid #3367FF;"></div> Employee UC (outlined)</div>
     <div class="scatter-legend-item"><div class="dot" style="background: #2ECC71;"></div> Quick Wins</div>
-    <div class="scatter-legend-item"><div class="dot" style="background: #1A5AFF;"></div> Strategic</div>
-    <div class="scatter-legend-item"><div class="dot" style="background: #5C6E84;"></div> Fill</div>
-    <div class="scatter-legend-item"><div class="dot" style="background: #E02020;"></div> Deprioritize</div>
+    <div class="scatter-legend-item"><div class="dot" style="background: #3367FF;"></div> Strategic</div>
+    <div class="scatter-legend-item"><div class="dot" style="background: #6B7786;"></div> Fill</div>
+    <div class="scatter-legend-item"><div class="dot" style="background: #FF503C;"></div> Deprioritize</div>
   </div>
   <div class="page-footer">Backbase | 25</div>
 </div>

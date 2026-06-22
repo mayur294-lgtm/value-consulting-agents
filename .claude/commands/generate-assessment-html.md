@@ -5,11 +5,11 @@ Generate a premium interactive HTML dashboard from the engagement's markdown del
 **Do NOT use this skill for general presentations.** For slide decks, Innovation Day pitches, or any non-assessment deliverable, use `/presentation` instead. This skill is exclusively for Detailed Assessment / Ignite Assess engagements that follow the 7-act narrative structure.
 
 **CRITICAL DESIGN RULE:** This dashboard uses a **LIGHT base theme** (`#FFFFFF` background). The body background is NEVER dark. Dark colors are used ONLY for:
-- The sidebar (`#001C3D`)
-- Dark feature accent sections (`.dark-feature` with `#001C3D`)
-- Metric cards (`.metric-card` with `#001C3D`)
-- Journey swimlanes (`.journey-swimlane` with `#001C3D`)
-- Waterfall containers (`.waterfall-container` with `#001C3D`)
+- The sidebar (`#041326`)
+- Dark feature accent sections (`.dark-feature` with `#041326`)
+- Metric cards (`.metric-card` with `#041326`)
+- Journey swimlanes (`.journey-swimlane` with `#041326`)
+- Waterfall containers (`.waterfall-container` with `#041326`)
 
 If you find yourself setting `body { background: #0a1628 }` or any dark color as the page background — **STOP. You are not following the design system.**
 
@@ -61,7 +61,7 @@ This file is your complete HTML starting point. It contains:
 - **Do NOT write your own CSS.** Do NOT add `<style>` blocks. Do NOT add inline styles that override the design system.
 - **Do NOT add new colors.** The color palette is defined in `:root` CSS custom properties.
 - **Do NOT modify the JavaScript functions.** You MAY add inline `<script>` blocks after the main `<script>` to populate heatmap data arrays and call `renderHeatmap()`.
-- **Do NOT change the page background.** It MUST remain `var(--bg)` which is `#F5F7F9` (light).
+- **Do NOT change the page background.** It MUST remain `var(--bg)` which is `#F3F6F9` (light).
 
 ---
 
@@ -92,14 +92,14 @@ Every act panel starts with this:
 ### 5.2 Metric Cards (for headline KPIs)
 ```html
 <div class="card-grid card-grid-4">
-  <div class="metric-card"><div class="metric-val" style="color:#E02020">{{VALUE}}</div><div class="metric-lbl">{{LABEL}}</div></div>
+  <div class="metric-card"><div class="metric-val" style="color:#FF503C">{{VALUE}}</div><div class="metric-lbl">{{LABEL}}</div></div>
 </div>
 ```
 
 ### 5.3 Bento Grid (for overview stats)
 ```html
 <div class="bento">
-  <div class="bento-item bento-dark bento-2x1 bento-stat"><div class="bento-stat-val" style="color:#1A5AFF">{{VALUE}}</div><div class="bento-stat-lbl">{{LABEL}}</div></div>
+  <div class="bento-item bento-dark bento-2x1 bento-stat"><div class="bento-stat-val" style="color:#3367FF">{{VALUE}}</div><div class="bento-stat-lbl">{{LABEL}}</div></div>
   <!-- Mix: bento-item, bento-2x1, bento-1x2, bento-2x2, bento-dark, bento-accent -->
 </div>
 ```
@@ -176,7 +176,7 @@ renderHeatmap('hm-{{BL}}', caps_hm_{{BL}});
           <h4 style="font-size:1rem;font-weight:800;color:#fff;">{{TITLE}}</h4>
         </div>
         <div style="padding:16px;">
-          <div style="background:#F5F7F9;border-radius:12px;padding:12px;margin-bottom:8px;">
+          <div style="background:#F3F6F9;border-radius:12px;padding:12px;margin-bottom:8px;">
             <div style="font-size:0.75rem;font-weight:700;">{{FEATURE}}</div>
             <div style="font-size:0.68rem;color:var(--muted);">{{DESC}}</div>
           </div>
@@ -239,7 +239,7 @@ renderHeatmap('hm-{{BL}}', caps_hm_{{BL}});
   </div>
   <div class="lever-body"><div class="lever-content">
     <div class="lever-mece">
-      <div class="lever-mece-box" style="background:#FFF5F5;"><h5 style="color:#E02020;">Current State</h5>{{CURRENT}}</div>
+      <div class="lever-mece-box" style="background:#FFF5F5;"><h5 style="color:#FF503C;">Current State</h5>{{CURRENT}}</div>
       <div class="lever-mece-box" style="background:#FFFBEB;"><h5 style="color:#D97706;">Change Driver</h5>{{CHANGE}}</div>
       <div class="lever-mece-box" style="background:#EAFAF1;"><h5 style="color:#2ECC71;">Target State</h5>{{TARGET}}</div>
     </div>
@@ -255,7 +255,7 @@ renderHeatmap('hm-{{BL}}', caps_hm_{{BL}});
 ```html
 <div id="journey-{{JOURNEY_ID}}" class="journey-swimlane reveal">
   <div class="journey-swimlane-title">{{JOURNEY_NAME}}</div>
-  <div class="journey-swimlane-sub">{{LIFECYCLE_STAGE}} &bull; Total Value Leakage: <span style="color:#E02020;font-weight:800;">{{TOTAL_LEAKAGE}}</span>/year</div>
+  <div class="journey-swimlane-sub">{{LIFECYCLE_STAGE}} &bull; Total Value Leakage: <span style="color:#FF503C;font-weight:800;">{{TOTAL_LEAKAGE}}</span>/year</div>
   <div class="swimlane-toggle-group">
     <button class="swimlane-toggle-btn active-current" onclick="toggleJourney('{{JOURNEY_ID}}','current',this)">Current State</button>
     <button class="swimlane-toggle-btn" onclick="toggleJourney('{{JOURNEY_ID}}','future',this)">Backbase-Enabled</button>
@@ -421,7 +421,7 @@ This component renders the holistic journey experience map: headline insight car
 2. **X-axis spacing:** Distribute stages evenly across the viewbox width (1000). First stage at x=80, last mapped stage at x=720. Pending stages continue to x=950.
 3. **Curve:** Use cubic bezier curves (C command) connecting the score points. The curve should feel organic, not angular.
 4. **Area fill:** Close the curve path downward to y=172 to create the area fill polygon.
-5. **Colors:** Map score to color — 8+: `#2ECC71` (sage green), 5-7: `#1A5AFF` (blue) / `#D97706` (gold), 3-4: `#D97706` (gold), 1-2: `#E02020` (coral). Pending: `#93B5FF` (mid-blue).
+5. **Colors:** Map score to color — 8+: `#2ECC71` (sage green), 5-7: `#3367FF` (blue) / `#D97706` (gold), 3-4: `#D97706` (gold), 1-2: `#FF503C` (coral). Pending: `#93B5FF` (mid-blue).
 6. **Dot sizes:** Normal stages r=5. Critical stages (lowest score) r=6. Pending stages r=4 with dashed stroke, no fill.
 7. **Score labels:** Faint numbers floating near dots. Use the score color at 40-55% opacity. Font size 8, weight 700.
 
@@ -524,10 +524,10 @@ The JavaScript traceability engine adds hover-based cross-referencing. When you 
 
 | Position | Color | Gradient | Use For |
 |---|---|---|---|
-| BL-1 | `#1A5AFF` (Blue) | `#1A5AFF` → `#93B5FF` | First business line |
+| BL-1 | `#3367FF` (Blue) | `#3367FF` → `#93B5FF` | First business line |
 | BL-2 | `#2ECC71` (Sage Green) | `#2ECC71` → `#86E1A6` | Second business line |
 | BL-3 | `#D97706` (Gold) | `#D97706` → `#FCD34D` | Third business line |
-| BL-4 | `#E02020` (Coral) | `#E02020` → `#F4A6A0` | Fourth (if needed) |
+| BL-4 | `#FF503C` (Coral) | `#FF503C` → `#F4A6A0` | Fourth (if needed) |
 
 ### Consistent Application
 
@@ -551,14 +551,14 @@ Instead, use **top accent gradients** for all card-level color indicators:
 </div>
 
 <!-- WRONG: Left border ribbon — DO NOT USE -->
-<div class="card" style="border-left:4px solid #E02020;">
+<div class="card" style="border-left:4px solid #FF503C;">
 ```
 
 For comparison/contrast boxes (e.g., "Current vs. Target"):
 ```html
 <!-- Use background tint + top accent, no left border -->
 <div style="padding:14px 18px;background:#FFF5F5;border-radius:12px;position:relative;overflow:hidden;">
-  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#E02020,#F4A6A0);border-radius:12px 12px 0 0;"></div>
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#FF503C,#F4A6A0);border-radius:12px 12px 0 0;"></div>
   <!-- content -->
 </div>
 ```

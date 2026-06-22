@@ -279,40 +279,43 @@ When resolving merge conflicts:
 
 ## Custom Skills Available
 
-### /frontline-html and /frontline-slides — Backbase Unified Frontline 2026 Presentation Builders
+### /frontline — Backbase Unified Frontline 2026 design-system builders
 
-Two paired skills for the **Backbase Unified Frontline 2026** design system. They replace the legacy `/presentation` and `/presentation-v2` skills (now in `.claude/commands/deprecated/`).
+`/frontline` is the **launcher — start here for any client-facing visual deliverable** (deck, document, presentation). It asks for the output format and routes to the right builder. These replace the legacy `/frontline-html` and `/frontline-slides` (now in `.claude/commands/deprecated/`), which had replaced `/presentation` and `/presentation-v2`.
 
 | Skill | Output | Use When |
 |-------|--------|----------|
-| `/frontline-html` | Single-file `.html` (15–120 KB) with keyboard + dot navigation | Brainstorming, iterating on content, internal previews |
-| `/frontline-slides` | Google-Slides-compatible `.pptx` (50–150 KB), 20"×11.25" canvas | Final shareable deck for Google Slides import |
+| `/frontline` | — (router) | Always start here; picks the format with you |
+| `/frontline-slides-html` | Single-file `.html` deck — Frontline 2026 Slide Engine (17 layouts, presenter mode, overview grid) | Brainstorming, iterating, internal previews |
+| `/frontline-slides-pptx` | Google-Slides-compatible `.pptx`, 20"×11.25" canvas | Final shareable deck for Google Slides import |
+| `/frontline-long-form` | Sidebar-navigated long-form HTML document | Value cases, ROI summaries, exec briefings, proposal support |
 
-**Workflow:** draft with `/frontline-html` → finalise with `/frontline-slides`.
+**Workflow:** draft with `/frontline-slides-html` → finalise with `/frontline-slides-pptx`; use `/frontline-long-form` for documents.
 
-**Brand tokens (Frontline 2026 — the only permitted palette for new presentations):**
-- Navy `#001C3D` — primary dark backgrounds
-- Action Blue `#1A5AFF` — accents, CTAs, AI-assist icons
-- Semantic Red `#E02020` — warnings, "from" state labels
-- Background Gray `#F5F7F9` — "from" state cards, soft surfaces
-- Text Muted `#5C6E84` — captions, disclaimers
+**Brand tokens (Frontline 2026 — verified from Master Template `theme1.xml`; canonical source `presentations/frontline-2026/design-tokens.json`):**
+- Navy `#041326` — primary dark backgrounds, body text on light
+- Action Blue `#3367FF` — accents, CTAs, links, active states
+- Semantic Red `#FF503C` — warnings, "from" state labels
+- Background Gray `#F3F6F9` — "from" state cards, page background
+- Text Muted `#6B7786` — captions, disclaimers
 - Success Green `#2ECC71` — positive metrics
+- Cyan `#69FEFF` — combined/total figures, bright accent on navy
 - Surface White `#FFFFFF` — clean backgrounds
 - **Font:** Libre Franklin (Google Fonts), Helvetica/Arial fallback
 - **Radius:** 16px cards, 30px pill buttons
 - **Chrome:** blue inverted-L corner accent on light slides + Backbase wordmark footer (notched B)
 
-**Available layouts (17 methods across both builders):**
+**Available layouts (17 types):**
 Cover · Section Divider · Agenda · Content · Split Comparison (From/To) · Showcase · Architecture · Stat Cards · Case Study · Statement · Tiles · Process Rows · Pillar Rows · Financial Table · Alert Cards · Architecture Stack · Context Stats.
 
 **Tone & content rules (CRITICAL):**
 1. No bullet-point soup — **maximum 4 key points per slide**
-2. "So What" headers — outcomes, not labels (e.g. "Unifying 50% of the bank's manual work", not "Our Platform")
-3. Three Operational Powers (when explaining how the product works): **Nexus** (data), **Orchestration** (workflows), **Sentinel** (intelligence)
+2. "So What" headers — outcomes, not labels (e.g. "Unifying 60% of the bank's manual work", not "Our Platform")
+3. Open on **From→To**, anchor on the AI-Native Banking OS, retire "engagement banking" / "better channels" (see `knowledge/banking_os.md` → "Applying this narrative")
 
-**Tools:** `tools/frontline_2026_html.py` and `tools/frontline_2026_presenter.py` — pure-Python builders. The slides builder requires `python-pptx`.
+**Canon:** visual = `presentations/frontline-2026/design-tokens.json`; substance + voice = `knowledge/banking_os.md`.
 
-**Tokens reference:** `presentations/frontline-2026/design-tokens.json`, `slide-layouts.md`, `google-slides-rules.md`, `html-components.md`.
+**Tools:** HTML deck engine `presentations/backbase-slides-app/engine.js` (+ `deck-template.html`); PPTX builders `tools/frontline_slides_pptx.py` and `tools/frontline_2026_presenter.py` (require `python-pptx`); long-form `templates/long-form/document-template.html`.
 
 **Do NOT use these skills for:**
 - Assessment dashboards → use `/generate-assessment-html`
