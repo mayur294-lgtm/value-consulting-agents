@@ -573,10 +573,11 @@ async def step_discovery(
             anon_transcripts.append(anon_path)
             anon_mappings[str(t)] = mapping_path
             log(f"    Anonymized: {t.name} → {anon_path.name}")
-        except Exception:
-            # If anonymization fails, use the original (don't block the pipeline)
-            anon_transcripts.append(t)
-            log(f"    ⚠ Anonymization skipped for {t.name}, using original", C.YELLOW)
+        except Exception as e:
+            # FAIL CLOSED: never send raw PII to the API. Skip this transcript and
+            # surface the failure loudly rather than silently leaking the original.
+            log(f"    ✗ Anonymization FAILED for {t.name} ({type(e).__name__}: {e}) — "
+                f"SKIPPING (raw transcript will NOT be sent to the API).", C.RED)
 
     # Use anonymized transcripts for all downstream processing
     transcripts = anon_transcripts
@@ -1510,18 +1511,18 @@ REQUIRED OUTPUT FILES (you MUST produce BOTH):
 
 _DESIGN_RULES_INLINE = """
 CRITICAL DESIGN RULES — Backbase Unified Frontline 2026 (full details in design-system.md):
-- LIGHT base theme: Body background #FFFFFF (pure white), cards #FFFFFF, soft surfaces #F5F7F9
-- Brand colors: #1A5AFF (action blue), #001C3D (navy), #E02020 (red), #2ECC71 (green), #D97706 (amber), #5C6E84 (muted)
-- Dark navy (#001C3D) ONLY for: sidebar navigation, hero banner, dark-feature accent sections, metric cards
-- WCAG on dark backgrounds: Blue text -> use #93B5FF (mid-blue) for body, #1A5AFF for large only; Green text -> #86E1A6 lightened
+- LIGHT base theme: Body background #FFFFFF (pure white), cards #FFFFFF, soft surfaces #F3F6F9
+- Brand colors: #3367FF (action blue), #041326 (navy), #FF503C (red), #2ECC71 (green), #D97706 (amber), #6B7786 (muted)
+- Dark navy (#041326) ONLY for: sidebar navigation, hero banner, dark-feature accent sections, metric cards
+- WCAG on dark backgrounds: Blue text -> use #93B5FF (mid-blue) for body, #3367FF for large only; Green text -> #86E1A6 lightened
 - Sub-labels on dark backgrounds: minimum rgba(255,255,255,0.55) opacity
-- Card accents: use TOP accent gradients (#1A5AFF -> #93B5FF), NEVER border-left ribbons
+- Card accents: use TOP accent gradients (#3367FF -> #93B5FF), NEVER border-left ribbons
 - Brand chrome on light panels: blue inverted-L corner accent (top-left) + Backbase wordmark footer (bottom-right)
 - DO NOT generate a dark-themed dashboard. The base theme is LIGHT (#FFFFFF).
 - TYPOGRAPHY: Libre Franklin primary (Helvetica/Arial fallback). Use <strong> or font-weight:700 SPARINGLY — only for metric values, card
   titles, and key emphasis. Body text and descriptions must use normal weight (400).
   Over-bolding everything makes the dashboard feel heavy and reduces visual hierarchy.
-- NO ENGAGE 2026 hexes (#1A5AFF, #001C3D, #E02020, #2ECC71, #D97706 are deprecated)
+- NO ENGAGE 2026 hexes (#3367FF, #041326, #FF503C, #2ECC71, #D97706 are deprecated)
 - NO cyan or purple in headlines/CTAs (purple `#7C3AED` allowed only for utility tile accents in 6-up grids)
 """
 
@@ -1661,7 +1662,7 @@ e.g., Digital Investor Platform Assessment
 e.g., February 2026
 <!-- HERO_H1 -->
 Multi-line hero heading with <span> tags. Use SOLID color for accent words — never gradient text. Example:
-<span>From Trusted</span><span>Banker to</span><span style="color:#1A5AFF;">Trusted Investor</span>
+<span>From Trusted</span><span>Banker to</span><span style="color:#3367FF;">Trusted Investor</span>
 <!-- HERO_SUBTITLE -->
 1-2 sentence hero subtitle about the engagement
 <!-- HERO_TAGS -->
@@ -1676,13 +1677,13 @@ https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=900&auto=format&f
 (repeat for 3 cards)
 <!-- HERO_STATS -->
 5 stat items:
-<div class="hero-stat"><div class="hero-stat-val" style="color:#1A5AFF;">14.27M</div><div class="hero-stat-lbl">Label</div></div>
+<div class="hero-stat"><div class="hero-stat-val" style="color:#3367FF;">14.27M</div><div class="hero-stat-lbl">Label</div></div>
 (repeat for 5 stats)
 <!-- EXEC_SUMMARY_DESC -->
 1-2 sentence executive summary
 <!-- EXEC_TRANSFORMATION_STORY -->
 Transformation arc card with gradient overline:
-<div style="position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1A5AFF,#93B5FF);"></div><div style="padding:4px 0 20px;"><div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:3px;background:linear-gradient(90deg,#1A5AFF,#93B5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px;">TRANSFORMATION ARC</div><h3 style="font-size:1.5rem;font-weight:900;">Arc Title</h3><p style="font-size:0.92rem;color:var(--muted);line-height:1.8;">Arc description</p></div></div>
+<div style="position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3367FF,#93B5FF);"></div><div style="padding:4px 0 20px;"><div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:3px;background:linear-gradient(90deg,#3367FF,#93B5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px;">TRANSFORMATION ARC</div><h3 style="font-size:1.5rem;font-weight:900;">Arc Title</h3><p style="font-size:0.92rem;color:var(--muted);line-height:1.8;">Arc description</p></div></div>
 <!-- EXEC_BENTO_ITEMS -->
 6 bento stat cards. Use class "bento-item bento-stat" (light) or "bento-item bento-dark bento-stat" (dark).
 For 2x-width: add "bento-2x1". For accent: add "bento-accent".
@@ -1703,7 +1704,7 @@ PARTIAL_B.html — Acts 1, 2, 3
 
 For each act: TITLE, DESC, TRANSFORMATION_THREAD, then act-specific content.
 TRANSFORMATION_THREAD format (same card style as EXEC_TRANSFORMATION_STORY but shorter):
-<div style="position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1A5AFF,#93B5FF);"></div><div style="padding:4px 0 0;"><div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:3px;background:linear-gradient(90deg,#1A5AFF,#93B5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;">TRANSFORMATION ARC — ACT THEME</div><h3 style="font-size:1.1rem;font-weight:900;margin-bottom:10px;">Thread Title</h3><p style="font-size:0.88rem;color:var(--muted);line-height:1.75;">2-3 sentences connecting this act to the transformation arc.</p></div></div>
+<div style="position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3367FF,#93B5FF);"></div><div style="padding:4px 0 0;"><div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:3px;background:linear-gradient(90deg,#3367FF,#93B5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;">TRANSFORMATION ARC — ACT THEME</div><h3 style="font-size:1.1rem;font-weight:900;margin-bottom:10px;">Thread Title</h3><p style="font-size:0.88rem;color:var(--muted);line-height:1.75;">2-3 sentences connecting this act to the transformation arc.</p></div></div>
 
 <!-- ACT1_TITLE -->
 Act 1 title
@@ -1757,7 +1758,7 @@ Journey experience map headline cards per stage:
 <div class="jx-headline"><span class="jx-stage-num">1</span><strong>Stage Name</strong><span class="jx-emoji">📱</span></div>
 <!-- ACT4_JX_SVG -->
 SVG emotion curve (width 100%, viewBox, path with emotion line):
-<svg width="100%" viewBox="0 0 800 200" style="overflow:visible;">...<path d="M0,100 C..." stroke="#1A5AFF" fill="none" stroke-width="3"/>...<circle class="jx-marker" data-stage="1" cx="80" cy="120" r="8" fill="#1A5AFF" onclick="showStage(1)"/>...</svg>
+<svg width="100%" viewBox="0 0 800 200" style="overflow:visible;">...<path d="M0,100 C..." stroke="#3367FF" fill="none" stroke-width="3"/>...<circle class="jx-marker" data-stage="1" cx="80" cy="120" r="8" fill="#3367FF" onclick="showStage(1)"/>...</svg>
 <!-- ACT4_JX_PANELS -->
 Expandable detail panels per stage:
 <div class="jx-panel" id="jxp-1"><h4>Stage 1 Title</h4><div class="pain-grid"><div class="pain-item">Pain point</div>...</div><div class="opp-grid"><div class="opp-item">Opportunity</div>...</div></div>
@@ -1815,7 +1816,7 @@ Each L1 object MUST have: label (string), desc (string), l2s (array of L2 object
 Each L2 object MUST have: label (string), desc (string), caps (array of capability ID strings matching ACT5_HEATMAP_DATA ids).
 Create 4-6 lifecycle stages that group capabilities by customer journey phase.
 Map ALL capabilities to exactly one lifecycle stage. Every capability ID must appear in exactly one L2.caps array.
-Stage colors: use brand palette (#1A5AFF, #EA580C, #059669, #DC2626, #93B5FF, #D97706).
+Stage colors: use brand palette (#3367FF, #EA580C, #059669, #DC2626, #93B5FF, #D97706).
 The template uses var LIFECYCLE_STAGES = [{{ACT5_LIFECYCLE_STAGES}}]; — so output complete JS objects with their own braces.
 
 ═══════════════════════════════════════════════════════════
@@ -1838,7 +1839,7 @@ Each phase lists: initiatives as bullet points, timeline range, investment estim
 3 phase summary cards (optional — only if timeline doesn't cover all detail)
 <!-- ACT6_ADDITIONAL_CONTENT -->
 Two sections here:
-1. DECISIONS CARD: A single FULL-WIDTH .card with border-top:3px solid #1A5AFF. Inside: heading "THREE DECISIONS REQUIRED BEFORE MONTH 1" + 3-column grid of decision boxes (background:#EFF6FF, border-radius:12px, padding:20px). Do NOT wrap in card-grid card-grid-3.
+1. DECISIONS CARD: A single FULL-WIDTH .card with border-top:3px solid #3367FF. Inside: heading "THREE DECISIONS REQUIRED BEFORE MONTH 1" + 3-column grid of decision boxes (background:#EFF6FF, border-radius:12px, padding:20px). Do NOT wrap in card-grid card-grid-3.
 2. KEY VALUE MILESTONES: A .card with 4-column grid of milestone boxes (Month X → what happens). Use phase-matching colors for backgrounds.
 <!-- ACT7_TITLE -->
 Act 7 title
@@ -1876,7 +1877,7 @@ Each lever card follows this structure:
   <div class="lever-header" onclick="this.parentElement.classList.toggle('open')">
     <span class="lever-num">01</span>
     <span class="lever-name">Lever Name</span>
-    <span class="lever-value" style="color:#1A5AFF;">$X.XM</span>
+    <span class="lever-value" style="color:#3367FF;">$X.XM</span>
     <span class="lever-arrow">&#9660;</span>
   </div>
   <div class="lever-body"><div class="lever-content">
@@ -1889,7 +1890,7 @@ Each lever card follows this structure:
     <div class="lever-capabilities"><span class="lever-cap-tag">CAP-ID</span></div>
   </div></div>
 </div>
-Lever-value colors: #1A5AFF, #EA580C, #93B5FF, #059669, #DC2626, #D97706.
+Lever-value colors: #3367FF, #EA580C, #93B5FF, #059669, #DC2626, #D97706.
 
 ═══════════════════════════════════════════════════════════
 PARTIAL_E.html — Journey Maps

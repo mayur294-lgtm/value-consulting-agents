@@ -291,9 +291,9 @@ class Frontline2026HTML:
             summary = t.get("summary", "")
             summary_accent = t.get("summary_accent", accent)
             if summary:
-                accent_colors = {"blue": "#1A5AFF", "red": "#DC2626", "green": "#16A34A", "amber": "#D97706", "purple": "#7C3AED", "cyan": "#0891B2"}
+                accent_colors = {"blue": "#3367FF", "red": "#DC2626", "green": "#16A34A", "amber": "#D97706", "purple": "#7C3AED", "cyan": "#0891B2"}
                 bg_colors = {"blue": "#EBF0FF", "red": "#FFF5F5", "green": "#F0FDF4", "amber": "#FFFBEB", "purple": "#F5F3FF", "cyan": "#F0FDFA"}
-                sc = accent_colors.get(summary_accent, "#1A5AFF")
+                sc = accent_colors.get(summary_accent, "#3367FF")
                 sb = bg_colors.get(summary_accent, "#EBF0FF")
                 summary_html = f'<div style="background:{sb};border:1px solid {sc}30;border-radius:8px;padding:8px 12px;margin-top:auto;text-align:center;font-size:10px;"><div style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:{sc};text-transform:uppercase;margin-bottom:2px;">{self._render_rich_text(summary.split("|")[0].strip()) if "|" in summary else ""}</div><div style="font-size:12px;font-weight:800;color:var(--text-main);">{self._render_rich_text(summary.split("|")[1].strip()) if "|" in summary else self._render_rich_text(summary)}</div></div>'
             else:
@@ -388,7 +388,7 @@ class Frontline2026HTML:
                   </div>
                   <div style="display:flex;align-items:center;gap:8px">
                     <div style="width:{after_pct:.0f}%;height:14px;background:#93B5FF;border-radius:3px"></div>
-                    <span style="font-size:9px;color:#1A5AFF;font-weight:700;white-space:nowrap">{after} mins <span style="color:#16A34A">({saving})</span></span>
+                    <span style="font-size:9px;color:#3367FF;font-weight:700;white-space:nowrap">{after} mins <span style="color:#16A34A">({saving})</span></span>
                   </div>
                 </div>
               </div>'''
@@ -561,7 +561,7 @@ class Frontline2026HTML:
         subtitle_html = f'<p class="slide-subtitle">{self._escape(subtitle)}</p>' if subtitle else ""
 
         # Accent map
-        accent_map = {"red": "#DC2626", "blue": "#1A5AFF", "green": "#16A34A", "amber": "#D97706", "cyan": "#0891B2", "purple": "#7C3AED"}
+        accent_map = {"red": "#DC2626", "blue": "#3367FF", "green": "#16A34A", "amber": "#D97706", "cyan": "#0891B2", "purple": "#7C3AED"}
 
         # Header row
         hdr_cells = '<div style="flex:0 0 200px"></div>'
@@ -605,7 +605,7 @@ class Frontline2026HTML:
         footer_html = ""
         if footer_text:
             rendered_footer = self._render_rich_text(footer_text)
-            footer_html = f'<div style="background:#F0F4FF;border-radius:8px;padding:10px 16px;margin-top:14px;font-size:11px;color:#001C3D;text-align:center;line-height:1.5">{rendered_footer}</div>'
+            footer_html = f'<div style="background:#F0F4FF;border-radius:8px;padding:10px 16px;margin-top:14px;font-size:11px;color:#041326;text-align:center;line-height:1.5">{rendered_footer}</div>'
 
         self.scenes.append(f'''
     <section class="slide slide--light">
@@ -636,9 +636,9 @@ class Frontline2026HTML:
         Each alert: {severity: red|amber|blue|green, title, body}"""
         alerts = alerts or []
         severity_colors = {
-            'red': ('#E02020', '#FDF0F0', 'RED'),
+            'red': ('#FF503C', '#FDF0F0', 'RED'),
             'amber': ('#D97706', '#FEF9E7', 'AMBER'),
-            'blue': ('#1A5AFF', '#EEF2FF', 'BLUE'),
+            'blue': ('#3367FF', '#EEF2FF', 'BLUE'),
             'green': ('#2ECC71', '#EAFAF1', 'GREEN'),
         }
         cards_html = ''
@@ -682,9 +682,9 @@ class Frontline2026HTML:
         layers_html = ''
         for layer in layers:
             is_dark = layer.get('dark', False)
-            bg = layer.get('bg', '#F0F4FF' if not is_dark else '#001C3D')
-            text_color = '#FFFFFF' if is_dark else '#001C3D'
-            border_left_color = layer.get('accent', '#1A5AFF')
+            bg = layer.get('bg', '#F0F4FF' if not is_dark else '#041326')
+            text_color = '#FFFFFF' if is_dark else '#041326'
+            border_left_color = layer.get('accent', '#3367FF')
             label = layer.get('label', '')
             sub_label = layer.get('sub_label', '')
 
@@ -736,15 +736,15 @@ class Frontline2026HTML:
         pillars = pillars or []
         rows_html = ''
         for p in pillars:
-            accent = p.get('accent', '#1A5AFF')
+            accent = p.get('accent', '#3367FF')
             name = p.get('name', '')
             sub = p.get('sub', '')
             items = p.get('items', [])
             is_wide = len(items) <= 1  # single wide box vs multiple boxes
 
             # Left pillar pill
-            sub_html = f'<div style="font-size:10px; color:#5C6E84; margin-top:2px;">{self._escape(sub)}</div>' if sub else ''
-            left_pill = f'''<div style="background:#F5F7F9; border:1.5px solid {accent}; border-radius:10px; padding:10px 16px; min-width:160px;">
+            sub_html = f'<div style="font-size:10px; color:#6B7786; margin-top:2px;">{self._escape(sub)}</div>' if sub else ''
+            left_pill = f'''<div style="background:#F3F6F9; border:1.5px solid {accent}; border-radius:10px; padding:10px 16px; min-width:160px;">
               <div style="font-size:13px; font-weight:700; color:{accent};">{self._escape(name)}</div>
               {sub_html}
             </div>'''
@@ -752,17 +752,17 @@ class Frontline2026HTML:
             # Right boxes
             if is_wide and items:
                 item = items[0]
-                item_sub = f'<div style="font-size:10px; color:#5C6E84; margin-top:2px;">{self._escape(item.get("sub", ""))}</div>' if item.get('sub') else ''
-                boxes_html = f'''<div style="flex:1; background:#EBF0FF; border:1.5px solid #1A5AFF; border-radius:10px; padding:12px 20px; text-align:center;">
-                  <div style="font-size:13px; font-weight:600; color:#001C3D;">{self._escape(item.get("name", ""))}</div>
+                item_sub = f'<div style="font-size:10px; color:#6B7786; margin-top:2px;">{self._escape(item.get("sub", ""))}</div>' if item.get('sub') else ''
+                boxes_html = f'''<div style="flex:1; background:#EBF0FF; border:1.5px solid #3367FF; border-radius:10px; padding:12px 20px; text-align:center;">
+                  <div style="font-size:13px; font-weight:600; color:#041326;">{self._escape(item.get("name", ""))}</div>
                   {item_sub}
                 </div>'''
             else:
                 boxes_inner = ''
                 for item in items:
-                    item_sub = f'<div style="font-size:10px; color:#5C6E84; margin-top:2px;">{self._escape(item.get("sub", ""))}</div>' if item.get('sub') else ''
-                    boxes_inner += f'''<div style="flex:1; background:#EBF0FF; border:1.5px solid #1A5AFF; border-radius:10px; padding:10px 14px; text-align:center; min-width:120px;">
-                    <div style="font-size:12px; font-weight:600; color:#001C3D;">{self._escape(item.get("name", ""))}</div>
+                    item_sub = f'<div style="font-size:10px; color:#6B7786; margin-top:2px;">{self._escape(item.get("sub", ""))}</div>' if item.get('sub') else ''
+                    boxes_inner += f'''<div style="flex:1; background:#EBF0FF; border:1.5px solid #3367FF; border-radius:10px; padding:10px 14px; text-align:center; min-width:120px;">
+                    <div style="font-size:12px; font-weight:600; color:#041326;">{self._escape(item.get("name", ""))}</div>
                     {item_sub}
                   </div>'''
                 boxes_html = f'<div style="display:flex; gap:8px; flex:1;">{boxes_inner}</div>'
@@ -770,12 +770,12 @@ class Frontline2026HTML:
             # Optional section label above boxes (e.g. "SINGLE PANE OF GLASS")
             section_above = ''
             if p.get('section_above'):
-                section_above = f'<div style="font-size:10px; font-weight:700; letter-spacing:0.08em; color:#5C6E84; text-transform:uppercase; margin-bottom:6px; padding-left:4px;">{self._escape(p["section_above"])}</div>'
+                section_above = f'<div style="font-size:10px; font-weight:700; letter-spacing:0.08em; color:#6B7786; text-transform:uppercase; margin-bottom:6px; padding-left:4px;">{self._escape(p["section_above"])}</div>'
 
             rows_html += f'''
           <div style="display:flex; align-items:center; gap:16px; margin-bottom:10px;">
             {left_pill}
-            <div style="color:#1A5AFF; font-size:18px; flex-shrink:0;">&#8594;</div>
+            <div style="color:#3367FF; font-size:18px; flex-shrink:0;">&#8594;</div>
             <div style="flex:1;">
               {section_above}
               {boxes_html}
@@ -785,7 +785,7 @@ class Frontline2026HTML:
         # Footer boxes
         footer_html = ''
         if footer_left or footer_right:
-            fl = f'<div style="flex:1; font-size:11px; color:#001C3D; line-height:1.5;"><strong>Schroders retains:</strong> {self._escape(footer_left)}</div>' if footer_left else ''
+            fl = f'<div style="flex:1; font-size:11px; color:#041326; line-height:1.5;"><strong>Schroders retains:</strong> {self._escape(footer_left)}</div>' if footer_left else ''
             fr = f'<div style="flex:1; background:#FFF5F5; border:1px solid #FCA5A5; border-radius:8px; padding:10px 14px; font-size:11px; color:#DC2626; line-height:1.5;"><strong>What gets retired:</strong> {self._escape(footer_right)}</div>' if footer_right else ''
             footer_html = f'<div style="display:flex; gap:16px; margin-top:16px;">{fl}{fr}</div>'
 
@@ -826,35 +826,35 @@ class Frontline2026HTML:
                 label = layer.get('label', '')
                 items = layer.get('items', [])
                 is_banner = layer.get('banner', False)
-                banner_color = layer.get('banner_color', '#1A5AFF' if side == 'right' else '#DC2626')
+                banner_color = layer.get('banner_color', '#3367FF' if side == 'right' else '#DC2626')
                 banner_bg = layer.get('banner_bg', '#EBF0FF' if side == 'right' else '#FFF5F5')
-                banner_border = layer.get('banner_border', '#1A5AFF' if side == 'right' else '#FCA5A5')
+                banner_border = layer.get('banner_border', '#3367FF' if side == 'right' else '#FCA5A5')
 
                 if label:
-                    html += f'<div style="font-size:10px; font-weight:700; letter-spacing:0.06em; color:{banner_color if side == "right" else "#DC2626" if "No " in label or "X " in label else "#5C6E84"}; text-transform:uppercase; margin:10px 0 5px 0;">{self._escape(label)}</div>'
+                    html += f'<div style="font-size:10px; font-weight:700; letter-spacing:0.06em; color:{banner_color if side == "right" else "#DC2626" if "No " in label or "X " in label else "#6B7786"}; text-transform:uppercase; margin:10px 0 5px 0;">{self._escape(label)}</div>'
 
                 if is_banner:
                     banner_text_color = layer.get('banner_text_color', banner_color)
                     html += f'''<div style="background:{banner_bg}; border:1.5px solid {banner_border}; border-radius:8px; padding:10px 16px; margin-bottom:6px; text-align:center;">
                       <div style="font-size:12px; font-weight:700; color:{banner_text_color};">{self._escape(items[0].get("name", "") if items else "")}</div>
-                      <div style="font-size:10px; color:#5C6E84; margin-top:2px;">{self._escape(items[0].get("sub", "") if items else "")}</div>
+                      <div style="font-size:10px; color:#6B7786; margin-top:2px;">{self._escape(items[0].get("sub", "") if items else "")}</div>
                     </div>'''
                 else:
                     boxes = ''
                     for item in items:
-                        bg = item.get('bg', '#EBF0FF' if side == 'right' else '#F5F7F9')
-                        border = item.get('border', '#1A5AFF' if side == 'right' else '#D1D5DB')
-                        color = item.get('color', '#001C3D')
+                        bg = item.get('bg', '#EBF0FF' if side == 'right' else '#F3F6F9')
+                        border = item.get('border', '#3367FF' if side == 'right' else '#D1D5DB')
+                        color = item.get('color', '#041326')
                         is_dark_box = item.get('dark', False)
                         if is_dark_box:
-                            bg = item.get('bg', '#001C3D')
+                            bg = item.get('bg', '#041326')
                             color = '#FFFFFF'
-                            border = item.get('border', '#001C3D')
+                            border = item.get('border', '#041326')
                         is_retired = item.get('retired', False)
                         retired_bg = '#FFF5F5' if is_retired else bg
                         retired_border = '#FCA5A5' if is_retired else border
                         retired_color = '#DC2626' if is_retired else color
-                        sub = f'<div style="font-size:9px; color:{"#FBBF24" if is_dark_box else "#5C6E84"}; margin-top:1px;">{self._escape(item.get("sub", ""))}</div>' if item.get('sub') else ''
+                        sub = f'<div style="font-size:9px; color:{"#FBBF24" if is_dark_box else "#6B7786"}; margin-top:1px;">{self._escape(item.get("sub", ""))}</div>' if item.get('sub') else ''
                         boxes += f'''<div style="flex:1; min-width:80px; background:{retired_bg if is_retired else bg}; border:1.5px solid {retired_border if is_retired else border}; border-radius:8px; padding:8px 10px; text-align:center;">
                         <div style="font-size:11px; font-weight:600; color:{retired_color if is_retired else color};">{self._escape(item.get("name", ""))}</div>
                         {sub}
@@ -868,10 +868,10 @@ class Frontline2026HTML:
         # Legend
         legend_html = ''
         if legend:
-            items = ''.join(f'<span style="display:inline-flex; align-items:center; gap:5px; margin-right:16px;"><span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:{l.get("color", "#D1D5DB")}; border:1px solid {l.get("border", l.get("color", "#D1D5DB"))};"></span><span style="font-size:10px; color:#5C6E84;">{self._escape(l.get("label", ""))}</span></span>' for l in legend)
+            items = ''.join(f'<span style="display:inline-flex; align-items:center; gap:5px; margin-right:16px;"><span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:{l.get("color", "#D1D5DB")}; border:1px solid {l.get("border", l.get("color", "#D1D5DB"))};"></span><span style="font-size:10px; color:#6B7786;">{self._escape(l.get("label", ""))}</span></span>' for l in legend)
             legend_html = f'<div style="display:flex; flex-wrap:wrap; justify-content:center; gap:4px; margin-top:12px;">{items}</div>'
 
-        footer_html = f'<div style="background:#F0F4FF; border-radius:8px; padding:10px 16px; margin-top:10px; font-size:11px; color:#001C3D; text-align:center; line-height:1.5;">{self._escape(footer_text)}</div>' if footer_text else ''
+        footer_html = f'<div style="background:#F0F4FF; border-radius:8px; padding:10px 16px; margin-top:10px; font-size:11px; color:#041326; text-align:center; line-height:1.5;">{self._escape(footer_text)}</div>' if footer_text else ''
 
         label_html = f'<span class="label label--dark">{self._escape(section_label.upper())}</span>' if section_label else ''
         subtitle_html = f'<p class="slide-subtitle">{self._escape(subtitle)}</p>' if subtitle else ''
@@ -887,9 +887,9 @@ class Frontline2026HTML:
             <div style="font-size:12px; font-weight:700; letter-spacing:0.06em; color:#DC2626; text-transform:uppercase; margin-bottom:8px; text-align:center;">{self._escape(left_title)}</div>
             {left_html}
           </div>
-          <div style="display:flex; align-items:center; font-size:24px; color:#5C6E84; padding:0 4px;">&#8594;</div>
+          <div style="display:flex; align-items:center; font-size:24px; color:#6B7786; padding:0 4px;">&#8594;</div>
           <div style="flex:1;">
-            <div style="font-size:12px; font-weight:700; letter-spacing:0.06em; color:#1A5AFF; text-transform:uppercase; margin-bottom:8px; text-align:center;">{self._escape(right_title)}</div>
+            <div style="font-size:12px; font-weight:700; letter-spacing:0.06em; color:#3367FF; text-transform:uppercase; margin-bottom:8px; text-align:center;">{self._escape(right_title)}</div>
             {right_html}
           </div>
         </div>
@@ -949,13 +949,13 @@ class Frontline2026HTML:
         label_html = f'<span class="label label--dark">{self._escape(section_label.upper())}</span>' if section_label else ""
         subtitle_html = f'<p class="slide-subtitle">{self._escape(subtitle)}</p>' if subtitle else ""
 
-        accent_colors = {"green": "#16A34A", "blue": "#1A5AFF", "purple": "#7C3AED", "cyan": "#0891B2", "red": "#DC2626", "amber": "#D97706"}
+        accent_colors = {"green": "#16A34A", "blue": "#3367FF", "purple": "#7C3AED", "cyan": "#0891B2", "red": "#DC2626", "amber": "#D97706"}
         bg_colors = {"green": "#F0FDF4", "blue": "#EBF0FF", "purple": "#F5F3FF", "cyan": "#F0FDFA", "red": "#FFF5F5", "amber": "#FFFBEB"}
 
         dims_html = ""
         for d in dimensions:
             accent = d.get("accent", "blue")
-            ac = accent_colors.get(accent, "#1A5AFF")
+            ac = accent_colors.get(accent, "#3367FF")
             bg = bg_colors.get(accent, "#EBF0FF")
             stats_html = ""
             for s in d.get("stats", []):
@@ -974,10 +974,10 @@ class Frontline2026HTML:
         if trusted_logos:
             logo_items = ""
             fonts = {"Coutts": "font-family:Georgia,serif;font-style:italic;font-weight:700;color:#1B3A4B;font-size:22px;",
-                      "Evelyn": "font-family:'Inter',sans-serif;font-weight:400;color:#5C6E84;font-size:20px;letter-spacing:1px;",
-                      "Pictet": "font-family:'Inter',sans-serif;font-weight:800;color:#001C3D;font-size:20px;letter-spacing:2px;text-transform:uppercase;"}
+                      "Evelyn": "font-family:'Inter',sans-serif;font-weight:400;color:#6B7786;font-size:20px;letter-spacing:1px;",
+                      "Pictet": "font-family:'Inter',sans-serif;font-weight:800;color:#041326;font-size:20px;letter-spacing:2px;text-transform:uppercase;"}
             for logo in trusted_logos:
-                style = fonts.get(logo, "font-weight:700;color:#5C6E84;font-size:20px;")
+                style = fonts.get(logo, "font-weight:700;color:#6B7786;font-size:20px;")
                 logo_items += f'<span style="{style}">{self._escape(logo)}</span>'
             logos_html = f'''
               <div style="margin-top:20px;padding-top:14px;border-top:1px solid #E0E4E8;text-align:center;">
@@ -1018,7 +1018,7 @@ class Frontline2026HTML:
         cards_html = ''
         for c in cards:
             imp_color = c.get('improvement_color', 'green')
-            color_map = {'green': '#0D7C3D', 'red': '#D93025', 'blue': '#1A5AFF'}
+            color_map = {'green': '#0D7C3D', 'red': '#D93025', 'blue': '#3367FF'}
             imp_css_color = color_map.get(imp_color, '#0D7C3D')
             before_color = c.get('before_color', '#D93025')
             after_color = c.get('after_color', '#0D7C3D')
@@ -1062,7 +1062,7 @@ class Frontline2026HTML:
         """
         stats = stats or []
         stats_html = ""
-        accent_colors = ["#16A34A", "#1A5AFF", "#7C3AED", "#0891B2"]
+        accent_colors = ["#16A34A", "#3367FF", "#7C3AED", "#0891B2"]
         for i, s in enumerate(stats):
             ac = accent_colors[i % len(accent_colors)]
             sub_html = f'<div style="font-size:8px;color:var(--text-muted);margin-top:1px;">{self._escape(s.get("sub",""))}</div>' if s.get("sub") else ""
@@ -1109,7 +1109,7 @@ class Frontline2026HTML:
         scenes_with_footer = []
         for i, scene in enumerate(self.scenes):
             is_dark = 'slide--dark' in scene
-            logo_color = '#FFFFFF' if is_dark else '#001C3D'
+            logo_color = '#FFFFFF' if is_dark else '#041326'
             num_color = 'rgba(255,255,255,0.5)' if is_dark else 'var(--text-muted)'
 
             # Chrome: blue accent square (light slides only) — no top bar
@@ -1122,7 +1122,7 @@ class Frontline2026HTML:
       </div>'''
 
             # Footer: Backbase wordmark SVG (correct notched B) + page number
-            logo_fill = "#FFFFFF" if is_dark else "#001C3D"
+            logo_fill = "#FFFFFF" if is_dark else "#041326"
             footer = f'''
       <div class="slide-footer">
         <svg xmlns="http://www.w3.org/2000/svg" height="20" fill="none" viewBox="0 0 142 24" class="slide-footer__logo">
@@ -1160,12 +1160,12 @@ class Frontline2026HTML:
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 
 :root {{
-  --navy: #001C3D;
-  --action-blue: #1A5AFF;
+  --navy: #041326;
+  --action-blue: #3367FF;
   --white: #FFFFFF;
-  --bg-gray: #F5F7F9;
-  --text-main: #001C3D;
-  --text-muted: #5C6E84;
+  --bg-gray: #F3F6F9;
+  --text-main: #041326;
+  --text-muted: #6B7786;
   --green: #2ECC71;
   --radius: 16px;
   --radius-pill: 30px;
@@ -1417,7 +1417,7 @@ html, body {{
   letter-spacing: 2px;
   margin-bottom: 24px;
 }}
-.split__from h3 {{ color: #E02020; }}
+.split__from h3 {{ color: #FF503C; }}
 .split__to h3 {{ color: var(--action-blue); }}
 .split ul {{ list-style: none; padding: 0; }}
 .split li {{
@@ -1431,7 +1431,7 @@ html, body {{
   content: '\u2715';
   position: absolute;
   left: 0;
-  color: #E02020;
+  color: #FF503C;
   font-size: 11px;
   top: 10px;
 }}
@@ -1597,7 +1597,7 @@ html, body {{
   width: fit-content;
 }}
 .tile__pill--blue {{ background: rgba(26,90,255,0.1); color: var(--action-blue); }}
-.tile__pill--red {{ background: rgba(204,51,51,0.1); color: #E02020; }}
+.tile__pill--red {{ background: rgba(204,51,51,0.1); color: #FF503C; }}
 .tile__pill--green {{ background: rgba(46,204,113,0.1); color: var(--green); }}
 .tile__pill--amber {{ background: rgba(217,119,6,0.12); color: #D97706; }}
 .tile__pill--purple {{ background: rgba(123,47,255,0.1); color: #7B2FFF; }}
@@ -1608,7 +1608,7 @@ html, body {{
   line-height: 1;
 }}
 .tile__stat--blue {{ color: var(--action-blue); }}
-.tile__stat--red {{ color: #E02020; }}
+.tile__stat--red {{ color: #FF503C; }}
 .tile__stat--green {{ color: var(--green); }}
 .tile__stat--amber {{ color: #D97706; }}
 .tile__stat--purple {{ color: #7B2FFF; }}
@@ -1628,7 +1628,7 @@ html, body {{
   border: 1px solid #E5E9F0;
 }}
 .proc-row__label {{ flex: 1; font-size: 14px; font-weight: 700; color: var(--text-main); }}
-.proc-row__before {{ font-size: 13px; font-weight: 800; color: #E02020; min-width: 80px; text-align: center; }}
+.proc-row__before {{ font-size: 13px; font-weight: 800; color: #FF503C; min-width: 80px; text-align: center; }}
 .proc-row__arrow {{ font-size: 14px; color: var(--text-muted); }}
 .proc-row__after {{ font-size: 13px; font-weight: 800; color: var(--green); min-width: 80px; text-align: center; }}
 .proc-row__saving {{ font-size: 11px; font-weight: 700; color: #0891B2; min-width: 70px; text-align: right; }}
@@ -1650,7 +1650,7 @@ html, body {{
   text-align: center;
   color: var(--text-main);
 }}
-.pillar-header--red {{ color: #E02020; }}
+.pillar-header--red {{ color: #FF503C; }}
 .pillar-header--blue {{ color: var(--action-blue); }}
 .pillar-rows {{ display: flex; flex-direction: column; gap: 6px; }}
 .pillar-row {{

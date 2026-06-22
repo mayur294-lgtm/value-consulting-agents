@@ -1826,7 +1826,7 @@ class Frontline2026Presenter:
 
                     for ii, item in enumerate(items):
                         ix = int(base_x + ii * (item_w + item_gap))
-                        i_bg = item.get('bg', '#EBF0FF' if side == 'right' else '#F5F7F9')
+                        i_bg = item.get('bg', '#EBF0FF' if side == 'right' else '#F3F6F9')
                         i_border = item.get('border', '#3367FF' if side == 'right' else '#D1D5DB')
                         i_color = item.get('color', '#041326')
                         is_dark = item.get('dark', False)
