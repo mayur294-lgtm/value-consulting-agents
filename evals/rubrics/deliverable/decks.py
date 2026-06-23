@@ -36,19 +36,40 @@ DEPRECATED_HEXES = {
 _TOLERATED = {"000000", "000", "fff", "ffffff"}
 
 
+# Canonical design-system files. The allowed palette = every hex these actually
+# use (minus deprecated). Grounds the check in the REAL design system — including
+# the extended tint/shade ramp the official templates rely on — not a partial list.
+_CANON_FILES = (
+    "presentations/frontline-2026/design-tokens.json",
+    "templates/long-form/document-template.html",
+    "templates/presentations/assessment-dashboard-template.html",
+    "presentations/backbase-slides-app/deck-template.html",
+    "presentations/backbase-slides-app/engine.js",
+)
+
+
 def _load_allowed_hexes() -> set[str]:
-    tokens = repo_root() / "presentations" / "frontline-2026" / "design-tokens.json"
+    root = repo_root()
     allowed: set[str] = set(_TOLERATED)
+    # core tokens (explicit, even if the file is absent we still have these below)
     try:
-        data = json.loads(tokens.read_text())
+        data = json.loads((root / _CANON_FILES[0]).read_text())
         for spec in data.get("colors", {}).values():
             hx = spec.get("hex", "").lstrip("#").lower()
             if hx:
                 allowed.add(hx)
     except (OSError, json.JSONDecodeError):
         pass
-    # Tolerated amber variant noted in knowledge/design-system.md
-    allowed.add("d97706")
+    # union of every hex used by the canonical design-system files (the real ramp)
+    for rel in _CANON_FILES:
+        p = root / rel
+        if not p.exists():
+            continue
+        for m in _HEX_RE.finditer(p.read_text(errors="replace")):
+            h = _norm(m.group(0))
+            if h not in DEPRECATED_HEXES:   # never allow a deprecated hex via a stray ref
+                allowed.add(h)
+    allowed.add("d97706")  # tolerated amber variant (knowledge/design-system.md)
     return allowed
 
 
@@ -110,8 +131,10 @@ def evaluate(target: str) -> list[CheckResult]:
         evidence=bad_ext,
     ))
 
-    # --- 5. no border-left ribbons on cards (soft) -----------------------------
-    ribbons = re.findall(r"border-left\s*:\s*[^;}\"']*\b(?:[3-9]|\d{2,})px", low)
+    # --- 5. no FAT border-left ribbons on cards (soft) -------------------------
+    # Thin left accents (<=4px) are legit in the design system (callouts use 3px,
+    # sidebar 2px). Only flag fat card-ribbon style (>=5px).
+    ribbons = re.findall(r"border-left\s*:\s*[^;}\"']*\b(?:[5-9]|\d{2,})px", low)
     checks.append(CheckResult(
         name="no_border_left_ribbons",
         score=1.0 if not ribbons else max(0.0, 1.0 - 0.2 * len(ribbons)),

@@ -367,12 +367,14 @@ async def run_agent(
     )
 
     result = None
+    _trace_text: list[str] = []
     async for message in _resilient_query(prompt, options, display):
         if isinstance(message, AssistantMessage):
             for block in message.content:
                 if isinstance(block, TextBlock) and block.text.strip():
                     preview = block.text.strip()[:120].replace("\n", " ")
                     log(f"  [{display}] {preview}", C.DIM)
+                    _trace_text.append(block.text)
                 elif isinstance(block, ToolUseBlock):
                     tool_preview = str(block.input)[:80] if block.input else ""
                     log(f"  [{display}] >> {block.name}({tool_preview})", C.DIM)
@@ -383,6 +385,16 @@ async def run_agent(
     cost = result.total_cost_usd if result and result.total_cost_usd else 0
     turns = result.num_turns if result else 0
     log(f"  ✓ {display} done — {elapsed:.0f}s, {turns} turns, ${cost:.3f}", C.GREEN)
+    # A2: live per-call Langfuse trace (non-blocking, no-op without LANGFUSE keys)
+    try:
+        import sys as _sys
+        _ev = REPO_ROOT / "evals"
+        if str(_ev) not in _sys.path:
+            _sys.path.insert(0, str(_ev))
+        from runtime import log_agent_call as _lac
+        _lac(agent_name, prompt, "\n".join(_trace_text), model_id, cost, turns, elapsed)
+    except Exception:
+        pass
     return result
 
 
@@ -2257,6 +2269,22 @@ async def run_pipeline(
 
         with open(journal, "a") as f:
             f.write(timing_entry)
+
+    # Runtime evals (non-blocking): score this run's agent outputs + deliverables +
+    # pipeline contracts into .pipeline_run_report.json and flag anything below
+    # threshold. Never breaks the engagement — wrapped so any eval error is swallowed.
+    try:
+        import sys as _sys
+        _evals = REPO_ROOT / "evals"
+        if str(_evals) not in _sys.path:
+            _sys.path.insert(0, str(_evals))
+        from runtime import write_report as _write_eval_report, score_engagement as _score
+        _rep = _score(engagement_dir)
+        _path = _write_eval_report(engagement_dir, _rep)
+        print(f"  📊 Eval report → {_path.name}"
+              + (f"  ⚑ {len(_rep['flags'])} flag(s)" if _rep.get("flags") else "  ✓ clean"))
+    except Exception as _e:  # never let evals break a run
+        print(f"  (runtime evals skipped: {_e})")
 
     print()
 

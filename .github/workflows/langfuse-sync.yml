@@ -1,0 +1,35 @@
+name: Langfuse sync
+
+# Root fix for stale Langfuse: whenever judge prompts / goldens / registry change on
+# main, mirror them into Langfuse (versioned prompts + datasets). git stays the source
+# of truth; this keeps the Langfuse scoreboard in lockstep automatically.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "evals/rubrics/judge/prompts/**"
+      - "evals/goldens/**"
+      - "evals/registry.yaml"
+      - "evals/sync_to_langfuse.py"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+      LANGFUSE_HOST: ${{ secrets.LANGFUSE_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install -r evals/requirements.txt "langfuse>=2.0"
+      - name: Sync judges + datasets to Langfuse
+        run: python evals/sync_to_langfuse.py

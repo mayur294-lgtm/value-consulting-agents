@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cortex Eval System — Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════
+   FRONTLINE 2026 LONG-FORM DESIGN SYSTEM
+   Sidebar-navigated, multi-section solutioning document.
+   Lineage: Sparekassen Danmark DSD (Micha Kroes, Apr 2026).
+   Tokens align to Master Template Theme 1 — see
+   knowledge/design-system/frontline-tokens.json (2026-04-29).
+   ══════════════════════════════════════════════════════════ */
+
+/* ─── DESIGN TOKENS — canonical Frontline 2026 (Master Template Theme 1) ─── */
+:root {
+  --navy:#041326;--blue:#3367FF;--blue-l:#E5EBFF;
+  --white:#FFFFFF;--off:#F3F6F9;--border:#CED2D7;
+  --text:#041326;--muted:#6B7786;--faint:#6B7786;
+  --red:#FF503C;--red-l:#FAE0DE;
+  --amber:#B45309;--amb-l:#FFFBEB;--amb-b:#B45309;
+  --green:#2ECC71;--grn-l:#ECFDF5;--grn-b:#2ECC71;
+  --teal:#0097A7;--teal-l:#E5EBFF;
+  --sp-1:0.25rem;--sp-2:0.5rem;--sp-3:1rem;--sp-4:1.5rem;
+  --sp-5:2rem;--sp-6:3rem;--sp-7:4rem;--sp-8:6rem;
+  --sidebar-w:272px;--nav-h:65px;
+}
+
+/* ─── RESET & BASE ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Libre Franklin','Trebuchet MS',sans-serif;font-weight:300;font-size:1rem;line-height:1.65;color:var(--text);background:var(--white);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+img{max-width:100%;height:auto}
+h1,h2,h3,h4{font-weight:300}
+h1{line-height:1.08;letter-spacing:-0.5px}
+h2{line-height:1.12;letter-spacing:-0.3px}
+h3{font-size:1.25rem;font-weight:500;margin-bottom:var(--sp-3)}
+h4{font-size:1.0625rem;font-weight:500}
+p{margin-bottom:var(--sp-3)}
+strong{font-weight:600}
+code{font-family:'SFMono-Regular',Consolas,monospace;font-size:0.85em;background:var(--off);padding:1px 6px;border-radius:4px;color:var(--navy)}
+
+/* ─── LAYOUT ─── */
+.outer{max-width:1080px;margin:0 auto;padding:0 40px}
+.outer--rel{position:relative}
+section{padding:var(--sp-7) 0;border-bottom:1px solid var(--border)}
+.section--off{background:var(--off)}
+
+/* ─── TOP NAV ─── */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;gap:16px;height:var(--nav-h);padding:0 24px;background:var(--navy);color:#fff;font-size:13px}
+.top-nav__logo{height:18px;width:auto}
+.top-nav__sep{color:#fff;font-size:18px}
+.top-nav__logo-client{height:16px;width:auto}
+.top-nav__title{flex:1;color:#fff;font-size:13px;font-weight:300;letter-spacing:0.13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-nav__badge{background:var(--blue);color:#fff;padding:4px 12px;font-size:11px;font-weight:600;letter-spacing:0.88px;text-transform:uppercase;white-space:nowrap}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:fixed;top:var(--nav-h);left:0;width:var(--sidebar-w);height:calc(100vh - var(--nav-h));overflow-y:auto;padding:24px 20px;border-right:1px solid var(--border);background:var(--white);z-index:90;font-size:13px}
+.sidebar a{display:block;padding:5px 20px;color:var(--muted);font-weight:300;border-left:2px solid transparent}
+.sidebar a:hover{background:var(--off);color:var(--text);border-left-color:var(--blue);text-decoration:none}
+.sidebar a.active{background:var(--off);color:var(--blue);font-weight:500;border-left-color:var(--blue)}
+.sidebar__group-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--faint);padding:20px 12px 6px}
+
+/* ─── MAIN ─── */
+.main{margin-left:var(--sidebar-w);margin-top:var(--nav-h)}
+
+/* ─── SECTION HEADER ─── */
+.sh{margin-bottom:var(--sp-6)}
+.sh-eyebrow{font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:var(--sp-2)}
+.sh-eyebrow::before{content:'+ ';color:var(--blue)}
+.sh h2{font-size:clamp(26px,3.5vw,38px);margin-bottom:var(--sp-3)}
+.lead{font-size:1rem;color:var(--muted)}
+
+/* ─── HERO ─── */
+.hero{background:var(--navy);color:#fff;padding:var(--sp-7) 0;margin-top:var(--nav-h)}
+.hero__draft{display:inline-block;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;background:var(--blue);color:#fff;margin-bottom:var(--sp-4)}
+.hero h1{font-size:clamp(38px,5.5vw,58px);margin-bottom:var(--sp-3)}
+.hero__subtitle{color:#fff;font-size:1rem;margin-bottom:var(--sp-6)}
+.hero__stats{display:flex;gap:12px;margin-bottom:32px}
+.hero__stat{flex:0 1 auto;padding:10px 20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)}
+.hero__stat-label{display:block;font-size:11px;font-weight:500;letter-spacing:0.88px;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+.hero__stat-value{font-size:15px;font-weight:500}
+.hero__footer{color:#fff;font-size:13px;margin-top:24px}
+
+/* ─── GEO BLOCK ─── */
+.geo-block{width:16px;height:16px;display:block;flex-shrink:0;transform:rotate(90deg)}
+
+/* ─── CARDS ─── */
+.card{background:var(--white);border:1px solid var(--border);padding:24px}
+.card-hdr-flex{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.card--compact{padding:14px 18px}
+.card--compact .card-hdr-flex{margin-bottom:6px}
+.card--compact h4{font-size:14px;flex:1;min-width:0}
+.card--compact__desc{font-size:12px;color:var(--muted);margin:0;line-height:1.5}
+
+/* ─── BADGES ─── */
+.bb-badge{display:inline-block;padding:3px 10px;font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase}
+.bb-badge.red{background:var(--red-l);color:var(--red)}
+.bb-badge.amber{background:var(--amb-l);color:var(--amber)}
+.bb-badge.green{background:var(--grn-l);color:var(--green)}
+.bb-badge.blue{background:var(--blue-l);color:var(--blue)}
+.bb-badge.purple{background:var(--teal-l);color:var(--teal)}
+
+/* ─── CALLOUTS ─── */
+.callout{padding:16px 20px;margin-bottom:var(--sp-5);border-left:3px solid transparent}
+.callout.red{background:var(--red-l);border-color:var(--red);color:var(--red)}
+.callout.amber{background:var(--amb-l);border-color:var(--amb-b);color:var(--amber)}
+.callout.blue{background:var(--blue-l);border-color:var(--blue);color:var(--blue)}
+.callout.green{background:var(--grn-l);border-color:var(--grn-b);color:var(--green)}
+.callout p{margin:0}
+
+/* ─── TABLES ─── */
+.table-wrap{overflow-x:auto}
+.dt{width:100%;border-collapse:collapse;font-size:13px}
+.dt thead{background:var(--navy);color:#fff}
+.dt th{text-align:left;padding:10px 16px;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase}
+.dt td{padding:12px 16px;border-bottom:1px solid var(--border);font-weight:300}
+
+/* ─── GRIDS ─── */
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+
+/* ─── KPI CARDS ─── */
+.kpi-card{text-align:center;padding:20px;background:var(--white);border:1px solid var(--border)}
+.kpi-card__label{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.kpi-card__value{font-size:1.5rem;font-weight:600}
+.kpi-card__sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ─── NORTH STAR CARDS ─── */
+.ns-card{padding:24px;border:1px solid var(--border);background:var(--white)}
+.ns-card__icon{font-size:1.5rem;margin-bottom:12px}
+.ns-card__title{font-weight:500;font-size:15px;margin-bottom:8px}
+.ns-card__desc{font-size:13px;color:var(--muted);margin:0}
+
+/* ─── COLLAPSIBLE BLOCKS ─── */
+details.collapse{border:1px solid var(--border);border-radius:6px;margin-bottom:var(--sp-4);background:var(--white)}
+details.collapse>summary{padding:14px 20px;font-size:14px;font-weight:600;cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;color:var(--navy);user-select:none}
+details.collapse>summary::-webkit-details-marker{display:none}
+details.collapse>summary::before{content:'';display:inline-block;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .2s;flex-shrink:0}
+details.collapse[open]>summary::before{transform:rotate(45deg)}
+details.collapse>summary .collapse__count{font-size:11px;font-weight:500;color:var(--muted);background:var(--off);padding:2px 8px;border-radius:10px}
+details.collapse .collapse__body{padding:0 20px 20px}
+
+/* ─── DARK CTA / FOOTER ─── */
+.dark-cta{background:var(--navy);padding:28px 40px;position:relative;overflow:hidden}
+.dark-cta::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+.dark-cta-inner{position:relative;z-index:1;max-width:1080px;margin:0 auto}
+.dark-cta h3{color:#fff;font-size:15px;font-weight:700;margin-bottom:5px}
+.dark-cta p{color:rgba(255,255,255,.45);font-size:11px;line-height:1.6}
+
+/* ─── TABULAR FIGURES ─── */
+.kpi-card__value{font-variant-numeric:tabular-nums}
+
+/* ─── PRINT ─── */
+@media print{
+  .top-nav,.sidebar{display:none}
+  .main{margin-left:0;margin-top:0}
+  .hero{margin-top:0}
+  section{background:var(--white)!important;border-bottom:none;padding-bottom:8px}
+  .hero,.dark-cta{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+  .hero__stats{flex-wrap:wrap}
+}
+
+/* ─── REDUCED MOTION ─── */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <!-- Backbase logo (official SVG, white fill for dark nav) -->
+  <svg class="top-nav__logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 166 29" fill="#fff" fill-rule="evenodd" clip-rule="evenodd"><path d="M148.861 18.013c0-6.325 2.46-10.408 8.57-10.408 6.109 0 8.569 3.763 8.569 10.008v2.241h-13.092c.317 2.802 1.428 5.044 6.03 5.044s3.175 0 5.714-.721v3.522c-3.096.801-4.206.801-5.714.801-8.966 0-10.077-6.485-10.077-10.407v-.08Zm-18.488 7.845v-4.002c3.651 2.241 5.476 3.042 8.412 3.042 2.935 0 3.49-1.121 3.49-2.402 0-1.282-1.031-2.162-4.681-2.962-5.713-1.281-7.221-3.122-7.221-6.325 0-3.202 2.857-5.604 7.062-5.604 4.206 0 5.316.721 7.221 2.082v3.602c-2.936-1.441-5.475-2.081-7.617-2.081-2.143 0-2.698.881-2.698 1.841 0 .961.476 1.922 3.888 2.802 5.872 1.601 8.014 2.882 8.014 6.564 0 3.684-2.856 6.005-7.458 6.005-4.603 0-5.556-.64-8.412-2.562Zm-84.349-7.845c0-6.325 3.094-10.408 8.887-10.408 5.793 0 8.253 3.283 8.253 8.006h-3.968c-.159-2.481-.952-4.403-4.127-4.403-3.173 0-5.157 1.601-5.157 6.805 0 5.203 1.428 6.804 5.157 6.804 3.73 0 3.968-1.921 4.127-4.402h3.968c0 4.803-3.095 8.005-8.253 8.005-5.158 0-8.887-4.163-8.887-10.407Zm59.829 0c0 5.924-2.301 10.407-8.729 10.407-6.427 0-4.761-1.041-5.951-2.802v2.402h-3.967V0h3.967v10.407c1.19-1.76 3.174-2.802 5.951-2.802 6.428 0 8.729 4.564 8.729 10.408Zm-80.619 3.322c.018-3.43 2.32-7.005 7.142-7.005 4.84 0 4.364.8 5.554 2.401v-5.203H27.615V7.926h14.283v16.011h2.38v4.002H37.93v-2c-1.19 1.6-2.777 2.4-5.554 2.4-4.822 0-7.124-3.495-7.142-7.004Zm83.238 0c.017-3.43 2.319-7.005 7.141-7.005 4.84 0 4.364.8 5.554 2.401v-5.203h-10.315V7.926h14.283v16.011h2.381v4.002h-6.349v-2c-1.19 1.6-2.777 2.4-5.554 2.4-4.822 0-7.124-3.495-7.141-7.004ZM70.86 16.251h3.095l5.554-8.246h4.84l-6.823 10.088 6.823 10.006h-4.84l-5.554-8.165H70.86v8.086h-3.968V0h3.968v16.251ZM16.505 13.85v-.72c3.968-.561 4.999-2.963 4.999-5.605 0-2.642-2.301-6.804-7.935-6.804h-3.174v3.602h3.174c3.015 0 3.967.961 3.967 3.523 0 2.561-.952 3.922-3.967 3.922H3.651V28.02h9.918c6.506 0 8.728-3.763 8.728-7.605 0-3.843-1.189-6.005-5.792-6.565Zm21.345 7.525c0-2.002-1.428-3.362-4.364-3.362s-4.363 1.441-4.363 3.362c0 1.922 1.427 3.442 4.363 3.442 2.936 0 4.364-1.441 4.364-3.442Zm83.238 0c0-2.002-1.428-3.362-4.365-3.362-2.935 0-4.364 1.441-4.364 3.362 0 1.922 1.429 3.442 4.364 3.442 2.937 0 4.365-1.441 4.365-3.442Zm-19.203-3.362c0-4.804-1.428-6.805-5.316-6.805s-5.316 2.001-5.316 6.805c0 4.803 1.428 6.804 5.316 6.804s5.316-2.001 5.316-6.804Zm-88.236 6.404H7.697v-9.046h5.952c3.57 0 4.761.96 4.761 4.723 0 3.762-1.191 4.323-4.761 4.323Zm11.585-3.082v.04-.08.04Zm83.238 0-.001.04v-.08l.001.04Zm53.561-5.084c-.079-3.522-1.428-4.963-4.602-4.963-3.175 0-4.444 1.761-4.602 4.963h9.204ZM0 .801v3.763h3.729v4.002h3.889V.801H0Z"/></svg>
+  <span class="top-nav__sep">&times;</span>
+  <span class="top-nav__logo-client" style="font-weight:500;font-size:14px;">Cortex</span>
+  <div class="top-nav__title">Development Harness &mdash; Eval System Review</div>
+  <div><span class="top-nav__badge">v1 &mdash; 2026-06-23</span></div>
+</nav>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar__group-label">The Model</div>
+  <a href="#section-1" class="active">1. The model</a>
+  <a href="#section-2">2. Where evals live</a>
+  <a href="#section-3">3. The eval catalogue</a>
+
+  <div class="sidebar__group-label">Evidence</div>
+  <a href="#section-4">4. Proof it works</a>
+  <a href="#section-5">5. How people use it</a>
+
+  <div class="sidebar__group-label">Roadmap</div>
+  <a href="#section-6">6. What's left</a>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main" id="main-content">
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════════════════════════ -->
+<section class="hero" style="border-bottom:none;">
+  <div class="outer outer--rel">
+    <svg class="geo-block" viewBox="0 0 16 16" style="position:absolute;top:0;left:-1px;color:var(--blue);"><path d="M16 0V16H8V8H0V0H16Z" fill="currentColor"/></svg>
+    <div class="sh-eyebrow" style="color:#fff;letter-spacing:2px;">Development Harness</div>
+    <div class="hero__draft">v1 &mdash; 2026-06-23</div>
+    <h1>The Eval System &mdash; Review</h1>
+    <p class="hero__subtitle">What every eval checks, where it lives, and proof it catches real problems.</p>
+    <div class="hero__stats">
+      <div class="hero__stat">
+        <span class="hero__stat-label">Evals built</span>
+        <span class="hero__stat-value">13 evals built</span>
+      </div>
+      <div class="hero__stat">
+        <span class="hero__stat-label">Altitudes</span>
+        <span class="hero__stat-value">3 altitudes</span>
+      </div>
+      <div class="hero__stat">
+        <span class="hero__stat-label">Judges</span>
+        <span class="hero__stat-value">6 LLM-judges</span>
+      </div>
+      <div class="hero__stat">
+        <span class="hero__stat-label">Scoreboard</span>
+        <span class="hero__stat-value">Langfuse synced</span>
+      </div>
+    </div>
+    <p class="hero__footer">Proprietary &amp; Confidential &middot; Cortex development harness review</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 01 — The model
+     ═══════════════════════════════════════════════════════════ -->
+<section id="section-1">
+  <div class="outer outer--rel">
+    <svg class="geo-block" viewBox="0 0 16 16" style="position:absolute;top:0;right:-1px;color:var(--navy);"><path d="M16 0V16H8V8H0V0H16Z" fill="currentColor"/></svg>
+    <div class="sh">
+      <div class="sh-eyebrow">Section 01</div>
+      <h2>The model</h2>
+      <p class="lead">Two axes &mdash; <strong>WHAT</strong> gets scored &times; <strong>WHEN</strong> it's scored. Every cell is an eval.</p>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:var(--sp-5);">
+      <table class="dt">
+        <thead>
+          <tr>
+            <th>What</th>
+            <th>Dev-time &mdash; gate</th>
+            <th>Runtime &mdash; consultant</th>
+            <th>Monitor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>&#9312; Every agent</strong></td>
+            <td>Regression &mdash; <span class="bb-badge red">BLOCKS</span></td>
+            <td>Live on real input &mdash; <span class="bb-badge amber">FLAGS</span></td>
+            <td>Trend</td>
+          </tr>
+          <tr>
+            <td><strong>&#9313; Every handoff</strong></td>
+            <td>Contract &mdash; <span class="bb-badge red">BLOCKS</span></td>
+            <td>Live at each boundary</td>
+            <td>&mdash;</td>
+          </tr>
+          <tr>
+            <td><strong>&#9314; Every deliverable</strong></td>
+            <td>Rubric &mdash; <span class="bb-badge red">BLOCKS</span></td>
+            <td>On real artifact &mdash; <span class="bb-badge amber">FLAGS</span></td>
+            <td>Drift &rarr; issue</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-3">
+      <div class="card" style="border-top:3px solid var(--red);">
+        <div class="card-hdr-flex"><h4>Dev-time</h4><span class="bb-badge red">gate</span></div>
+        <p style="font-size:13px;color:var(--muted);">Runs from git via <code>run_experiment.py</code>. Offline, deterministic, blocks the PR until green.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--amber);">
+        <div class="card-hdr-flex"><h4>Runtime</h4><span class="bb-badge amber">consultant</span></div>
+        <p style="font-size:13px;color:var(--muted);">Runs from Langfuse on live traces. Scores the real engagement run and flags low scores &mdash; never blocks.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--blue);">
+        <div class="card-hdr-flex"><h4>Monitor</h4><span class="bb-badge blue">drift</span></div>
+        <p style="font-size:13px;color:var(--muted);">Watches quality-over-time on the Langfuse dashboard; drift raises an issue.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 02 — Where evals live
+     ═══════════════════════════════════════════════════════════ -->
+<section id="section-2" class="section--off">
+  <div class="outer outer--rel">
+    <svg class="geo-block" viewBox="0 0 16 16" style="position:absolute;top:0;left:-1px;color:var(--blue);"><path d="M16 0V16H8V8H0V0H16Z" fill="currentColor"/></svg>
+    <div class="sh">
+      <div class="sh-eyebrow">Section 02</div>
+      <h2>Where evals live</h2>
+      <p class="lead">One definition, two homes. Authored and reviewed in git, then mirrored to Langfuse via <code>sync_to_langfuse.py</code>.</p>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:var(--sp-5);">
+      <div class="card" style="border-top:3px solid var(--blue);">
+        <div class="card-hdr-flex"><h4>Git &mdash; the rulebook</h4><span class="bb-badge blue">source of truth</span></div>
+        <p style="font-size:13px;color:var(--muted);">Judge prompts (<code>.md</code>) + code rubrics (<code>.py</code>) + <code>registry.yaml</code> + goldens. Reviewed in PRs, versioned, gate CI offline. This is what you approve.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--green);">
+        <div class="card-hdr-flex"><h4>Langfuse &mdash; the scoreboard</h4><span class="bb-badge green">live engine</span></div>
+        <p style="font-size:13px;color:var(--muted);">The same judges synced in as versioned prompts + datasets. Auto-scores live consultant runs and shows trends and drift on dashboards.</p>
+      </div>
+    </div>
+
+    <div class="callout green">
+      <strong>Synced:</strong>
+      <p>&#9989; 6 judge prompts + deck dataset already synced to Langfuse.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 03 — The eval catalogue
+     ═══════════════════════════════════════════════════════════ -->
+<section id="section-3">
+  <div class="outer outer--rel">
+    <svg class="geo-block" viewBox="0 0 16 16" style="position:absolute;top:0;right:-1px;color:var(--navy);"><path d="M16 0V16H8V8H0V0H16Z" fill="currentColor"/></svg>
+    <div class="sh">
+      <div class="sh-eyebrow">Section 03</div>
+      <h2>The eval catalogue</h2>
+      <p class="lead">Every eval, what it checks, type, level, status. <span class="bb-badge blue">code</span> = objective / no-LLM &middot; <span class="bb-badge purple">judge</span> = LLM-as-judge (semantic).</p>
+    </div>
+
+    <div class="table-wrap">
+      <table class="dt">
+        <thead>
+          <tr><th>Eval</th><th>Checks</th><th>Type</th><th>Level</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>governance baseline</td><td>evidence &middot; assumptions &middot; provenance &middot; faithful</td><td><span class="bb-badge blue">code</span> <span class="bb-badge purple">judge</span></td><td>&#9312; every agent</td><td><span class="bb-badge green">built &#10003; validated</span></td></tr>
+          <tr><td>report_tone</td><td>exec-ready &middot; jargon-free &middot; decisive &middot; no hype</td><td><span class="bb-badge purple">judge</span></td><td>&#9314; report/decks</td><td><span class="bb-badge green">built &#10003; validated</span></td></tr>
+          <tr><td>evidence_grounding</td><td>&ldquo;no wild assumptions&rdquo; &mdash; claims trace to transcript</td><td><span class="bb-badge purple">judge</span></td><td>&#9312; + runtime</td><td><span class="bb-badge green">built &#10003; validated</span></td></tr>
+          <tr><td>assumption_discipline</td><td>each assumption sourced &middot; conservative &middot; labelled</td><td><span class="bb-badge purple">judge</span></td><td>&#9314; + &#9312;</td><td><span class="bb-badge green">built &#10003; validated</span></td></tr>
+          <tr><td>conservative_bias</td><td>ROI downside &middot; 3 scenarios &middot; no Y1 full benefit</td><td><span class="bb-badge purple">judge</span></td><td>&#9314; ROI</td><td><span class="bb-badge green">built &#10003; validated</span></td></tr>
+          <tr><td>topdown_bottomup_correlation</td><td>annual-report baseline bridged to levers</td><td><span class="bb-badge purple">judge</span></td><td>&#9314; ROI</td><td><span class="bb-badge green">built &#10003; validated</span></td></tr>
+          <tr><td>arc_threaded_7_acts</td><td>arc woven through all 7 acts</td><td><span class="bb-badge purple">judge</span></td><td>&#9314; assessment</td><td><span class="bb-badge green">built &#10003;</span></td></tr>
+          <tr><td>deck rubric</td><td>palette &middot; gradient-text &middot; CDN &middot; ribbons &middot; &le;4 pts &middot; 17 layouts</td><td><span class="bb-badge blue">code</span></td><td>&#9314; decks</td><td><span class="bb-badge green">built &#10003; calibrated</span></td></tr>
+          <tr><td>ROI rubric</td><td>schema &middot; 3 scenarios &middot; assumptions sourced &middot; ties out</td><td><span class="bb-badge blue">code</span> <span class="bb-badge purple">judge</span></td><td>&#9314; ROI</td><td><span class="bb-badge green">built &#10003;</span> <span class="bb-badge amber">reground</span></td></tr>
+          <tr><td>assessment rubric</td><td>22-item checklist &middot; 10 panels &middot; trace-IDs &middot; light theme</td><td><span class="bb-badge blue">code</span> <span class="bb-badge purple">judge</span></td><td>&#9314; assessment</td><td><span class="bb-badge green">built &#10003;</span> <span class="bb-badge amber">reground</span></td></tr>
+          <tr><td>report rubric</td><td>governance + tone + grounding + assumption discipline</td><td><span class="bb-badge blue">code</span> <span class="bb-badge purple">judge</span></td><td>&#9314; report</td><td><span class="bb-badge green">built &#10003; validated</span></td></tr>
+          <tr><td>pipeline contracts</td><td>downstream parses upstream (no broken handoff)</td><td><span class="bb-badge blue">code</span></td><td>&#9313; handoff</td><td><span class="bb-badge green">built &#10003; validated</span></td></tr>
+          <tr><td>per-agent specifics</td><td>e.g. capability 0&ndash;4 &middot; market annual-report</td><td><span class="bb-badge blue">code</span> <span class="bb-badge purple">judge</span></td><td>&#9312; per agent</td><td><span class="bb-badge amber">~5 of 22 &middot; rest pending</span></td></tr>
+          <tr><td>path-1 runner</td><td>run agent via <code>claude -p</code> on golden input then score</td><td>&mdash;</td><td>&#9312; inner loop</td><td><span class="bb-badge amber">pending</span></td></tr>
+          <tr><td>runtime instrumentation</td><td>per-agent + handoff scores &rarr; <code>.pipeline_run_report.json</code></td><td>&mdash;</td><td>runtime</td><td><span class="bb-badge amber">pending</span></td></tr>
+          <tr><td>eval-on-output hook</td><td>scores ANY deliverable (pipeline OR standalone skill)</td><td>&mdash;</td><td>runtime</td><td><span class="bb-badge amber">pending</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 04 — Proof it works
+     ═══════════════════════════════════════════════════════════ -->
+<section id="section-4" class="section--off">
+  <div class="outer outer--rel">
+    <svg class="geo-block" viewBox="0 0 16 16" style="position:absolute;top:0;left:-1px;color:var(--blue);"><path d="M16 0V16H8V8H0V0H16Z" fill="currentColor"/></svg>
+    <div class="sh">
+      <div class="sh-eyebrow">Section 04</div>
+      <h2>Proof it works</h2>
+      <p class="lead">Real catches. Low scores are the system working &mdash; each one flagged a problem a reviewer would have missed.</p>
+    </div>
+
+    <div class="grid-3" style="margin-bottom:var(--sp-5);">
+      <div class="kpi-card" style="border-top:3px solid var(--red);">
+        <div class="kpi-card__label">Wild assumption caught</div>
+        <div class="kpi-card__value" style="color:var(--red);">0.18</div>
+        <div class="kpi-card__sub">Real NFIS v6 report: &ldquo;$296B held-away &amp; 1.6% capture from a $40:$1 ratio whose basis is never sourced, treated as fact.&rdquo;</div>
+      </div>
+      <div class="kpi-card" style="border-top:3px solid var(--red);">
+        <div class="kpi-card__label">Fabrication caught</div>
+        <div class="kpi-card__value" style="color:var(--red);">0.00</div>
+        <div class="kpi-card__sub">Planted output &ldquo;$10M transformation, triple revenue, eliminate churn&rdquo; from a transcript that only said &ldquo;onboarding feels slow.&rdquo;</div>
+      </div>
+      <div class="kpi-card" style="border-top:3px solid var(--red);">
+        <div class="kpi-card__label">Palette drift caught</div>
+        <div class="kpi-card__value" style="color:var(--red);">0.36</div>
+        <div class="kpi-card__sub">Deck with deprecated hexes + gradient-text + external CDN hard-fails; clean golden = 1.00.</div>
+      </div>
+    </div>
+
+    <div class="callout red">
+      <strong>Read these as wins:</strong>
+      <p>A 0.18 / 0.00 / 0.36 is the gate doing its job &mdash; blocking unsourced claims, fabrications, and brand drift before they reach a client.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 05 — How people use it
+     ═══════════════════════════════════════════════════════════ -->
+<section id="section-5">
+  <div class="outer outer--rel">
+    <svg class="geo-block" viewBox="0 0 16 16" style="position:absolute;top:0;right:-1px;color:var(--navy);"><path d="M16 0V16H8V8H0V0H16Z" fill="currentColor"/></svg>
+    <div class="sh">
+      <div class="sh-eyebrow">Section 05</div>
+      <h2>How people use it</h2>
+      <p class="lead">Three roles, three relationships to the eval suite.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="ns-card">
+        <div class="ns-card__icon">🛠️</div>
+        <div class="ns-card__title">Developer (changes an agent)</div>
+        <p class="ns-card__desc">One-time <code>setup_dev.sh</code>. Every change routes through <code>bb-prd &rarr; &hellip; &rarr; bb-refine</code>; evals are the verify gate; the PR is blocked until green.</p>
+      </div>
+      <div class="ns-card">
+        <div class="ns-card__icon">📋</div>
+        <div class="ns-card__title">Consultant (runs cortex)</div>
+        <p class="ns-card__desc">Just runs agents and the pipeline. Evals score the run live and flag low scores in the run report &mdash; never block the engagement. <span style="color:var(--amber);">(runtime layer pending)</span></p>
+      </div>
+      <div class="ns-card">
+        <div class="ns-card__icon">📊</div>
+        <div class="ns-card__title">You (review &amp; trend)</div>
+        <p class="ns-card__desc">Approve evals in PRs (git). Watch quality-over-time and drift on the Langfuse dashboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 06 — What's left
+     ═══════════════════════════════════════════════════════════ -->
+<section id="section-6" class="section--off">
+  <div class="outer outer--rel">
+    <svg class="geo-block" viewBox="0 0 16 16" style="position:absolute;top:0;left:-1px;color:var(--blue);"><path d="M16 0V16H8V8H0V0H16Z" fill="currentColor"/></svg>
+    <div class="sh">
+      <div class="sh-eyebrow">Section 06</div>
+      <h2>What's left</h2>
+      <p class="lead">Designed, grounded, and queued &mdash; the runtime layer and the long tail of per-agent coverage.</p>
+    </div>
+
+    <div class="callout amber">
+      <strong>Pending build queue:</strong>
+      <p>The items below are designed and grounded; none block the dev-time gate that's already live.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table class="dt">
+        <thead><tr><th>Item</th><th>What it adds</th></tr></thead>
+        <tbody>
+          <tr><td>path-1 runner</td><td>Run the agent on a golden input, then score (the real inner-loop EDD).</td></tr>
+          <tr><td>runtime instrumentation</td><td>Wrap <code>orchestrate.py</code> run_agent() + handoffs &rarr; run report + Langfuse.</td></tr>
+          <tr><td>eval-on-output hook</td><td>Universal deliverable scoring &mdash; covers standalone skills, not just the pipeline.</td></tr>
+          <tr><td>per-agent specifics</td><td>17 agents remaining (governance baseline already covers all 22).</td></tr>
+          <tr><td>judge weighting</td><td>No averaging-away a critical 0.18 &mdash; weight the judges that matter.</td></tr>
+          <tr><td>clean ROI / assessment goldens</td><td>Reground the two regrounding rubrics on fresh golden artifacts.</td></tr>
+          <tr><td>Langfuse trace evaluators</td><td>Auto-score live production traces using the already-synced prompts.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════════════════ -->
+<section style="background:var(--navy);color:#fff;border-bottom:none;padding:var(--sp-5) 0;">
+  <div class="outer" style="text-align:center;">
+    <p style="color:#fff;font-size:13px;margin:0;">Source of truth: <code style="background:rgba(255,255,255,0.1);color:#fff;">evals/</code> &middot; plan: <code style="background:rgba(255,255,255,0.1);color:#fff;">~/.claude/plans/peppy-stargazing-swan.md</code> &middot; scoreboard: Langfuse (EU) &middot; branch <code style="background:rgba(255,255,255,0.1);color:#fff;">mayur/evals-full</code></p>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT — Sidebar scroll spy & smooth scrolling
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+  const links = sidebar.querySelectorAll('a[href^="#"]');
+  const sections = [];
+  links.forEach(function(link) {
+    var id = link.getAttribute('href').slice(1);
+    var el = document.getElementById(id);
+    if (el) sections.push({ id: id, el: el, link: link });
+  });
+
+  function setActive(id) {
+    links.forEach(function(l) { l.classList.remove('active'); });
+    var match = sidebar.querySelector('a[href="#' + id + '"]');
+    if (match) match.classList.add('active');
+  }
+
+  if ('IntersectionObserver' in window && sections.length) {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          setActive(entry.target.id);
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach(function(s) { observer.observe(s.el); });
+  }
+
+  links.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var id = this.getAttribute('href').slice(1);
+      var target = document.getElementById(id);
+      if (target) {
+        var navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 65;
+        var y = target.getBoundingClientRect().top + window.pageYOffset - navH - 20;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

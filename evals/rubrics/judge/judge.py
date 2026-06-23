@@ -38,6 +38,8 @@ def _load_snapshot(snapshot: str | None) -> str:
 
 
 def _available() -> bool:
+    if os.getenv("CORTEX_EVAL_NO_JUDGE"):   # fast code-only mode (e.g. interactive Stop hook)
+        return False
     if not os.getenv("ANTHROPIC_API_KEY"):
         return False
     try:
@@ -48,10 +50,13 @@ def _available() -> bool:
 
 
 def judge(name: str, target_text: str, *, snapshot: str | None = None,
-          threshold: float = 0.7, max_chars: int = 60_000) -> CheckResult:
+          threshold: float = 0.7, max_chars: int = 60_000, critical: bool = False) -> CheckResult:
     """Score target_text against the judge prompt <name>. Returns a CheckResult.
 
     The judge MUST return strict JSON: {"score": 0..1, "pass": bool, "reason": str}.
+    critical=True: a real (non-skipped) failure HARD-FAILS the whole rubric — used
+    for integrity judges (faithfulness, assumption discipline) so a low score can't
+    be averaged away to a pass.
     """
     prompt = _load_prompt(name)
     if prompt is None:
@@ -84,8 +89,9 @@ def judge(name: str, target_text: str, *, snapshot: str | None = None,
         m = re.search(r"\{.*\}", raw, re.S)
         data = json.loads(m.group(0) if m else raw)
         score = float(data.get("score", 0.0))
-        return CheckResult(name=f"judge:{name}", score=score,
-                           passed=bool(data.get("pass", score >= threshold)),
+        passed = bool(data.get("pass", score >= threshold))
+        return CheckResult(name=f"judge:{name}", score=score, passed=passed,
+                           hard_fail=(critical and not passed),
                            detail=str(data.get("reason", ""))[:300])
     except Exception as e:  # never let a judge error crash the gate
         return CheckResult(name=f"judge:{name}", score=0.0, passed=True, skipped=True,

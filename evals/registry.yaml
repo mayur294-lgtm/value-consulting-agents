@@ -32,16 +32,28 @@ deliverables:
     evaluator: rubrics.deliverable.assessment
     threshold: 0.80
     goldens:
+      - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_dashboard.html
+    monitor:
       - engagements/nfis/2026-02_digital_investor_assessment_v2/outputs/assessment_dashboard.html
+
+  report:
+    altitude: deliverable
+    evaluator: rubrics.deliverable.report
+    threshold: 0.80
+    goldens:
+      - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_report.md
 
 # Component (unit) altitude — score an agent's direct output on a fixed input.
 # code: objective Python checks. judge: LLM-as-judge rubrics (semantic).
+# All `code` checks below are implemented in rubrics.component.specifics (which
+# runs on top of the rubrics.component.governance baseline that every agent
+# inherits); `judge` checks are the semantic LLM rubrics in rubrics.judge.
 components:
   market-context-researcher:
     altitude: component
     threshold: 0.80
     golden_engagement: nfis
-    code: [annual_report_attempted, module1_metrics_present]   # the documented miss
+    code: [annual_report_attempted, module1_metrics_present, competitor_benchmark_section]   # incl. the documented miss
     judge: [sources_credible_not_hallucinated]
 
   roi-financial-modeler:
@@ -49,28 +61,78 @@ components:
     threshold: 0.80
     golden_engagement: nfis
     input: evals/goldens/nfis/roi_config.json
-    code: [math_ties_out, three_scenarios, assumptions_sourced]
+    code: [three_scenarios, npv_payback_present, assumptions_register_present, sensitivity_analysis_present]
     judge: [conservative_bias, topdown_bottomup_correlation]
+
+  roi-hypothesis-builder:
+    altitude: component
+    threshold: 0.80
+    golden_engagement: nfis
+    code: [lever_ids_present, four_link_chain_present, problem_statement_present]
+    judge: [levers_grounded_in_evidence]
 
   discovery-transcript-interpreter:
     altitude: component
     threshold: 0.80
     golden_engagement: nfis
-    code: [evidence_ids_wellformed, lifecycle_tags_present]
+    code: [evidence_ids_wellformed, evidence_register_present, lifecycle_tags_present, pain_points_present]
     judge: [faithful_extraction_no_invention]
 
   capability-assessment:
     altitude: component
     threshold: 0.80
     golden_engagement: nfis
-    code: [maturity_scale_0_4]
+    code: [maturity_scale_0_4, executive_summary_present, front_middle_back_layers, unconsidered_needs_present, scores_have_evidence_refs]
     judge: [scores_justified_by_evidence]
+
+  roadmap-prioritization:
+    altitude: component
+    threshold: 0.80
+    golden_engagement: nfis
+    code: [phases_present, initiatives_sequenced, dependencies_present, gates_or_milestones_present]
+    judge: [initiatives_traced_to_gaps_and_levers]
 
   narrative-assembler:
     altitude: component
     threshold: 0.80
     golden_engagement: nfis
+    code: [seven_acts_present, executive_summary_present, transformation_arc_present]
     judge: [transformation_arc_threaded_7_acts]   # the documented assembler weakness
+
+  journey-builder:
+    altitude: component
+    threshold: 0.80
+    golden_engagement: nfis
+    code: [lifecycle_stages_present, friction_or_leakage_present, as_is_and_future_state]
+    judge: [value_leakage_quantified]
+
+  benchmark-librarian:
+    altitude: component
+    threshold: 0.80
+    golden_engagement: nfis
+    code: [confidence_levels_present, source_attribution_present]
+    judge: [benchmarks_defensible_not_hallucinated]
+
+  usecase-designer:
+    altitude: component
+    threshold: 0.80
+    golden_engagement: nfis
+    code: [usecase_ids_present, product_directory_mapping, ootb_config_custom_classification, priority_tiers_present]
+    judge: [usecases_grounded_in_product_directory]
+
+  workshop-preparation:
+    altitude: component
+    threshold: 0.80
+    golden_engagement: nfis
+    code: [hypotheses_present, validation_questions_present, checkpoint_present]
+    judge: [hypotheses_specific_and_quantified]
+
+  ignite-workshop-synthesizer:
+    altitude: component
+    threshold: 0.80
+    golden_engagement: nfis
+    code: [hypothesis_validation_statuses, usecase_candidates_present, usecase_classification_present]
+    judge: [synthesis_faithful_to_workshops]
 
 # Pipeline (integration) altitude — the most important. When ANY component
 # changes, run orchestrate.py end-to-end on a golden engagement and check the
