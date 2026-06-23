@@ -74,7 +74,7 @@ python scripts/test_agent.py --branch HEAD --base-branch origin/main --output te
 
 **Validate engagement outputs:** `./scripts/validate_engagement_outputs.sh`
 
-**Telemetry / Flywheel:** one-time `./scripts/setup_telemetry.sh`; extract `python3 scripts/extract_telemetry.py <ENGAGEMENT_JOURNAL.md>`; manual sync via the `/sync-telemetry` skill.
+**Telemetry (intake only — feeds the bb-* harness backlog):** one-time `./scripts/setup_telemetry.sh`; extract `python3 scripts/extract_telemetry.py <ENGAGEMENT_JOURNAL.md>`; manual sync via the `/sync-telemetry` skill. Triage aggregates findings and labels the top issue `needs-bb-prd` (queued for `bb-prd` — **nothing auto-implements**; the auto-dev loop was removed 2026-06-24).
 
 **Anonymize a transcript before it reaches MCP/KG:** `python3 scripts/anonymize_transcript.py ...` (the `anonymize-guard.py` hook also blocks unscrubbed reads automatically).
 

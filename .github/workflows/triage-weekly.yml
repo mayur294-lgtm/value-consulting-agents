@@ -44,7 +44,8 @@ jobs:
           echo "Date: $(date -u)"
           echo ""
 
-          # Run aggregation (creates improvement issues, labels top one as ready-for-dev)
+          # Run aggregation (creates improvement issues; labels the top one 'needs-bb-prd'
+          # to queue it for the bb-* harness backlog — no auto-implement)
           python scripts/aggregate_issues.py \
             --repo "$REPO" \
             --output triage_output.json \
