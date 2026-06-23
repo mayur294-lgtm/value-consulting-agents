@@ -1,6 +1,8 @@
 # Secrets — never commit Langfuse / Anthropic keys
 .env
 .env.local
+# team-distributed shared Langfuse eval keys (out-of-band, never committed)
+.env.shared
 
 # Local virtualenv
 .venv/
