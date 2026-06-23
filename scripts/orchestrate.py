@@ -367,12 +367,14 @@ async def run_agent(
     )
 
     result = None
+    _trace_text: list[str] = []
     async for message in _resilient_query(prompt, options, display):
         if isinstance(message, AssistantMessage):
             for block in message.content:
                 if isinstance(block, TextBlock) and block.text.strip():
                     preview = block.text.strip()[:120].replace("\n", " ")
                     log(f"  [{display}] {preview}", C.DIM)
+                    _trace_text.append(block.text)
                 elif isinstance(block, ToolUseBlock):
                     tool_preview = str(block.input)[:80] if block.input else ""
                     log(f"  [{display}] >> {block.name}({tool_preview})", C.DIM)
@@ -383,6 +385,16 @@ async def run_agent(
     cost = result.total_cost_usd if result and result.total_cost_usd else 0
     turns = result.num_turns if result else 0
     log(f"  ✓ {display} done — {elapsed:.0f}s, {turns} turns, ${cost:.3f}", C.GREEN)
+    # A2: live per-call Langfuse trace (non-blocking, no-op without LANGFUSE keys)
+    try:
+        import sys as _sys
+        _ev = REPO_ROOT / "evals"
+        if str(_ev) not in _sys.path:
+            _sys.path.insert(0, str(_ev))
+        from runtime import log_agent_call as _lac
+        _lac(agent_name, prompt, "\n".join(_trace_text), model_id, cost, turns, elapsed)
+    except Exception:
+        pass
     return result
 
 

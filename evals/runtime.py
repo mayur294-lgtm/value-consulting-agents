@@ -107,6 +107,29 @@ def _match(name: str, pattern: str) -> bool:
     return name == pattern
 
 
+def log_agent_call(agent_name: str, prompt: str, output: str, model: str = "",
+                   cost: float = 0.0, turns: int = 0, elapsed: float = 0.0) -> None:
+    """Live per-call trace: emit one Langfuse observation for a single agent run
+    (prompt/output/cost/turns/model). Called from orchestrate.py's run_agent.
+    No-op without Langfuse keys; never raises."""
+    import os
+    if not os.getenv("LANGFUSE_PUBLIC_KEY") or not os.getenv("LANGFUSE_SECRET_KEY"):
+        return
+    try:
+        from langfuse import Langfuse
+        lf = Langfuse()
+        lf.create_event(
+            name=f"agent:{agent_name}",
+            input={"prompt": str(prompt)[:4000]},
+            output={"text": str(output)[:4000]},
+            metadata={"model": model, "cost_usd": round(cost, 4), "turns": turns,
+                      "elapsed_s": round(elapsed, 1), "kind": "agent-call"},
+        )
+        lf.flush()
+    except Exception:
+        pass  # tracing must never break a run
+
+
 def score_engagement(engagement_dir: str | Path) -> dict:
     """Score every output + the pipeline contracts. Returns the run-report dict."""
     eng = Path(engagement_dir)
