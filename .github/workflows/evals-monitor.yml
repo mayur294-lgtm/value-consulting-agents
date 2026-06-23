@@ -1,0 +1,69 @@
+name: Evals monitor (drift)
+
+# Loop-3: post-deploy drift monitor. Scores REAL shipped engagement outputs (the
+# registry `monitor:` targets) on a schedule, logs scores to Langfuse for the
+# quality-over-time dashboard, and opens an issue when a deliverable drifts below
+# threshold so the finding can seed the next bb-prd. Non-blocking by design.
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"        # Mondays 07:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    env:
+      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+      LANGFUSE_HOST: ${{ secrets.LANGFUSE_HOST }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          pip install -r evals/requirements.txt
+          if [ -n "$LANGFUSE_PUBLIC_KEY" ]; then pip install "langfuse>=2.0" "anthropic>=0.40"; fi
+      - name: Score monitor targets
+        id: monitor
+        run: |
+          # Score each registry monitor: target with its deliverable rubric.
+          python - <<'PY' | tee /tmp/monitor.md
+          import subprocess, sys, yaml, pathlib
+          reg = yaml.safe_load(open("evals/registry.yaml"))
+          drift = []
+          print("## Drift monitor\n")
+          for name, spec in reg.get("deliverables", {}).items():
+              for tgt in spec.get("monitor", []):
+                  if not pathlib.Path(tgt).exists():
+                      continue
+                  r = subprocess.run([sys.executable, "evals/run_experiment.py",
+                                      "--deliverable", name, "--target", tgt],
+                                     capture_output=True, text=True)
+                  ok = r.returncode == 0
+                  print(f"- {'OK ' if ok else 'DRIFT'} `{tgt}` ({name})")
+                  if not ok:
+                      drift.append(tgt)
+          pathlib.Path("/tmp/drift").write_text("\n".join(drift))
+          PY
+      - name: Open issue on drift
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const drift = (fs.existsSync('/tmp/drift') ? fs.readFileSync('/tmp/drift','utf8') : '').trim();
+            if (!drift) { core.info('No drift.'); return; }
+            const body = fs.readFileSync('/tmp/monitor.md','utf8')
+              + '\n\nThese drifted below threshold. Triage into a `bb-prd` cycle.';
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: `Eval drift detected (${new Date().toISOString().slice(0,10)})`,
+              labels: ['telemetry', 'eval-drift'], body });

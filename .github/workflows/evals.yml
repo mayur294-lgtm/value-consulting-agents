@@ -1,0 +1,98 @@
+name: Evals (harness gate)
+
+# Tier-1 component-change gate. Runs the eval suite on any PR that touches a
+# content component (agent / command / skill / template / presentation / pipeline).
+# Starts in SHADOW mode: it scores, comments, and tracks in Langfuse, but does NOT
+# block (the job exits 0). Flip to BLOCKING by setting SHADOW: "false" below and
+# marking this check "Required" in branch protection on main.
+
+on:
+  pull_request:
+    paths:
+      - ".claude/agents/**"
+      - ".claude/commands/**"
+      - ".claude/skills/**"
+      - "templates/**"
+      - "presentations/**"
+      - "scripts/**.py"
+      - "evals/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    env:
+      SHADOW: "true"                       # <-- set to "false" to make the gate block
+      # Provide these as repo secrets to enable Langfuse logging + LLM-judge:
+      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+      LANGFUSE_HOST: ${{ secrets.LANGFUSE_HOST }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          pip install -r evals/requirements.txt
+          if [ -n "$LANGFUSE_PUBLIC_KEY" ]; then pip install "langfuse>=2.0" "anthropic>=0.40"; fi
+      - name: Run eval suite
+        id: run
+        run: |
+          set -o pipefail
+          {
+            echo '## Eval results'
+            echo
+            echo '```'
+            rc=0
+            for cmd in \
+              "--deliverable deck --negatives" \
+              "--deliverable roi" \
+              "--deliverable assessment" \
+              "--altitude pipeline"; do
+              echo "### run_experiment.py $cmd"
+              python evals/run_experiment.py $cmd || rc=1
+              echo
+            done
+            echo '```'
+            echo
+            if [ "$rc" -ne 0 ]; then
+              echo "**Verdict: FAIL** — one or more rubrics below threshold."
+            else
+              echo "**Verdict: PASS**"
+            fi
+            echo "$rc" > /tmp/rc
+          } | tee /tmp/eval_report.md
+          echo "rc=$(cat /tmp/rc)" >> "$GITHUB_OUTPUT"
+      - name: Comment results on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('/tmp/eval_report.md', 'utf8');
+            const marker = '<!-- cortex-evals -->';
+            const { data: comments } = await github.rest.issues.listComments(
+              { owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            const payload = marker + '\n' + body;
+            if (existing) {
+              await github.rest.issues.updateComment(
+                { owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body: payload });
+            } else {
+              await github.rest.issues.createComment(
+                { owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body: payload });
+            }
+      - name: Enforce gate
+        if: always()
+        run: |
+          rc="${{ steps.run.outputs.rc }}"
+          if [ "$SHADOW" = "true" ]; then
+            echo "SHADOW mode — not blocking (rc=$rc). Flip SHADOW to false to enforce."
+            exit 0
+          fi
+          exit "$rc"
