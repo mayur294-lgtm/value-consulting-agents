@@ -50,13 +50,13 @@ def evaluate(target: str, context: str | None = None) -> list[CheckResult]:
     checks.append(CheckResult("gov_provenance_present", 1.0 if prov else 0.5, prov,
                               detail="provenance/date stamp present" if prov else "no provenance marker"))
 
-    # Faithfulness judge — only meaningful when we have the input to ground against.
-    from rubrics.judge.judge import judge
-    if context is not None:
-        ctx = _read(context)
-        checks.append(judge("faithful_no_invention", f"INPUT:\n{ctx[:25000]}\n\nOUTPUT:\n{text[:25000]}",
-                            snapshot=None, threshold=0.8, critical=True))
-    else:
-        checks.append(CheckResult("judge:faithful_no_invention", 0.0, True, skipped=True,
-                                  detail="no input context — faithfulness skipped (runs at runtime / with golden input)"))
+    # NOTE: faithfulness is intentionally NOT a universal baseline check. Applying a
+    # critical "no invention vs input" judge to EVERY agent hard-fails GENERATIVE agents
+    # (roi-modeler's modeled numbers, roadmap's proposed sequence, journey's future state,
+    # workshop hypotheses, use cases, synthesis) whose value IS introducing new, grounded
+    # content. Faithfulness/grounding is therefore scoped PER AGENT in specifics.py:
+    #   • extraction agents (discovery, benchmark)  → faithful_extraction / sourced (critical)
+    #   • research (market-context)                 → credibility / sourced
+    #   • generative agents                         → grounded in evidence/platform (not faithfulness)
+    # The governance baseline stays universal-safe: evidence/assumptions/provenance only.
     return checks
