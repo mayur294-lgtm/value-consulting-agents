@@ -39,6 +39,11 @@ def evaluate(target: str, context: str | None = None) -> list[CheckResult]:
                         threshold=0.8, critical=True))
     if context is not None:
         ctx = Path(context).read_text(errors="replace") if Path(context).exists() else context
+        # SOFT (not critical): the report is HYBRID — factual findings (should trace to
+        # evidence) plus legitimately generative content (modeled ROI, proposed use cases,
+        # benchmarks). A critical transcript-faithfulness judge would over-fire on the
+        # generative parts. Unsourced/aggressive assumptions are still hard-caught by the
+        # critical assumption_discipline judge above.
         checks.append(judge("evidence_grounding", f"INPUT:\n{ctx[:25000]}\n\nOUTPUT:\n{text[:25000]}",
-                            snapshot=None, threshold=0.85, critical=True))
+                            snapshot=None, threshold=0.85, critical=False))
     return checks
