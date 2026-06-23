@@ -25,6 +25,37 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 from rubrics.base import RubricResult  # noqa: E402
 
+try:                                   # load evals/.env so LANGFUSE_* are available
+    from run_experiment import _load_dotenv
+    _load_dotenv()
+except Exception:
+    pass
+
+
+def _log_langfuse(report: dict) -> None:
+    """Log a real run's scores to Langfuse if keys present (dashboard/trend). No-op otherwise."""
+    import os
+    if not os.getenv("LANGFUSE_PUBLIC_KEY") or not os.getenv("LANGFUSE_SECRET_KEY"):
+        return
+    try:
+        from langfuse import Langfuse
+        lf = Langfuse()
+        ev = lf.create_event(name=f"run:{report['engagement']}",
+                             input={"engagement": report["engagement"]},
+                             metadata={"flags": len(report.get("flags", [])), "kind": "runtime"})
+        tid = getattr(ev, "trace_id", None)
+        for k, v in report.get("deliverables", {}).items():
+            if "score" in v:
+                lf.create_score(name=f"deliverable/{k}", value=float(v["score"]), trace_id=tid, data_type="NUMERIC")
+        for k, v in report.get("agents", {}).items():
+            if "score" in v:
+                lf.create_score(name=f"agent/{k}", value=float(v["score"]), trace_id=tid, data_type="NUMERIC")
+        if "score" in report.get("pipeline", {}):
+            lf.create_score(name="pipeline", value=float(report["pipeline"]["score"]), trace_id=tid, data_type="NUMERIC")
+        lf.flush()
+    except Exception:
+        pass  # telemetry must never break a run
+
 # deliverable routing: filename (exact or *glob*) -> (evaluator, threshold)
 _DELIVERABLE_ROUTES: list[tuple[str, str, float]] = [
     ("assessment_dashboard.html", "rubrics.deliverable.assessment", 0.80),
@@ -123,6 +154,7 @@ def write_report(engagement_dir: str | Path, report: dict | None = None) -> Path
             pass
     existing["evals"] = report
     path.write_text(json.dumps(existing, indent=2))
+    _log_langfuse(report)   # mirror real-run scores to the Langfuse dashboard (if keys)
     return path
 
 
