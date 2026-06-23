@@ -1,23 +1,27 @@
-# Judge: use cases grounded in the product directory (usecase-designer)
+# Judge: use cases achievable on the Backbase platform (usecase-designer)
 
-The artifact designs use cases (UC-### IDs), each meant to map to real Backbase product-
-directory capabilities (RB.x.x / WB.x.x) and to carry a build classification
-(OOTB / Config / Custom) and a priority tier. The failure mode is invented capability —
-mapping a use case to a product feature that doesn't exist, or mis-classifying custom
-work as out-of-the-box.
+Use cases are GENERATIVE — the agent derives them from the client's problem statements
+and goals and proposes what could solve them. They are NOT expected to come from the
+transcript, and a use case the client never raised is GOOD (clients often don't know what
+the platform can do; it gets validated with them later). Do NOT penalise a use case for
+being net-new.
 
-Score 1.0 only if ALL hold:
-- **Real product-directory mapping**: each use case maps to a plausible, real Backbase
-  product-directory capability (RB./WB. IDs) — not an invented or vague feature.
-- **Justified OOTB/Config/Custom classification**: the build classification is reasoned,
-  not asserted — OOTB claims are credible (the capability genuinely exists out of the
-  box), and genuinely bespoke work is honestly marked Config or Custom.
-- **No over-promising OOTB**: the failure of claiming "out of the box" for what is really
-  custom is penalized hard — it misleads the effort/cost picture.
-- **Priority tiers reasoned**: Tablestakes/Differentiating or P1/P2/P3 tiers reflect value
-  and fit, not arbitrary ranking.
+The real guardrail is **achievability on the Backbase platform** — reason each use case
+against the FROZEN platform snapshot. A use case is sound if it is either:
+- **OOTB** — delivered by a product line (Digital Onboarding / Lending / Banking / Engage /
+  Assist, Grand Central, Platform Identity), OR
+- **Buildable** — on a named platform layer: Flow Foundation (low-code journeys/forms/rules),
+  Orchestration (Process Studio workflows / Agent Studio agents / Banking Capabilities
+  microservices), Nexus (shared customer truth), Intelligence (models/SLMs), Sentinel
+  (authority for agentic actions).
 
-Deduct sharply for: a use case mapped to a non-existent or fabricated capability; custom
-work labelled OOTB; missing or arbitrary build classification; unjustified priority tiers.
+Score 1.0 only if EVERY use case (a) traces to a stated problem or goal, AND (b) is clearly
+achievable OOTB or names a plausible platform-layer build path, AND (c) its OOTB / Config /
+Custom classification is honest (custom work not mislabelled OOTB).
 
-Return JSON: {"score", "pass" (>=0.8), "reason"} — name use cases with fabricated mappings or mis-stated OOTB/Config/Custom classification.
+Deduct sharply for: use cases requiring capability OUTSIDE the platform (core replacement,
+hand-wavy "AI does it" with no layer it runs on); use cases with no link to a problem/goal;
+custom work claimed as OOTB.
+Do NOT deduct for: net-new use cases the client didn't mention — that is the point.
+
+Return JSON: {"score","pass" (>=0.8),"reason"} — for any unsound use case, name it and say which platform layer (if any) could actually deliver it, or why it is not achievable.

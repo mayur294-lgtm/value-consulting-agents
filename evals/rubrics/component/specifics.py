@@ -368,6 +368,15 @@ JUDGES: dict[str, list[str]] = {
 # Faithfulness/integrity judges run as critical (hard-fail on real failure).
 CRITICAL_JUDGES: set[str] = {"faithful_extraction_no_invention"}
 
+# Per-judge frozen standard. Generative agents (use cases, synthesis) are graded for
+# PLATFORM ACHIEVABILITY, not transcript-faithfulness — grounded in the Backbase
+# platform snapshot (OOTB product directory + the buildable platform layers).
+JUDGE_SNAPSHOTS: dict[str, str] = {
+    "usecases_grounded_in_product_directory": "backbase-platform-frozen.md",
+    "synthesis_faithful_to_workshops": "backbase-platform-frozen.md",
+    "levers_grounded_in_evidence": "backbase-platform-frozen.md",
+}
+
 
 def _run_judges(agent_name: str, text: str, context: str | None = None) -> list[CheckResult]:
     """Run the agent's registered semantic judges (soft, except faithfulness).
@@ -386,7 +395,8 @@ def _run_judges(agent_name: str, text: str, context: str | None = None) -> list[
                       f"# OUTPUT (the agent's result)\n{text}")
         else:
             target = text
-        out.append(judge(name, target, threshold=0.8, critical=critical))
+        out.append(judge(name, target, threshold=0.8, critical=critical,
+                         snapshot=JUDGE_SNAPSHOTS.get(name)))
     return out
 
 
