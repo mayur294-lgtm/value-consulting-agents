@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GOLDEN FIXTURE — minimal on-palette Frontline-2026 deck</title>
+<!--
+  Calibration golden for the deck rubric: uses ONLY canonical Frontline-2026
+  tokens, Libre Franklin via Google Fonts, no gradient text, no external CDNs,
+  top-accent cards (no border-left ribbons), <=4 points per slide. This is an
+  evaluator self-test anchor, not engagement content.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #041326; --blue: #3367FF; --cyan: #69FEFF; --red: #FF503C;
+    --green: #2ECC71; --bg: #F3F6F9; --white: #FFFFFF; --muted: #6B7786;
+  }
+  body { margin: 0; background: var(--white); color: var(--navy);
+         font-family: "Libre Franklin", Helvetica, Arial, sans-serif; }
+  section { min-height: 100vh; padding: 4rem; }
+  .cover { background: var(--navy); color: var(--white); }
+  .label { text-transform: uppercase; color: var(--blue); letter-spacing: .08em; }
+  .card { background: var(--bg); border-radius: 16px; padding: 1.5rem;
+          border-top: 3px solid var(--blue); }
+  .muted { color: var(--muted); }
+  .stat { color: var(--green); }
+</style>
+</head>
+<body>
+  <section class="cover">
+    <p class="label">BACKBASE</p>
+    <h1>Reduce onboarding from 14 days to 3</h1>
+  </section>
+  <section>
+    <p class="label">So what</p>
+    <h2>Three value pools, one frontline</h2>
+    <div class="card">
+      <ul>
+        <li>Cost-to-serve down 20–40%</li>
+        <li>Conversion up 10–25%</li>
+        <li>Approval-to-production 3–5× faster</li>
+      </ul>
+      <p class="stat">€4.2M five-year NPV</p>
+    </div>
+  </section>
+</body>
+</html>

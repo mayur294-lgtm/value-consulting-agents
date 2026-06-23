@@ -1,0 +1,83 @@
+# Cortex eval registry — the per-component / per-deliverable spec.
+# run_experiment.py is driven entirely by this file. Add a row to bring a new
+# agent/skill/deliverable under the harness. Existing components are adopted
+# lazily (the seam): give them a row the next time they're touched.
+#
+# threshold = minimum mean rubric score to PASS (hard-fail checks override).
+# evaluator = importable module exposing evaluate(target) -> list[CheckResult].
+
+deliverables:
+  deck:
+    altitude: deliverable
+    evaluator: rubrics.deliverable.decks
+    threshold: 0.85
+    goldens:
+      - evals/goldens/deck_valid_min.html        # on-palette calibration anchor (post PR #71)
+    negatives:
+      - evals/goldens/negatives/deck_offpalette.html
+    # Real shipped decks — scored by evals-monitor.yml (Loop 3). Most predate the
+    # PR #71 palette correction (2026-06-22) and are EXPECTED to surface drift.
+    monitor:
+      - engagements/test_inspire/2026-02_retail_ignite/outputs/strategy_workshop_deck.html
+
+  roi:
+    altitude: deliverable
+    evaluator: rubrics.deliverable.roi
+    threshold: 0.80
+    goldens:
+      - engagements/nfis/2026-02_digital_investor_assessment_v2/outputs/roi_report.md
+
+  assessment:
+    altitude: deliverable
+    evaluator: rubrics.deliverable.assessment
+    threshold: 0.80
+    goldens:
+      - engagements/nfis/2026-02_digital_investor_assessment_v2/outputs/assessment_dashboard.html
+
+# Component (unit) altitude — score an agent's direct output on a fixed input.
+# code: objective Python checks. judge: LLM-as-judge rubrics (semantic).
+components:
+  market-context-researcher:
+    altitude: component
+    threshold: 0.80
+    golden_engagement: nfis
+    code: [annual_report_attempted, module1_metrics_present]   # the documented miss
+    judge: [sources_credible_not_hallucinated]
+
+  roi-financial-modeler:
+    altitude: component
+    threshold: 0.80
+    golden_engagement: nfis
+    input: evals/goldens/nfis/roi_config.json
+    code: [math_ties_out, three_scenarios, assumptions_sourced]
+    judge: [conservative_bias, topdown_bottomup_correlation]
+
+  discovery-transcript-interpreter:
+    altitude: component
+    threshold: 0.80
+    golden_engagement: nfis
+    code: [evidence_ids_wellformed, lifecycle_tags_present]
+    judge: [faithful_extraction_no_invention]
+
+  capability-assessment:
+    altitude: component
+    threshold: 0.80
+    golden_engagement: nfis
+    code: [maturity_scale_0_4]
+    judge: [scores_justified_by_evidence]
+
+  narrative-assembler:
+    altitude: component
+    threshold: 0.80
+    golden_engagement: nfis
+    judge: [transformation_arc_threaded_7_acts]   # the documented assembler weakness
+
+# Pipeline (integration) altitude — the most important. When ANY component
+# changes, run orchestrate.py end-to-end on a golden engagement and check the
+# inter-agent contracts + final deliverable still hold.
+pipeline:
+  altitude: pipeline
+  evaluator: rubrics.pipeline.contracts
+  threshold: 0.90
+  golden_engagement: nfis
+  orchestrate: orchestrate.py

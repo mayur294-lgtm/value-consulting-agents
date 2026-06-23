@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NEGATIVE FIXTURE — deck with deliberate design-system violations</title>
+<!-- VIOLATION: external CDN (not Google Fonts) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/some-lib/dist.css">
+<script src="https://unpkg.com/chart.js"></script>
+<style>
+  /* VIOLATION: deprecated ENGAGE-2026 / drifted hexes */
+  body { background: #0F172A; color: #001C3D; font-family: Inter, sans-serif; }
+  .accent { color: #1A5AFF; }
+  .old-blue { background: #3366FF; }
+  /* VIOLATION: gradient text */
+  h1 { background: linear-gradient(90deg,#3367FF,#69FEFF); -webkit-background-clip: text; color: transparent; }
+  /* VIOLATION: thick border-left ribbon on cards */
+  .card { border-left: 6px solid #FF503C; }
+  /* an off-palette ad-hoc color */
+  .blob { color: #abc123; }
+</style>
+</head>
+<body>
+  <section>
+    <h1>Quarterly review</h1>
+    <ul><li>Point 1</li><li>Point 2</li><li>Point 3</li><li>Point 4</li><li>Point 5</li><li>Point 6</li></ul>
+    <div class="card">A card with a left ribbon</div>
+  </section>
+</body>
+</html>
