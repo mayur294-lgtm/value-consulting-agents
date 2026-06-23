@@ -38,6 +38,8 @@ def _load_snapshot(snapshot: str | None) -> str:
 
 
 def _available() -> bool:
+    if os.getenv("CORTEX_EVAL_NO_JUDGE"):   # fast code-only mode (e.g. interactive Stop hook)
+        return False
     if not os.getenv("ANTHROPIC_API_KEY"):
         return False
     try:

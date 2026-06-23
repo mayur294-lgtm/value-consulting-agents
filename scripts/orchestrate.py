@@ -2258,6 +2258,22 @@ async def run_pipeline(
         with open(journal, "a") as f:
             f.write(timing_entry)
 
+    # Runtime evals (non-blocking): score this run's agent outputs + deliverables +
+    # pipeline contracts into .pipeline_run_report.json and flag anything below
+    # threshold. Never breaks the engagement — wrapped so any eval error is swallowed.
+    try:
+        import sys as _sys
+        _evals = REPO_ROOT / "evals"
+        if str(_evals) not in _sys.path:
+            _sys.path.insert(0, str(_evals))
+        from runtime import write_report as _write_eval_report, score_engagement as _score
+        _rep = _score(engagement_dir)
+        _path = _write_eval_report(engagement_dir, _rep)
+        print(f"  📊 Eval report → {_path.name}"
+              + (f"  ⚑ {len(_rep['flags'])} flag(s)" if _rep.get("flags") else "  ✓ clean"))
+    except Exception as _e:  # never let evals break a run
+        print(f"  (runtime evals skipped: {_e})")
+
     print()
 
 
