@@ -156,12 +156,14 @@ def score_engagement(engagement_dir: str | Path) -> dict:
                     report["deliverables"][name] = {"error": str(e)}
                 break
 
-    # --- agent-level (governance baseline on each agent's output) --------------
-    gov = importlib.import_module("rubrics.component.governance")
+    # --- agent-level: FULL per-agent suite (governance baseline + per-agent code
+    #     checks + per-agent judges), so the consultant runtime gets the same depth
+    #     as the dev-time gate — not just the 3-check baseline. ---------------------
+    specifics = importlib.import_module("rubrics.component.specifics")
     for name, agent in _AGENT_OUTPUTS.items():
         if name in files:
             try:
-                checks = gov.evaluate(str(files[name]))
+                checks = specifics.evaluate(agent, str(files[name]))
                 rr = RubricResult(target=name, altitude="component", checks=checks)
                 report["agents"][agent] = {"output": name, "score": round(rr.score, 3),
                     "pass": rr.passed(0.80), "altitude": "component"}
