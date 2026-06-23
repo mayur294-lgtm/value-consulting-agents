@@ -1,5 +1,15 @@
 # The Flywheel: Self-Improving Value Consulting AgenticOS
 
+> ⚠️ **DEPRECATED (2026-06-24) — the auto-dev loop is killed.**
+> The autonomous `dev-agent` loop (telemetry → `ready-for-dev` → `dev-agent.yml`
+> auto-implements → PR) has been **removed**. It changed agents **outside** the bb-*
+> development harness and the eval gate — an ungated path that must not exist.
+> **All component changes now go through `bb-prd → bb-design → bb-tickets → bb-build
+> (eval verify) → bb-pr-review → bb-refine`.** Telemetry collection still runs and
+> feeds the **backlog** (intake for the next `bb-prd`), but nothing auto-implements.
+> Deprecated agents: `.claude/agents/deprecated/{dev-agent,review-agent,coach-agent}.md`.
+> See `evals/README.md` + `evals/LANGFUSE.md`.
+
 The Flywheel is the autonomous improvement system for VC AgenticOS. It tracks how consultants use the system, identifies problems, builds fixes, and delivers them — with human approval before anything ships.
 
 ## How It Works
