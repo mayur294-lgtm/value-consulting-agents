@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Claude's Role in the Value Consulting Agent System
 
 ## Identity and Purpose
@@ -20,6 +24,95 @@ This is NOT a documentation project. When given inputs (transcripts, Excel data,
 - Produce executive-ready outputs in plain English
 
 You are expected to think like a consultant and produce consultant-quality work.
+
+---
+
+## Development Harness (bb-*) — MANDATORY for component changes
+
+This repo's own software — **agents (`.claude/agents/`), skills/commands (`.claude/skills/`, `.claude/commands/`), output templates (`templates/`, `presentations/`), and pipeline code (`scripts/*.py`, `orchestrate.py`)** — is developed through a gated lifecycle with evals as the verify gate. It is **not** a slash command anyone has to remember.
+
+**Auto-trigger (recognize, don't wait to be told):** Whenever a request would *create or change* any component above — "improve the ROI agent", "make the assembler thread the arc", "add a competitor-benchmark agent", "tweak the deck template" — you MUST route it through the lifecycle, not edit the file directly:
+
+`/bb-prd → /bb-design → /bb-tickets → /bb-build → /bb-pr-review → /bb-refine`
+
+- `bb-prd` writes `.prd/prd-v*.md` including an **Eval Acceptance Criteria** section (which `evals/registry.yaml` cases + thresholds define done; a NEW component authors fresh eval cases).
+- `bb-build`'s verify step = **evals**, not a compiler: `python scripts/test_agent.py` (structural) + `python evals/run_experiment.py --component <name>` (unit) + `python evals/run_experiment.py --altitude pipeline` (the change didn't break downstream). A ticket isn't done until these pass.
+- `bb-pr-review` opens a **draft PR** that can't merge until the `evals.yml` gate is green; `bb-refine` harvests failing/edge/drift cases into `.prd/backlog.md` to seed the next cycle.
+
+**Deploy = green-merge to `main`** (agents/skills are read at runtime — no build artifact). A `v*` tag cuts a formal release, gated on the full eval suite.
+
+The `require-harness.py` hook blocks direct edits to component paths when no bb-* change is active; `evals.yml` is the server-side backstop. Harness infra (`.claude/skills/bb-*`, `.claude/hooks/`, `evals/`, `.github/`) and engagement deliverables are exempt. See the eval suite at `evals/README.md`.
+
+---
+
+## Commands
+
+Python 3.11. Install deps with `pip install -r requirements.txt` (only `openpyxl`; CI also installs `pyyaml`). There is no Makefile and no npm/unit-test suite in the repo root — the engine is `scripts/orchestrate.py` and quality is enforced structurally in CI.
+
+**Run the assessment pipeline** — the core engine for Ignite Assess (Discovery → Block A's 5 parallel agents → Roadmap → Assembly → HTML → Excel → Validation). Run from repo root; `CLAUDECODE=` clears the env var so checkpoints work:
+
+```bash
+CLAUDECODE= python3 scripts/orchestrate.py {engagement_dir}                 # interactive (consultant checkpoints)
+CLAUDECODE= python3 scripts/orchestrate.py --express {engagement_dir}        # fewer checkpoints
+CLAUDECODE= python3 scripts/orchestrate.py --non-interactive {engagement_dir} # fully automated
+CLAUDECODE= python3 scripts/orchestrate.py --resume-from {step} {engagement_dir} # resume after interruption
+CLAUDECODE= python3 scripts/orchestrate.py --dry-run {engagement_dir}        # plan only, no API calls
+```
+
+**Bootstrap a new engagement** (creates the client→engagement hierarchy, intake + journal templates, session UUID). Run from repo root:
+
+```bash
+./scripts/init_engagement.sh <client_short_name> <YYYY-MM_domain_type> [assessment|ignite]
+# e.g. ./scripts/init_engagement.sh navy_federal 2026-02_retail_assessment assessment
+```
+
+**Agent quality checks** — what `test-agents.yml` runs on agent/knowledge/template PRs ($0, no LLM; validates against `tests/quality_metrics.yaml`):
+
+```bash
+python scripts/test_agent.py --branch HEAD --base-branch origin/main --output test_results.json
+```
+
+**Validate engagement outputs:** `./scripts/validate_engagement_outputs.sh`
+
+**Telemetry / Flywheel:** one-time `./scripts/setup_telemetry.sh`; extract `python3 scripts/extract_telemetry.py <ENGAGEMENT_JOURNAL.md>`; manual sync via the `/sync-telemetry` skill.
+
+**Anonymize a transcript before it reaches MCP/KG:** `python3 scripts/anonymize_transcript.py ...` (the `anonymize-guard.py` hook also blocks unscrubbed reads automatically).
+
+> `tests/` holds **engagement validation runs** (BECU, WSFS, NFIS, Mystate), not unit tests.
+
+---
+
+## Architecture
+
+The big picture that spans multiple files (see `STRUCTURE.md`, `FLYWHEEL.md`, and the nested `knowledge/Ignite Inspire/CLAUDE.md`):
+
+1. **Two engagement modes behind one thin router.** `value-consulting-orchestrator` (`.claude/agents/`) detects the engagement type from the user's words and routes:
+   - **Ignite Assess** (evidence/transcript-driven) → the deterministic Python pipeline `scripts/orchestrate.py`. Claude does **not** hand-orchestrate the 5 Block-A agents — the script does.
+   - **Ignite Inspire** (workshop-driven) → **not** run by `orchestrate.py`. Claude orchestrates workshop agents directly via a **Two-Phase (checkpoint) Protocol**: for each of 4 workshops (strategy / member / employee / architecture), Phase 1 `workshop-preparation` writes `CHECKPOINT_workshop_{type}.md` → consultant approves → Phase 2 produces the deck HTML; then `ignite-workshop-synthesizer` reads all 4 outputs → Ignite Day deck.
+   - **Hybrid** → Assess via Python + Inspire workshop agents, feeding Inspire use-case priorities into the Assess ROI model.
+
+2. **Ignite Inspire is a self-contained subsystem** under `knowledge/Ignite Inspire/` with its **own nested `CLAUDE.md` (~46 KB) — read it before running any Inspire engagement.** It holds 8 sequential agent prompts (`agent-0-engagement-plan` → `agent-1-strategy` → member/employee/architecture/usecase/presentation → `agent-7-roi`), HTML deck templates + worked example decks, `brand-assets/`, its own `design-system.md`, `CONSULTANT_GUIDE.md`, and `ENGAGEMENT_CONTEXT_TEMPLATE.md`. The `.claude/agents/workshop-preparation` and `ignite-workshop-synthesizer` agents are the operational drivers that consume these prompts and templates.
+
+3. **Sub-agents** live in `.claude/agents/` (~22) as Markdown with YAML frontmatter (`name`, `description`, `model`, `color`) — e.g. `discovery-transcript-interpreter`, `capability-assessment`, `market-context-researcher`, `roi-financial-modeler`, `roadmap-prioritization`, `narrative-assembler`, plus the Flywheel team (`dev-agent`, `review-agent`, `release-agent`, `coach-agent`).
+
+4. **Skills are slash commands** in `.claude/commands/` (~28): the `/frontline*` family (deck/doc builders — see catalog below), `/generate-assessment-html`, `/generate-roi-questionnaire`, `/generate-roi-excel`, `/build-roi`, `/build-journey`, `/run-pipeline`, `/publish`, `/reconcile`, `/scan-engagement`, `/extract-learnings`, and the `domain-*` retrievers. (`.claude/skills/` holds only the `coding-standards` plugin skill.)
+
+5. **Engagement hierarchy** (`engagements/[client]/[YYYY-MM_domain_type]/`, detailed in `STRUCTURE.md`): a persistent `CLIENT_PROFILE.md` per client (survives across engagements) plus per-engagement `inputs/`, `outputs/`, `ENGAGEMENT_JOURNAL.md`, and `.engagement_session_id`.
+
+6. **The Flywheel** (`FLYWHEEL.md`): the self-improving loop. Engagement completes → telemetry GitHub issue → Triage (`triage-weekly.yml`, reactive + weekly cron) → Dev Agent (`dev-agent.yml` on the `ready-for-dev` label) → Test Agent → Review Agent → PR → Mayur approves → Release Agent. The Dev Agent is scope-limited to agents/knowledge/templates.
+
+7. **Hooks (`.claude/settings.json` → `.claude/hooks/`) fire automatically** and enforce governance — know them before debugging "why was my action blocked":
+   - SessionStart `auto-branch.sh` — never work on `main`; auto-creates a feature branch.
+   - PreToolUse(Read|Bash) `anonymize-guard.py` — blocks unscrubbed PII from reaching MCP/KG.
+   - PreToolUse(Write) `require-checkpoint.py` — enforces consultant checkpoints before writes.
+   - Stop `enforce-journal.py` — enforces a journal entry on completion.
+   - Git `.githooks/post-commit` + `pre-push` — telemetry extraction/sync (Flywheel backup layers).
+
+8. **Knowledge & ontology:** `knowledge/` holds methodology, `standards/` (the governance protocols + per-domain capability taxonomies), `design-system.md` (visual SSOT), `banking_os.md` (positioning canon), domain benchmarks, and battlecards. `ontology-test/` holds per-client knowledge-graph JSON and the Minimi bridge (`MINIMI_BRIDGE.md`).
+
+9. **CI contribution gates:** `enforce-contribution-scope.yml` blocks Consultant-tier PRs from touching agents/skills/tools/CLAUDE.md (Architect-only); `test-agents.yml` guards agent/knowledge/template PRs. See **Contribution Tiers** below.
+
+---
 
 ### You Reason from Evidence
 

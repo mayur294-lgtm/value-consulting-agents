@@ -1,0 +1,8 @@
+# Cortex evals — Python deps
+# Core runner uses only the stdlib + PyYAML, so deck/code evaluators run in CI
+# with zero Langfuse/Anthropic setup ("shadow" mode works out of the box).
+PyYAML>=6.0
+
+# Optional — enable Langfuse logging + LLM-judge rubrics (set keys in .env):
+#   pip install "langfuse>=2.0" "anthropic>=0.40"
+# Guarded imports in run_experiment.py / rubrics/judge: absent deps -> local mode.

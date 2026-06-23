@@ -1,0 +1,11 @@
+# Secrets — never commit Langfuse / Anthropic keys
+.env
+.env.local
+
+# Local virtualenv
+.venv/
+
+# Generated / cached experiment artifacts (path-1 regen outputs)
+goldens/**/*.generated.*
+.cache/
+__pycache__/
