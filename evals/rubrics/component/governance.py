@@ -55,7 +55,7 @@ def evaluate(target: str, context: str | None = None) -> list[CheckResult]:
     if context is not None:
         ctx = _read(context)
         checks.append(judge("faithful_no_invention", f"INPUT:\n{ctx[:25000]}\n\nOUTPUT:\n{text[:25000]}",
-                            snapshot=None, threshold=0.8))
+                            snapshot=None, threshold=0.8, critical=True))
     else:
         checks.append(CheckResult("judge:faithful_no_invention", 0.0, True, skipped=True,
                                   detail="no input context — faithfulness skipped (runs at runtime / with golden input)"))

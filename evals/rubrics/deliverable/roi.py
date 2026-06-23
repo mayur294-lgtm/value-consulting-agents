@@ -85,8 +85,10 @@ def evaluate(target: str) -> list[CheckResult]:
             return [CheckResult("valid_json", 0.0, False, hard_fail=True, detail=str(e))]
     text = p.read_text(errors="replace")
     checks = _eval_markdown(text)
-    # Semantic judges (auto-skip without ANTHROPIC_API_KEY).
-    from rubrics.judge.judge import run_judges
-    checks += run_judges(target, [("conservative_bias", "design-system-frozen.md"),
-                                  ("topdown_bottomup_correlation", None)], threshold=0.75)
+    # Semantic judges (auto-skip without ANTHROPIC_API_KEY). conservative_bias is an
+    # integrity judge → critical (a real fail hard-fails, no averaging-away).
+    from rubrics.judge.judge import judge
+    checks.append(judge("conservative_bias", text, snapshot="design-system-frozen.md",
+                        threshold=0.8, critical=True))
+    checks.append(judge("topdown_bottomup_correlation", text, snapshot=None, threshold=0.75))
     return checks

@@ -34,9 +34,11 @@ def evaluate(target: str, context: str | None = None) -> list[CheckResult]:
     # --- qualitative judges (auto-skip without ANTHROPIC_API_KEY) --------------
     from rubrics.judge.judge import judge
     checks.append(judge("report_tone", text, snapshot="output-standards-frozen.md", threshold=0.8))
-    checks.append(judge("assumption_discipline", text, snapshot="output-standards-frozen.md", threshold=0.8))
+    # integrity judge — critical: a real fail hard-fails the rubric (no averaging-away)
+    checks.append(judge("assumption_discipline", text, snapshot="output-standards-frozen.md",
+                        threshold=0.8, critical=True))
     if context is not None:
         ctx = Path(context).read_text(errors="replace") if Path(context).exists() else context
         checks.append(judge("evidence_grounding", f"INPUT:\n{ctx[:25000]}\n\nOUTPUT:\n{text[:25000]}",
-                            snapshot=None, threshold=0.85))
+                            snapshot=None, threshold=0.85, critical=True))
     return checks
