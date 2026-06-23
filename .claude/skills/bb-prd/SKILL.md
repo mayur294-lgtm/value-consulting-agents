@@ -23,6 +23,28 @@ The PRD feeds into `/bb-design` for UX and solution design, which then feeds int
 
 Before anything else, clean up from previous modules and ensure the project is ready.
 
+### 0.0 Developer eval environment (MANDATORY — developers only)
+
+The bb-* lifecycle uses evals as its verify gate, and the LLM-judges need an Anthropic
+API key. This applies to **developers changing components** — never to people who only
+run agents to generate outputs (they never reach this skill).
+
+Check whether the developer's eval keys are configured:
+
+```bash
+grep -q '^ANTHROPIC_API_KEY=.' evals/.env 2>/dev/null && echo CONFIGURED || echo MISSING
+```
+
+If **MISSING**, STOP and prompt the developer before continuing:
+
+> "You're starting development on cortex components, which runs through the eval gate.
+> Run `bash evals/setup_dev.sh` once — it will prompt for **your own Anthropic API key**
+> (for the LLM-judges) and seed the **shared Langfuse eval keys** (from the team). This
+> is a one-time, developer-only setup; people who just run agents don't need it."
+
+Do not proceed with the PRD until either `evals/.env` has `ANTHROPIC_API_KEY` or the
+developer explicitly chooses to continue with judges skipped (deterministic checks only).
+
 ### 0.1 Previous plugin cleanup
 
 Check if previous workshop plugins are still installed and remove them. This handles two paths:

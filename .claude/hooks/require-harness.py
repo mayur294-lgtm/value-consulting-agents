@@ -132,6 +132,8 @@ def main():
         f"'Eval Acceptance Criteria' section). The agent should do this automatically when a "
         f"change to a component is requested.\n"
         f"  2. Then bb-design → bb-tickets → bb-build (verify = evals) → bb-pr-review.\n"
+        f"First time developing here? Run `bash evals/setup_dev.sh` once to configure your "
+        f"eval keys (your own Anthropic key + the shared Langfuse keys) — developers only.\n"
         f"If you are intentionally working OUTSIDE a change cycle, create the marker "
         f"`.prd/ACTIVE_CHANGE` to acknowledge it. (Harness infra under .claude/skills/bb-*, "
         f".claude/hooks/, evals/, and .github/ is exempt.)"

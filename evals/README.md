@@ -25,6 +25,23 @@ evals/
     judge/                      # LLM-as-judge harness (Opus) + prompts/ + standards_snapshot/
 ```
 
+## Developer onboarding (one-time) — developers only
+
+If you're going to **change agents/skills/components**, configure your eval keys once:
+
+```bash
+bash evals/setup_dev.sh
+```
+
+It prompts for **your own Anthropic API key** (for the LLM-judges) and seeds the
+**shared Langfuse eval keys**. People who only *run* agents to generate outputs do
+**not** need this and are never prompted (it's wired into the `bb-prd` lifecycle and
+the `require-harness` hook — dev-only entry points).
+
+- **Anthropic key**: each developer brings their own (`console.anthropic.com`).
+- **Shared Langfuse keys**: distributed out-of-band as `evals/.env.shared` (gitignored)
+  — get it from the team; `setup_dev.sh` picks it up automatically. (Never committed.)
+
 ## Three altitudes
 
 1. **Component (unit)** — score an agent's direct output on a fixed input. Fast dev signal.
