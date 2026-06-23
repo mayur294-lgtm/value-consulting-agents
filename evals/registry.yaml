@@ -32,7 +32,16 @@ deliverables:
     evaluator: rubrics.deliverable.assessment
     threshold: 0.80
     goldens:
+      - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_dashboard.html
+    monitor:
       - engagements/nfis/2026-02_digital_investor_assessment_v2/outputs/assessment_dashboard.html
+
+  report:
+    altitude: deliverable
+    evaluator: rubrics.deliverable.report
+    threshold: 0.80
+    goldens:
+      - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_report.md
 
 # Component (unit) altitude — score an agent's direct output on a fixed input.
 # code: objective Python checks. judge: LLM-as-judge rubrics (semantic).
