@@ -31,6 +31,7 @@ from pathlib import Path
 
 from rubrics.base import CheckResult
 from rubrics.component import governance
+from rubrics.judge.judge import judge
 
 
 def _read(x: str) -> str:
@@ -341,6 +342,54 @@ def _ignite_synth(text: str) -> list[CheckResult]:
     return out
 
 
+# ---------------------------------------------------------------------------
+# Per-agent semantic judges (LLM-as-judge). Mirrors registry.yaml
+# components[*].judge. These are the SOFT semantic layer on top of the
+# code-only checks above; they auto-skip without ANTHROPIC_API_KEY (or with
+# CORTEX_EVAL_NO_JUDGE set), so this stays safe offline.
+#
+# Faithfulness-type judges are CRITICAL (a real low score hard-fails the
+# rubric); everything else is soft (averaged in, can't single-handedly fail).
+# ---------------------------------------------------------------------------
+JUDGES: dict[str, list[str]] = {
+    "market-context-researcher": ["sources_credible_not_hallucinated"],
+    "roi-hypothesis-builder": ["levers_grounded_in_evidence"],
+    "discovery-transcript-interpreter": ["faithful_extraction_no_invention"],
+    "capability-assessment": ["scores_justified_by_evidence"],
+    "roadmap-prioritization": ["initiatives_traced_to_gaps_and_levers"],
+    "narrative-assembler": ["transformation_arc_threaded_7_acts"],
+    "journey-builder": ["value_leakage_quantified"],
+    "benchmark-librarian": ["benchmarks_defensible_not_hallucinated"],
+    "usecase-designer": ["usecases_grounded_in_product_directory"],
+    "workshop-preparation": ["hypotheses_specific_and_quantified"],
+    "ignite-workshop-synthesizer": ["synthesis_faithful_to_workshops"],
+}
+
+# Faithfulness/integrity judges run as critical (hard-fail on real failure).
+CRITICAL_JUDGES: set[str] = {"faithful_extraction_no_invention"}
+
+
+def _run_judges(agent_name: str, text: str, context: str | None = None) -> list[CheckResult]:
+    """Run the agent's registered semantic judges (soft, except faithfulness).
+
+    For faithfulness-type judges the agent INPUT (context) is prepended so the
+    judge can compare output against what the agent actually worked from.
+    """
+    names = JUDGES.get(agent_name)
+    if not names:
+        return []
+    out: list[CheckResult] = []
+    for name in names:
+        critical = name in CRITICAL_JUDGES
+        if critical and context:
+            target = (f"# INPUT (what the agent worked from)\n{_read(context)}\n\n"
+                      f"# OUTPUT (the agent's result)\n{text}")
+        else:
+            target = text
+        out.append(judge(name, target, threshold=0.8, critical=critical))
+    return out
+
+
 SPECIFICS = {
     "discovery-transcript-interpreter": _discovery,
     "capability-assessment": _capability,
@@ -367,7 +416,9 @@ def evaluate(agent_name: str, target: str, context: str | None = None) -> list[C
     If the agent has no specifics, only the governance baseline is returned.
     """
     checks = governance.evaluate(target, context=context)
+    text = _read(target)
     fn = SPECIFICS.get(agent_name)
     if fn is not None:
-        checks.extend(fn(_read(target)))
+        checks.extend(fn(text))
+    checks.extend(_run_judges(agent_name, text, context=context))
     return checks
