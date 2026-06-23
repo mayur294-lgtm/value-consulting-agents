@@ -33,25 +33,44 @@ except Exception:
 
 
 def _log_langfuse(report: dict) -> None:
-    """Log a real run's scores to Langfuse if keys present (dashboard/trend). No-op otherwise."""
+    """Build a proper Langfuse TRACE for a real run: a run trace with one child
+    observation per agent + per deliverable, each carrying its eval score. Gives the
+    dashboard a per-run, per-agent breakdown (not just flat scores). No-op without keys."""
     import os
     if not os.getenv("LANGFUSE_PUBLIC_KEY") or not os.getenv("LANGFUSE_SECRET_KEY"):
         return
     try:
         from langfuse import Langfuse
         lf = Langfuse()
-        ev = lf.create_event(name=f"run:{report['engagement']}",
-                             input={"engagement": report["engagement"]},
-                             metadata={"flags": len(report.get("flags", [])), "kind": "runtime"})
-        tid = getattr(ev, "trace_id", None)
-        for k, v in report.get("deliverables", {}).items():
-            if "score" in v:
-                lf.create_score(name=f"deliverable/{k}", value=float(v["score"]), trace_id=tid, data_type="NUMERIC")
+        root = lf.create_event(
+            name=f"run:{report['engagement']}",
+            input={"engagement": report["engagement"]},
+            metadata={"flags": len(report.get("flags", [])), "kind": "runtime-eval"},
+            level=("WARNING" if report.get("flags") else "DEFAULT"),
+        )
+        tid = getattr(root, "trace_id", None)
+
+        def _child(kind: str, name: str, v: dict) -> None:
+            if "score" not in v:
+                return
+            obs = lf.create_event(
+                name=f"{kind}:{name}",
+                trace_context={"trace_id": tid} if tid else None,
+                output={"score": v["score"], "pass": v.get("pass")},
+                metadata={"altitude": v.get("altitude", kind)},
+                level=("WARNING" if v.get("pass") is False else "DEFAULT"),
+            )
+            lf.create_score(name=f"{kind}/{name}", value=float(v["score"]), trace_id=tid,
+                            observation_id=getattr(obs, "id", None), data_type="NUMERIC",
+                            comment=("PASS" if v.get("pass") else "FLAG"))
+
         for k, v in report.get("agents", {}).items():
-            if "score" in v:
-                lf.create_score(name=f"agent/{k}", value=float(v["score"]), trace_id=tid, data_type="NUMERIC")
+            _child("agent", k, v)
+        for k, v in report.get("deliverables", {}).items():
+            _child("deliverable", k, v)
         if "score" in report.get("pipeline", {}):
-            lf.create_score(name="pipeline", value=float(report["pipeline"]["score"]), trace_id=tid, data_type="NUMERIC")
+            lf.create_score(name="pipeline", value=float(report["pipeline"]["score"]),
+                            trace_id=tid, data_type="NUMERIC")
         lf.flush()
     except Exception:
         pass  # telemetry must never break a run
