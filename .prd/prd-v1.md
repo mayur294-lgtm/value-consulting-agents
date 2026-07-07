@@ -1,6 +1,6 @@
 ---
 version: 1
-status: draft
+status: built
 date: 2026-07-07
 author: Mariam Titus George
 previous: null
