@@ -87,6 +87,8 @@ When this skill is invoked:
 
 ## Configuration Schema
 
+> **Note:** The authoritative schema is defined in `.claude/agents/roi-financial-modeler.md` ("Output: roi_config.json Schema"). The sketch below shows the overall shape; see that agent file for the full, current contract — including the fact that `value_lever_groups` (NOT `levers`) is a **dict of dicts keyed by lever ID**, with `revenue_drivers`/`cost_drivers` as dicts keyed by driver ID (not arrays).
+
 ```json
 {
   "client_name": "Bank Name",
@@ -96,11 +98,24 @@ When this skill is invoked:
   "discount_rate": 0.12,
   "selected_scenario": "Moderate",
   "primary_stakeholder_types": ["business", "technology", "finance"],
+  "sources": [
+    {"ref": "Business Case Questionnaire", "detail": "Client-confirmed FTE, revenue, cost-to-income ratio", "file": "[CLIENT]_Business_Case_Questionnaire_FILLED.xlsx"},
+    {"ref": "Consulting Playbook Benchmarks", "detail": "Comparable-bank Backbase impact", "file": "knowledge/Consulting Playbook Metrics Benchmark [Master] - Benchmarks.csv"}
+  ],
+  "basic_information": {
+    "annual_revenue": 500000000,
+    "cost_to_income_ratio": 0.55,
+    "operating_costs": 275000000,
+    "operating_costs_source": "Derived: Annual Revenue × Cost-to-Income Ratio",
+    "operating_costs_confidence": "MEDIUM",
+    "total_fte": 1200,
+    "total_fte_confidence": "HIGH",
+    "total_fte_source": "Client follow-up — CLIENT-CONFIRMED"
+  },
   "scenarios": {
     "conservative": {
       "implementation_curve": [0.1, 0.6, 0.8, 0.9, 1.0],
-      "effectiveness_curve": [0.1, 0.25, 0.45, 0.7, 0.85],
-      "levers": {}
+      "effectiveness_curve": [0.1, 0.25, 0.45, 0.7, 0.85]
     },
     "moderate": {...},
     "aggressive": {...}
@@ -109,26 +124,25 @@ When this skill is invoked:
     "license": [yearly_amounts],
     "implementation": [yearly_amounts]
   },
-  "levers": [
-    {
-      "id": "L1",
-      "name": "Prospecting - Prospect Lounge",
-      "type": "revenue_uplift",
-      "values": [year1, year2, year3, year4, year5],
-      "inputs": {}
+  "value_lever_groups": {
+    "L1_prospecting": {
+      "group_name": "Prospecting - Prospect Lounge",
+      "revenue_drivers": {
+        "conversion_uplift": {
+          "name": "...",
+          "baseline_formula": "{eligible_customers} * {conversion_rate}",
+          "baseline_annual": 500000,
+          "inputs": {
+            "eligible_customers": {"value": 14000, "unit": "customers", "source": "...", "confidence": "HIGH"},
+            "conversion_rate": {"value": 0.12, "unit": "ratio", "source": "...", "confidence": "MEDIUM", "formula": "{leads} / {visits}", "fmt": "0.0%"}
+          }
+        }
+      },
+      "cost_drivers": {},
+      "servicing_analysis": null
     }
-  ],
-  "servicing": [
-    {
-      "task": "Portfolio Review",
-      "role": "RM",
-      "volume": 15700,
-      "time": 0.75,
-      "rate": 25,
-      "impact": 0.3
-    }
-  ],
-  "assumptions": [
+  },
+  "assumptions_register": [
     {
       "name": "Discount Rate (WACC)",
       "value": 0.12,
@@ -139,6 +153,16 @@ When this skill is invoked:
   ]
 }
 ```
+
+### Provenance keys (REQUIRED)
+
+The generator renders provenance when present in the config:
+- **`sources`** (top-level array) — one entry per real artifact behind the inputs, each `{ref, detail, file}`. Rendered as a "Sources" sheet.
+- **Per-`basic_information`-field provenance** — for every field `X`, companion keys `X_source` (string) and `X_confidence` (`HIGH` | `MEDIUM` | `LOW` | `ASSUMPTION`). The generator excludes these companion keys from rendered rows and uses `X_confidence` for the confidence column (falling back to a keyword heuristic only when absent).
+- **`operating_costs` as derived** — when `annual_revenue`, `cost_to_income_ratio`, and `operating_costs` are all present in `basic_information`, the generator renders `operating_costs` as a live Excel formula `=revenue*cost_to_income` instead of a static number. Document it with `operating_costs_source: "Derived: Annual Revenue × Cost-to-Income Ratio"`.
+- **Driver-input `formula`/`fmt`** — any input under a driver's `inputs` dict may optionally include a `formula` (template string with `{token}` names matching sibling input keys) and `fmt` (Excel number-format override) to render that input as a live formula.
+
+See `.claude/agents/roi-financial-modeler.md` for the full authoritative schema and worked examples.
 
 ---
 

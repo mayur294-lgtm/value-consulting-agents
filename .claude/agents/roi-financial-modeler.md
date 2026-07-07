@@ -197,6 +197,7 @@ Produce `roi_config.json` with the `value_lever_groups` structure. This is consu
 
 **Required top-level keys:**
 - `client_name`, `date`, `currency`, `industry`, `analysis_years`, `discount_rate`, `selected_scenario`
+- `sources` — REQUIRED array naming every real artifact behind the inputs (client data files, benchmarks). See "Provenance Requirements" below.
 - `bank_profile` — identity, basic_information, additional_context, data_gaps
 - `basic_information` — total_customers, annual_revenue, operating_costs, cost_to_income_ratio, total_fte, average_fte_rate_hour, average_revenue_per_customer
 - `backbase_loading` — implementation_curve, effectiveness_curve, yoy_growth
@@ -206,6 +207,39 @@ Produce `roi_config.json` with the `value_lever_groups` structure. This is consu
 - `lever_summary` — array for HTML dashboard lever cards
 - `assumptions_register` — array of documented assumptions
 - `data_gaps_for_validation` — array of items needing client validation
+
+---
+
+## Provenance Requirements (MANDATORY)
+
+Every `roi_config.json` MUST carry provenance so the generated Excel model shows a "Sources" sheet and per-field source/confidence — reusing the same `{value, confidence, source}` shape/vocabulary already used in `bank_profile.key_metrics` above.
+
+**1. Top-level `sources` array** — one entry per real artifact behind the model's inputs (client data files, benchmark CSVs, questionnaires, annual reports). Each item:
+```json
+"sources": [
+  {"ref": "Business Case Questionnaire", "detail": "Client-confirmed FTE count, revenue, cost-to-income ratio", "file": "[CLIENT]_Business_Case_Questionnaire_FILLED.xlsx"},
+  {"ref": "Consulting Playbook Benchmarks", "detail": "Comparable-bank Backbase impact for digital onboarding", "file": "knowledge/Consulting Playbook Metrics Benchmark [Master] - Benchmarks.csv"}
+]
+```
+
+**2. Per-field provenance on `basic_information`** — for EVERY field `X` in `basic_information`, you MUST also emit companion keys `X_source` (string) and `X_confidence` (one of `HIGH` | `MEDIUM` | `LOW` | `ASSUMPTION`). This is REQUIRED, not optional — it is how future models carry provenance automatically. Worked example:
+```json
+"basic_information": {
+  "total_fte": 1200,
+  "total_fte_confidence": "HIGH",
+  "total_fte_source": "Client follow-up — CLIENT-CONFIRMED"
+}
+```
+(The Excel generator excludes `*_source`/`*_confidence` companion keys from rendered rows and uses `X_confidence` for the confidence column — falling back to a keyword heuristic only when a field's confidence is absent. Do not skip fields.)
+
+**3. `operating_costs` is DERIVED — mark it as such.** When `annual_revenue` and `cost_to_income_ratio` are both present, `operating_costs` should be documented as derived from Annual Revenue × Cost-to-Income via `operating_costs_source`, e.g.:
+```json
+"operating_costs_source": "Derived: Annual Revenue × Cost-to-Income Ratio",
+"operating_costs_confidence": "MEDIUM"
+```
+Keep the numeric `operating_costs` value populated (non-Excel consumers still need it) — but ensure `annual_revenue` and `cost_to_income_ratio` are both present in `basic_information` so the Excel layer can render `operating_costs` as a live `=revenue*cost_to_income` formula instead of a static number.
+
+**4. Optional driver-input `formula`/`fmt` keys.** Any input under a driver's `inputs` dict may optionally carry a `formula` (a template string with `{token}` names matching sibling input keys) and `fmt` (an Excel number-format override) to render that input as a live formula rather than a static value. Use this for derived driver inputs (e.g., a rate computed from two other inputs) where showing the calculation live in Excel aids credibility.
 
 **CRITICAL — Structural Rules (Excel generator will FAIL if violated):**
 
