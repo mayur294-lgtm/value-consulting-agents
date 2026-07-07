@@ -1,0 +1,602 @@
+{
+  "client_name": "MyState Bank",
+  "bank_name": "MyState Bank",
+  "date": "2026-06-22",
+  "currency": "AUD",
+  "industry": "Retail Banking",
+  "country": "Australia",
+  "analysis_years": 5,
+  "discount_rate": 0.1,
+  "selected_scenario": "moderate",
+  "total_investment": 1500000,
+  "basic_information": {
+    "total_fte": 94,
+    "total_fte_confidence": "HIGH",
+    "total_fte_source": "Client follow-up (250512): CC 28 + Branch 66 \u2014 CLIENT-CONFIRMED",
+    "annual_revenue": 152430000,
+    "annual_revenue_confidence": "LOW",
+    "annual_revenue_source": "BC_v1 (last-year model), pre-merger \u2014 REFRESH",
+    "cost_to_income_ratio": 0.685,
+    "cost_to_income_ratio_confidence": "LOW",
+    "cost_to_income_ratio_source": "Account plan ~68.5% \u2014 confirm current/merged",
+    "operating_costs": 104414550.0,
+    "operating_costs_confidence": "LOW",
+    "operating_costs_source": "Derived = Annual Revenue \u00d7 Cost-to-Income (both flagged LOW)",
+    "total_customers": 281000,
+    "total_customers_confidence": "MEDIUM",
+    "total_customers_source": "Duncan S1 \u2014 merged ~281k (MyState ~184k + Auswide ~97k; exact split a data gap)"
+  },
+  "backbase_loading": {
+    "implementation_curve": [
+      0.4,
+      0.85,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "effectiveness_curve": [
+      0.34,
+      0.765,
+      0.9,
+      1.0,
+      1.0
+    ],
+    "yoy_growth": [
+      0.03,
+      0.03,
+      0.03,
+      0.03,
+      0.03
+    ],
+    "curves": {
+      "revenue": {
+        "implementation": [
+          0.4,
+          0.85,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "effectiveness": [
+          0.34,
+          0.765,
+          0.9,
+          1.0,
+          1.0
+        ]
+      },
+      "retention": {
+        "implementation": [
+          0.0,
+          0.55,
+          0.9,
+          1.0,
+          1.0
+        ],
+        "effectiveness": [
+          0.0,
+          0.495,
+          0.81,
+          1.0,
+          1.0
+        ]
+      },
+      "servicing": {
+        "implementation": [
+          0.45,
+          0.9,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "effectiveness": [
+          0.3825,
+          0.81,
+          0.9,
+          1.0,
+          1.0
+        ]
+      },
+      "it_step": {
+        "implementation": [
+          0.6,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "effectiveness": [
+          0.51,
+          0.9,
+          0.9,
+          1.0,
+          1.0
+        ]
+      },
+      "default": {
+        "implementation": [
+          0.4,
+          0.85,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "effectiveness": [
+          0.34,
+          0.765,
+          0.9,
+          1.0,
+          1.0
+        ]
+      }
+    }
+  },
+  "scenarios": {
+    "conservative": {
+      "label": "Conservative (downside)",
+      "capture_rate": 0.3,
+      "implementation_curve": [
+        0.3,
+        0.75,
+        0.9,
+        1.0,
+        1.0
+      ],
+      "effectiveness_curve": [
+        0.225,
+        0.6,
+        0.81,
+        1.0,
+        1.0
+      ],
+      "curves": {
+        "revenue": {
+          "implementation": [
+            0.3,
+            0.75,
+            0.9,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.225,
+            0.6,
+            0.81,
+            1.0,
+            1.0
+          ]
+        },
+        "retention": {
+          "implementation": [
+            0.0,
+            0.45,
+            0.8,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.0,
+            0.36,
+            0.72,
+            1.0,
+            1.0
+          ]
+        },
+        "servicing": {
+          "implementation": [
+            0.35,
+            0.8,
+            0.9,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.2625,
+            0.64,
+            0.81,
+            1.0,
+            1.0
+          ]
+        },
+        "it_step": {
+          "implementation": [
+            0.5,
+            0.9,
+            0.9,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.375,
+            0.72,
+            0.81,
+            1.0,
+            1.0
+          ]
+        },
+        "default": {
+          "implementation": [
+            0.3,
+            0.75,
+            0.9,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.225,
+            0.6,
+            0.81,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "backbase_impacts": {
+        "L1_deposit_activation": 0.3,
+        "L2_cross_sell": 0.1364,
+        "L3_retention": 0.07,
+        "L4a_call_containment": 0.3,
+        "L4b_aht_reduction": 0.15,
+        "L5_auswide_scalability": 0.3,
+        "L6_vendor_consolidation": 0.6
+      },
+      "summary": {
+        "npv": "$1.31M",
+        "roi": "45% incl L6 / 23% excl L6",
+        "payback": "3.2 yrs",
+        "benefits": "$7.57M incl L6 / $6.40M excl L6",
+        "desc": "Below the retail floor \u2014 the expected downside. Capture 0.30, slower ramp, lower adoption."
+      }
+    },
+    "moderate": {
+      "label": "Moderate (BASE CASE)",
+      "capture_rate": 0.4,
+      "implementation_curve": [
+        0.4,
+        0.85,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveness_curve": [
+        0.34,
+        0.765,
+        0.9,
+        1.0,
+        1.0
+      ],
+      "curves": {
+        "revenue": {
+          "implementation": [
+            0.4,
+            0.85,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.34,
+            0.765,
+            0.9,
+            1.0,
+            1.0
+          ]
+        },
+        "retention": {
+          "implementation": [
+            0.0,
+            0.55,
+            0.9,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.0,
+            0.495,
+            0.81,
+            1.0,
+            1.0
+          ]
+        },
+        "servicing": {
+          "implementation": [
+            0.45,
+            0.9,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.3825,
+            0.81,
+            0.9,
+            1.0,
+            1.0
+          ]
+        },
+        "it_step": {
+          "implementation": [
+            0.6,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.51,
+            0.9,
+            0.9,
+            1.0,
+            1.0
+          ]
+        },
+        "default": {
+          "implementation": [
+            0.4,
+            0.85,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.34,
+            0.765,
+            0.9,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "backbase_impacts": {
+        "L1_deposit_activation": 0.4,
+        "L2_cross_sell": 0.2273,
+        "L3_retention": 0.11,
+        "L4a_call_containment": 0.4,
+        "L4b_aht_reduction": 0.2,
+        "L5_auswide_scalability": 0.4,
+        "L6_vendor_consolidation": 0.6
+      },
+      "summary": {
+        "npv": "$4.22M",
+        "roi": "121% incl L6 / 96% excl L6",
+        "payback": "1.9 yrs",
+        "benefits": "$11.52M incl L6 / $10.23M excl L6",
+        "desc": "Base case \u2014 121% ROI inside the retail benchmark (100\u2013150%); 96% without L6 (at floor, stands alone). Capture 0.40."
+      }
+    },
+    "aggressive": {
+      "label": "Aggressive (UPSIDE \u2014 labelled optionality)",
+      "capture_rate": 0.5,
+      "implementation_curve": [
+        0.5,
+        0.95,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveness_curve": [
+        0.475,
+        0.95,
+        0.95,
+        1.0,
+        1.0
+      ],
+      "curves": {
+        "revenue": {
+          "implementation": [
+            0.5,
+            0.95,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.475,
+            0.95,
+            0.95,
+            1.0,
+            1.0
+          ]
+        },
+        "retention": {
+          "implementation": [
+            0.1,
+            0.65,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.095,
+            0.65,
+            0.9,
+            1.0,
+            1.0
+          ]
+        },
+        "servicing": {
+          "implementation": [
+            0.55,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.5225,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "it_step": {
+          "implementation": [
+            0.7,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.665,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "default": {
+          "implementation": [
+            0.5,
+            0.95,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "effectiveness": [
+            0.475,
+            0.95,
+            0.95,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "backbase_impacts": {
+        "L1_deposit_activation": 0.5,
+        "L2_cross_sell": 0.3636,
+        "L3_retention": 0.18,
+        "L4a_call_containment": 0.5,
+        "L4b_aht_reduction": 0.25,
+        "L5_auswide_scalability": 0.5,
+        "L6_vendor_consolidation": 0.6
+      },
+      "summary": {
+        "npv": "$8.78M",
+        "roi": "237% incl L6 / 211% excl L6",
+        "payback": "1.1 yrs",
+        "benefits": "$17.62M incl L6 / $16.22M excl L6",
+        "desc": "Above the range max \u2014 'if-all-goes-right' upside, NOT the expected case. Capture 0.50, fast-track, high adoption."
+      }
+    }
+  },
+  "investment": {
+    "license": {
+      "year_1": 300000,
+      "year_2": 300000,
+      "year_3": 300000,
+      "year_4": 300000,
+      "year_5": 300000
+    },
+    "implementation": {
+      "year_1": 300000,
+      "year_2": 0,
+      "year_3": 0,
+      "year_4": 0,
+      "year_5": 0
+    },
+    "notes": "trimmed eval fixture"
+  },
+  "investment_schedule": {
+    "license": {
+      "year_1": 300000,
+      "year_2": 300000,
+      "year_3": 300000,
+      "year_4": 300000,
+      "year_5": 300000
+    },
+    "implementation": {
+      "year_1": 300000,
+      "year_2": 0,
+      "year_3": 0,
+      "year_4": 0,
+      "year_5": 0
+    }
+  },
+  "value_lever_groups": {
+    "L1_deposit_activation": {
+      "group_name": "Deposit Activation & Funded-Balance Growth (NII)",
+      "category": "Revenue Growth \u2014 Deposit/NII",
+      "lifecycle_stage": "Activate",
+      "lever_type": "revenue_uplift",
+      "evidence_ids": [
+        "PB-ComparableBackbase-FundedAccts-69pct",
+        "PACK-3.3-DepositEcon",
+        "PACK-3.1-Engagement"
+      ],
+      "revenue_drivers": {
+        "funded_balance_nii": {
+          "name": "Funded-Balance Activation NII (Premium in-app + Pockets)",
+          "type": "Revenue",
+          "description": "Activate active-but-unfunded relationships toward funded Hello Saver balances; gap-based on Glide funding 40.6% vs a comparable Backbase customer (US regional bank) 69% funded; incremental funded balance \u00d7 NII margin.",
+          "baseline_annual": 2469481.0,
+          "potential_annual_benefit": 987792.0,
+          "inputs": {
+            "customers_merged": {
+              "value": 281000,
+              "unit": "customers",
+              "source": "Duncan S1 \u2014 MyState ~184k + Auswide ~97k (split a data gap)",
+              "confidence": "MEDIUM",
+              "assumption": "Merged customer base the in-app experience can reach.",
+              "fmt": "#,##0"
+            },
+            "active_txn_rate": {
+              "value": 0.4,
+              "unit": "ratio",
+              "source": "Deck headroom stat",
+              "confidence": "MEDIUM",
+              "assumption": "Share of customers with an ACTIVE transaction account.",
+              "fmt": "0.0%"
+            },
+            "addressable_active": {
+              "value": 112400.0,
+              "unit": "customers",
+              "source": "Duncan S1 / deck stats",
+              "confidence": "MEDIUM",
+              "assumption": "In-app-reachable engaged base = customers \u00d7 active-txn rate.",
+              "formula": "{customers_merged} * {active_txn_rate}",
+              "fmt": "#,##0"
+            }
+          }
+        }
+      }
+    }
+  },
+  "assumptions_register": [
+    {
+      "assumption": "Merged customer base used across levers",
+      "confidence": "MEDIUM",
+      "owner": "Client Finance",
+      "note": "part of the Assumptions Register"
+    }
+  ],
+  "data_gaps_for_validation": [
+    {
+      "gap": "Exact MyState/Auswide customer split",
+      "impact": "affects L1/L2/L3 baselines"
+    }
+  ],
+  "bank_profile": {
+    "name": "MyState Bank",
+    "type": "Tier-3 regional mutual (mid-merger with Auswide)",
+    "region": "Australia (Hobart, Tasmania)",
+    "country": "Australia",
+    "total_revenue": 152430000,
+    "total_customers": 281000,
+    "total_fte": 94
+  },
+  "sources": [
+    {
+      "ref": "MyState data export",
+      "detail": "Account funding rates & avg balances (Glide 40.6%/$3,705, Hello Saver 66.4%/$29,708); IB ~27k & App ~71k monthly actives.",
+      "file": "Digital Data for BackBase.xlsx"
+    },
+    {
+      "ref": "MyState CC actuals",
+      "detail": "Contact-centre call volumes + AHT by wrap-up code, ~182k calls/yr; FTE counts CC 28 / Branch 66.",
+      "file": "6 month Data.xlsx"
+    }
+  ],
+  "sensitivity_notes": "Sensitivity analysis: a +/-25% swing in the funding-gap assumption moves L1 benefit by roughly the same proportion."
+}
