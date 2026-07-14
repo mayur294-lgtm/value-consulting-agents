@@ -26,6 +26,7 @@ raw text.
 """
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -145,7 +146,25 @@ def _market_context(text: str) -> list[CheckResult]:
 #   contract: 3 scenarios (Conservative/Moderate/Aggressive); assumptions
 #             register; NPV/ROI/payback headline; gap-based impacts.
 #   yaml(roi-business-case-builder): NPV, scenarios, Assumptions, sensitivity.
+#   #85 provenance contract: top-level `sources` list; every basic_information
+#   value field carries a `<field>_source` + `<field>_confidence` companion
+#   (HIGH/MEDIUM/LOW/ASSUMPTION); operating_costs is DERIVED (revenue x
+#   cost-to-income) and says so in its `_source` note, not a bare hardcoded
+#   number. These are structural, code-only checks on the config JSON that
+#   feed tools/roi_excel_generator.py (#83/#84) — see roi_excel_generator.py
+#   in this package for the matching GENERATOR-side render checks.
 # ---------------------------------------------------------------------------
+_VALID_CONFIDENCE = {"HIGH", "MEDIUM", "LOW", "ASSUMPTION"}
+
+
+def _try_parse_json(text: str) -> dict | None:
+    try:
+        data = json.loads(text)
+        return data if isinstance(data, dict) else None
+    except (json.JSONDecodeError, ValueError):
+        return None
+
+
 def _roi_modeler(text: str) -> list[CheckResult]:
     out: list[CheckResult] = []
     # Contract scenario names plus the equivalents used in real reports (Base/Aspirational).
@@ -163,6 +182,49 @@ def _roi_modeler(text: str) -> list[CheckResult]:
     has_sens = _present(r"sensitivity", text)
     out.append(_bool_check("sensitivity_analysis_present", has_sens, soft_floor=0.0,
                            detail="sensitivity analysis present" if has_sens else "no sensitivity analysis"))
+
+    # --- #85 provenance contract (structural — requires the config to parse as JSON) ---
+    data = _try_parse_json(text)
+    if data is None:
+        detail = "target is not a parseable JSON config (provenance checks need roi_config.json)"
+        out.append(_bool_check("basic_information_has_sources_list", False, detail=detail))
+        out.append(_bool_check("basic_fields_have_source_and_confidence", False, detail=detail))
+        out.append(_bool_check("operating_costs_emitted_as_formula", False, detail=detail))
+        return out
+
+    sources = data.get("sources")
+    valid_sources = (isinstance(sources, list) and len(sources) >= 1
+                     and all(isinstance(s, dict) and s.get("ref") and s.get("detail") and s.get("file")
+                             for s in sources))
+    out.append(_bool_check("basic_information_has_sources_list", valid_sources,
+                           detail=f"{len(sources) if isinstance(sources, list) else 0} source(s), "
+                                  f"each with ref/detail/file={valid_sources}"))
+
+    basic = data.get("basic_information", {}) if isinstance(data.get("basic_information"), dict) else {}
+    value_fields = [k for k in basic if not (k.endswith("_source") or k.endswith("_confidence"))]
+    fully_attributed = 0
+    bad_confidence = []
+    for field in value_fields:
+        src = basic.get(f"{field}_source")
+        conf = basic.get(f"{field}_confidence")
+        if src and conf:
+            if conf in _VALID_CONFIDENCE:
+                fully_attributed += 1
+            else:
+                bad_confidence.append((field, conf))
+    all_attributed = bool(value_fields) and fully_attributed == len(value_fields) and not bad_confidence
+    detail = f"{fully_attributed}/{len(value_fields)} basic_information fields have source+valid confidence"
+    if bad_confidence:
+        detail += f"; invalid confidence values: {bad_confidence}"
+    out.append(_bool_check("basic_fields_have_source_and_confidence", all_attributed, detail=detail))
+
+    has_trio = all(k in basic for k in ("annual_revenue", "cost_to_income_ratio", "operating_costs"))
+    oc_source = str(basic.get("operating_costs_source", ""))
+    notes_derivation = bool(re.search(r"deriv|revenue.*cost.to.income|cost.to.income.*revenue", oc_source, re.I))
+    ok_oc = has_trio and notes_derivation
+    out.append(_bool_check("operating_costs_emitted_as_formula", ok_oc,
+                           detail=f"revenue/cost-to-income/operating_costs trio present={has_trio}, "
+                                  f"operating_costs_source notes derivation={notes_derivation} ({oc_source!r})"))
     return out
 
 

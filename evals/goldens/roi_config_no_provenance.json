@@ -1,0 +1,154 @@
+{
+  "client_name": "Test Bank",
+  "bank_name": "Test Bank",
+  "date": "2026-07-07",
+  "currency": "USD",
+  "industry": "Retail Banking",
+  "country": "US",
+  "analysis_years": 5,
+  "discount_rate": 0.1,
+  "selected_scenario": "moderate",
+  "total_investment": 1000000,
+  "basic_information": {
+    "total_fte": 50,
+    "annual_revenue": 20000000,
+    "operating_costs": 12000000
+  },
+  "backbase_loading": {
+    "implementation_curve": [
+      0.4,
+      0.85,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "effectiveness_curve": [
+      0.34,
+      0.765,
+      0.9,
+      1.0,
+      1.0
+    ],
+    "yoy_growth": [
+      0.03,
+      0.03,
+      0.03,
+      0.03,
+      0.03
+    ]
+  },
+  "scenarios": {
+    "conservative": {
+      "label": "Conservative",
+      "implementation_curve": [
+        0.3,
+        0.6,
+        0.9,
+        1.0,
+        1.0
+      ],
+      "effectiveness_curve": [
+        0.2,
+        0.5,
+        0.8,
+        1.0,
+        1.0
+      ],
+      "backbase_impacts": {
+        "L1_test_lever": 0.2
+      }
+    },
+    "moderate": {
+      "label": "Moderate",
+      "implementation_curve": [
+        0.4,
+        0.85,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveness_curve": [
+        0.34,
+        0.765,
+        0.9,
+        1.0,
+        1.0
+      ],
+      "backbase_impacts": {
+        "L1_test_lever": 0.3
+      }
+    },
+    "aggressive": {
+      "label": "Aggressive",
+      "implementation_curve": [
+        0.5,
+        0.9,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effectiveness_curve": [
+        0.4,
+        0.85,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "backbase_impacts": {
+        "L1_test_lever": 0.4
+      }
+    }
+  },
+  "investment": {
+    "license": {
+      "year_1": 200000,
+      "year_2": 200000,
+      "year_3": 200000,
+      "year_4": 200000,
+      "year_5": 200000
+    },
+    "implementation": {
+      "year_1": 200000,
+      "year_2": 0,
+      "year_3": 0,
+      "year_4": 0,
+      "year_5": 0
+    }
+  },
+  "value_lever_groups": {
+    "L1_test_lever": {
+      "group_name": "Test Lever Group",
+      "category": "other",
+      "lifecycle_stage": "activate",
+      "revenue_drivers": {
+        "simple_driver": {
+          "name": "Simple Revenue Driver",
+          "type": "Revenue",
+          "baseline_annual": 500000,
+          "potential_annual_benefit": 100000,
+          "inputs": {
+            "volume": {
+              "value": 10000,
+              "unit": "customers"
+            },
+            "rate": {
+              "value": 0.05,
+              "unit": "ratio"
+            }
+          }
+        }
+      }
+    }
+  },
+  "assumptions_register": [
+    {
+      "assumption": "Standard industry benchmark applied",
+      "confidence": "MEDIUM"
+    }
+  ],
+  "data_gaps_for_validation": [
+    {
+      "gap": "No client-specific FTE cost data available"
+    }
+  ]
+}
