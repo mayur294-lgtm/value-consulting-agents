@@ -2,6 +2,12 @@
 
 ![Version](https://img.shields.io/badge/version-1.1.0-blue)
 
+## 📋 Project Board
+
+Roadmap, releases, and team commitments are tracked on the **[Cortex Roadmap project board](https://github.com/users/mariamt-coder/projects/1)**.
+
+Every task, issue, and workstream lives there with a Start Date, Target Date, milestone, and owner. The board is the single forward-looking view of the project; this repo is the source of truth for the work itself.
+
 ## What is Value Consulting?
 
 Value Consulting is a disciplined practice that connects business outcomes to technology investments through evidence-based analysis. Unlike traditional consulting that focuses on deliverables or vendor solutions, Value Consulting focuses on **measurable business value creation**.
