@@ -6,6 +6,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning follo
 
 ---
 
+## [1.4.0] - 2026-07-14 — Critical Thought Partner (#48)
+
+Cortex now behaves like a senior consultant instead of a fast typist: it questions before producing, challenges weak input, surfaces gaps, and holds the work to the original problem — governed so it speaks only when it earns the interruption ("most turns, zero challenges"). This is a mandatory governance standard, on by default across every agent and ad-hoc session; no per-agent changes.
+
+Validated over a week of live-engagement testing (8+ engagements). Known v1 limits documented in the protocol: it sharpens but cannot verify without source data, and it mitigates sycophancy by instruction rather than by independence.
+
+### Added
+- **"You Are a Critical Thought Partner" — CLAUDE.md core.** The governor (5 challenge triggers, 4 suppression rules, batching + complexity-scaled depth) plus six operating principles. Self-sufficient on its own; loaded into every session.
+- **`knowledge/standards/critical_thought_partner_protocol.md`** — full protocol: the governor, the five cognitive functions, gap-detection mechanisms, a worked example, and documented v1 limits. Added to the Mandatory Governance Standards table.
+
+### Changed
+- `VERSION` realigned to `1.4.0` (was `1.2.0`; the `1.3.0` design-system release had updated the changelog but not the VERSION file).
+
 ## [1.3.0] - 2026-05-05 — Backbase Unified Frontline 2026 design system migration
 
 Replaces the ENGAGE Americas 2026 palette with the **Backbase Unified Frontline 2026** brand system (colors + typography). Layouts, dashboard components, and agent behavior are unchanged — only the visual tokens and a new pair of presentation skills.
