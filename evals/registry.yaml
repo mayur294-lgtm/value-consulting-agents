@@ -59,8 +59,9 @@ components:
   roi-financial-modeler:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
-    input: evals/goldens/nfis/roi_config.json
+    # Fixture: the committed anonymized provenance golden (the basis the provenance
+    # fix was built on). Re-pointed from a never-created `nfis` golden — see PRD v1.
+    input: evals/goldens/roi_config_provenance.json
     code: [three_scenarios, npv_payback_present, assumptions_register_present, sensitivity_analysis_present,
            basic_information_has_sources_list, basic_fields_have_source_and_confidence, operating_costs_emitted_as_formula]
     judge: [conservative_bias, topdown_bottomup_correlation]
@@ -157,5 +158,7 @@ pipeline:
   altitude: pipeline
   evaluator: rubrics.pipeline.contracts
   threshold: 0.90
-  golden_engagement: nfis
+  # Committed, anonymized golden engagement outputs (Path-2: score existing).
+  # Re-pointed from a never-created `nfis` engagement — see PRD v1.
+  golden_engagement: evals/goldens/pipeline_engagement/outputs
   orchestrate: orchestrate.py
