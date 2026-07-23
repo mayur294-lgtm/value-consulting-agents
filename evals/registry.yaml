@@ -150,6 +150,22 @@ components:
     code: [hypothesis_validation_statuses, usecase_candidates_present, usecase_classification_present]
     judge: [synthesis_faithful_to_workshops]
 
+  # critty (#95) — verifies `.claude/commands/critty.md` (tickets #93/#94's
+  # on-demand CTP escalation skill) force-loads the full protocol (with a
+  # named fallback), scopes/aligns before critiquing, hunts all five CTP
+  # functions without waiting for a trigger, splits proactive provenance into
+  # challengeable vs. unverifiable, emits the five-field challenge-register
+  # table, flags where independence would bite harder, and states what
+  # /critty does NOT do. Deterministic code checks only — no judge this cycle.
+  critty:
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.critty
+    input: .claude/commands/critty.md
+    code: [frontmatter_valid, protocol_load_step, fallback_when_absent, scope_target_step,
+           align_before_critique_step, five_functions_hunt, proactive_provenance_split,
+           challenge_register_table, independence_flag, not_do_section]
+
 # Pipeline (integration) altitude — the most important. When ANY component
 # changes, run orchestrate.py end-to-end on a golden engagement and check the
 # inter-agent contracts + final deliverable still hold.
