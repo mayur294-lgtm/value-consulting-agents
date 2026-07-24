@@ -782,31 +782,15 @@ Domain: {domain}
 
         log_step("2", "PARALLEL BLOCK A — Single-Phase (5 agents, non-interactive)")
 
-        jb_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
-{shared_context}
-
-Also read domain journey templates: knowledge/domains/{domain}/journey_maps.md
-Also read domain personas: knowledge/domains/{domain}/personas.md
-
-OUTPUT DISCIPLINE:
-- Do NOT explore the filesystem beyond the listed input files.
-- If a file doesn't exist, skip it and proceed — do NOT retry.
-- Write ONLY the required output files listed below.
-
-STEP 1 — Analysis & Checkpoint:
-Analyze evidence density across customer journeys. Recommend the top 3-5
-journeys for mapping based on evidence volume and value leakage potential.
-Write checkpoint to: {outputs_dir}/CHECKPOINT_journey-builder.md (for audit trail)
-
-STEP 2 — Final Output (continue immediately, do NOT stop):
-Build detailed journey swimlane maps with value leakage quantification.
-Produce future-state Backbase-enabled swimlanes.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/journey_maps.json
-- {outputs_dir}/journey_maps_summary.md
-Do NOT write journal entries or update other files.
-"""
+        # journey-builder is mode-extracted (skill-first contracts): its
+        # prompt is composed from .claude/agents/journey-builder.md
+        # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+        jb_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+            "phase": "single",
+        }
 
         # market-context-researcher is mode-extracted (skill-first contracts):
         # its prompt is composed from .claude/agents/market-context-researcher.md
@@ -874,7 +858,8 @@ Do NOT write journal entries or update other files.
 
         # Block A1: 5 agents in parallel (hypothesis builder replaces monolithic ROI)
         results = await asyncio.gather(
-            _timed_agent("journey-builder", jb_prompt, "Journey Builder", 30),
+            _timed_agent("journey-builder", None, "Journey Builder", 30,
+                         mode="pipeline", params=jb_params),
             _timed_agent("market-context-researcher", None, "Market Context", 30,
                          mode="pipeline", params=mc_params),
             _timed_agent("capability-assessment", None, "Capability", 25,
@@ -960,17 +945,13 @@ Do NOT write journal entries or update other files.
         # ── Phase 1: Launch all 5 simultaneously ─────────────────────────
         log_step("2A", "PARALLEL BLOCK A — Phase 1 (5 agents simultaneously)")
 
-        jb_prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
-{shared_context}
-
-Also read domain journey templates: knowledge/domains/{domain}/journey_maps.md
-Also read domain personas: knowledge/domains/{domain}/personas.md
-
-Analyze evidence density across customer journeys. Recommend the top 3-5
-journeys for mapping based on evidence volume and value leakage potential.
-
-Write: {outputs_dir}/CHECKPOINT_journey-builder.md
-"""
+        # journey-builder is mode-extracted: prompt composed from its own
+        # ## Modes contract (mode="pipeline", phase carried as a param).
+        jb_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+        }
 
         # market-context-researcher is mode-extracted: prompt composed from its
         # own ## Modes contract (mode="pipeline", phase carried as a param).
@@ -1008,7 +989,8 @@ Write: {outputs_dir}/CHECKPOINT_journey-builder.md
 
         # Fire all 5 simultaneously (hypothesis builder replaces monolithic ROI)
         results = await asyncio.gather(
-            run_agent("journey-builder", jb_prompt, engagement_dir, label="Journey Builder P1"),
+            run_agent("journey-builder", cwd=engagement_dir, label="Journey Builder P1",
+                      mode="pipeline", params={**jb_params, "phase": "1"}),
             run_agent("market-context-researcher", cwd=engagement_dir, label="Market Context P1",
                       mode="pipeline", params={**mc_params, "phase": "1"}),
             run_agent("capability-assessment", cwd=engagement_dir, label="Capability P1",
@@ -1033,20 +1015,6 @@ Write: {outputs_dir}/CHECKPOINT_journey-builder.md
 
         # ── Phase 2: Launch all 5 again ──────────────────────────────────
         log_step("2B", "PARALLEL BLOCK A — Phase 2 (5 agents simultaneously)")
-
-        jb2_prompt = f"""PHASE DIRECTIVE: Phase 2 of 2
-{shared_context}
-
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_journey-builder_APPROVED.md
-Read draft checkpoint: {outputs_dir}/CHECKPOINT_journey-builder.md
-
-Build detailed journey swimlane maps with value leakage quantification.
-Produce future-state Backbase-enabled swimlanes.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/journey_maps.json
-- {outputs_dir}/journey_maps_summary.md
-"""
 
         roi_model_prompt = f"""PHASE DIRECTIVE: Phase 2 (Financial Modeling)
 {shared_context}
@@ -1074,7 +1042,8 @@ REQUIRED OUTPUT FILES (you MUST produce BOTH):
 """
 
         results = await asyncio.gather(
-            run_agent("journey-builder", jb2_prompt, engagement_dir, label="Journey Builder P2"),
+            run_agent("journey-builder", cwd=engagement_dir, label="Journey Builder P2",
+                      mode="pipeline", params={**jb_params, "phase": "2"}),
             run_agent("market-context-researcher", cwd=engagement_dir, label="Market Context P2",
                       mode="pipeline", params={**mc_params, "phase": "2"}),
             run_agent("capability-assessment", cwd=engagement_dir, label="Capability P2",
