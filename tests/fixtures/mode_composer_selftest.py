@@ -11,7 +11,7 @@ Covers the ticket's acceptance criteria against tests/fixtures/mode_fixture_agen
   - required-input preflight (degraded: refuse) fails before an agent run
   - unknown {placeholder} raises, never silently passes through
   - parse_agent_modes on a file without ## Modes returns {}
-  - run_agent prompt/mode mutual exclusivity
+  - run_agent signature guards (mode required; deleted prompt kwarg rejected)
 
 Exit code 0 = all checks pass.
 """
@@ -116,16 +116,25 @@ def main():
             check("unknown placeholder raises", "domain" in str(e), str(e))
 
     # ── run_agent signature guards (no SDK call is reached) ──────────────
-    for label, kwargs in [
-        ("run_agent rejects prompt+mode", dict(prompt="x", mode="pipeline", cwd=ROOT)),
-        ("run_agent rejects neither prompt nor mode", dict(cwd=ROOT)),
-        ("run_agent rejects params without mode", dict(prompt="x", params={"a": 1}, cwd=ROOT)),
-    ]:
-        try:
-            asyncio.run(orchestrate.run_agent("benchmark-librarian", **kwargs))
-            check(label, False)
-        except ValueError:
-            check(label, True)
+    # The legacy inline-prompt branch was deleted with the final extraction
+    # (narrative-assembler, ticket #114): mode= is a required keyword, and
+    # prompt= no longer exists on the signature.
+    try:
+        asyncio.run(orchestrate.run_agent("benchmark-librarian", prompt="x",
+                                          mode="pipeline", cwd=ROOT))
+        check("run_agent rejects deleted prompt kwarg", False)
+    except TypeError:
+        check("run_agent rejects deleted prompt kwarg", True)
+    try:
+        asyncio.run(orchestrate.run_agent("benchmark-librarian", cwd=ROOT))
+        check("run_agent requires mode", False)
+    except TypeError:
+        check("run_agent requires mode", True)
+    try:
+        asyncio.run(orchestrate.run_agent("benchmark-librarian", mode="pipeline"))
+        check("run_agent requires cwd", False)
+    except ValueError:
+        check("run_agent requires cwd", True)
 
     print()
     if _failures:

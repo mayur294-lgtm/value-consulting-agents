@@ -126,8 +126,10 @@ def parse_agent_md(agent_name: str) -> tuple[str, str]:
 # Extracted agents carry their operating contracts as `### Mode: <name>` blocks
 # inside a `## Modes` section of their own .md file. The composer builds the
 # invocation prompt from core identity + ONE selected mode + runtime params.
-# Legacy agents (no `## Modes` section) keep using inline prompts via
-# run_agent(agent_name, prompt=...) — mixed state is supported throughout.
+# All 10 pipeline agents are mode-extracted; the legacy inline-prompt path in
+# run_agent was deleted with the final extraction (narrative-assembler, #114).
+# parse_agent_modes still returns {} for agent files without a `## Modes`
+# section (Inspire/standalone-only agents — never invoked by this script).
 
 _MODES_HEADING = re.compile(r"(?m)^##\s+Modes\s*$")
 _NEXT_H2 = re.compile(r"(?m)^##[ \t]+(?!Modes\s*$)\S")
@@ -339,28 +341,21 @@ async def _resilient_query(prompt: str, options: ClaudeAgentOptions, label: str)
 
 async def run_agent(
     agent_name: str,
-    prompt: Optional[str] = None,
     cwd: Optional[Path] = None,
     model: str = "sonnet",
     max_turns: int = 50,
     label: str = "",
     *,
-    mode: Optional[str] = None,
+    mode: str,
     params: Optional[dict] = None,
 ) -> ResultMessage:
     """Run a single agent via the SDK. Returns the ResultMessage.
 
-    Two invocation styles (mutually exclusive):
-      run_agent(name, prompt=..., cwd=...)          — legacy inline prompt
-      run_agent(name, cwd=..., mode=..., params=...) — composed from the agent's
-                                                        own ## Modes contract
+    The invocation prompt is ALWAYS composed from the agent's own ## Modes
+    contract (core identity + the selected mode block + a runtime-params
+    table). The legacy inline-prompt branch was deleted after the tenth and
+    final extraction (narrative-assembler, ticket #114) left zero callers.
     """
-    if (prompt is None) == (mode is None):
-        raise ValueError(
-            "run_agent: pass exactly one of 'prompt' (legacy inline) or 'mode' (composed contract)"
-        )
-    if params is not None and mode is None:
-        raise ValueError("run_agent: 'params' is only valid together with 'mode'")
     if cwd is None:
         raise ValueError("run_agent: 'cwd' is required")
 
@@ -368,16 +363,13 @@ async def run_agent(
     start = time.time()
     log(f"  ▶ Launching {display}...", C.YELLOW)
 
-    if mode is not None:
-        # Extracted agent: prompt composed from core identity + selected mode + params.
-        system_prompt = compose_prompt(agent_name, mode, params)
-        _, agent_model = parse_agent_md(agent_name)
-        prompt = (
-            f"Execute your '{mode}' mode contract now. All runtime parameter values "
-            "are listed in the Runtime Parameters table of your instructions."
-        )
-    else:
-        system_prompt, agent_model = parse_agent_md(agent_name)
+    # Prompt composed from core identity + selected mode + params.
+    system_prompt = compose_prompt(agent_name, mode, params)
+    _, agent_model = parse_agent_md(agent_name)
+    prompt = (
+        f"Execute your '{mode}' mode contract now. All runtime parameter values "
+        "are listed in the Runtime Parameters table of your instructions."
+    )
     use_model = model or agent_model
 
     # V5: Inject tool constraint into system prompt to prevent Task tool usage
@@ -649,7 +641,7 @@ async def step_discovery(
     if len(transcripts) == 1:
         # Single transcript: lean extraction -> Python checkpoint
         result = await run_agent(
-            "discovery-transcript-interpreter", None,
+            "discovery-transcript-interpreter",
             cwd=engagement_dir,
             label="Discovery (1 transcript)",
             max_turns=15,
@@ -663,7 +655,7 @@ async def step_discovery(
         extract_tasks = []
         for i, transcript in enumerate(transcripts, 1):
             extract_tasks.append(run_agent(
-                "discovery-transcript-interpreter", None,
+                "discovery-transcript-interpreter",
                 cwd=engagement_dir,
                 label=f"Discovery (T{i}/{len(transcripts)})",
                 max_turns=15,
@@ -692,7 +684,7 @@ async def step_discovery(
 
     # T1 FIX: added max_turns=15
     result = await run_agent(
-        "discovery-transcript-interpreter", None,
+        "discovery-transcript-interpreter",
         cwd=engagement_dir,
         label="Discovery (finalize)",
         max_turns=15,
@@ -802,15 +794,15 @@ async def step_parallel_block_a(
         # V5: Per-agent timeout of 40 min to prevent hung agents blocking the pipeline
         BLOCK_A_TIMEOUT = 40 * 60  # 40 minutes
 
-        async def _timed_agent(name, prompt, label, max_turns, *, mode=None, params=None):
+        async def _timed_agent(name, label, max_turns, *, mode, params=None):
             """Wrap agent in timeout — returns result or raises TimeoutError.
 
-            Pass prompt=... for legacy inline agents, or prompt=None with
-            mode=/params= for mode-extracted agents (composed contracts).
+            The prompt is composed from the agent's own ## Modes contract
+            (mode= / params=) — there is no inline-prompt form anymore.
             """
             try:
                 return await asyncio.wait_for(
-                    run_agent(name, prompt, engagement_dir,
+                    run_agent(name, engagement_dir,
                               label=label, max_turns=max_turns,
                               mode=mode, params=params),
                     timeout=BLOCK_A_TIMEOUT,
@@ -821,15 +813,15 @@ async def step_parallel_block_a(
 
         # Block A1: 5 agents in parallel (hypothesis builder replaces monolithic ROI)
         results = await asyncio.gather(
-            _timed_agent("journey-builder", None, "Journey Builder", 30,
+            _timed_agent("journey-builder", "Journey Builder", 30,
                          mode="pipeline", params=jb_params),
-            _timed_agent("market-context-researcher", None, "Market Context", 30,
+            _timed_agent("market-context-researcher", "Market Context", 30,
                          mode="pipeline", params=mc_params),
-            _timed_agent("capability-assessment", None, "Capability", 25,
+            _timed_agent("capability-assessment", "Capability", 25,
                          mode="pipeline", params=cap_params),
-            _timed_agent("roi-hypothesis-builder", None, "ROI Hypothesis", 20,
+            _timed_agent("roi-hypothesis-builder", "ROI Hypothesis", 20,
                          mode="pipeline", params=roi_hyp_params),
-            _timed_agent("benchmark-librarian", None, "Benchmark", 25,
+            _timed_agent("benchmark-librarian", "Benchmark", 25,
                          mode="pipeline", params=bench_params),
             return_exceptions=True,
         )
@@ -870,7 +862,7 @@ async def step_parallel_block_a(
             }
 
             result_a2 = await _timed_agent(
-                "roi-financial-modeler", None, "ROI Financial Model", 25,
+                "roi-financial-modeler", "ROI Financial Model", 25,
                 mode="pipeline", params=roi_model_params,
             )
             cost += result_a2.total_cost_usd if result_a2 and result_a2.total_cost_usd else 0
