@@ -828,41 +828,18 @@ Do NOT write journal entries or update other files.
             "phase": "single",
         }
 
-        roi_hyp_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
-{shared_context}
-
-Also read: knowledge/methodologies/hypothesis_tree_decomposition.md
-Also read: knowledge/methodologies/value_lever_framework.md
-Also read: knowledge/domains/{domain}/benchmarks.md
-Also read: knowledge/domains/{domain}/roi_levers.md (if exists)
-
-OUTPUT DISCIPLINE:
-- Do NOT explore the filesystem beyond the listed input files.
-- If a cross-reference file doesn't exist yet, proceed WITHOUT it — do NOT wait or retry.
-- Write ONLY the required output files listed below.
-
-STEP 1 — Define the problem statement:
-(a) Bank's desired outcome (from evidence), (b) Backbase's sales objective,
-(c) Primary LOB and problem type, (d) Scope constraints.
-
-STEP 2 — Build hypothesis tree:
-Apply Layer 1 math decomposition for the problem type.
-Apply Layer 2 LOB-specific elaboration. Attach KPIs from benchmarks.
-
-STEP 3 — Derive value lever candidates:
-For each node with a gap + Backbase capability, build the four-link chain:
-Root Driver → Operational Change → Volume/Rate Impact → Financial Impact Direction.
-Do NOT compute dollar values. State inputs needed for financial modeling.
-
-STEP 4 — Coverage check:
-MECE verified, 2+ lifecycle stages, 5-8 levers typical.
-
-Write checkpoint to: {outputs_dir}/CHECKPOINT_roi_levers.md (for audit trail)
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/lever_candidates.md
-Do NOT write journal entries or update other files.
-"""
+        # roi-hypothesis-builder is mode-extracted (skill-first contracts):
+        # its prompt is composed from .claude/agents/roi-hypothesis-builder.md
+        # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+        # model="opus" is NOT passed here (matching legacy: this call site
+        # never overrode the model, unlike the interactive Phase 1 call
+        # below) — see the extraction commit message for the discrepancy.
+        roi_hyp_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+            "phase": "single",
+        }
 
         # benchmark-librarian is mode-extracted (skill-first contracts): its
         # prompt is composed from .claude/agents/benchmark-librarian.md
@@ -902,7 +879,8 @@ Do NOT write journal entries or update other files.
                          mode="pipeline", params=mc_params),
             _timed_agent("capability-assessment", None, "Capability", 25,
                          mode="pipeline", params=cap_params),
-            _timed_agent("roi-hypothesis-builder", roi_hyp_prompt, "ROI Hypothesis", 20),
+            _timed_agent("roi-hypothesis-builder", None, "ROI Hypothesis", 20,
+                         mode="pipeline", params=roi_hyp_params),
             _timed_agent("benchmark-librarian", None, "Benchmark", 25,
                          mode="pipeline", params=bench_params),
             return_exceptions=True,
@@ -1010,22 +988,15 @@ Write: {outputs_dir}/CHECKPOINT_journey-builder.md
             "domain": domain,
         }
 
-        roi_hyp_prompt = f"""PHASE DIRECTIVE: Phase 1 (Hypothesis Building)
-{shared_context}
-
-Also read: knowledge/methodologies/hypothesis_tree_decomposition.md
-Also read: knowledge/methodologies/value_lever_framework.md
-Also read: knowledge/domains/{domain}/benchmarks.md
-Also read: knowledge/domains/{domain}/roi_levers.md (if exists)
-
-STEP 1: Define problem statement (bank goal + BB objective + LOB + scope).
-STEP 2: Build hypothesis tree (Layer 1 math + Layer 2 LOB elaboration).
-STEP 3: Derive lever candidates with four-link chain validation.
-STEP 4: Coverage check (MECE, lifecycle, 5-8 levers).
-
-Write: {outputs_dir}/CHECKPOINT_roi_levers.md
-Write: {outputs_dir}/lever_candidates.md
-"""
+        # roi-hypothesis-builder is mode-extracted: prompt composed from its
+        # own ## Modes contract (mode="pipeline", phase carried as a param).
+        # No phase-2 continuation of its own — Phase 2 below runs
+        # roi-financial-modeler, not roi-hypothesis-builder again.
+        roi_hyp_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+        }
 
         # benchmark-librarian is mode-extracted: prompt composed from its own
         # ## Modes contract (mode="pipeline", phase carried as a param).
@@ -1042,7 +1013,8 @@ Write: {outputs_dir}/lever_candidates.md
                       mode="pipeline", params={**mc_params, "phase": "1"}),
             run_agent("capability-assessment", cwd=engagement_dir, label="Capability P1",
                       mode="pipeline", params={**cap_params, "phase": "1"}),
-            run_agent("roi-hypothesis-builder", roi_hyp_prompt, engagement_dir, label="ROI Hypothesis", model="opus"),
+            run_agent("roi-hypothesis-builder", cwd=engagement_dir, label="ROI Hypothesis",
+                      model="opus", mode="pipeline", params={**roi_hyp_params, "phase": "1"}),
             run_agent("benchmark-librarian", cwd=engagement_dir, label="Benchmark P1",
                       mode="pipeline", params={**bench_params, "phase": "1"}),
             return_exceptions=True,

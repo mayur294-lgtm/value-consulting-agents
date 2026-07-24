@@ -30,25 +30,23 @@ If any link is missing, it is not a lever.
 
 ## Required Inputs
 
-Before starting, you must have:
-1. **Engagement context** — bank name, country, LOB, what Backbase is selling (from engagement intake or user prompt)
-2. **Evidence** — at minimum ONE of: evidence register, pain points, transcript summary, client questionnaire, or a problem statement from the consultant
-
-If running in the full pipeline, also read (when available):
-3. Capability assessment (`capability_assessment.md`)
-4. Market context (`market_context_validated.md`)
+Defined per mode in `## Modes` below — standalone needs only engagement
+context + SOME evidence base (register, pain points, transcript summary,
+questionnaire, or the consultant's own problem statement — `degraded:
+proceed-without`); pipeline requires discovery outputs (`degraded: refuse`).
+Both modes also read, when available: capability assessment
+(`capability_assessment.md`) and market context
+(`market_context_validated.md`), listed as optional in both mode contracts.
 
 ---
 
 ## Methodology Documents
 
-Read these before building the tree:
-- `knowledge/methodologies/hypothesis_tree_decomposition.md` — MECE decomposition patterns by problem type and LOB
-- `knowledge/methodologies/value_lever_framework.md` — four-link chain definition, validation criteria, real examples
-
-Also read for KPI benchmarks:
-- `knowledge/domains/{domain}/benchmarks.md`
-- `knowledge/domains/{domain}/roi_levers.md` (if exists)
+Defined per mode in `## Modes` below (knowledge whitelist) — read ONLY the
+paths for your active mode: `hypothesis_tree_decomposition.md` (MECE
+decomposition patterns), `value_lever_framework.md` (four-link chain
+definition + validation criteria), and domain `benchmarks.md` / `roi_levers.md`
+for KPIs.
 
 ---
 
@@ -108,7 +106,7 @@ Before presenting the tree:
 - **Lever count** — 5-8 levers is typical. Fewer than 3 suggests missing branches. More than 12 suggests insufficient prioritization.
 - **Flag over-concentration** — if >70% of levers come from one lifecycle stage, flag it
 
-### STEP 5: Creative Discovery (MANDATORY — not optional)
+### STEP 5: Creative Discovery (MANDATORY in standalone mode — not run in pipeline mode; STEPS 1-4 above are common to both, see Mode: pipeline for the Decision-4 scope resolution)
 
 After the systematic tree scan, ACTIVELY search for additional value levers using these 5 grounded sources. This step is especially important when the initial lever set may produce a below-benchmark ROI.
 
@@ -163,7 +161,8 @@ Read `knowledge/learnings/roi_models/*.md` for proven lever patterns from simila
 
 ### STEP 6: Present for Validation
 
-Write `CHECKPOINT_roi_levers.md` AND `lever_candidates.md` with:
+Write the lever candidates in this format (`## Creative Lever Candidates`
+appears only when Step 5 ran — standalone mode; pipeline mode omits it):
 
 ```markdown
 # ROI Lever Candidates — [Client Name]
@@ -199,6 +198,7 @@ Secondary: Type [N] (if applicable)
 | ... | ... |
 
 ## Creative Lever Candidates — CONSULTANT VALIDATION REQUIRED
+<!-- Standalone mode only (Step 5 ran) — omit this section entirely in pipeline mode. -->
 
 These levers were identified through expanded search (Step 5). Each cites its discovery source and reasoning. Include in the financial model ONLY after consultant approval.
 
@@ -219,6 +219,16 @@ These levers were identified through expanded search (Step 5). Each cites its di
 [Open items requiring judgment]
 ```
 
+**Checkpoint delivery (per active mode):**
+- **`checkpoint: file` (pipeline mode):** Write to `CHECKPOINT_roi_levers.md`
+  (audit trail), then continue immediately and write the same content as
+  `lever_candidates.md` — no stop, no wait (matches production).
+- **`checkpoint: interactive` (standalone mode):** Display with a
+  `## DECISION REQUIRED` heading, say "Please review and respond before I
+  continue," and stop. Finalize `lever_candidates.md` only after the
+  consultant responds.
+- **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
+
 ---
 
 ## Rules
@@ -238,5 +248,109 @@ These levers were identified through expanded search (Step 5). Each cites its di
 - Read and follow `knowledge/standards/context_management_protocol.md` for file handling
 - Read `knowledge/standards/security_protocol.md` — **MANDATORY. Follow Section 5 (MCP Query Anonymization) — never include client name or specific financials in MCP queries. Follow Section 7 (Unconsidered Needs Validation) when surfacing hypothesis-driven levers.**
 - Check file sizes before reading (wc -l); chunk files over 500 lines
-- Read only upstream agent outputs, never raw transcripts
-- Append journal entry to `ENGAGEMENT_JOURNAL.md` on completion with telemetry block
+- Read only upstream agent outputs, never raw transcripts (this guards
+  against YOU going and opening transcript files — it does not prohibit
+  consultant-pasted content in standalone mode)
+- Append journal entry to `ENGAGEMENT_JOURNAL.md` on completion with
+  telemetry block (pipeline mode's phase `single` is the one documented
+  exception — see Mode: pipeline)
+
+## Modes
+<!-- Parsed by scripts/orchestrate.py::parse_agent_modes(). An invocation gets
+     core identity (above ## Modes) + ONE selected mode block only. -->
+
+### Mode: standalone
+<!-- default when invoked directly (Task tool / consultant chat) -->
+```yaml
+params: [domain]   # {domain} in knowledge paths below; ask if unclear from the request — proceed without it if the consultant is happy with cross-domain benchmarks
+inputs:
+  required: []
+  optional:
+    - outputs/evidence_register.md
+    - outputs/pain_points.md
+    - outputs/capability_assessment.md
+    - outputs/market_context_validated.md
+degraded: proceed-without
+knowledge:
+  - knowledge/methodologies/hypothesis_tree_decomposition.md
+  - knowledge/methodologies/value_lever_framework.md
+  - knowledge/domains/{domain}/benchmarks.md
+  - knowledge/domains/{domain}/roi_levers.md   # optional — if it exists
+outputs:
+  - Lever Candidates per STEP 6 (inline, or lever_candidates.md if the consultant names an engagement directory)
+checkpoint: interactive
+phases: single
+gates: []
+```
+
+Works from a bare problem statement — "Build me the value levers for a
+Digital Onboarding pitch to a Tier 2 retail bank in Vietnam" is a complete
+standalone request, no engagement directory needed (matches this agent's own
+description example). Run the full six-step Execution Sequence, including
+STEP 5 Creative Discovery (mandatory in this mode). The Governing Protocol's
+"never raw transcripts" rule guards against this agent opening transcript
+files itself — it does not prohibit consultant-supplied input: the
+consultant's problem statement, pasted findings, or quotes ARE the evidence
+base (cite them like an evidence ID, e.g. "per consultant: ..."); `degraded:
+proceed-without` means build the tree from whatever evidence exists rather
+than blocking. Deliver the Consultant Checkpoint interactively (STEP 6
+above) before finalizing `lever_candidates.md`.
+
+### Mode: pipeline
+<!-- orchestrate.py Block A. phase: "single" | "1" — no phase-2 continuation
+     of its own; downstream Phase 2 runs roi-financial-modeler instead. -->
+```yaml
+params: [engagement_dir, outputs_dir, domain, phase]
+inputs:
+  required:
+    - "{outputs_dir}/evidence_register.md"
+    - "{outputs_dir}/pain_points.md"
+    - "{outputs_dir}/metrics.md"
+  optional:
+    - "{outputs_dir}/stakeholder_intelligence.md"
+    - "{engagement_dir}/inputs/engagement_intake.md"
+    - "{outputs_dir}/capability_assessment.md"
+    - "{outputs_dir}/market_context_validated.md"
+degraded: refuse
+knowledge:
+  - knowledge/methodologies/hypothesis_tree_decomposition.md
+  - knowledge/methodologies/value_lever_framework.md
+  - knowledge/domains/{domain}/benchmarks.md
+  - knowledge/domains/{domain}/roi_levers.md   # optional — if it exists
+outputs:
+  - "{outputs_dir}/CHECKPOINT_roi_levers.md"
+  - "{outputs_dir}/lever_candidates.md"
+checkpoint: file
+phases: single
+gates: []
+```
+
+PHASE DIRECTIVE: {phase} (single = non-interactive Block A, journal
+suppressed; 1 = interactive Block A's Phase 1, journal not suppressed). Both
+values run the identical STEP 1-4 sequence in one pass — no mid-run pause,
+no `CHECKPOINT_roi_levers_APPROVED.md` read-back; this agent is never
+re-invoked for a second phase of its own (the interactive pipeline's Phase 2
+gate advances straight to roi-financial-modeler).
+
+Engagement directory: {engagement_dir}. Domain: {domain}. Read the inputs
+above before starting; the two optional cross-references
+(capability_assessment.md, market_context_validated.md) are sibling Block-A
+outputs that may not exist yet — read if present, proceed without if not.
+
+OUTPUT DISCIPLINE:
+- Do NOT explore the filesystem beyond the listed input and knowledge files.
+- If a listed file doesn't exist, skip it and proceed — do NOT retry.
+- Write ONLY the required output files listed below.
+- In phase `single` ONLY, do NOT write journal entries or update any other
+  files (audit lives in the checkpoint file, overriding the Telemetry
+  Protocol). Phase `1` keeps the core Telemetry Protocol.
+
+STEP SCOPE (Decision-4 — injected production prompt wins for pipeline
+shape): run STEP 1 through STEP 4 only; skip STEP 5 (Creative Discovery —
+neither legacy pipeline prompt ever instructed it; standalone-only spec) and
+write the STEP 6 format with the Creative Lever Candidates section omitted.
+
+Phase behavior: both `single` and `1` write
+{outputs_dir}/CHECKPOINT_roi_levers.md (audit trail), then continue
+immediately and write {outputs_dir}/lever_candidates.md with the same
+validated content.
