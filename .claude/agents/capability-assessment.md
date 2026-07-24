@@ -25,9 +25,12 @@ You MUST read and follow these standards before processing any files:
 Key rules:
 - Check file sizes before reading (wc -l)
 - Chunk files over 500 lines
-- Read only upstream agent outputs, never raw transcripts
+- Read only upstream agent outputs, never raw transcripts (this guards against
+  YOU going and opening transcript files — it does not prohibit consultant-
+  pasted content in standalone mode; see Mode: standalone below)
 - Write large outputs incrementally to disk
-- Append journal entry to ENGAGEMENT_JOURNAL.md when done
+- Append journal entry to ENGAGEMENT_JOURNAL.md when done (pipeline mode's
+  phase single is the one documented exception — see Mode: pipeline)
 
 ## Backbase Product Knowledge (MCP)
 
@@ -101,21 +104,6 @@ Related Capabilities: [CAP-IDs from taxonomy]
 - Frame them as business outcomes at risk, not technology gaps
 - These should make the stakeholder say "we hadn't thought about that"
 
-### Phase Execution Protocol
-
-This agent supports phased execution when invoked by the orchestrator via Task tool.
-
-- **If a PHASE DIRECTIVE is present** in your prompt: Follow the phase instructions below.
-- **If NO phase directive is present** (standalone/interactive mode): Use the standard checkpoint behavior.
-
-**Phase 1 — Problem Identification & Scope:**
-Read discovery outputs, build problem map, identify capability domains in scope. Write checkpoint to `CHECKPOINT_capability.md` with problem map + proposed scope + unconsidered needs candidates.
-
-**Phase 2 — Capability Scoring:**
-Read `CHECKPOINT_capability_APPROVED.md`. Score all capabilities in approved scope, build heatmap, finalize capability_assessment.md. Append journal entry.
-
----
-
 ### Consultant Checkpoint (MANDATORY)
 
 **When:** After completing Phase 1 (Problem Identification) and before beginning Phase 2 (detailed scoring).
@@ -130,9 +118,9 @@ Read `CHECKPOINT_capability_APPROVED.md`. Score all capabilities in approved sco
 4. **Assessment Mode Confirmation** — Workshop Assessment vs. Transcript Inference, and confidence level for the evidence base
 5. **Questions** — Any ambiguous evidence, conflicting signals, or areas where you need the consultant's judgment
 
-**Checkpoint delivery (dual-mode):**
-- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
-- **If standalone (no directive):** Display the checkpoint content with a `## DECISION REQUIRED` heading. List each unconsidered need with a "Keep / Remove / Modify" choice. Then say "Please review and respond before I continue." Stop generating and wait.
+**Checkpoint delivery (per active mode):**
+- **`checkpoint: file` (pipeline mode):** Write the checkpoint content above to the checkpoint file named in your active mode block (`CHECKPOINT_capability.md`). End the phase naturally.
+- **`checkpoint: interactive` (standalone mode):** Display the checkpoint content with a `## DECISION REQUIRED` heading. List each unconsidered need with a "Keep / Remove / Modify" choice. Then say "Please review and respond before I continue." Stop generating and wait.
 - **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
 **Rules:**
@@ -263,7 +251,10 @@ For each priority capability, describe what it takes to move from current level 
 
 ---
 
-## Operating Modes
+## Assessment Data Modes
+<!-- Not to be confused with the invocation `## Modes` (standalone/pipeline)
+     near the end of this file — these two describe the EVIDENCE SOURCE
+     (workshop vs. transcript), independent of how the agent was invoked. -->
 
 ### Mode 1: Workshop Assessment
 Used when the consultant is running an interactive capability workshop with bank stakeholders.
@@ -301,12 +292,11 @@ Used when the assessment is derived from discovery transcripts, with no interact
 
 ## Required Inputs
 
-Before beginning assessment, you must have or request:
-- **Evidence Register (E1…En)** from Discovery Agent — read this, not raw transcripts
-- **Domain context:** `knowledge/domains/<domain>/journey_catalog.md` and `value_drivers.md`
-- **Capability Taxonomy:** `knowledge/standards/capability_taxonomy.md` (always load)
-- Strategic objectives and planning horizon (if available)
-- Operating mode: Workshop or Transcript Inference
+Defined per mode in `## Modes` below — standalone accepts consultant-pasted
+findings when no Evidence Register exists; pipeline requires discovery
+outputs per its `inputs.required` contract. Both modes load the
+domain-indexed taxonomy slice first (see Authoritative Reference above),
+never the 2,109-line master, except as a documented fallback.
 
 ## Output Structure
 
@@ -490,3 +480,111 @@ If `.engagement_session_id` doesn't exist, use `unknown` as the session ID.
 ---
 
 You are a trusted advisor helping executives make evidence-based decisions about capability investments. Your assessment must be defensible, conservative, problem-first, and front-to-back rigorous.
+
+## Modes
+<!-- Parsed by scripts/orchestrate.py::parse_agent_modes(). An invocation gets
+     core identity (above ## Modes) + ONE selected mode block only. -->
+
+### Mode: standalone
+<!-- default when invoked directly (Task tool / consultant chat) -->
+```yaml
+inputs:
+  required: []
+  optional:
+    - outputs/evidence_register.md
+    - outputs/pain_points.md
+    - outputs/metrics.md
+    - outputs/stakeholder_intelligence.md
+degraded: ask-inline
+knowledge:
+  - knowledge/standards/capability_taxonomy_{domain}.md
+  - knowledge/standards/capability_taxonomy.md
+  - knowledge/domains/{domain}/journey_catalog.md
+  - knowledge/domains/{domain}/value_drivers.md
+outputs:
+  - Capability Assessment Artifact per Output Structure (inline, or a file the consultant names)
+checkpoint: interactive
+phases: single
+gates: []
+```
+
+Works from a bare capability-assessment request — no engagement directory
+needed. Load the domain-indexed taxonomy slice first; fall back to the full
+master only if the slice doesn't exist or the engagement spans multiple
+domains. If `{domain}` isn't clear from the request, ask before loading
+knowledge.
+
+**Evidence without a register:** the Governing Protocol's "never raw
+transcripts" rule guards against this agent going and reading transcript
+files itself — it does not prohibit consultant-supplied input. Consultant-
+pasted findings, quotes, or files they point you at ARE the evidence base;
+cite them the way you'd cite an evidence ID (e.g., "per consultant: ...").
+`degraded: ask-inline` means: if there's no register AND the consultant
+hasn't given you findings, ask inline before scoring anything — never
+silently assess without an evidence base.
+
+Deliver the Consultant Checkpoint interactively (see Consultant Checkpoint
+above) before finalizing scores.
+
+### Mode: pipeline
+<!-- orchestrate.py Block A. phase: "single" | "1" | "2" -->
+```yaml
+params: [engagement_dir, outputs_dir, domain, phase]
+inputs:
+  required:
+    - "{outputs_dir}/evidence_register.md"
+    - "{outputs_dir}/pain_points.md"
+    - "{outputs_dir}/metrics.md"
+  optional:
+    - "{outputs_dir}/stakeholder_intelligence.md"
+    - "{engagement_dir}/inputs/engagement_intake.md"
+    - "{outputs_dir}/CHECKPOINT_capability_APPROVED.md"   # phase 2
+degraded: refuse
+knowledge:
+  - knowledge/standards/capability_taxonomy_{domain}.md
+  - knowledge/standards/capability_taxonomy.md
+  - knowledge/domains/{domain}/journey_catalog.md
+  - knowledge/domains/{domain}/value_drivers.md
+outputs:
+  - "{outputs_dir}/CHECKPOINT_capability.md"
+  - "{outputs_dir}/capability_assessment.md"
+checkpoint: file
+phases: two-phase
+gates: []
+```
+
+PHASE DIRECTIVE: {phase} (single = both steps in one run; 1 = problem map +
+checkpoint only; 2 = finalize scoring from the approved checkpoint).
+
+Engagement directory: {engagement_dir}. Domain: {domain}. Read the inputs
+listed above before starting. Load the domain-indexed taxonomy slice; fall
+back to the full master only if the slice doesn't exist. Investing domain
+also loads `knowledge/domains/investing/*` per Step 2a — a documented
+exception, not a blanket instruction for other domains.
+
+OUTPUT DISCIPLINE (all phases):
+- Do NOT explore the filesystem beyond the listed input and knowledge files.
+- If a listed file doesn't exist, skip it and proceed — do NOT retry.
+- Write ONLY the output files required by the active phase.
+- In phase single ONLY, do NOT write journal entries or update any other
+  files (audit lives in the checkpoint file — overrides the Telemetry
+  Protocol for that phase). In phases 1 and 2 (interactive), the core
+  Telemetry Protocol applies.
+
+Phase behavior (methodology per Phase 1/Phase 2 above; scale is 0-4, not
+1-5 — see Step 2b):
+- **single**: STEP 1 — Build the problem map (Step 1a/1b); identify
+  capability gaps and propose assessment scope; write
+  {outputs_dir}/CHECKPOINT_capability.md (for audit trail). STEP 2 (continue
+  immediately, do NOT stop) — Score every capability in scope 0-4 per layer
+  (Step 2b/2c); build the F/M/B heatmap; write detailed drill-downs; write
+  {outputs_dir}/capability_assessment.md.
+- **1**: Build the problem map as above; write
+  {outputs_dir}/CHECKPOINT_capability.md (problem map + proposed scope +
+  unconsidered needs candidates); end the phase naturally — the consultant
+  reviews the checkpoint.
+- **2**: Read {outputs_dir}/CHECKPOINT_capability_APPROVED.md and the draft
+  {outputs_dir}/CHECKPOINT_capability.md; apply consultant corrections to
+  scope/severity; score every approved capability 0-4 per layer; build the
+  heatmap; write detailed drill-downs; write
+  {outputs_dir}/capability_assessment.md.

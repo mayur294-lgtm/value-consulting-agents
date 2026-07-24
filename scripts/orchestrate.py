@@ -835,30 +835,15 @@ REQUIRED OUTPUT FILES:
 Do NOT write journal entries or update other files.
 """
 
-        cap_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
-{shared_context}
-
-Also read: knowledge/standards/capability_taxonomy_{domain}.md (if exists)
-Fallback: knowledge/standards/capability_taxonomy.md
-
-OUTPUT DISCIPLINE:
-- Do NOT explore the filesystem beyond the listed input files.
-- If a file doesn't exist, skip it and proceed — do NOT retry.
-- Write ONLY the required output files listed below.
-
-STEP 1 — Analysis & Checkpoint:
-Build the problem map from discovery evidence. Identify capability gaps
-and propose assessment scope.
-Write checkpoint to: {outputs_dir}/CHECKPOINT_capability.md (for audit trail)
-
-STEP 2 — Final Output (continue immediately, do NOT stop):
-Score maturity (1-5) for each capability. Build the F/M/B heatmap.
-Write detailed drill-downs per capability.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/capability_assessment.md
-Do NOT write journal entries or update other files.
-"""
+        # capability-assessment is mode-extracted (skill-first contracts): its
+        # prompt is composed from .claude/agents/capability-assessment.md
+        # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+        cap_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+            "phase": "single",
+        }
 
         roi_hyp_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
 {shared_context}
@@ -931,7 +916,8 @@ Do NOT write journal entries or update other files.
         results = await asyncio.gather(
             _timed_agent("journey-builder", jb_prompt, "Journey Builder", 30),
             _timed_agent("market-context-researcher", mc_prompt, "Market Context", 30),
-            _timed_agent("capability-assessment", cap_prompt, "Capability", 25),
+            _timed_agent("capability-assessment", None, "Capability", 25,
+                         mode="pipeline", params=cap_params),
             _timed_agent("roi-hypothesis-builder", roi_hyp_prompt, "ROI Hypothesis", 20),
             _timed_agent("benchmark-librarian", None, "Benchmark", 25,
                          mode="pipeline", params=bench_params),
@@ -1035,17 +1021,13 @@ Research market context for this engagement. Cover:
 Write: {outputs_dir}/CHECKPOINT_market-context.md
 """
 
-        cap_prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
-{shared_context}
-
-Also read: knowledge/standards/capability_taxonomy_{domain}.md (if exists)
-Fallback: knowledge/standards/capability_taxonomy.md
-
-Build the problem map from discovery evidence. Identify capability gaps
-and propose assessment scope.
-
-Write: {outputs_dir}/CHECKPOINT_capability.md
-"""
+        # capability-assessment is mode-extracted: prompt composed from its own
+        # ## Modes contract (mode="pipeline", phase carried as a param).
+        cap_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+        }
 
         roi_hyp_prompt = f"""PHASE DIRECTIVE: Phase 1 (Hypothesis Building)
 {shared_context}
@@ -1076,7 +1058,8 @@ Write: {outputs_dir}/lever_candidates.md
         results = await asyncio.gather(
             run_agent("journey-builder", jb_prompt, engagement_dir, label="Journey Builder P1"),
             run_agent("market-context-researcher", mc_prompt, engagement_dir, label="Market Context P1"),
-            run_agent("capability-assessment", cap_prompt, engagement_dir, label="Capability P1"),
+            run_agent("capability-assessment", cwd=engagement_dir, label="Capability P1",
+                      mode="pipeline", params={**cap_params, "phase": "1"}),
             run_agent("roi-hypothesis-builder", roi_hyp_prompt, engagement_dir, label="ROI Hypothesis", model="opus"),
             run_agent("benchmark-librarian", cwd=engagement_dir, label="Benchmark P1",
                       mode="pipeline", params={**bench_params, "phase": "1"}),
@@ -1123,19 +1106,6 @@ REQUIRED OUTPUT FILES:
 - {outputs_dir}/market_context_validated.md
 """
 
-        cap2_prompt = f"""PHASE DIRECTIVE: Phase 2 of 2
-{shared_context}
-
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_capability_APPROVED.md
-Read draft checkpoint: {outputs_dir}/CHECKPOINT_capability.md
-
-Score maturity (1-5) for each capability. Build the F/M/B heatmap.
-Write detailed drill-downs per capability.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/capability_assessment.md
-"""
-
         roi_model_prompt = f"""PHASE DIRECTIVE: Phase 2 (Financial Modeling)
 {shared_context}
 
@@ -1164,7 +1134,8 @@ REQUIRED OUTPUT FILES (you MUST produce BOTH):
         results = await asyncio.gather(
             run_agent("journey-builder", jb2_prompt, engagement_dir, label="Journey Builder P2"),
             run_agent("market-context-researcher", mc2_prompt, engagement_dir, label="Market Context P2"),
-            run_agent("capability-assessment", cap2_prompt, engagement_dir, label="Capability P2"),
+            run_agent("capability-assessment", cwd=engagement_dir, label="Capability P2",
+                      mode="pipeline", params={**cap_params, "phase": "2"}),
             run_agent("roi-financial-modeler", roi_model_prompt, engagement_dir, label="ROI Financial Model"),
             run_agent("benchmark-librarian", cwd=engagement_dir, label="Benchmark P2",
                       mode="pipeline", params={**bench_params, "phase": "2"}),
