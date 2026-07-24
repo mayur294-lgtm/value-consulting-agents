@@ -761,19 +761,11 @@ async def step_parallel_block_a(
     """
     start = time.time()
     cost = 0.0
-    inputs_dir = engagement_dir / "inputs"
-    intake = inputs_dir / "engagement_intake.md"
 
-    # Shared input context for all agents
-    shared_context = f"""Engagement directory: {engagement_dir}
-Read these discovery outputs before starting:
-- {outputs_dir}/evidence_register.md
-- {outputs_dir}/pain_points.md
-- {outputs_dir}/metrics.md
-- {outputs_dir}/stakeholder_intelligence.md
-Engagement intake: {intake}
-Domain: {domain}
-"""
+    # The old `shared_context` f-string block (engagement dir + discovery
+    # outputs + intake + domain) is gone: all Block A agents are now
+    # mode-extracted, and each agent's ## Modes pipeline contract carries the
+    # discovery-output/intake/domain context as inputs + params instead.
 
     if non_interactive:
         # ── S1: SINGLE-PHASE (non-interactive) ──────────────────────────
@@ -896,38 +888,19 @@ Domain: {domain}
         if file_exists(outputs_dir / "lever_candidates.md"):
             log_step("2B", "ROI FINANCIAL MODEL — Sequential (reads Block A1 outputs)")
 
-            roi_model_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
-{shared_context}
-
-Read validated lever candidates: {outputs_dir}/lever_candidates.md
-Also read: knowledge/domains/{domain}/benchmarks.md
-Also read: knowledge/domains/{domain}/roi_levers.md (if exists)
-
-OPTIONAL cross-references (try ONCE, skip if not found — do NOT retry):
-- {outputs_dir}/capability_assessment.md
-- {outputs_dir}/market_context_validated.md
-- {outputs_dir}/benchmarks_validated.md
-
-OUTPUT DISCIPLINE:
-- Do NOT explore the filesystem beyond the listed input files.
-- Write ONLY the required output files listed below.
-
-For each lever in lever_candidates.md:
-1. Compute gap-based backbase_impact using percentage point gap method
-2. Build baseline calculations with bank-specific data
-3. Define 3 scenarios (conservative/moderate/aggressive) with per-lever curves
-4. Run reasonableness checks (total benefit < 5% of revenue, no single lever > 2%)
-
-Write checkpoint to: {outputs_dir}/CHECKPOINT_roi_model.md (for audit trail)
-
-REQUIRED OUTPUT FILES (you MUST produce BOTH):
-- {outputs_dir}/roi_report.md
-- {outputs_dir}/roi_config.json
-Do NOT write journal entries or update other files.
-"""
+            # roi-financial-modeler is mode-extracted (skill-first contracts):
+            # its prompt is composed from .claude/agents/roi-financial-modeler.md
+            # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+            roi_model_params = {
+                "engagement_dir": engagement_dir,
+                "outputs_dir": outputs_dir,
+                "domain": domain,
+                "phase": "single",
+            }
 
             result_a2 = await _timed_agent(
-                "roi-financial-modeler", roi_model_prompt, "ROI Financial Model", 25
+                "roi-financial-modeler", None, "ROI Financial Model", 25,
+                mode="pipeline", params=roi_model_params,
             )
             cost += result_a2.total_cost_usd if result_a2 and result_a2.total_cost_usd else 0
 
@@ -1016,30 +989,16 @@ Do NOT write journal entries or update other files.
         # ── Phase 2: Launch all 5 again ──────────────────────────────────
         log_step("2B", "PARALLEL BLOCK A — Phase 2 (5 agents simultaneously)")
 
-        roi_model_prompt = f"""PHASE DIRECTIVE: Phase 2 (Financial Modeling)
-{shared_context}
-
-Read validated lever candidates: {outputs_dir}/lever_candidates.md
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_roi_levers_APPROVED.md
-Read draft checkpoint: {outputs_dir}/CHECKPOINT_roi_levers.md
-Also read: knowledge/domains/{domain}/benchmarks.md
-Also read: knowledge/domains/{domain}/roi_levers.md (if exists)
-
-OPTIONAL cross-references (if available):
-- {outputs_dir}/capability_assessment.md
-- {outputs_dir}/market_context_validated.md
-- {outputs_dir}/benchmarks_validated.md
-
-For each lever in lever_candidates.md:
-1. Compute gap-based backbase_impact using percentage point gap method
-2. Build baseline calculations with bank-specific data
-3. Define 3 scenarios (conservative/moderate/aggressive) with per-lever curves
-4. Run reasonableness checks (total benefit < 5% of revenue, no single lever > 2%)
-
-REQUIRED OUTPUT FILES (you MUST produce BOTH):
-- {outputs_dir}/roi_report.md
-- {outputs_dir}/roi_config.json
-"""
+        # roi-financial-modeler is mode-extracted (skill-first contracts): its
+        # prompt is composed from .claude/agents/roi-financial-modeler.md
+        # (## Modes -> pipeline, phase "2") via compose_prompt — no inline
+        # f-string. The modeler has no pipeline phase "1" of its own — the ROI
+        # pair's Phase 1 above was roi-hypothesis-builder.
+        roi_model_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+        }
 
         results = await asyncio.gather(
             run_agent("journey-builder", cwd=engagement_dir, label="Journey Builder P2",
@@ -1048,7 +1007,8 @@ REQUIRED OUTPUT FILES (you MUST produce BOTH):
                       mode="pipeline", params={**mc_params, "phase": "2"}),
             run_agent("capability-assessment", cwd=engagement_dir, label="Capability P2",
                       mode="pipeline", params={**cap_params, "phase": "2"}),
-            run_agent("roi-financial-modeler", roi_model_prompt, engagement_dir, label="ROI Financial Model"),
+            run_agent("roi-financial-modeler", cwd=engagement_dir, label="ROI Financial Model",
+                      mode="pipeline", params={**roi_model_params, "phase": "2"}),
             run_agent("benchmark-librarian", cwd=engagement_dir, label="Benchmark P2",
                       mode="pipeline", params={**bench_params, "phase": "2"}),
             return_exceptions=True,
@@ -1866,22 +1826,20 @@ async def step_generate_excel(
         log("  ⚠ Skipping Excel — roi_config.json not found", C.YELLOW)
         return {"elapsed": 0, "cost": 0}
 
-    excel_prompt = f"""You are generating a ROI Excel model.
-
-Read and follow: {COMMANDS_DIR / 'generate-roi-excel.md'}
-
-Read the ROI config: {outputs_dir}/roi_config.json
-Read the ROI report: {outputs_dir}/roi_report.md
-
-Generate the Excel model using the roi_excel_generator tool or by writing
-the Excel file directly.
-
-Write the output to: {outputs_dir}/
-"""
+    # roi-financial-modeler is mode-extracted (skill-first contracts): the
+    # Excel re-invocation is composed from .claude/agents/roi-financial-modeler.md
+    # (## Modes -> excel-source) via compose_prompt — no inline f-string. The
+    # mode reads and follows .claude/commands/generate-roi-excel.md, which
+    # re-runs the cap gate (idempotent backstop) before generating.
+    excel_params = {
+        "engagement_dir": engagement_dir,
+        "outputs_dir": outputs_dir,
+    }
 
     result = await run_agent(
-        "roi-financial-modeler", excel_prompt, engagement_dir,
+        "roi-financial-modeler", cwd=engagement_dir,
         label="ROI Excel", max_turns=30,
+        mode="excel-source", params=excel_params,
     )
     cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
