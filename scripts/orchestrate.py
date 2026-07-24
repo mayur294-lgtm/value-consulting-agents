@@ -808,32 +808,15 @@ REQUIRED OUTPUT FILES:
 Do NOT write journal entries or update other files.
 """
 
-        mc_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
-{shared_context}
-
-OUTPUT DISCIPLINE:
-- Do NOT explore the filesystem beyond the listed input files.
-- If a file doesn't exist, skip it and proceed — do NOT retry.
-- Write ONLY the required output files listed below.
-- TURN BUDGET: You have ~30 turns total. RESERVE your last 5 turns for writing
-  output files. Stop ALL web research by turn 20 and begin writing.
-  Producing no output file is a FAILURE — partial research with an output file
-  is always better than thorough research with no output.
-
-STEP 1 — Analysis & Checkpoint:
-Research market context for this engagement. Cover:
-- Module 1: Client financial metrics (search for annual reports)
-- Module 2: Competitive landscape
-- Module 3: Industry benchmarks and CX trends
-Write checkpoint to: {outputs_dir}/CHECKPOINT_market-context.md (for audit trail)
-
-STEP 2 — Final Output (continue immediately, do NOT stop):
-Finalize the market context brief with all validated findings.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/market_context_validated.md
-Do NOT write journal entries or update other files.
-"""
+        # market-context-researcher is mode-extracted (skill-first contracts):
+        # its prompt is composed from .claude/agents/market-context-researcher.md
+        # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+        mc_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+            "phase": "single",
+        }
 
         # capability-assessment is mode-extracted (skill-first contracts): its
         # prompt is composed from .claude/agents/capability-assessment.md
@@ -915,7 +898,8 @@ Do NOT write journal entries or update other files.
         # Block A1: 5 agents in parallel (hypothesis builder replaces monolithic ROI)
         results = await asyncio.gather(
             _timed_agent("journey-builder", jb_prompt, "Journey Builder", 30),
-            _timed_agent("market-context-researcher", mc_prompt, "Market Context", 30),
+            _timed_agent("market-context-researcher", None, "Market Context", 30,
+                         mode="pipeline", params=mc_params),
             _timed_agent("capability-assessment", None, "Capability", 25,
                          mode="pipeline", params=cap_params),
             _timed_agent("roi-hypothesis-builder", roi_hyp_prompt, "ROI Hypothesis", 20),
@@ -1010,16 +994,13 @@ journeys for mapping based on evidence volume and value leakage potential.
 Write: {outputs_dir}/CHECKPOINT_journey-builder.md
 """
 
-        mc_prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
-{shared_context}
-
-Research market context for this engagement. Cover:
-- Module 1: Client financial metrics (search for annual reports)
-- Module 2: Competitive landscape
-- Module 3: Industry benchmarks and CX trends
-
-Write: {outputs_dir}/CHECKPOINT_market-context.md
-"""
+        # market-context-researcher is mode-extracted: prompt composed from its
+        # own ## Modes contract (mode="pipeline", phase carried as a param).
+        mc_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+        }
 
         # capability-assessment is mode-extracted: prompt composed from its own
         # ## Modes contract (mode="pipeline", phase carried as a param).
@@ -1057,7 +1038,8 @@ Write: {outputs_dir}/lever_candidates.md
         # Fire all 5 simultaneously (hypothesis builder replaces monolithic ROI)
         results = await asyncio.gather(
             run_agent("journey-builder", jb_prompt, engagement_dir, label="Journey Builder P1"),
-            run_agent("market-context-researcher", mc_prompt, engagement_dir, label="Market Context P1"),
+            run_agent("market-context-researcher", cwd=engagement_dir, label="Market Context P1",
+                      mode="pipeline", params={**mc_params, "phase": "1"}),
             run_agent("capability-assessment", cwd=engagement_dir, label="Capability P1",
                       mode="pipeline", params={**cap_params, "phase": "1"}),
             run_agent("roi-hypothesis-builder", roi_hyp_prompt, engagement_dir, label="ROI Hypothesis", model="opus"),
@@ -1094,18 +1076,6 @@ REQUIRED OUTPUT FILES:
 - {outputs_dir}/journey_maps_summary.md
 """
 
-        mc2_prompt = f"""PHASE DIRECTIVE: Phase 2 of 2
-{shared_context}
-
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_market-context_APPROVED.md
-Read draft checkpoint: {outputs_dir}/CHECKPOINT_market-context.md
-
-Finalize the market context brief with all validated findings.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/market_context_validated.md
-"""
-
         roi_model_prompt = f"""PHASE DIRECTIVE: Phase 2 (Financial Modeling)
 {shared_context}
 
@@ -1133,7 +1103,8 @@ REQUIRED OUTPUT FILES (you MUST produce BOTH):
 
         results = await asyncio.gather(
             run_agent("journey-builder", jb2_prompt, engagement_dir, label="Journey Builder P2"),
-            run_agent("market-context-researcher", mc2_prompt, engagement_dir, label="Market Context P2"),
+            run_agent("market-context-researcher", cwd=engagement_dir, label="Market Context P2",
+                      mode="pipeline", params={**mc_params, "phase": "2"}),
             run_agent("capability-assessment", cwd=engagement_dir, label="Capability P2",
                       mode="pipeline", params={**cap_params, "phase": "2"}),
             run_agent("roi-financial-modeler", roi_model_prompt, engagement_dir, label="ROI Financial Model"),
