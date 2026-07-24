@@ -255,6 +255,28 @@ These levers were identified through expanded search (Step 5). Each cites its di
   telemetry block (pipeline mode's phase `single` is the one documented
   exception — see Mode: pipeline)
 
+## Telemetry Protocol (MANDATORY)
+
+When you complete your work (any mode/phase where the journal entry isn't
+suppressed — see Mode: pipeline), your journal entry MUST include a
+telemetry block, in addition to the standard journal fields:
+
+\```
+<!-- TELEMETRY_START -->
+- Agent: roi-hypothesis-builder
+- Session ID: [read from .engagement_session_id in engagement directory]
+- Start Time: [ISO timestamp]
+- End Time: [ISO timestamp]
+- Duration: [seconds]
+- Input Files: [count] ([total KB])
+- Output Files: [count] ([total KB])
+- Errors Encountered: [none | description]
+- Quality Self-Check: [passed | failed | passed_with_warnings]
+<!-- TELEMETRY_END -->
+\```
+
+If `.engagement_session_id` doesn't exist, use `unknown` as the session ID.
+
 ## Modes
 <!-- Parsed by scripts/orchestrate.py::parse_agent_modes(). An invocation gets
      core identity (above ## Modes) + ONE selected mode block only. -->
