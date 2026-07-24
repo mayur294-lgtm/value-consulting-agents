@@ -119,10 +119,37 @@ Skipped: {reason if anything was skipped, e.g. "roi_config.json not found"}
 - Do not fail silently — if a file is missing or unreadable, note it in the summary
 - Do not explore the filesystem beyond the input and knowledge files your active
   mode whitelists; if a listed optional file doesn't exist, skip it and move on
-- No consultant checkpoint applies to you, and neither mode has a journal or
-  telemetry requirement — the `.harvest_summary.txt` file is your entire audit
-  trail (this holds in both modes; nothing above ever asked for a checkpoint
-  or a journal entry, and production's harvest invocation has never sent one)
+- No consultant checkpoint applies to you in either mode. Journal/telemetry
+  behavior differs by mode — see Telemetry Protocol below; do not guess
+
+## Telemetry Protocol
+
+Provenance differs by mode because pipeline mode has no journal to write to
+(it runs unattended, outside any single engagement's interactive session) and
+backfill mode does (a consultant is working a specific past engagement).
+
+**Pipeline mode:** no journal entry, no telemetry block. Your audit trail is
+`.harvest_summary.txt` (Harvest Summary above) plus the Auto-Harvest Log row
+in `knowledge/learnings/EXTRACTION_REGISTRY.md` (EXTRACTION_REGISTRY.md
+Update above). This is unchanged production behavior, not new governance —
+do not start writing to `ENGAGEMENT_JOURNAL.md` in this mode.
+
+**Backfill mode:** append a telemetry block to that engagement's
+`ENGAGEMENT_JOURNAL.md` (a short journal entry, created if none exists)
+after writing all outputs, using this format:
+
+```
+<!-- TELEMETRY_START -->
+- Agent: knowledge-harvester
+- Mode: backfill
+- Engagement ID: [derived from the outputs dir's parent folder name]
+- Session ID: [read from .engagement_session_id in the engagement directory; "unknown" if absent]
+- Start Time: [ISO timestamp] | End Time: [ISO timestamp] | Duration: [seconds]
+- Files Written: [count] — [which of: domain benchmarks.md / journey pattern / roi_models entry / pain_points patterns / EXTRACTION_REGISTRY.md / .harvest_summary.txt]
+- Extraction Counts: A:[n_benchmarks] B:[n_journey] C:[n_roi] D:[n_pain_patterns]
+- Errors Encountered: [none | description]
+<!-- TELEMETRY_END -->
+```
 
 ## Modes
 <!-- Parsed by scripts/orchestrate.py::parse_agent_modes(). An invocation gets
@@ -197,4 +224,5 @@ Otherwise, run the same extraction as pipeline mode (Core Rules, What to
 Extract, EXTRACTION_REGISTRY.md Update, Harvest Summary) against
 `{outputs_dir}`. Engagement ID isn't a parameter here — derive it from the
 name of `{outputs_dir}`'s parent folder, and write `.harvest_summary.txt`
-into that same parent folder (the engagement directory).
+into that same parent folder (the engagement directory). Then append the
+Telemetry Protocol block (above) to that engagement's `ENGAGEMENT_JOURNAL.md`.
