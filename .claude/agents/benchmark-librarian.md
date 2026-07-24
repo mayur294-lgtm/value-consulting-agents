@@ -253,8 +253,10 @@ OUTPUT DISCIPLINE (all phases):
 - Do NOT explore the filesystem beyond the listed input and knowledge files.
 - If a listed file doesn't exist, skip it and proceed — do NOT retry.
 - Write ONLY the output files required by the active phase.
-- Do NOT write journal entries or update any other files (pipeline audit lives
-  in the checkpoint file — this overrides the Telemetry Protocol for this mode).
+- In phase single ONLY, do NOT write journal entries or update any other
+  files (audit lives in the checkpoint file — overrides the Telemetry
+  Protocol for that phase). In phases 1 and 2 (interactive), the core
+  Telemetry Protocol applies.
 
 Phase behavior:
 - **single**: STEP 1 — Curate domain and regional benchmarks relevant to this
