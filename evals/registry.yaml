@@ -20,11 +20,20 @@ deliverables:
     monitor:
       - engagements/test_inspire/2026-02_retail_ignite/outputs/strategy_workshop_deck.html
 
+  # SLOT RULE (see deck above): `goldens:` / `negatives:` are small, frozen,
+  # COMMITTED fixtures authored to test the rubric — they are what the PR gate
+  # runs. `monitor:` is real shipped engagement output, watched for drift by
+  # evals-monitor.yml and NEVER gating. Real `engagements/**` paths must never
+  # appear under `goldens:` — that tree is gitignored (PII), so the file is
+  # absent in every clean checkout and CI, and a missing golden is [SKIP]-ed,
+  # which counts as a PASS. That made these three gates vacuously green.
   roi:
     altitude: deliverable
     evaluator: rubrics.deliverable.roi
     threshold: 0.80
     goldens:
+      - evals/goldens/roi_report_valid.md        # synthetic (Meridian Mutual) — exercises the rubric
+    monitor:
       - engagements/nfis/2026-02_digital_investor_assessment_v2/outputs/roi_report.md
 
   assessment:
@@ -32,8 +41,9 @@ deliverables:
     evaluator: rubrics.deliverable.assessment
     threshold: 0.80
     goldens:
-      - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_dashboard.html
+      - evals/goldens/assessment_dashboard_valid.html   # synthetic — 7-act arc, on-palette
     monitor:
+      - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_dashboard.html
       - engagements/nfis/2026-02_digital_investor_assessment_v2/outputs/assessment_dashboard.html
 
   report:
@@ -41,6 +51,8 @@ deliverables:
     evaluator: rubrics.deliverable.report
     threshold: 0.80
     goldens:
+      - evals/goldens/assessment_report_valid.md        # synthetic — passes tone + assumption-discipline judges
+    monitor:
       - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_report.md
 
 # Component (unit) altitude — score an agent's direct output on a fixed input.
