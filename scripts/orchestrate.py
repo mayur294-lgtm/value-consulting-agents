@@ -571,32 +571,12 @@ def _generate_discovery_checkpoint(outputs_dir: Path, transcripts: list[Path]) -
     return checkpoint_path
 
 
-# Lean extraction format instructions shared across single and multi-transcript paths
-_LEAN_FORMAT = """
-IMPORTANT — Write findings in this LEAN structured format:
-
-## Summary
-[3-5 bullet points: the most important findings from this transcript]
-
-## Evidence Table
-| ID | Category | Finding | Severity | Line Ref |
-(One-line findings only. No full quotes — just reference the line number.)
-
-## Pain Points
-| ID | Description | Impact | Confidence |
-
-## Metrics
-| Name | Value | Source Line |
-
-## Stakeholder Positions
-| Name/Role | Key Stance |
-
-## Data Gaps
-[Bullet list of missing data or unanswered questions]
-
-TARGET SIZE: 8-15KB. Do NOT include source quotes, interpretation notes, or verbose descriptions.
-Do NOT write multi-line cells. Keep every table row on ONE line.
-"""
+# The lean extraction format (formerly the `_LEAN_FORMAT` f-string shared by the
+# single- and multi-transcript discovery prompts) now lives in the agent's own
+# contract: .claude/agents/discovery-transcript-interpreter.md, core section
+# "Lean Interim Extraction Format" — carried into every composed pipeline prompt.
+# _generate_discovery_checkpoint() below still depends on its heading contract
+# ("## Summary" ... breaks at "## Evidence"/"## Pain").
 
 
 async def step_discovery(
@@ -610,7 +590,8 @@ async def step_discovery(
     cost = 0.0
     inputs_dir = engagement_dir / "inputs"
     transcripts = sorted(inputs_dir.glob("transcript_*.md"))
-    intake = inputs_dir / "engagement_intake.md"
+    # (engagement_intake.md is now carried by the agent's pipeline mode contract
+    #  via the {engagement_dir} param — no inline prompt references it here.)
 
     if not transcripts:
         log("  ⚠ No transcripts found in inputs/", C.YELLOW)
@@ -647,23 +628,33 @@ async def step_discovery(
         mapping_file.chmod(0o600)  # Restrict access — this file contains PII
         log(f"    PII mapping saved ({len(combined_mapping)} substitutions)")
 
+    # discovery-transcript-interpreter is mode-extracted (skill-first contracts):
+    # prompts are composed from .claude/agents/discovery-transcript-interpreter.md
+    # (## Modes -> pipeline) via compose_prompt — no inline f-strings. Params
+    # carry VALUES only; out-of-phase params are explicit "(n/a — ...)" markers
+    # per the mode contract. The agent's inputs here are the ALREADY-anonymized
+    # .anon_transcript_* files produced above — anonymization stays
+    # orchestrator-owned (fail-closed, see the loop above), never agent-run.
+    def _interim_params(transcript: Path, index: int) -> dict:
+        return {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "phase": "interim",
+            "transcript_path": transcript,
+            "transcript_index": index,
+            "transcript_count": len(transcripts),
+            "interim_files": "(n/a — interim phase)",
+        }
+
     if len(transcripts) == 1:
         # Single transcript: lean extraction -> Python checkpoint
-        prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
-Engagement directory: {engagement_dir}
-
-Read and process this transcript: {transcripts[0]}
-Read the engagement context: {intake}
-
-Extract evidence items, pain points, metrics, and stakeholder intelligence.
-Write your findings to: {outputs_dir}/interim_transcript_1.md
-{_LEAN_FORMAT}
-"""
         result = await run_agent(
-            "discovery-transcript-interpreter", prompt,
+            "discovery-transcript-interpreter", None,
             cwd=engagement_dir,
             label="Discovery (1 transcript)",
             max_turns=15,
+            mode="pipeline",
+            params=_interim_params(transcripts[0], 1),
         )
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
     else:
@@ -671,24 +662,13 @@ Write your findings to: {outputs_dir}/interim_transcript_1.md
         log(f"  Launching {len(transcripts)} transcript extractions in parallel...")
         extract_tasks = []
         for i, transcript in enumerate(transcripts, 1):
-            prompt = f"""PHASE DIRECTIVE: Phase 1 of 2 — Transcript {i} of {len(transcripts)}
-Engagement directory: {engagement_dir}
-
-Read and process ONLY this transcript: {transcript}
-Read the engagement context: {intake}
-
-Extract evidence items, pain points, metrics, and stakeholder intelligence.
-Write your findings ONLY to: {outputs_dir}/interim_transcript_{i}.md
-
-Do NOT write a checkpoint file. Do NOT read other transcripts or interim files.
-Focus only on this one transcript. Write the interim file and stop.
-{_LEAN_FORMAT}
-"""
             extract_tasks.append(run_agent(
-                "discovery-transcript-interpreter", prompt,
+                "discovery-transcript-interpreter", None,
                 cwd=engagement_dir,
                 label=f"Discovery (T{i}/{len(transcripts)})",
                 max_turns=15,
+                mode="pipeline",
+                params=_interim_params(transcript, i),
             ))
 
         # Fire all transcript extractions simultaneously
@@ -704,37 +684,28 @@ Focus only on this one transcript. Write the interim file and stop.
     # Checkpoint review — T2 FIX: was express=False, now express=express
     present_checkpoint("discovery", outputs_dir, express=express, non_interactive=non_interactive)
 
-    # Phase 2: Finalize registers — reads interims directly (NOT original transcripts)
+    # Phase 2: Finalize registers — reads interims directly (NOT original transcripts).
+    # Composed from the same ## Modes -> pipeline contract, phase "finalize";
+    # the enumerated interim list travels as a VALUES-only param.
     interim_files = sorted(outputs_dir.glob("interim_transcript_*.md"))
-    interim_list = chr(10).join(f'- {f}' for f in interim_files)
+    interim_list = ", ".join(str(f) for f in interim_files)
 
-    prompt = f"""PHASE DIRECTIVE: Phase 2 of 2 — Finalize Registers
-Engagement directory: {engagement_dir}
-
-Read the consultant approval: {outputs_dir}/CHECKPOINT_discovery_APPROVED.md
-
-Then read ALL interim files for detailed evidence:
-{interim_list}
-
-De-duplicate findings across transcripts (same point from multiple stakeholders = higher confidence).
-Incorporate any consultant feedback from the approval file.
-
-Do NOT read the original transcript files — the interims contain all extracted data you need.
-
-Produce these REQUIRED final output files (keep each file concise, under 20KB):
-- {outputs_dir}/evidence_register.md — consolidated evidence with IDs, categories, findings, severity
-- {outputs_dir}/pain_points.md — de-duplicated pain points ranked by impact
-- {outputs_dir}/metrics.md — all quantitative data extracted
-- {outputs_dir}/stakeholder_intelligence.md — key stakeholder positions and alignment
-
-You MUST write all four files. Do NOT write journal entries or update other files.
-"""
     # T1 FIX: added max_turns=15
     result = await run_agent(
-        "discovery-transcript-interpreter", prompt,
+        "discovery-transcript-interpreter", None,
         cwd=engagement_dir,
         label="Discovery (finalize)",
         max_turns=15,
+        mode="pipeline",
+        params={
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "phase": "finalize",
+            "transcript_path": "(n/a — finalize phase)",
+            "transcript_index": "n/a",
+            "transcript_count": len(interim_files),
+            "interim_files": interim_list,
+        },
     )
     cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
