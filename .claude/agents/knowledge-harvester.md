@@ -207,6 +207,7 @@ outputs:
   - knowledge/learnings/pain_points/*_patterns.md
   - knowledge/learnings/EXTRACTION_REGISTRY.md
   - .harvest_summary.txt (engagement directory — parent of outputs_dir)
+  - ENGAGEMENT_JOURNAL.md (engagement directory — parent of outputs_dir; appended)
 checkpoint: none
 phases: single
 gates: []
