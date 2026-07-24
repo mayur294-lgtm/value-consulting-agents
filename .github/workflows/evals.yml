@@ -40,6 +40,13 @@ jobs:
         run: |
           pip install -r evals/requirements.txt
           if [ -n "$LANGFUSE_PUBLIC_KEY" ]; then pip install "langfuse>=2.0" "anthropic>=0.40"; fi
+      - name: Registry preflight
+        # Fail fast if any GATING golden can't resolve in CI (missing or
+        # gitignored) — a silently-skipped golden would make its gate a
+        # vacuous PASS. Bare-name engagement goldens are reported as
+        # non-fatal DEBT. Runs before the suite so a mis-wired registry is a
+        # precise error, not a green-that-verified-nothing.
+        run: python evals/check_registry.py
       - name: Run eval suite
         id: run
         run: |
