@@ -896,39 +896,31 @@ REQUIRED OUTPUT FILES:
 Do NOT write journal entries or update other files.
 """
 
-        bench_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
-{shared_context}
-
-Also read: knowledge/domains/{domain}/benchmarks.md
-
-OUTPUT DISCIPLINE:
-- Do NOT explore the filesystem beyond the listed input files.
-- If a file doesn't exist, skip it and proceed — do NOT retry.
-- Write ONLY the required output files listed below.
-
-STEP 1 — Analysis & Checkpoint:
-Curate domain and regional benchmarks relevant to this engagement.
-Rate confidence (High/Medium/Low) and provide sources.
-Write checkpoint to: {outputs_dir}/CHECKPOINT_benchmark.md (for audit trail)
-
-STEP 2 — Final Output (continue immediately, do NOT stop):
-Finalize benchmarks with source citations and confidence ratings.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/benchmarks_validated.md
-Do NOT write journal entries or update other files.
-"""
+        # benchmark-librarian is mode-extracted (skill-first contracts): its
+        # prompt is composed from .claude/agents/benchmark-librarian.md
+        # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+        bench_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+            "phase": "single",
+        }
 
         # Fire all 5 simultaneously — single-phase with agent-specific turn caps
         # V5: Per-agent timeout of 40 min to prevent hung agents blocking the pipeline
         BLOCK_A_TIMEOUT = 40 * 60  # 40 minutes
 
-        async def _timed_agent(name, prompt, label, max_turns):
-            """Wrap agent in timeout — returns result or raises TimeoutError."""
+        async def _timed_agent(name, prompt, label, max_turns, *, mode=None, params=None):
+            """Wrap agent in timeout — returns result or raises TimeoutError.
+
+            Pass prompt=... for legacy inline agents, or prompt=None with
+            mode=/params= for mode-extracted agents (composed contracts).
+            """
             try:
                 return await asyncio.wait_for(
                     run_agent(name, prompt, engagement_dir,
-                              label=label, max_turns=max_turns),
+                              label=label, max_turns=max_turns,
+                              mode=mode, params=params),
                     timeout=BLOCK_A_TIMEOUT,
                 )
             except asyncio.TimeoutError:
@@ -941,7 +933,8 @@ Do NOT write journal entries or update other files.
             _timed_agent("market-context-researcher", mc_prompt, "Market Context", 30),
             _timed_agent("capability-assessment", cap_prompt, "Capability", 25),
             _timed_agent("roi-hypothesis-builder", roi_hyp_prompt, "ROI Hypothesis", 20),
-            _timed_agent("benchmark-librarian", bench_prompt, "Benchmark", 25),
+            _timed_agent("benchmark-librarian", None, "Benchmark", 25,
+                         mode="pipeline", params=bench_params),
             return_exceptions=True,
         )
 
@@ -1071,16 +1064,13 @@ Write: {outputs_dir}/CHECKPOINT_roi_levers.md
 Write: {outputs_dir}/lever_candidates.md
 """
 
-        bench_prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
-{shared_context}
-
-Also read: knowledge/domains/{domain}/benchmarks.md
-
-Curate domain and regional benchmarks relevant to this engagement.
-Rate confidence (High/Medium/Low) and provide sources.
-
-Write: {outputs_dir}/CHECKPOINT_benchmark.md
-"""
+        # benchmark-librarian is mode-extracted: prompt composed from its own
+        # ## Modes contract (mode="pipeline", phase carried as a param).
+        bench_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+        }
 
         # Fire all 5 simultaneously (hypothesis builder replaces monolithic ROI)
         results = await asyncio.gather(
@@ -1088,7 +1078,8 @@ Write: {outputs_dir}/CHECKPOINT_benchmark.md
             run_agent("market-context-researcher", mc_prompt, engagement_dir, label="Market Context P1"),
             run_agent("capability-assessment", cap_prompt, engagement_dir, label="Capability P1"),
             run_agent("roi-hypothesis-builder", roi_hyp_prompt, engagement_dir, label="ROI Hypothesis", model="opus"),
-            run_agent("benchmark-librarian", bench_prompt, engagement_dir, label="Benchmark P1"),
+            run_agent("benchmark-librarian", cwd=engagement_dir, label="Benchmark P1",
+                      mode="pipeline", params={**bench_params, "phase": "1"}),
             return_exceptions=True,
         )
 
@@ -1170,24 +1161,13 @@ REQUIRED OUTPUT FILES (you MUST produce BOTH):
 - {outputs_dir}/roi_config.json
 """
 
-        bench2_prompt = f"""PHASE DIRECTIVE: Phase 2 of 2
-{shared_context}
-
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_benchmark_APPROVED.md
-Read draft checkpoint: {outputs_dir}/CHECKPOINT_benchmark.md
-
-Finalize benchmarks with source citations and confidence ratings.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/benchmarks_validated.md
-"""
-
         results = await asyncio.gather(
             run_agent("journey-builder", jb2_prompt, engagement_dir, label="Journey Builder P2"),
             run_agent("market-context-researcher", mc2_prompt, engagement_dir, label="Market Context P2"),
             run_agent("capability-assessment", cap2_prompt, engagement_dir, label="Capability P2"),
             run_agent("roi-financial-modeler", roi_model_prompt, engagement_dir, label="ROI Financial Model"),
-            run_agent("benchmark-librarian", bench2_prompt, engagement_dir, label="Benchmark P2"),
+            run_agent("benchmark-librarian", cwd=engagement_dir, label="Benchmark P2",
+                      mode="pipeline", params={**bench_params, "phase": "2"}),
             return_exceptions=True,
         )
 
