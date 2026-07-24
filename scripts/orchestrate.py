@@ -1093,55 +1093,32 @@ async def step_roadmap(
     start = time.time()
     cost = 0.0
 
+    # roadmap-prioritization is mode-extracted (skill-first contracts): its
+    # prompt is composed from .claude/agents/roadmap-prioritization.md
+    # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+    roadmap_params = {
+        "engagement_dir": engagement_dir,
+        "outputs_dir": outputs_dir,
+    }
+
     # S4 FIX: Single-pass in express OR non-interactive mode
     if express or non_interactive:
-        prompt = f"""Complete the full roadmap in a single pass.
-Engagement directory: {engagement_dir}
-
-Read:
-- {outputs_dir}/capability_assessment.md
-- {outputs_dir}/roi_report.md
-- {outputs_dir}/evidence_register.md
-
-Sequence initiatives by value, feasibility, and dependencies.
-Create initiative cards with decision gates.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/roadmap.md
-"""
-        result = await run_agent("roadmap-prioritization", prompt, engagement_dir,
-                                 label="Roadmap (single-pass)", max_turns=20)
+        result = await run_agent("roadmap-prioritization", cwd=engagement_dir,
+                                 label="Roadmap (single-pass)", max_turns=20,
+                                 mode="pipeline", params={**roadmap_params, "phase": "single"})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
     else:
         # Phase 1
-        prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
-Engagement directory: {engagement_dir}
-
-Read:
-- {outputs_dir}/capability_assessment.md
-- {outputs_dir}/roi_report.md
-
-Propose phasing and sequencing logic.
-
-Write: {outputs_dir}/CHECKPOINT_roadmap.md
-"""
-        result = await run_agent("roadmap-prioritization", prompt, engagement_dir, label="Roadmap P1")
+        result = await run_agent("roadmap-prioritization", cwd=engagement_dir, label="Roadmap P1",
+                                 mode="pipeline", params={**roadmap_params, "phase": "1"})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
         # T2 FIX: was express=False, now express=express
         present_checkpoint("roadmap", outputs_dir, express=express, non_interactive=non_interactive)
 
         # Phase 2
-        prompt = f"""PHASE DIRECTIVE: Phase 2 of 2
-Engagement directory: {engagement_dir}
-
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_roadmap_APPROVED.md
-Read draft: {outputs_dir}/CHECKPOINT_roadmap.md
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/roadmap.md
-"""
-        result = await run_agent("roadmap-prioritization", prompt, engagement_dir, label="Roadmap P2")
+        result = await run_agent("roadmap-prioritization", cwd=engagement_dir, label="Roadmap P2",
+                                 mode="pipeline", params={**roadmap_params, "phase": "2"})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
     assert_file_exists(outputs_dir / "roadmap.md", "Roadmap")
