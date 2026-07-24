@@ -2411,31 +2411,19 @@ async def step_harvest(engagement_dir: Path, outputs_dir: Path, engagement_id: s
 
     log("  🧠 Harvesting knowledge from engagement outputs...", C.CYAN)
 
-    harvest_prompt = f"""You are running an automatic knowledge harvest after a pipeline run.
-
-Engagement directory: {engagement_dir}
-Outputs directory: {outputs_dir}
-Engagement ID: {engagement_id}
-
-Your task:
-1. Read the key output files: evidence_register.md, roi_config.json, journey_maps.json, capability_assessment.md, roi_report.md (read only what exists)
-2. Read knowledge/learnings/EXTRACTION_REGISTRY.md to understand what's already been harvested
-3. Extract NEW learnings not already in the registry:
-   - Benchmarks → append to knowledge/domains/{{domain}}/benchmarks.md
-   - Journey patterns → write to knowledge/learnings/journey_maps/{{engagement_id}}.md
-   - ROI patterns → append to knowledge/learnings/roi_models/ (new file if novel lever type)
-   - Pain point patterns → append to knowledge/learnings/pain_points/{{domain}}_patterns.md
-4. Anonymise everything: replace client name with [Client-{{domain}}-{{region}}-{{year}}]
-5. Update knowledge/learnings/EXTRACTION_REGISTRY.md — add row to Auto-Harvest Log with today's date
-6. Write a 3-5 line plain-text harvest summary (what was added/updated) to {engagement_dir}/.harvest_summary.txt
-
-Follow knowledge/standards/benchmark_evolution.md append-only rules.
-Do NOT modify any existing benchmark values — only append new ones.
-"""
+    # knowledge-harvester is mode-extracted (skill-first contracts): its
+    # prompt is composed from .claude/agents/knowledge-harvester.md
+    # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+    harvest_params = {
+        "engagement_dir": engagement_dir,
+        "outputs_dir": outputs_dir,
+        "engagement_id": engagement_id,
+    }
 
     result = await run_agent(
-        "knowledge-harvester", harvest_prompt, engagement_dir,
+        "knowledge-harvester", cwd=engagement_dir,
         label="Harvest", max_turns=25,
+        mode="pipeline", params=harvest_params,
     )
 
     # Read summary written by agent
