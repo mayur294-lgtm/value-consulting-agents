@@ -65,8 +65,10 @@ def main():
     check("standalone degraded=ask-inline",
           modes.get("standalone", {}).get("contract", {}).get("degraded") == "ask-inline")
 
-    # No ## Modes section -> {} (legacy agent, e.g. any current .claude/agents file)
-    legacy = ROOT / ".claude" / "agents" / "benchmark-librarian.md"
+    # No ## Modes section -> {} (legacy agent). workshop-preparation is in
+    # test_agent.py's _MODE_CHECK_EXCLUDED_AGENTS — it will never be extracted,
+    # so it stays a valid legacy example as the 10 pipeline agents gain modes.
+    legacy = ROOT / ".claude" / "agents" / "workshop-preparation.md"
     if legacy.exists():
         check("legacy agent (no ## Modes) -> {}", orchestrate.parse_agent_modes(legacy) == {})
 
