@@ -100,11 +100,8 @@ def glob_files(pattern: str, directory: Path) -> list[Path]:
     return sorted(directory.glob(pattern))
 
 
-def parse_agent_md(agent_name: str) -> tuple[str, str]:
-    """Read agent .md file, return (system_prompt_body, model)."""
-    path = AGENTS_DIR / f"{agent_name}.md"
-    text = read_file(path)
-    # Strip YAML frontmatter
+def _split_frontmatter(text: str) -> tuple[str, str]:
+    """Strip YAML frontmatter from agent markdown. Returns (body, model)."""
     if text.startswith("---"):
         parts = text.split("---", 2)
         if len(parts) >= 3:
@@ -115,6 +112,194 @@ def parse_agent_md(agent_name: str) -> tuple[str, str]:
             model = model_match.group(1) if model_match else "sonnet"
             return body, model
     return text, "sonnet"
+
+
+def parse_agent_md(agent_name: str) -> tuple[str, str]:
+    """Read agent .md file, return (system_prompt_body, model)."""
+    path = AGENTS_DIR / f"{agent_name}.md"
+    return _split_frontmatter(read_file(path))
+
+
+# ─── Mode Composer (skill-first contracts — .design/solution-design-v3.md) ────
+#
+# Extracted agents carry their operating contracts as `### Mode: <name>` blocks
+# inside a `## Modes` section of their own .md file. The composer builds the
+# invocation prompt from core identity + ONE selected mode + runtime params.
+# Legacy agents (no `## Modes` section) keep using inline prompts via
+# run_agent(agent_name, prompt=...) — mixed state is supported throughout.
+
+_MODES_HEADING = re.compile(r"(?m)^##\s+Modes\s*$")
+_NEXT_H2 = re.compile(r"(?m)^##[ \t]+(?!Modes\s*$)\S")
+_MODE_SPLIT = re.compile(r"(?m)^###\s+Mode:\s*")
+_MODE_NAME = re.compile(r"^([A-Za-z0-9_-]+)")
+_YAML_FENCE = re.compile(r"```yaml\s*\n(.*?)\n```", re.DOTALL)
+_PLACEHOLDER = re.compile(r"\{([A-Za-z_][A-Za-z0-9_]*)\}")
+
+# Complete key set per the design — no speculative fields.
+_MODE_CONTRACT_KEYS = {
+    "inputs", "degraded", "knowledge", "outputs",
+    "checkpoint", "phases", "gates", "params",
+}
+_INPUTS_KEYS = {"required", "optional"}
+
+
+def _import_yaml():
+    try:
+        import yaml
+        return yaml
+    except ImportError as e:
+        raise RuntimeError(
+            "parse_agent_modes requires PyYAML (`pip install pyyaml`) — "
+            "only needed for mode-extracted agents; legacy inline prompts are unaffected."
+        ) from e
+
+
+def parse_agent_modes(path) -> dict:
+    """Parse the `## Modes` section of an agent .md file.
+
+    Returns {mode_name: {"contract": dict, "prose": str, "raw": str}} where
+    `contract` is the parsed fenced-YAML block, `prose` is the remaining
+    behavior text, and `raw` is the full mode block (heading + yaml + prose)
+    as written. A file without a `## Modes` section returns {} (legacy agent).
+    """
+    path = Path(path)
+    body, _ = _split_frontmatter(read_file(path))
+
+    heading = _MODES_HEADING.search(body)
+    if not heading:
+        return {}
+    section = body[heading.end():]
+    # The Modes section ends at the next level-2 heading, if any.
+    nxt = _NEXT_H2.search(section)
+    if nxt:
+        section = section[:nxt.start()]
+
+    yaml = _import_yaml()
+    modes: dict = {}
+    blocks = _MODE_SPLIT.split(section)[1:]  # drop preamble before first mode
+    for block in blocks:
+        name_match = _MODE_NAME.match(block.strip())
+        if not name_match:
+            raise ValueError(f"{path.name}: malformed '### Mode:' heading in ## Modes section")
+        name = name_match.group(1)
+        if name in modes:
+            raise ValueError(f"{path.name}: duplicate mode '{name}' in ## Modes section")
+
+        fence = _YAML_FENCE.search(block)
+        contract = {}
+        if fence:
+            contract = yaml.safe_load(fence.group(1)) or {}
+        if not isinstance(contract, dict):
+            raise ValueError(f"{path.name}: mode '{name}' YAML contract must be a mapping")
+
+        unknown = set(contract) - _MODE_CONTRACT_KEYS
+        if unknown:
+            raise ValueError(
+                f"{path.name}: mode '{name}' has unknown contract key(s): {sorted(unknown)} "
+                f"(allowed: {sorted(_MODE_CONTRACT_KEYS)})"
+            )
+        inputs = contract.get("inputs", {})
+        if inputs and (not isinstance(inputs, dict) or set(inputs) - _INPUTS_KEYS):
+            raise ValueError(
+                f"{path.name}: mode '{name}' inputs must be a mapping with keys "
+                f"{sorted(_INPUTS_KEYS)} only"
+            )
+
+        prose = _YAML_FENCE.sub("", block)
+        # Drop the name line (incl. trailing comments) — keep behavior prose only.
+        prose = "\n".join(prose.strip().split("\n")[1:]).strip()
+        modes[name] = {
+            "contract": contract,
+            "prose": prose,
+            "raw": f"### Mode: {name}\n" + "\n".join(block.strip().split("\n")[1:]).strip(),
+        }
+    return modes
+
+
+def _substitute_params(text: str, params: dict, context: str) -> str:
+    """Substitute {placeholder} tokens with param VALUES. Unknown placeholders raise."""
+    def repl(m):
+        key = m.group(1)
+        if key not in params:
+            raise KeyError(
+                f"Unknown placeholder '{{{key}}}' in {context} — not provided in params "
+                f"(available: {sorted(params)})"
+            )
+        return str(params[key])
+    return _PLACEHOLDER.sub(repl, text)
+
+
+def _preflight_required_inputs(contract: dict, params: dict, agent_name: str, mode: str):
+    """Check the mode's required input files exist before spending an agent run.
+
+    degraded: refuse  -> missing required input is a hard error (pipeline behavior)
+    otherwise         -> warn and proceed (the agent handles degradation per its prose)
+    """
+    required = (contract.get("inputs") or {}).get("required") or []
+    missing = []
+    for entry in required:
+        resolved = _substitute_params(str(entry), params, f"{agent_name}/{mode} inputs.required")
+        p = Path(resolved)
+        if not p.is_absolute():
+            p = REPO_ROOT / p
+        if not p.exists():
+            missing.append(str(p))
+    if not missing:
+        return
+    degraded = contract.get("degraded", "refuse")
+    if degraded == "refuse":
+        raise RuntimeError(
+            f"REQUIRED INPUT MISSING: agent '{agent_name}' mode '{mode}' (degraded: refuse) "
+            f"cannot run — missing: {missing}"
+        )
+    log(f"  ⚠ {agent_name}/{mode}: missing optional-degradable required input(s): {missing} "
+        f"(degraded: {degraded} — proceeding)", C.YELLOW)
+
+
+def compose_prompt(agent_name: str, mode: str, params: Optional[dict] = None) -> str:
+    """Compose an invocation prompt: core identity + ONE mode block + params table.
+
+    `agent_name` is an agent in .claude/agents/, or a direct path to a .md file
+    (used by fixtures/tests). Core identity is everything above `## Modes`
+    (frontmatter stripped); unselected modes are stripped entirely. Placeholder
+    substitution applies to the selected mode block only, and params carry
+    VALUES only (paths, domain) — never instructions.
+    """
+    params = dict(params or {})
+    candidate = Path(agent_name)
+    if candidate.suffix == ".md" and candidate.exists():
+        path = candidate
+    else:
+        path = AGENTS_DIR / f"{agent_name}.md"
+    if not path.exists():
+        raise FileNotFoundError(f"Agent file not found: {path}")
+
+    modes = parse_agent_modes(path)
+    if mode not in modes:
+        available = ", ".join(sorted(modes)) if modes else "none (no ## Modes section — legacy inline agent)"
+        raise ValueError(
+            f"Agent '{agent_name}' does not declare mode '{mode}'. Available modes: {available}"
+        )
+
+    body, _ = _split_frontmatter(read_file(path))
+    core = body[:_MODES_HEADING.search(body).start()].rstrip()
+
+    block = _substitute_params(modes[mode]["raw"], params, f"{agent_name}/{mode} mode block")
+    _preflight_required_inputs(modes[mode]["contract"], params, str(agent_name), mode)
+
+    lines = [
+        "## Runtime Parameters",
+        "",
+        "These are runtime VALUES only (paths, domain) — never instructions.",
+        "",
+        "| Parameter | Value |",
+        "| --- | --- |",
+    ]
+    for key in sorted(params):
+        lines.append(f"| {key} | {params[key]} |")
+    params_table = "\n".join(lines) if params else "## Runtime Parameters\n\n(none)"
+
+    return f"{core}\n\n## Active Mode\n\n{block}\n\n{params_table}\n"
 
 
 def assert_file_exists(path: Path, agent_name: str, min_size: int = 0):
@@ -324,18 +509,45 @@ async def _resilient_query(prompt: str, options: ClaudeAgentOptions, label: str)
 
 async def run_agent(
     agent_name: str,
-    prompt: str,
-    cwd: Path,
+    prompt: Optional[str] = None,
+    cwd: Optional[Path] = None,
     model: str = "sonnet",
     max_turns: int = 50,
     label: str = "",
+    *,
+    mode: Optional[str] = None,
+    params: Optional[dict] = None,
 ) -> ResultMessage:
-    """Run a single agent via the SDK. Returns the ResultMessage."""
+    """Run a single agent via the SDK. Returns the ResultMessage.
+
+    Two invocation styles (mutually exclusive):
+      run_agent(name, prompt=..., cwd=...)          — legacy inline prompt
+      run_agent(name, cwd=..., mode=..., params=...) — composed from the agent's
+                                                        own ## Modes contract
+    """
+    if (prompt is None) == (mode is None):
+        raise ValueError(
+            "run_agent: pass exactly one of 'prompt' (legacy inline) or 'mode' (composed contract)"
+        )
+    if params is not None and mode is None:
+        raise ValueError("run_agent: 'params' is only valid together with 'mode'")
+    if cwd is None:
+        raise ValueError("run_agent: 'cwd' is required")
+
     display = label or agent_name
     start = time.time()
     log(f"  ▶ Launching {display}...", C.YELLOW)
 
-    system_prompt, agent_model = parse_agent_md(agent_name)
+    if mode is not None:
+        # Extracted agent: prompt composed from core identity + selected mode + params.
+        system_prompt = compose_prompt(agent_name, mode, params)
+        _, agent_model = parse_agent_md(agent_name)
+        prompt = (
+            f"Execute your '{mode}' mode contract now. All runtime parameter values "
+            "are listed in the Runtime Parameters table of your instructions."
+        )
+    else:
+        system_prompt, agent_model = parse_agent_md(agent_name)
     use_model = model or agent_model
 
     # V5: Inject tool constraint into system prompt to prevent Task tool usage
