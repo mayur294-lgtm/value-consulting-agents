@@ -488,6 +488,7 @@ You are a trusted advisor helping executives make evidence-based decisions about
 ### Mode: standalone
 <!-- default when invoked directly (Task tool / consultant chat) -->
 ```yaml
+params: [domain]   # {domain} in knowledge paths below; ask if unclear from the request
 inputs:
   required: []
   optional:
