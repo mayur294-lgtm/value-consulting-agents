@@ -76,8 +76,23 @@ components:
     # fix was built on). Re-pointed from a never-created `nfis` golden — see PRD v1.
     input: evals/goldens/roi_config_provenance.json
     code: [three_scenarios, npv_payback_present, assumptions_register_present, sensitivity_analysis_present,
-           basic_information_has_sources_list, basic_fields_have_source_and_confidence, operating_costs_emitted_as_formula]
+           basic_information_has_sources_list, basic_fields_have_source_and_confidence, operating_costs_emitted_as_formula,
+           backbase_impact_within_cap, overcap_negative_gate_witness]
     judge: [conservative_bias, topdown_bottomup_correlation]
+    # #104 parity case (standalone /build-roi + /generate-roi-excel now run the
+    # same artifact_boundary.py cap_roi_config gate the pipeline runs, #102):
+    #   - goldens: roi_config_provenance.json above (the wired `input:`) is
+    #     already capped — `backbase_impact_within_cap` must PASS on it.
+    #   - negatives: evals/goldens/roi_config_overcap.json — a >0.60 backbase_impact
+    #     (driver-level + scenario-level) with scenario numbers that push the
+    #     curve-adjusted 5-yr ROI (279%) outside the Retail Banking benchmark
+    #     (100-150%). Like roi-excel-generator's `sources_sheet_absent_when_unset`
+    #     below, `components:` altitude only wires ONE `input:` per component (no
+    #     goldens:/negatives: list the way `deliverables:` gets — see run_experiment.py),
+    #     so `overcap_negative_gate_witness` loads this fixture directly: proves it
+    #     FAILS `backbase_impact_within_cap` pre-gate, then gates a /tmp COPY of it
+    #     (scripts/artifact_boundary.py cap_roi_config — never mutates the committed
+    #     fixture) and proves the capped copy PASSES the same invariant.
 
   # roi-excel-generator (#85) — verifies the GENERATOR actually renders the
   # provenance contract the roi-financial-modeler agent emits (#83 generator,

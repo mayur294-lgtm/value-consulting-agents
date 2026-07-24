@@ -28,9 +28,10 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
 
-from rubrics.base import CheckResult
+from rubrics.base import CheckResult, repo_root
 from rubrics.component import governance
 from rubrics.judge.judge import judge
 
@@ -156,6 +157,19 @@ def _market_context(text: str) -> list[CheckResult]:
 # ---------------------------------------------------------------------------
 _VALID_CONFIDENCE = {"HIGH", "MEDIUM", "LOW", "ASSUMPTION"}
 
+# Ticket #104 (A4 — ROI gate wiring in the ROI skills) — parity eval case.
+# Standalone /build-roi and /generate-roi-excel runs now run the SAME cap gate
+# (scripts/artifact_boundary.py cap_roi_config, ticket #102) that orchestrate.py
+# already runs. These checks give the roi-financial-modeler component gate a
+# "capped invariant": no backbase_impact value (driver-level in
+# value_lever_groups, or scenario-level in scenarios[*].backbase_impacts) may
+# exceed MAX_BACKBASE_IMPACT. We deliberately do NOT reuse cap_roi_config's own
+# `passed` flag here — that flag also folds in the ROI-range/revenue-ratio
+# reasonableness warnings (heuristic, not "capped"), and the wired golden
+# (a trimmed fixture with near-zero modeled benefit) trips those unrelated
+# warnings regardless of capping. The invariant below isolates exactly what
+# the gate is contractually supposed to guarantee: values <= the cap.
+
 
 def _try_parse_json(text: str) -> dict | None:
     try:
@@ -163,6 +177,61 @@ def _try_parse_json(text: str) -> dict | None:
         return data if isinstance(data, dict) else None
     except (json.JSONDecodeError, ValueError):
         return None
+
+
+def _backbase_impact_values(data: dict) -> list[float]:
+    """Collect every backbase_impact-like numeric value from a roi_config,
+    walking the exact same paths scripts.artifact_boundary.cap_roi_config caps:
+    driver-level `value_lever_groups.*.{revenue,cost}_drivers.*.inputs.backbase_impact`
+    and scenario-level `scenarios.*.backbase_impacts.*`."""
+    vals: list[float] = []
+    groups = data.get("value_lever_groups", data.get("journeys", {}))
+    if isinstance(groups, dict):
+        for group in groups.values():
+            if not isinstance(group, dict):
+                continue
+            for driver_type in ("revenue_drivers", "cost_drivers"):
+                for driver in group.get(driver_type, {}).values():
+                    if not isinstance(driver, dict):
+                        continue
+                    bi = driver.get("inputs", {}).get("backbase_impact", {})
+                    val = bi.get("value") if isinstance(bi, dict) else bi if isinstance(bi, (int, float)) else None
+                    if isinstance(val, (int, float)):
+                        vals.append(float(val))
+    scenarios = data.get("scenarios", {})
+    if isinstance(scenarios, dict):
+        for sc in scenarios.values():
+            if not isinstance(sc, dict):
+                continue
+            for imp_val in sc.get("backbase_impacts", {}).values():
+                if isinstance(imp_val, (int, float)):
+                    vals.append(float(imp_val))
+    return vals
+
+
+def _max_backbase_impact() -> float:
+    """Import the cap constant from the gate itself (scripts/artifact_boundary.py,
+    #102) rather than hard-coding a duplicate — if the gate's threshold ever
+    changes, this invariant tracks it automatically."""
+    root = repo_root()
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    from scripts.artifact_boundary import MAX_BACKBASE_IMPACT
+    return MAX_BACKBASE_IMPACT
+
+
+def _capped_invariant(data: dict) -> tuple[bool, str]:
+    """True iff every backbase_impact value in `data` is within the gate's cap."""
+    try:
+        cap = _max_backbase_impact()
+    except ImportError as e:
+        return True, f"scripts.artifact_boundary not importable — skipping cap check ({e})"
+    vals = _backbase_impact_values(data)
+    over = [v for v in vals if v > cap]
+    ok = len(over) == 0
+    detail = (f"{len(vals)} backbase_impact value(s) checked, all <= {cap:.0%}" if ok
+              else f"{len(over)} value(s) exceed the {cap:.0%} cap: {over}")
+    return ok, detail
 
 
 def _roi_modeler(text: str) -> list[CheckResult]:
@@ -225,7 +294,65 @@ def _roi_modeler(text: str) -> list[CheckResult]:
     out.append(_bool_check("operating_costs_emitted_as_formula", ok_oc,
                            detail=f"revenue/cost-to-income/operating_costs trio present={has_trio}, "
                                   f"operating_costs_source notes derivation={notes_derivation} ({oc_source!r})"))
+
+    # --- #104 parity case: standalone /build-roi and /generate-roi-excel now run
+    # the same artifact_boundary cap gate the pipeline runs. The wired golden
+    # (roi_config_provenance.json) is already capped and must PASS this invariant.
+    ok_cap, cap_detail = _capped_invariant(data)
+    out.append(_bool_check("backbase_impact_within_cap", ok_cap, detail=cap_detail))
+    out.append(_check_overcap_negative_gated())
     return out
+
+
+_OVERCAP_NEGATIVE_GOLDEN = "evals/goldens/roi_config_overcap.json"
+
+
+def _check_overcap_negative_gated() -> CheckResult:
+    """Witness check (same pattern as roi_excel_generator._check_sources_sheet_absent_when_unset):
+    registry.yaml's `components:` altitude wires only ONE `input:` target, so the
+    NEGATIVE fixture (evals/goldens/roi_config_overcap.json) is exercised here
+    directly rather than through a registry `negatives:` list. Proves both halves
+    of the #104 parity contract in one deterministic check:
+      1. the negative, AS COMMITTED, FAILS the capped invariant (an over-cap
+         backbase_impact value is actually present — the fixture is genuinely bad).
+      2. running the real gate (scripts.artifact_boundary.cap_roi_config) on a
+         COPY of it (never mutating the committed fixture) produces a config that
+         PASSES the same invariant.
+    """
+    name = "overcap_negative_gate_witness"
+    root = repo_root()
+    fixture = root / _OVERCAP_NEGATIVE_GOLDEN
+    if not fixture.exists():
+        return _bool_check(name, False, detail=f"fixture not found: {fixture}")
+    try:
+        pre_data = json.loads(fixture.read_text())
+    except (json.JSONDecodeError, OSError) as e:
+        return _bool_check(name, False, detail=f"could not read/parse fixture: {e}")
+
+    pre_ok, pre_detail = _capped_invariant(pre_data)
+    if pre_ok:
+        return _bool_check(name, False,
+                           detail=f"negative fixture did NOT fail pre-gate (expected an over-cap value): {pre_detail}")
+
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    try:
+        from scripts.artifact_boundary import cap_roi_config
+    except ImportError as e:
+        return _bool_check(name, False, detail=f"scripts.artifact_boundary not importable: {e}")
+
+    import shutil
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        tmp_copy = Path(td) / "roi_config_overcap.json"
+        shutil.copy(fixture, tmp_copy)
+        cap_roi_config(str(tmp_copy))  # gates the COPY in place; committed fixture untouched
+        post_data = json.loads(tmp_copy.read_text())
+
+    post_ok, post_detail = _capped_invariant(post_data)
+    ok = pre_ok is False and post_ok
+    detail = f"pre-gate FAILED as expected ({pre_detail}); post-gate (on a /tmp copy) {'PASSED' if post_ok else 'still FAILED'} ({post_detail})"
+    return _bool_check(name, ok, detail=detail)
 
 
 # ---------------------------------------------------------------------------

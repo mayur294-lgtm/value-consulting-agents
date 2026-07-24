@@ -76,11 +76,21 @@ When this skill is invoked:
    - Define three scenarios with different impact assumptions
    - Document all assumptions with sources
 
-3. **Generate the Model:**
+3. **Run the Reasonableness Gate (MANDATORY — before generating):**
+   - An uncapped `roi_config.json` must never reach Excel, regardless of whether it came from `/build-roi`, the full pipeline, or a config assembled by hand for this skill.
+   - Run via Bash, on whatever JSON config file backs this run (write the config to disk first if it was only assembled in-memory):
+     ```
+     python3 scripts/artifact_boundary.py cap <path-to-roi_config.json>
+     ```
+   - The gate is idempotent — if `/build-roi` (or the pipeline) already ran it, this is a no-op; running it twice never double-caps.
+   - Report a one-line gate summary to the consultant before generating, e.g. *"Gate: backbase_impact capped 0.72 → 0.60 on L3_retention"* or *"Gate: no changes — within bounds."* If the gate reports any other warnings (e.g. curve-adjusted ROI outside the segment benchmark range), surface those too.
+   - Re-read the (possibly now-capped) config from disk before proceeding to step 4 — generate from the gated file, not from a pre-gate in-memory copy.
+
+4. **Generate the Model:**
    - Use the ROIModelGenerator class from tools/roi_excel_generator.py
    - Save to the outputs folder with client name in filename
 
-4. **Validate Output:**
+5. **Validate Output:**
    - Open the Excel file and verify formulas work
    - Check that scenarios produce different results
    - Ensure all assumptions are documented
