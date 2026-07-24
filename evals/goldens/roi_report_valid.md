@@ -14,9 +14,12 @@ evidence (E01–E05) shows onboarding completion trailing peers and a
 contact-centre cost base concentrated in low-complexity servicing. This case
 models three scenarios — **conservative**, **moderate**, and **aspirational**
 — against a top-down baseline drawn from Meridian's most recent annual report
-and validated bottom-up against operational data. Headline result (moderate
-case): **NPV** of $4.1M over five years, **ROI** of 118%, **payback** in 2.0
-years.
+and validated bottom-up against operational data. The recommendation is
+anchored on the **CONSERVATIVE case**: **NPV** of $1.6M over five years,
+**ROI** of 61%, **payback** in 3.2 years — the investment clears Meridian's
+9% hurdle rate on conservative assumptions alone. The realistic planning
+range is conservative-to-moderate ($1.6M–$4.1M NPV); the moderate case is
+upside, not the basis of the recommendation.
 
 ## 2. Evidence Base
 
@@ -52,20 +55,21 @@ engagement type.
 | Moderate | 45% of the peer-benchmark gap closed; base case adoption curve | $11.2M |
 | Aspirational | 65% of the peer-benchmark gap closed; accelerated digital adoption | $15.9M |
 
-## 6. Headline Financials (Moderate Case)
+## 6. Headline Financials (CONSERVATIVE Case — recommendation anchor)
 
 | Metric | Value |
 |---|---|
-| Total 5-yr benefits | $11.2M |
+| Total 5-yr benefits | $6.8M |
 | Implementation + run cost | $3.4M |
-| Net present value (NPV) | $4.1M |
-| ROI | 118% |
-| Payback period | 2.0 years |
+| Net present value (NPV) | $1.6M |
+| ROI | 61% |
+| Payback period | 3.2 years |
 
-Conservative case NPV: $1.6M, ROI 61%, payback 3.2 years. Aspirational case
-NPV: $7.9M, ROI 176%, payback 1.4 years. All figures are pre-tax and
-undiscounted for cost, discounted at Meridian's stated 9% hurdle rate for
-benefit streams.
+The go/no-go recommendation rests on these conservative figures. Upside
+cases for planning context: moderate NPV $4.1M (ROI 118%, payback 2.0
+years); aspirational NPV $7.9M (ROI 176%, payback 1.4 years). All figures
+are pre-tax and undiscounted for cost, discounted at Meridian's stated 9%
+hurdle rate for benefit streams.
 
 ## 7. Assumptions Register
 
