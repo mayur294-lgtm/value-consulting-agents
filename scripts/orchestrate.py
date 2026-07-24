@@ -1071,10 +1071,15 @@ async def step_assembly(
     """
     start = time.time()
     cost = 0.0
-    inputs_dir = engagement_dir / "inputs"
 
-    all_outputs = "\n".join(
-        f"- {outputs_dir}/{f}"
+    # narrative-assembler is mode-extracted (skill-first contracts): every
+    # assembler prompt here is composed from .claude/agents/narrative-assembler.md
+    # (## Modes -> pipeline-report | pipeline-shard) via compose_prompt — no
+    # inline f-strings. File lists stay Python-built (existence-filtered) and
+    # travel as VALUES-only params; shard identity + act assignment are carried
+    # by the shard_id param against the mode's shard table.
+    upstream_files = ", ".join(
+        str(outputs_dir / f)
         for f in [
             "evidence_register.md", "pain_points.md", "metrics.md",
             "stakeholder_intelligence.md", "capability_assessment.md",
@@ -1084,6 +1089,10 @@ async def step_assembly(
         ]
         if (outputs_dir / f).exists()
     )
+    report_params = {
+        "engagement_dir": engagement_dir,
+        "outputs_dir": outputs_dir,
+    }
 
     # Resume guard: if both assembly outputs exist, skip entirely
     if file_exists(outputs_dir / "assessment_report.md") and file_exists(outputs_dir / "executive_summary.md"):
@@ -1094,142 +1103,49 @@ async def step_assembly(
         # ── S3: PARALLEL ASSEMBLY SHARDING (non-interactive) ─────────────
 
         # Phase 1: Quick structure plan (V5: capped to concise briefing)
-        p1_prompt = f"""PHASE DIRECTIVE: Phase 1 — Assembly Plan (CONCISE structure plan only)
-Engagement directory: {engagement_dir}
-
-Read ALL upstream outputs:
-{all_outputs}
-
-Also read: {inputs_dir}/engagement_intake.md
-
-OUTPUT CONSTRAINT: Write a CONCISE 2-3 page briefing (max 3,000 words).
-Do NOT reproduce upstream content. Do NOT write full analysis.
-This is a consistency anchor for the parallel shard writers.
-
-Required sections (brief bullets only):
-1. Transformation Arc — the EXACT phrase all shard writers will use (1 sentence)
-2. Personas — names, segments, key attributes (bulleted list, ~5 lines)
-3. Key Numbers — 5-year value, investment, payback (exact figures, ~5 lines)
-4. Per-Act Blueprint — 2-3 sentences per act describing scope
-5. Lighthouse Initiative — name and scope for Act 3 (3-4 lines)
-6. Narrative Bridges — one-liner per transition (Act N → Act N+1)
-
-Write: {outputs_dir}/CHECKPOINT_assembly_CP1.md
-Do NOT write journal entries or update other files.
-"""
-        result = await run_agent("narrative-assembler", p1_prompt, engagement_dir,
-                                 label="Assembly P1 (plan)", max_turns=5)
+        result = await run_agent("narrative-assembler", cwd=engagement_dir,
+                                 label="Assembly P1 (plan)", max_turns=5,
+                                 mode="pipeline-report",
+                                 params={**report_params, "phase": "plan",
+                                         "upstream_files": upstream_files})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
         present_checkpoint("assembly_CP1", outputs_dir, express=express, non_interactive=non_interactive)
 
-        # Phase 2: V5 3-way parallel shard writing (balanced workload)
-        # Shard A: Acts 1-2 (Strategic Narrative)
-        shard_a_files = "\n".join(
-            f"- {outputs_dir}/{f}"
-            for f in [
-                "evidence_register.md", "pain_points.md", "metrics.md",
-                "stakeholder_intelligence.md", "market_context_validated.md",
-            ]
-            if (outputs_dir / f).exists()
-        )
-
-        # Shard B: Acts 3-5 (Lighthouse + Journey + Capability)
-        shard_b_files = "\n".join(
-            f"- {outputs_dir}/{f}"
-            for f in [
-                "evidence_register.md", "pain_points.md",
-                "capability_assessment.md", "journey_maps_summary.md",
-                "market_context_validated.md", "benchmarks_validated.md",
-            ]
-            if (outputs_dir / f).exists()
-        )
-
-        # Shard C: Acts 6-7 + Appendix (Roadmap + ROI)
-        shard_c_files = "\n".join(
-            f"- {outputs_dir}/{f}"
-            for f in [
-                "roadmap.md", "roi_report.md", "roi_config.json",
-                "capability_assessment.md", "benchmarks_validated.md",
-                "evidence_register.md",
-            ]
-            if (outputs_dir / f).exists()
-        )
-
-        prompt_a = f"""PHASE DIRECTIVE: Phase 2A — Strategic Narrative (Acts 1, 2)
-Engagement directory: {engagement_dir}
-
-Read the approved assembly plan: {outputs_dir}/CHECKPOINT_assembly_CP1_APPROVED.md
-Read the draft plan: {outputs_dir}/CHECKPOINT_assembly_CP1.md
-
-Read upstream files:
-{shard_a_files}
-Also read: {inputs_dir}/engagement_intake.md
-
-Write Acts 1-2 of the assessment report with FULL detail:
-- Act 1: Strategic Alignment — Why transformation is needed
-- Act 2: The Vision — What the transformation looks like
-
-Use the EXACT transformation arc phrase, persona names, and key numbers from the CP1 plan.
-End Act 2 with a narrative bridge paragraph that transitions to Act 3.
-
-Write: {outputs_dir}/assembly_shard_A.md
-Do NOT write journal entries or update other files.
-"""
-
-        prompt_b = f"""PHASE DIRECTIVE: Phase 2B — Lighthouse + Assessment (Acts 3, 4, 5)
-Engagement directory: {engagement_dir}
-
-Read the approved assembly plan: {outputs_dir}/CHECKPOINT_assembly_CP1_APPROVED.md
-Read the draft plan: {outputs_dir}/CHECKPOINT_assembly_CP1.md
-
-Read upstream files:
-{shard_b_files}
-Also read: {inputs_dir}/engagement_intake.md
-
-Write Acts 3-5 of the assessment report with FULL detail:
-- Act 3: The Lighthouse — How we prove the transformation (quick-win initiative)
-- Act 4: Deep-Dive Assessment — Where the current system breaks (lifecycle gaps)
-- Act 5: Capability Assessment — What capabilities the transformation requires
-
-Use the EXACT transformation arc phrase, persona names, and key numbers from the CP1 plan.
-Include narrative bridges between acts.
-End Act 5 with a narrative bridge paragraph that transitions to Act 6.
-
-Write: {outputs_dir}/assembly_shard_B.md
-Do NOT write journal entries or update other files.
-"""
-
-        prompt_c = f"""PHASE DIRECTIVE: Phase 2C — Roadmap + Benefits (Acts 6, 7) + Appendix
-Engagement directory: {engagement_dir}
-
-Read the approved assembly plan: {outputs_dir}/CHECKPOINT_assembly_CP1_APPROVED.md
-Read the draft plan: {outputs_dir}/CHECKPOINT_assembly_CP1.md
-
-Read upstream files:
-{shard_c_files}
-Also read: {inputs_dir}/engagement_intake.md
-
-Write Acts 6-7 of the assessment report with FULL detail:
-- Act 6: Delivery Roadmap — How we build the transformation (phases)
-- Act 7: Benefits Case — Why the transformation pays for itself
-
-Also write the Appendix section (methodology, data sources, evidence index).
-
-Use the EXACT transformation arc phrase, persona names, and key numbers from the CP1 plan.
-Include narrative bridges between acts.
-
-Write: {outputs_dir}/assembly_shard_C.md
-Do NOT write journal entries or update other files.
-"""
+        # Phase 2: V5 3-way parallel shard writing (balanced workload).
+        # Shard sources (existence-filtered here; the mode's shard table
+        # assigns the acts): A = Acts 1-2 (Strategic Narrative),
+        # B = Acts 3-5 (Lighthouse + Journey + Capability),
+        # C = Acts 6-7 + Appendix (Roadmap + ROI).
+        shard_source_names = {
+            "A": ["evidence_register.md", "pain_points.md", "metrics.md",
+                  "stakeholder_intelligence.md", "market_context_validated.md"],
+            "B": ["evidence_register.md", "pain_points.md",
+                  "capability_assessment.md", "journey_maps_summary.md",
+                  "market_context_validated.md", "benchmarks_validated.md"],
+            "C": ["roadmap.md", "roi_report.md", "roi_config.json",
+                  "capability_assessment.md", "benchmarks_validated.md",
+                  "evidence_register.md"],
+        }
+        shard_labels = {
+            "A": "Assembly P2A (Acts 1-2)",
+            "B": "Assembly P2B (Acts 3-5)",
+            "C": "Assembly P2C (Acts 6-7)",
+        }
 
         results = await asyncio.gather(
-            run_agent("narrative-assembler", prompt_a, engagement_dir,
-                      label="Assembly P2A (Acts 1-2)", max_turns=25),
-            run_agent("narrative-assembler", prompt_b, engagement_dir,
-                      label="Assembly P2B (Acts 3-5)", max_turns=25),
-            run_agent("narrative-assembler", prompt_c, engagement_dir,
-                      label="Assembly P2C (Acts 6-7)", max_turns=25),
+            *[
+                run_agent("narrative-assembler", cwd=engagement_dir,
+                          label=shard_labels[sid], max_turns=25,
+                          mode="pipeline-shard",
+                          params={"engagement_dir": engagement_dir,
+                                  "outputs_dir": outputs_dir,
+                                  "shard_id": sid,
+                                  "source_files": ", ".join(
+                                      str(outputs_dir / f) for f in names
+                                      if (outputs_dir / f).exists())})
+                for sid, names in shard_source_names.items()
+            ],
             return_exceptions=True,
         )
 
@@ -1255,76 +1171,40 @@ Do NOT write journal entries or update other files.
             missing = [p.name for p in shard_paths if not p.exists()]
             log(f"  ✗ Cannot merge — missing shards: {', '.join(missing)}", C.RED)
 
-        # Executive summary (quick agent pass)
-        exec_prompt = f"""Write a concise executive summary for the assessment report.
-
-Read: {outputs_dir}/assessment_report.md
-Also read: {outputs_dir}/CHECKPOINT_assembly_CP1.md (for key numbers and arc)
-
-Synthesize:
-- The transformation arc
-- Key findings (3-5 bullets)
-- Strategic recommendation
-- Financial headline (investment, payback, 5-year value)
-
-Write: {outputs_dir}/executive_summary.md (2-3 pages max)
-Do NOT write journal entries or update other files.
-"""
-        result = await run_agent("narrative-assembler", exec_prompt, engagement_dir,
-                                 label="Executive Summary", max_turns=15)
+        # Executive summary (quick agent pass — pipeline-report phase exec-summary)
+        result = await run_agent("narrative-assembler", cwd=engagement_dir,
+                                 label="Executive Summary", max_turns=15,
+                                 mode="pipeline-report",
+                                 params={**report_params, "phase": "exec-summary",
+                                         "upstream_files": "(n/a — exec-summary reads the merged report)"})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
     else:
         # ── INTERACTIVE: Keep existing 3-phase flow with CP2 review ──────
 
         # Phase 1: Assembly plan
-        prompt = f"""PHASE DIRECTIVE: Phase 1 of 3
-Engagement directory: {engagement_dir}
-
-Read ALL upstream outputs:
-{all_outputs}
-
-Also read: {inputs_dir}/engagement_intake.md
-
-Build the 7-act narrative structure and assembly plan.
-
-Write: {outputs_dir}/CHECKPOINT_assembly_CP1.md
-"""
-        result = await run_agent("narrative-assembler", prompt, engagement_dir, label="Assembly P1")
+        result = await run_agent("narrative-assembler", cwd=engagement_dir, label="Assembly P1",
+                                 mode="pipeline-report",
+                                 params={**report_params, "phase": "1",
+                                         "upstream_files": upstream_files})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
         present_checkpoint("assembly_CP1", outputs_dir, express=express, non_interactive=non_interactive)
 
         # Phase 2: Draft report
-        prompt = f"""PHASE DIRECTIVE: Phase 2 of 3
-Engagement directory: {engagement_dir}
-
-Read approved plan: {outputs_dir}/CHECKPOINT_assembly_CP1_APPROVED.md
-Read all upstream outputs:
-{all_outputs}
-
-Draft the full 7-act report sections.
-
-Write: {outputs_dir}/CHECKPOINT_assembly_CP2.md
-"""
-        result = await run_agent("narrative-assembler", prompt, engagement_dir, label="Assembly P2")
+        result = await run_agent("narrative-assembler", cwd=engagement_dir, label="Assembly P2",
+                                 mode="pipeline-report",
+                                 params={**report_params, "phase": "2",
+                                         "upstream_files": upstream_files})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
         # Assembly CP2 ALWAYS pauses for interactive — this is the final report review
         present_checkpoint("assembly_CP2", outputs_dir, express=False, non_interactive=non_interactive)
 
         # Phase 3: Finalize
-        prompt = f"""PHASE DIRECTIVE: Phase 3 of 3
-Engagement directory: {engagement_dir}
-
-Read approved draft: {outputs_dir}/CHECKPOINT_assembly_CP2_APPROVED.md
-
-Incorporate consultant feedback. Finalize the report.
-
-REQUIRED OUTPUT FILES (you MUST produce BOTH):
-- {outputs_dir}/assessment_report.md
-- {outputs_dir}/executive_summary.md
-"""
-        result = await run_agent("narrative-assembler", prompt, engagement_dir, label="Assembly P3")
+        result = await run_agent("narrative-assembler", cwd=engagement_dir, label="Assembly P3",
+                                 mode="pipeline-report",
+                                 params={**report_params, "phase": "3",
+                                         "upstream_files": "(n/a — phase 3 reads the approved CP2 draft)"})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
     assert_file_exists(outputs_dir / "assessment_report.md", "Assembly")
@@ -1332,24 +1212,12 @@ REQUIRED OUTPUT FILES (you MUST produce BOTH):
     return {"elapsed": time.time() - start, "cost": cost}
 
 
-# ─── T3: Inline design rules for HTML generation ─────────────────────────────
-
-_DESIGN_RULES_INLINE = """
-CRITICAL DESIGN RULES — Backbase Unified Frontline 2026 (full details in design-system.md):
-- LIGHT base theme: Body background #FFFFFF (pure white), cards #FFFFFF, soft surfaces #F3F6F9
-- Brand colors: #3367FF (action blue), #041326 (navy), #FF503C (red), #2ECC71 (green), #D97706 (amber), #6B7786 (muted)
-- Dark navy (#041326) ONLY for: sidebar navigation, hero banner, dark-feature accent sections, metric cards
-- WCAG on dark backgrounds: Blue text -> use #93B5FF (mid-blue) for body, #3367FF for large only; Green text -> #86E1A6 lightened
-- Sub-labels on dark backgrounds: minimum rgba(255,255,255,0.55) opacity
-- Card accents: use TOP accent gradients (#3367FF -> #93B5FF), NEVER border-left ribbons
-- Brand chrome on light panels: blue inverted-L corner accent (top-left) + Backbase wordmark footer (bottom-right)
-- DO NOT generate a dark-themed dashboard. The base theme is LIGHT (#FFFFFF).
-- TYPOGRAPHY: Libre Franklin primary (Helvetica/Arial fallback). Use <strong> or font-weight:700 SPARINGLY — only for metric values, card
-  titles, and key emphasis. Body text and descriptions must use normal weight (400).
-  Over-bolding everything makes the dashboard feel heavy and reduces visual hierarchy.
-- NO ENGAGE 2026 hexes (#3367FF, #041326, #FF503C, #2ECC71, #D97706 are deprecated)
-- NO cyan or purple in headlines/CTAs (purple `#7C3AED` allowed only for utility tile accents in 6-up grids)
-"""
+# The inline design rules (formerly the `_DESIGN_RULES_INLINE` constant, T3)
+# and the 6-partial placeholder-by-placeholder spec now live VERBATIM in the
+# agent's own contract: .claude/agents/narrative-assembler.md, mode
+# "html-partial" (the single literal template token sits in that file's core
+# "HTML Template Token Reference" section — composer constraint). The frozen
+# standards snapshot / deliverable evals continue to enforce the same rules.
 
 
 def _prepare_html_source_pack(outputs_dir: Path) -> Path:
@@ -1449,318 +1317,21 @@ async def step_generate_html(
 
     template_path = REPO_ROOT / "templates/presentations/assessment-dashboard-template.html"
 
-    html_prompt = f"""You are generating HTML content for an interactive assessment dashboard.
-Python will handle assembly — you only write 6 partial files.
-
-TOOL CONSTRAINT: Do NOT use the Task tool. Do NOT read the template file.
-Do NOT assemble the final HTML. Python handles template + assembly.
-
-STEP 1 — Read the source data (ONE file with all upstream data):
-Read: {source_pack}
-(Read it in chunks if needed: lines 1-500, 501-1000, etc.)
-
-{_DESIGN_RULES_INLINE}
-
-STEP 2 — Write 6 partial files to: {partials_dir}/
-
-Each partial uses comment markers to delimit placeholder values:
-<!-- PLACEHOLDER_NAME -->
-HTML content here
-<!-- NEXT_PLACEHOLDER_NAME -->
-HTML content here
-
-IMPORTANT FORMAT RULES:
-- Each marker is on its own line: <!-- NAME -->
-- Content follows on the next line(s)
-- Next marker starts the next placeholder
-- Use ONLY the placeholder names listed below — exact spelling matters
-
-═══════════════════════════════════════════════════════════
-PARTIAL_A.html — Hero + Executive Summary
-═══════════════════════════════════════════════════════════
-
-<!-- CLIENT_NAME -->
-Short client name (e.g., NFIS)
-<!-- REPORT_SUBTITLE -->
-e.g., Digital Investor Platform Assessment
-<!-- ASSESSMENT_DATE -->
-e.g., February 2026
-<!-- HERO_H1 -->
-Multi-line hero heading with <span> tags. Use SOLID color for accent words — never gradient text. Example:
-<span>From Trusted</span><span>Banker to</span><span style="color:#3367FF;">Trusted Investor</span>
-<!-- HERO_SUBTITLE -->
-1-2 sentence hero subtitle about the engagement
-<!-- HERO_TAGS -->
-<span class="hero-tag">Tag1</span><span class="hero-tag">Tag2</span>...
-<!-- HERO_ALERT -->
-<span style="font-weight:700;">⚠ Cost of Inaction: $XXX/month</span> — breakdown text
-<!-- HERO_IMAGE_URL -->
-https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=900&auto=format&fit=crop&q=80
-<!-- HERO_FLOATS -->
-3 floating glass cards:
-<div class="hero-float" style="top:80px;right:24px;"><div class="hero-float-val" style="color:#DC2626;">50%</div><div class="hero-float-lbl">Label</div></div>
-(repeat for 3 cards)
-<!-- HERO_STATS -->
-5 stat items:
-<div class="hero-stat"><div class="hero-stat-val" style="color:#3367FF;">14.27M</div><div class="hero-stat-lbl">Label</div></div>
-(repeat for 5 stats)
-<!-- EXEC_SUMMARY_DESC -->
-1-2 sentence executive summary
-<!-- EXEC_TRANSFORMATION_STORY -->
-Transformation arc card with gradient overline:
-<div style="position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3367FF,#93B5FF);"></div><div style="padding:4px 0 20px;"><div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:3px;background:linear-gradient(90deg,#3367FF,#93B5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px;">TRANSFORMATION ARC</div><h3 style="font-size:1.5rem;font-weight:900;">Arc Title</h3><p style="font-size:0.92rem;color:var(--muted);line-height:1.8;">Arc description</p></div></div>
-<!-- EXEC_BENTO_ITEMS -->
-6 bento stat cards. Use class "bento-item bento-stat" (light) or "bento-item bento-dark bento-stat" (dark).
-For 2x-width: add "bento-2x1". For accent: add "bento-accent".
-<div class="bento-item bento-dark bento-2x1 bento-stat"><div class="bento-stat-val" style="color:#DC2626;">50%</div><div class="bento-stat-lbl">Label</div></div>
-<!-- EXEC_PILLARS -->
-Dark feature section with 3 transformation pillars:
-<div class="dark-feature-overline">THE THREE PILLARS</div><h3>Pillar1. <span>Pillar2.</span> Pillar3.</h3><div class="dark-feature-sub">Description</div><div class="dark-feature-grid"><div class="dark-feature-card"><h4>🎯 Title</h4><p>Description</p></div>(repeat 3)</div>
-<!-- EXEC_METRIC_CARDS -->
-4 metric cards:
-<div class="metric-card"><div class="metric-val" style="color:#DC2626;">-$1.5M</div><div class="metric-lbl">5-Year NPV</div></div>
-(repeat for NPV, payback, investment, confidence)
-<!-- EXEC_DECISION_BOX -->
-Decision request card with scenario comparison grid (conservative/base/aspirational boxes)
-
-═══════════════════════════════════════════════════════════
-PARTIAL_B.html — Acts 1, 2, 3
-═══════════════════════════════════════════════════════════
-
-For each act: TITLE, DESC, TRANSFORMATION_THREAD, then act-specific content.
-TRANSFORMATION_THREAD format (same card style as EXEC_TRANSFORMATION_STORY but shorter):
-<div style="position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3367FF,#93B5FF);"></div><div style="padding:4px 0 0;"><div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:3px;background:linear-gradient(90deg,#3367FF,#93B5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;">TRANSFORMATION ARC — ACT THEME</div><h3 style="font-size:1.1rem;font-weight:900;margin-bottom:10px;">Thread Title</h3><p style="font-size:0.88rem;color:var(--muted);line-height:1.75;">2-3 sentences connecting this act to the transformation arc.</p></div></div>
-
-<!-- ACT1_TITLE -->
-Act 1 title
-<!-- ACT1_DESC -->
-Act 1 description (1-2 sentences)
-<!-- ACT1_TRANSFORMATION_THREAD -->
-(transformation thread card HTML as described above — theme: "Why transformation is needed")
-<!-- ACT1_DARK_FEATURE -->
-Dark feature section: overline + h3 + sub + grid of dark-feature-cards
-<!-- ACT1_INSIGHT_CARDS -->
-2-4 insight cards (class="card")
-<!-- ACT1_ADDITIONAL_CONTENT -->
-Any extra content (evidence quotes, data tables, etc.)
-<!-- ACT2_TITLE -->
-Act 2 title
-<!-- ACT2_DESC -->
-Act 2 description
-<!-- ACT2_TRANSFORMATION_THREAD -->
-(theme: "What the transformation looks like")
-<!-- ACT2_PILLAR_CARDS -->
-3 pillar cards (class="pillar-card" or "card")
-<!-- ACT2_ADDITIONAL_CONTENT -->
-Extra content
-<!-- ACT3_TITLE -->
-Act 3 title
-<!-- ACT3_DESC -->
-Act 3 description
-<!-- ACT3_TRANSFORMATION_THREAD -->
-(theme: "How we prove the transformation")
-<!-- ACT3_LIGHTHOUSE_DETAIL -->
-Lighthouse initiative detail (phase 1 description, scope, timeline)
-<!-- ACT3_MILESTONE_CARDS -->
-3 milestone cards
-<!-- ACT3_ADDITIONAL_CONTENT -->
-Extra content
-
-═══════════════════════════════════════════════════════════
-PARTIAL_C.html — Acts 4 and 5
-═══════════════════════════════════════════════════════════
-
-<!-- ACT4_TITLE -->
-Act 4 title
-<!-- ACT4_DESC -->
-Act 4 description
-<!-- ACT4_TRANSFORMATION_THREAD -->
-(theme: "Where current system breaks")
-<!-- ACT4_PERSONAS -->
-Persona cards: <div class="persona-card"><h4>Name</h4><div style="font-size:0.75rem;color:var(--muted);">Segment</div><div class="persona-detail">Pain points, needs, etc.</div></div>
-<!-- ACT4_JX_HEADLINES -->
-Journey experience map headline cards per stage:
-<div class="jx-headline"><span class="jx-stage-num">1</span><strong>Stage Name</strong><span class="jx-emoji">📱</span></div>
-<!-- ACT4_JX_SVG -->
-SVG emotion curve (width 100%, viewBox, path with emotion line):
-<svg width="100%" viewBox="0 0 800 200" style="overflow:visible;">...<path d="M0,100 C..." stroke="#3367FF" fill="none" stroke-width="3"/>...<circle class="jx-marker" data-stage="1" cx="80" cy="120" r="8" fill="#3367FF" onclick="showStage(1)"/>...</svg>
-<!-- ACT4_JX_PANELS -->
-Expandable detail panels per stage:
-<div class="jx-panel" id="jxp-1"><h4>Stage 1 Title</h4><div class="pain-grid"><div class="pain-item">Pain point</div>...</div><div class="opp-grid"><div class="opp-item">Opportunity</div>...</div></div>
-<!-- ACT4_ADDITIONAL_CONTENT -->
-Extra content
-<!-- ACT5_TITLE -->
-Act 5 title
-<!-- ACT5_DESC -->
-Act 5 description
-<!-- ACT5_TRANSFORMATION_THREAD -->
-(theme: "What capabilities the transformation requires")
-<!-- ACT5_HERO_STATS -->
-MANDATORY. Hero stats row matching 02e gold standard. 2-column grid:
-Left: Big average maturity number (e.g. "0.56") with SOLID color (use the maturity-level CSS var that matches the score, e.g. var(--L1)), "Average Maturity / 4.0" sublabel. Never use gradient text.
-Right: Distribution bar (.dist-bar + .dist-seg CSS classes) showing count/percent per maturity level + .dist-legend with dot + label.
-Use this HTML structure:
-<div style="display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:center;margin-bottom:36px;">
-  <div style="text-align:center;"><div style="font-size:3.2rem;font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,var(--L0),var(--L1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;">X.XX</div><div style="font-size:0.72rem;color:var(--muted);font-weight:600;">Average Maturity / 4.0</div></div>
-  <div><div class="dist-bar" style="margin-bottom:8px;"><div class="dist-seg" style="width:NN%;background:var(--L0);">N (NN%)</div>...</div><div class="dist-legend">...</div></div>
-</div>
-Compute averages from capability data. Only show levels that have capabilities.
-<!-- ACT5_DARK_FEATURE -->
-MANDATORY. Dark feature banner showing the cross-cutting structural barrier. Use .dark-feature CSS class.
-Structure: overline + large h3 title (2-line with <br><span>) + subtitle paragraph + 3-column comparison:
-Left: "What Exists" — 4 bullet items showing current infrastructure (blue tones, rgba(26,90,255,...))
-Center: Broken connection (X icon with dashed line)
-Right: "What's Missing" — 4 bullet items showing gaps (red tones, rgba(255,114,98,...), with line-through text)
-Bottom: Quote from evidence in italic with attribution.
-Model the NFIS 02e "Two Organizations, Zero Shared Intelligence" pattern but adapted to this client's structural barrier.
-<!-- ACT5_PIPELINE_LABEL -->
-Short uppercase label for the lifecycle pipeline, e.g. "Member Banking Lifecycle" or "Customer Investment Lifecycle"
-<!-- ACT5_DOMAIN_LEGEND -->
-Domain legend pills — one colored pill badge per capability domain. Use this HTML pattern:
-<span style="display:inline-block;padding:4px 12px;border-radius:8px;font-size:0.68rem;font-weight:700;background:#EFF6FF;color:#1D4ED8;">Customer Lifecycle</span>
-(one per domain, using distinct background/text color pairs)
-<!-- ACT5_CAP_COUNT -->
-Total number of capabilities (integer only, e.g. "16" or "20")
-<!-- ACT5_HEATMAP_DATA -->
-CRITICAL FORMAT: JS object literals separated by commas, NO outer brackets.
-The template wraps this in [...]. Each object MUST have these fields:
-  id (string), name (string), domain (string), score (0-4 integer),
-  front (0-4 integer — front office score), middle (0-4 integer — middle office score),
-  back (0-4 integer — back office score).
-Optional: desc (assessment detail text), impact (value impact string, e.g. "$892K (5yr)").
-The detail panel shows F/M/B breakdown + assessment detail + value impact when clicked.
-Example: {{id:"C1.1",name:"Account Origination",domain:"Onboarding",score:1,front:1,middle:1,back:0,desc:"Account opening workflow lacks digital capabilities",impact:"$892K (5yr)"}},{{id:"C1.2",name:"Funding Automation",domain:"Onboarding",score:0,front:0,middle:0,back:0,desc:"Manual ACH only",impact:"$1.4M (5yr)"}}
-<!-- ACT5_LIFECYCLE_STAGES -->
-CRITICAL FORMAT: JS object literals separated by commas, NO outer brackets.
-The template wraps this in [...]. Each stage object MUST have:
-  id (string), title (string), icon (emoji string), color (hex string from brand palette),
-  tagline (string — short problem statement), stat (string), statLabel (string),
-  statDetail (string — 2-3 sentence explanation),
-  l1s (array of L1 problem objects).
-Each L1 object MUST have: label (string), desc (string), l2s (array of L2 objects).
-Each L2 object MUST have: label (string), desc (string), caps (array of capability ID strings matching ACT5_HEATMAP_DATA ids).
-Create 4-6 lifecycle stages that group capabilities by customer journey phase.
-Map ALL capabilities to exactly one lifecycle stage. Every capability ID must appear in exactly one L2.caps array.
-Stage colors: use brand palette (#3367FF, #EA580C, #059669, #DC2626, #93B5FF, #D97706).
-The template uses var LIFECYCLE_STAGES = [{{ACT5_LIFECYCLE_STAGES}}]; — so output complete JS objects with their own braces.
-
-═══════════════════════════════════════════════════════════
-PARTIAL_D.html — Acts 6 and 7
-═══════════════════════════════════════════════════════════
-
-<!-- ACT6_TITLE -->
-Act 6 title
-<!-- ACT6_DESC -->
-Act 6 description
-<!-- ACT6_TRANSFORMATION_THREAD -->
-(theme: "How we build the transformation")
-<!-- ACT6_TIMELINE -->
-VISUAL timeline with phase dots and expandable cards. Use these EXACT CSS classes:
-<div class="timeline-phase"><div class="phase-dot" style="border-color:#DC2626;"></div><div class="phase-card open"><h4 style="color:#DC2626;">Phase 1: NOW</h4><div class="phase-time">Months 0-9 | 2026 H1-H2</div><div class="phase-cost">~$3.0M Investment</div><div class="phase-items"><ul><li>Initiative 1</li><li>Initiative 2</li></ul></div></div></div>
-Repeat for 3 phases. Use colors: Phase 1=#DC2626 (red), Phase 2=#EA580C (orange), Phase 3=#059669 (green).
-Make Phase 1 card "open" (expanded), others collapsed (user clicks to expand).
-Each phase lists: initiatives as bullet points, timeline range, investment estimate.
-<!-- ACT6_PHASE_CARDS -->
-3 phase summary cards (optional — only if timeline doesn't cover all detail)
-<!-- ACT6_ADDITIONAL_CONTENT -->
-Two sections here:
-1. DECISIONS CARD: A single FULL-WIDTH .card with border-top:3px solid #3367FF. Inside: heading "THREE DECISIONS REQUIRED BEFORE MONTH 1" + 3-column grid of decision boxes (background:#EFF6FF, border-radius:12px, padding:20px). Do NOT wrap in card-grid card-grid-3.
-2. KEY VALUE MILESTONES: A .card with 4-column grid of milestone boxes (Month X → what happens). Use phase-matching colors for backgrounds.
-<!-- ACT7_TITLE -->
-Act 7 title
-<!-- ACT7_DESC -->
-Act 7 description
-<!-- ACT7_TRANSFORMATION_THREAD -->
-(theme: "Why transformation pays for itself")
-<!-- ACT7_ROI_CARDS -->
-CRITICAL: 4 dynamic ROI cards with specific IDs that setScenario() updates.
-Use these EXACT CSS classes (roi-card, NOT metric-card):
-<div class="roi-card"><div class="roi-card-val" id="roi-npv">-$1.5M</div><div class="roi-card-lbl">5-Year NPV</div></div><div class="roi-card"><div class="roi-card-val" id="roi-return">-12%</div><div class="roi-card-lbl">5-Year ROI</div></div><div class="roi-card"><div class="roi-card-val" id="roi-payback">~6.5 yrs</div><div class="roi-card-lbl">Payback Period</div></div><div class="roi-card"><div class="roi-card-val" id="roi-benefits">$7.7M</div><div class="roi-card-lbl">5yr Gross Benefits</div></div>
-Set initial values to the BASE scenario numbers from roi_config.json → scenarios.base. The parent roi-grid div is already in the template.
-<!-- ACT7_BASE_DESC -->
-Plain text description of the base scenario (1-2 sentences). NOT HTML. Use roi_config.json → scenarios.base.desc.
-<!-- ACT7_SCENARIO_DATA -->
-CRITICAL FORMAT: A JS object (NO var keyword, NO semicolon — the template wraps it).
-Must have exactly 3 keys: conservative, base, aspirational.
-Each value MUST have: npv (string), roi (string), payback (string), benefits (string), desc (string).
-SOURCE: Copy values DIRECTLY from roi_config.json → "scenarios" object. Do NOT re-derive from markdown tables.
-Example:
-conservative:{{npv:"-$4.8M",roi:"-55%",payback:">10 yrs",benefits:"$3.1M",desc:"Conservative: low improvement rates across all levers"}},base:{{npv:"-$1.5M",roi:"-12%",payback:"~6.5 yrs",benefits:"$7.7M",desc:"Base: moderate improvements with peer-benchmarked assumptions"}},aspirational:{{npv:"+$3.2M",roi:"+36%",payback:"~4.2 yrs",benefits:"$14.5M",desc:"Aspirational: high conversion rates with full cross-app integration"}}
-<!-- ACT7_FINANCIAL_TABLE -->
-Wrap the table in: <div class="card reveal" style="margin-bottom:40px;"><h3 style="margin-bottom:20px;">5-Year Financial Model &mdash; Base Scenario</h3><div style="overflow-x:auto;">
-...TABLE HERE...
-</div></div>
-HTML table with 5-year projection (Year 1-5 + 5yr Total columns, benefit lines/cost lines/net row).
-<!-- ACT7_VALUE_LEVERS -->
-Start with: <h3 style="margin-bottom:20px;">Value Levers &mdash; Base Scenario (5-Year)</h3>
-EXPANDABLE value lever cards. Users click to see benchmarks and calculation.
-Use the .lever-card CSS classes from the template. Create 5-6 lever cards.
-SOURCE: Use roi_config.json → "lever_summary" array for lever names, values, MECE text, benchmarks, and capability IDs. Do NOT invent MECE content — it is authored by the ROI agent.
-CRITICAL: Keep expanded content CONCISE. Each MECE box must be 1-2 SHORT sentences (max 25 words). No verbose paragraphs.
-Each lever card follows this structure:
-<div class="lever-card" data-trace-id="BEN-1">
-  <div class="lever-header" onclick="this.parentElement.classList.toggle('open')">
-    <span class="lever-num">01</span>
-    <span class="lever-name">Lever Name</span>
-    <span class="lever-value" style="color:#3367FF;">$X.XM</span>
-    <span class="lever-arrow">&#9660;</span>
-  </div>
-  <div class="lever-body"><div class="lever-content">
-    <div class="lever-mece">
-      <div class="lever-mece-box" style="background:#FEF2F2;"><h5 style="color:#DC2626;">Current State</h5>Short phrase: what happens today</div>
-      <div class="lever-mece-box" style="background:#FFFBEB;"><h5 style="color:#D97706;">Change Driver</h5>Short phrase: what Backbase enables</div>
-      <div class="lever-mece-box" style="background:#F0FDF4;"><h5 style="color:#059669;">Target State</h5>Short phrase: KPI improvement with %</div>
-    </div>
-    <div class="lever-benchmark"><strong>Benchmark:</strong> One-line industry benchmark with source</div>
-    <div class="lever-capabilities"><span class="lever-cap-tag">CAP-ID</span></div>
-  </div></div>
-</div>
-Lever-value colors: #3367FF, #EA580C, #93B5FF, #059669, #DC2626, #D97706.
-
-═══════════════════════════════════════════════════════════
-PARTIAL_E.html — Journey Maps
-═══════════════════════════════════════════════════════════
-
-<!-- JOURNEY_DESC -->
-Journey maps description (1-2 sentences)
-<!-- JOURNEY_SWIMLANES -->
-Journey swimlanes with current/future toggle per journey:
-<div class="journey-block" id="journey-1"><div class="swimlane-header"><h4>Journey Name</h4><div><button class="swimlane-toggle-btn active-current" onclick="toggleJourney('1','current',this)">Current</button><button class="swimlane-toggle-btn" onclick="toggleJourney('1','future',this)">Future</button></div></div><div class="swimlane-panel active" data-state="current"><div class="swimlane-row"><div class="swim-stage">Stage</div><div class="swim-actions">Actions</div><div class="swim-pain">Pain</div><div class="swim-channel">Channel</div></div></div><div class="swimlane-panel" data-state="future"><div class="swimlane-row"><div class="swim-stage">Stage</div><div class="swim-actions">Future actions</div><div class="swim-gain">Gains</div><div class="swim-channel">Channel</div></div></div></div>
-Create 3-4 journey blocks for key personas.
-
-═══════════════════════════════════════════════════════════
-PARTIAL_F.html — Use Cases
-═══════════════════════════════════════════════════════════
-
-<!-- USECASES_TITLE -->
-Use cases section title
-<!-- USECASES_DESC -->
-Use cases description
-<!-- USECASES_CARDS -->
-Clickable use case cards:
-<div class="uc-card"><div class="uc-card-header"><span class="uc-icon">💡</span><h4>Use Case Title</h4></div><div class="uc-card-body"><p>Description</p><div class="uc-stat-row"><div class="uc-stat-card"><div class="uc-stat-val">$1.3M</div><div class="uc-stat-lbl">Annual Value</div></div></div></div></div>
-<!-- USECASES_PHONE_PROTOTYPES -->
-OPTIONAL — only include prototypes if the engagement has detailed use case flow data.
-If not available, write: <!-- no prototypes -->
-If included (2-3 max), wrap them in a heading and grid:
-<h3 style="margin:48px 0 24px;">Prototype Previews</h3>
-<div class="proto-grid">
-<div class="proto-wrap"><div class="proto-phone"><div class="proto-notch"></div><div class="proto-screen"><div style="padding:16px;"><h5 style="font-size:0.85rem;margin-bottom:12px;">Screen Title</h5><div style="background:#F1F5F9;border-radius:8px;padding:12px;margin-bottom:8px;font-size:0.75rem;">Content block</div></div></div></div><div class="proto-caption"><span style="font-weight:600;">Screen Name</span><p style="font-weight:400;">What this screen shows</p></div></div>
-</div>
-
-═══════════════════════════════════════════════════════════
-
-Write ALL 6 files (PARTIAL_A through PARTIAL_F). STOP IMMEDIATELY after writing the 6th file.
-Do NOT write any other files. Do NOT assemble the final HTML.
-Do NOT read the template. Do NOT explore the filesystem.
-Do NOT validate. Do NOT run any bash scripts.
-Python handles the template, assembly, and validation — your ONLY job is the 6 partials.
-After writing PARTIAL_F.html, output "DONE — 6 partials written" and stop.
-"""
+    # narrative-assembler is mode-extracted (skill-first contracts): the
+    # 6-partial HTML re-invocation is composed from
+    # .claude/agents/narrative-assembler.md (## Modes -> html-partial) via
+    # compose_prompt — no inline f-string. The design rules + placeholder spec
+    # travel inside the mode block verbatim; Python keeps ownership of the
+    # source pack (above), the template, assembly, and validation (below).
+    html_params = {
+        "source_pack": source_pack,
+        "partials_dir": partials_dir,
+    }
 
     result = await run_agent(
-        "narrative-assembler", html_prompt, engagement_dir,
+        "narrative-assembler", cwd=engagement_dir,
         label="HTML Dashboard", max_turns=25,
+        mode="html-partial", params=html_params,
     )
     cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
