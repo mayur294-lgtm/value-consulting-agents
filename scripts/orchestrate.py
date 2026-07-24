@@ -37,7 +37,8 @@ sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
 from pathlib import Path
 
-from anonymize_transcript import anonymize_transcript_file, deanonymize_text
+from anonymize_transcript import anonymize_transcript_file
+from artifact_boundary import cap_roi_config, deanonymize_dir, validate_outputs
 from typing import Optional
 
 from claude_agent_sdk import (
@@ -321,180 +322,9 @@ def _sum_costs(results) -> float:
     return total
 
 
-MAX_BACKBASE_IMPACT = 0.60
-
-# Segment benchmark ranges for ROI validation (from roi_calibrator.py)
-SEGMENT_ROI_RANGES = {
-    "Retail Banking": (100, 150),
-    "Wealth Management": (120, 200),
-    "Commercial Banking": (80, 140),
-    "SME Banking": (70, 130),
-    "Corporate Banking": (100, 150),
-    "Investing": (100, 150),
-}
-
-
-def _compute_5yr_roi(config: dict) -> float | None:
-    """Compute 5-year ROI from config using curves (matching Excel logic)."""
-    groups = config.get('value_lever_groups', config.get('journeys', {}))
-    bl = config.get('backbase_loading', {})
-    impl_curve = bl.get('implementation_curve', [0.3, 0.7, 0.8, 1.0, 1.0])
-    eff_curve = bl.get('effectiveness_curve', [0.15, 0.35, 0.6, 0.85, 1.0])
-
-    # Sum steady-state annual benefit across all drivers
-    total_steady_state = 0
-    for group in groups.values():
-        for dtype in ('revenue_drivers', 'cost_drivers'):
-            for driver in group.get(dtype, {}).values():
-                baseline = driver.get('baseline_annual', 0)
-                bi = driver.get('inputs', {}).get('backbase_impact', {})
-                impact = bi.get('value', 0) if isinstance(bi, dict) else bi if isinstance(bi, (int, float)) else 0
-                total_steady_state += baseline * impact
-        # Add servicing analysis totals
-        sa = group.get('servicing_analysis')
-        if isinstance(sa, dict):
-            for channel in sa.values():
-                if isinstance(channel, dict):
-                    for task in channel.get('tasks', []):
-                        if isinstance(task, dict):
-                            total_steady_state += task.get('total_saved', 0)
-
-    # Apply curves year by year (matching Excel logic)
-    total_5yr_benefit = 0
-    for yr in range(5):
-        impl = impl_curve[yr] if yr < len(impl_curve) else 1.0
-        eff = eff_curve[yr] if yr < len(eff_curve) else 1.0
-        total_5yr_benefit += total_steady_state * impl * eff
-
-    # Sum investment
-    inv = config.get('investment', {})
-    total_investment = 0
-    for inv_type in ('license', 'implementation'):
-        inv_data = inv.get(inv_type, {})
-        if isinstance(inv_data, dict):
-            for yr_key in ('year_1', 'year_2', 'year_3', 'year_4', 'year_5'):
-                total_investment += inv_data.get(yr_key, 0)
-        elif isinstance(inv_data, (int, float)):
-            total_investment += inv_data
-
-    if total_investment <= 0:
-        return None
-
-    return (total_5yr_benefit - total_investment) / total_investment * 100
-
-
-def _validate_roi_config(config_path: Path):
-    """Validate roi_config.json for unreasonable values. Caps impacts and warns."""
-    if not config_path.exists():
-        return
-    try:
-        config = json.loads(config_path.read_text())
-    except Exception as e:
-        log(f"  ⚠ Could not parse roi_config.json: {type(e).__name__}", C.YELLOW)
-        return
-
-    warnings = []
-    modified = False
-    total_benefit = 0
-    client_revenue = config.get('bank_profile', {}).get('total_revenue', 0)
-
-    groups = config.get('value_lever_groups', config.get('journeys', {}))
-    for group_key, group in groups.items():
-        for driver_type in ('revenue_drivers', 'cost_drivers'):
-            for drv_key, driver in group.get(driver_type, {}).items():
-                bi = driver.get('inputs', {}).get('backbase_impact', {})
-                val = bi.get('value', 0) if isinstance(bi, dict) else bi if isinstance(bi, (int, float)) else 0
-                if isinstance(val, (int, float)) and val > MAX_BACKBASE_IMPACT:
-                    warnings.append(
-                        f"    {drv_key}: backbase_impact {val:.0%} → capped to {MAX_BACKBASE_IMPACT:.0%}"
-                    )
-                    if isinstance(bi, dict):
-                        bi['value'] = MAX_BACKBASE_IMPACT
-                    modified = True
-                baseline = driver.get('baseline_annual', 0)
-                impact = bi.get('value', 0.30) if isinstance(bi, dict) else bi if isinstance(bi, (int, float)) else 0.30
-                total_benefit += baseline * impact
-
-    # Cap scenario-level impacts
-    for sc_name, sc in config.get('scenarios', {}).items():
-        if not isinstance(sc, dict):
-            continue
-        for imp_key, imp_val in sc.get('backbase_impacts', {}).items():
-            if isinstance(imp_val, (int, float)) and imp_val > MAX_BACKBASE_IMPACT:
-                warnings.append(
-                    f"    Scenario '{sc_name}' impact '{imp_key}': {imp_val:.0%} → capped to {MAX_BACKBASE_IMPACT:.0%}"
-                )
-                sc['backbase_impacts'][imp_key] = MAX_BACKBASE_IMPACT
-                modified = True
-
-    # --- OVERESTIMATION CHECKS ---
-    investment = config.get('total_investment', 0)
-    if investment > 0 and total_benefit > 0:
-        five_yr_roi_simple = (total_benefit * 5 - investment) / investment * 100
-        if five_yr_roi_simple > 500:
-            warnings.append(
-                f"    5-year ROI (simple) = {five_yr_roi_simple:.0f}% — exceeds 500% threshold, review baselines"
-            )
-
-    if client_revenue > 0 and total_benefit > client_revenue * 0.05:
-        warnings.append(
-            f"    Total annual benefit ${total_benefit:,.0f} exceeds 5% of client revenue ${client_revenue:,.0f}"
-        )
-
-    # --- UNDERESTIMATION CHECK (NEW) ---
-    # Compute curve-adjusted ROI (matches Excel logic)
-    curve_roi = _compute_5yr_roi(config)
-    if curve_roi is not None:
-        # Detect segment
-        industry = config.get('industry', '').lower()
-        segment = "Retail Banking"  # default
-        for seg_name in SEGMENT_ROI_RANGES:
-            if seg_name.lower().replace(' ', '') in industry.replace(' ', '').lower():
-                segment = seg_name
-                break
-        if 'wealth' in industry:
-            segment = "Wealth Management"
-        elif 'invest' in industry:
-            segment = "Investing"
-        elif 'commercial' in industry:
-            segment = "Commercial Banking"
-        elif 'sme' in industry or 'small' in industry:
-            segment = "SME Banking"
-        elif 'corporate' in industry:
-            segment = "Corporate Banking"
-
-        low, high = SEGMENT_ROI_RANGES.get(segment, (60, 150))
-        log(f"  📊 Curve-adjusted 5-year ROI: {curve_roi:.0f}% (segment: {segment}, benchmark: {low}-{high}%)", C.CYAN)
-
-        if curve_roi < low:
-            warnings.append(
-                f"    ⚠ ROI {curve_roi:.0f}% is BELOW {segment} benchmark range ({low}-{high}%). "
-                f"Consider: (1) review backbase_impact values — may be too conservative, "
-                f"(2) check if implementation/effectiveness curves are too slow, "
-                f"(3) run roi_calibrator.py --config roi_config.json for expansion proposals, "
-                f"(4) verify investment isn't over-estimated."
-            )
-        elif curve_roi > high:
-            warnings.append(
-                f"    ⚠ ROI {curve_roi:.0f}% is ABOVE {segment} benchmark range ({low}-{high}%). "
-                f"A consultant presenting {curve_roi:.0f}% ROI will lose credibility. "
-                f"Review: (1) attribution — are top levers genuinely Backbase-driven or bank strategic decisions? "
-                f"(2) baselines — is the full customer base addressable or only digitally active subset? "
-                f"(3) backbase_impact — any P3 assumptions above 0.40 should be reduced, "
-                f"(4) investment — is it adequate for a bank this size? "
-                f"(5) interdependency — apply 10-20% haircut if multiple levers share the same customer base."
-            )
-
-    if warnings:
-        log("  ⚠ ROI VALIDATION WARNINGS:", C.YELLOW)
-        for w in warnings:
-            log(w, C.YELLOW)
-
-    if modified:
-        config_path.write_text(json.dumps(config, indent=2, ensure_ascii=False))
-        log(f"  ✓ roi_config.json updated — impacts capped at {MAX_BACKBASE_IMPACT:.0%}", C.GREEN)
-    elif not warnings:
-        log("  ✓ roi_config.json passed reasonableness checks", C.GREEN)
+# ROI capping/validation logic (MAX_BACKBASE_IMPACT, SEGMENT_ROI_RANGES,
+# _compute_5yr_roi, _validate_roi_config) moved to artifact_boundary.py so the
+# same gates run in both the pipeline and standalone skill paths.
 
 
 # ─── Resilient Query Wrapper ──────────────────────────────────────────────────
@@ -1372,7 +1202,7 @@ REQUIRED OUTPUT FILES:
     assert_file_exists(outputs_dir / "roi_config.json", "ROI")
 
     # ── ROI Reasonableness Gate ───────────────────────────────────────────
-    _validate_roi_config(outputs_dir / "roi_config.json")
+    cap_roi_config(outputs_dir / "roi_config.json")
 
     for f, name in [
         ("journey_maps.json", "Journey Builder"),
@@ -2224,22 +2054,8 @@ Write the output to: {outputs_dir}/
 
 
 async def step_validate(engagement_dir: Path, outputs_dir: Path) -> bool:
-    """Run the validation gate script."""
-    script = REPO_ROOT / "scripts" / "validate_engagement_outputs.sh"
-    if not script.exists():
-        log("  ⚠ validate_engagement_outputs.sh not found — skipping", C.YELLOW)
-        return True
-
-    result = subprocess.run(
-        ["bash", str(script), str(engagement_dir), "assessment"],
-        capture_output=True, text=True,
-    )
-    if result.returncode == 0:
-        log("  ✓ Validation gate PASSED", C.GREEN)
-        return True
-    else:
-        log(f"  ✗ Validation gate FAILED:\n{result.stdout}\n{result.stderr}", C.RED)
-        return False
+    """Run the validation gate script (moved to artifact_boundary.validate_outputs)."""
+    return validate_outputs(engagement_dir, "assessment")["passed"]
 
 
 # ─── T4: Pipeline Summary ────────────────────────────────────────────────────
@@ -2424,23 +2240,9 @@ async def run_pipeline(
             log("  Pipeline completed with validation warnings.", C.YELLOW)
 
     # ── Step 6b: De-anonymize final outputs ─────────────────────────────
-    pii_mapping_file = engagement_dir / ".pii_mapping.json"
-    if pii_mapping_file.exists():
-        log("  Restoring client names in final outputs...", C.CYAN)
-        try:
-            pii_mapping = json.loads(pii_mapping_file.read_text())
-            if pii_mapping:
-                deanon_count = 0
-                for out_file in outputs_dir.iterdir():
-                    if out_file.suffix in ('.md', '.html', '.json', '.txt') and not out_file.name.startswith('interim'):
-                        content = out_file.read_text()
-                        restored = deanonymize_text(content, pii_mapping)
-                        if restored != content:
-                            out_file.write_text(restored)
-                            deanon_count += 1
-                log(f"  ✓ De-anonymized {deanon_count} output file(s)")
-        except Exception as e:
-            log(f"  ⚠ De-anonymization failed: {type(e).__name__} — outputs may contain placeholders", C.YELLOW)
+    # Moved to artifact_boundary.deanonymize_dir — a missing .pii_mapping.json
+    # is reported loudly as NOT client-ready, never silently skipped.
+    deanonymize_dir(outputs_dir, engagement_dir / ".pii_mapping.json")
 
     # Clean up anonymized transcript copies (keep mapping for audit trail)
     for anon_file in (engagement_dir / "inputs").glob(".anon_transcript_*"):
