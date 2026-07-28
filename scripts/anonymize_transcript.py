@@ -47,9 +47,17 @@ _GENERIC_SHORT_NAME_STOPLIST = {
 }
 
 
-def _next_index_for_category(category: str, *mappings: dict) -> int:
+def _next_index_for_category(category: str, *mappings: dict, text: Optional[str] = None) -> int:
     """Find the highest numbered [CATEGORY-N] placeholder across the given
-    mapping dicts and return the next index to allocate (starting at 1).
+    mapping dicts (and, if `text` is given, any literal `[CATEGORY-N]`-shaped
+    substrings already present in that text) and return the next index to
+    allocate (starting at 1).
+
+    Scanning `text` matters when the INPUT already contains a literal
+    placeholder-shaped string (e.g. a transcript quoting a previously
+    anonymized report) — without it, newly allocated placeholders could
+    collide in appearance with pre-existing literal text, making the two
+    indistinguishable and corrupting round-trip de-anonymization.
 
     Legacy `[CATEGORY-REDACTED]` keys don't parse as numbered placeholders
     and are ignored for numbering purposes (never re-emitted).
@@ -61,6 +69,10 @@ def _next_index_for_category(category: str, *mappings: dict) -> int:
             m = pattern.match(placeholder)
             if m:
                 max_index = max(max_index, int(m.group(1)))
+    if text is not None:
+        literal_pattern = re.compile(r'\[' + re.escape(category) + r'-(\d+)\]')
+        for m in literal_pattern.finditer(text):
+            max_index = max(max_index, int(m.group(1)))
     return max_index + 1
 
 
@@ -78,6 +90,24 @@ def _replace_numbered_category(
     text (pruned to exactly what's actually present in the returned text —
     see the substring note below).
     """
+    # Warn if the INPUT text already contains literal `[CATEGORY-N]`-shaped
+    # substrings before any substitution runs (e.g. a transcript quoting a
+    # previously anonymized report). We number newly-allocated placeholders
+    # above these literals (see next_idx below) so they can't collide in
+    # appearance, but the literal itself is not a mapping key for this run —
+    # it won't be restored by de-anonymization, and if a shared/merged
+    # mapping happens to define that same placeholder text from another
+    # transcript, deanonymize_text will still rewrite it. Warn loudly once
+    # per category so this residual risk is visible.
+    literal_pattern = re.compile(r'\[' + re.escape(category) + r'-\d+\]')
+    if literal_pattern.search(result):
+        print(
+            f"⚠ Input already contains [{category}-N]-style placeholder text — "
+            "quoted placeholders will not be re-anonymized; de-anonymizing "
+            "merged outputs may rewrite them.",
+            file=sys.stderr,
+        )
+
     # value -> placeholder, built from existing numbered entries in both maps
     value_to_placeholder = {}
     numbered_re = re.compile(r'^\[' + re.escape(category) + r'-\d+\]$')
@@ -90,8 +120,10 @@ def _replace_numbered_category(
     # the numbering semantics — [CAT-1] is whichever distinct value appears
     # first in the text). This does NOT touch `result` yet: index assignment
     # must stay independent of which value happens to be a textual substring
-    # of another (e.g. account "5551234" vs "55512345").
-    next_idx = _next_index_for_category(category, shared_mapping, new_mapping)
+    # of another (e.g. account "5551234" vs "55512345"). It also numbers
+    # past any pre-existing literal `[CATEGORY-N]` text already in `result`
+    # (see the warning above) so a new allocation can never collide with it.
+    next_idx = _next_index_for_category(category, shared_mapping, new_mapping, text=result)
     for value in values_in_order:
         if value not in value_to_placeholder:
             value_to_placeholder[value] = f"[{category}-{next_idx}]"

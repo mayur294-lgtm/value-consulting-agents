@@ -1588,8 +1588,12 @@ async def run_pipeline(
 
     # ── Step 6b: De-anonymize final outputs ─────────────────────────────
     # Moved to artifact_boundary.deanonymize_dir — a missing .pii_mapping.json
-    # is reported loudly as NOT client-ready, never silently skipped.
-    deanonymize_dir(outputs_dir, engagement_dir / ".pii_mapping.json")
+    # (or any per-file restore failure) is reported loudly as NOT client-ready,
+    # never silently skipped. The report is captured (not discarded) so a
+    # failure here can be surfaced again in the final pipeline status below —
+    # a red block in the middle of a run is easy to scroll past; the summary
+    # at the end of the log is not.
+    deanon_report = deanonymize_dir(outputs_dir, engagement_dir / ".pii_mapping.json")
 
     # Clean up anonymized transcript copies (keep mapping for audit trail)
     for anon_file in (engagement_dir / "inputs").glob(".anon_transcript_*"):
@@ -1602,6 +1606,24 @@ async def run_pipeline(
 
     # ── T4: Summary with timing + costs ──────────────────────────────────
     total_time, total_cost = _print_pipeline_summary(timings, pipeline_start)
+
+    # Surface a failed de-anonymization in the final status — the pipeline
+    # still completes (matches how a failed validation gate only warns, see
+    # Step 6 above, rather than aborting), but this can no longer be missed
+    # in a run that otherwise prints a clean "PIPELINE COMPLETE" banner.
+    if not deanon_report.get("client_ready", False):
+        print(f"\n{C.BOLD}{C.RED}{'═' * 60}{C.RESET}")
+        print(f"{C.BOLD}{C.RED}  ✗ OUTPUTS ARE NOT CLIENT-READY{C.RESET}")
+        print(f"{C.BOLD}{C.RED}{'═' * 60}{C.RESET}")
+        print(f"  {C.RED}De-anonymization did not complete — outputs may still "
+              f"contain anonymization placeholders.{C.RESET}")
+        if deanon_report.get("error"):
+            print(f"  {C.RED}Error: {deanon_report['error']}{C.RESET}")
+        for f in deanon_report.get("unrestored", []):
+            print(f"  {C.RED}Unrestored: {f}{C.RESET}")
+        print(f"  {C.RED}Remediation: python3 scripts/artifact_boundary.py deanon "
+              f"{engagement_dir}{C.RESET}")
+        print(f"{C.BOLD}{C.RED}{'═' * 60}{C.RESET}")
 
     print(f"\n  Output files:")
     for f in sorted(outputs_dir.iterdir()):

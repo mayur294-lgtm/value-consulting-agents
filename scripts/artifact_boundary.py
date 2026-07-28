@@ -19,8 +19,10 @@ CLI (what skills call):
 """
 
 import json
+import os
 import subprocess
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -250,6 +252,31 @@ def cap_roi_config(config_path) -> dict:
 
 # ─── De-anonymization Gate (moved from orchestrate.py run_pipeline step 6b) ──
 
+def _atomic_write(out_file: Path, write_fn) -> None:
+    """Write via write_fn(tmp_path) to a temp file in out_file's own directory,
+    then atomically replace out_file with os.replace().
+
+    Protects client deliverables from being truncated/corrupted by an
+    interrupted write (disk full, killed process, etc.) — out_file is only
+    ever touched by the final atomic rename. On any failure the temp file is
+    removed and the exception re-raised; out_file is left untouched.
+    """
+    fd, tmp_name = tempfile.mkstemp(
+        dir=str(out_file.parent), prefix=out_file.name + ".", suffix=".tmp-deanon"
+    )
+    os.close(fd)
+    tmp_path = Path(tmp_name)
+    try:
+        write_fn(tmp_path)
+        os.replace(str(tmp_path), str(out_file))
+    except Exception:
+        try:
+            tmp_path.unlink()
+        except OSError:
+            pass
+        raise
+
+
 def deanonymize_dir(outputs_dir, mapping_file=None) -> dict:
     """Restore client names in final outputs using .pii_mapping.json.
 
@@ -298,9 +325,13 @@ def deanonymize_dir(outputs_dir, mapping_file=None) -> dict:
     try:
         pii_mapping = json.loads(mapping_file.read_text())
         if pii_mapping:
-            deanon_count = 0
             spreadsheet_count = 0
-            unrestored = []
+            # Note: report["files_restored"] / report["unrestored"] are updated
+            # in-place file-by-file (not via local accumulators flushed at the
+            # end) so that if something unexpected still escapes the per-file
+            # try/excepts below and lands in the outer except, the report
+            # reflects every file actually restored before the failure instead
+            # of silently reporting 0.
             for out_file in sorted(outputs_dir.rglob('*')):
                 if not out_file.is_file():
                     continue
@@ -318,7 +349,7 @@ def deanonymize_dir(outputs_dir, mapping_file=None) -> dict:
                         log(f"  ✗ openpyxl not installed — cannot restore {out_file.name}. "
                             f"pip install openpyxl and re-run "
                             f"`python3 scripts/artifact_boundary.py deanon <dir>`", C.RED)
-                        unrestored.append(str(out_file))
+                        report["unrestored"].append(str(out_file))
                         continue
                     try:
                         wb = openpyxl.load_workbook(out_file)
@@ -336,24 +367,26 @@ def deanonymize_dir(outputs_dir, mapping_file=None) -> dict:
                                             cell.value = restored_val
                                             changed = True
                         if changed:
-                            wb.save(out_file)
-                            deanon_count += 1
+                            _atomic_write(out_file, wb.save)
+                            report["files_restored"] += 1
                             spreadsheet_count += 1
                     except Exception as xe:
                         log(f"  ✗ {out_file}: could not open workbook ({type(xe).__name__}) — NOT restored", C.RED)
-                        unrestored.append(str(out_file))
+                        report["unrestored"].append(str(out_file))
                     continue
 
                 if out_file.suffix in ('.md', '.html', '.json', '.txt'):
-                    content = out_file.read_text()
-                    restored = deanonymize_text(content, pii_mapping)
-                    if restored != content:
-                        out_file.write_text(restored)
-                        deanon_count += 1
+                    try:
+                        content = out_file.read_text()
+                        restored = deanonymize_text(content, pii_mapping)
+                        if restored != content:
+                            _atomic_write(out_file, lambda tmp, _r=restored: tmp.write_text(_r))
+                            report["files_restored"] += 1
+                    except Exception as te:
+                        log(f"  ✗ {out_file}: could not restore ({type(te).__name__}) — NOT restored", C.RED)
+                        report["unrestored"].append(str(out_file))
 
-            log(f"  ✓ De-anonymized {deanon_count} output file(s) ({spreadsheet_count} spreadsheet(s))")
-            report["files_restored"] = deanon_count
-            report["unrestored"] = unrestored
+            log(f"  ✓ De-anonymized {report['files_restored']} output file(s) ({spreadsheet_count} spreadsheet(s))")
         report["client_ready"] = not report["unrestored"]
     except Exception as e:
         log(f"  ⚠ De-anonymization failed: {type(e).__name__} — outputs may contain placeholders", C.YELLOW)

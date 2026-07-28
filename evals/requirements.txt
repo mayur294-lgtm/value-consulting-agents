@@ -1,7 +1,10 @@
 # Cortex evals — Python deps
-# Core runner uses only the stdlib + PyYAML, so deck/code evaluators run in CI
+# Core runner uses the stdlib + PyYAML, so deck/code evaluators run in CI
 # with zero Langfuse/Anthropic setup ("shadow" mode works out of the box).
+# openpyxl is also required: the pii-anonymizer component rubric's check 6
+# (evals/rubrics/component/pii_anonymizer.py) builds/reads an xlsx workbook.
 PyYAML>=6.0
+openpyxl>=3.1
 
 # Optional — enable Langfuse logging + LLM-judge rubrics (set keys in .env):
 #   pip install "langfuse>=2.0" "anthropic>=0.40"
