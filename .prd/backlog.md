@@ -1,0 +1,37 @@
+# Backlog — parked findings
+
+Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at the start of each cycle. Mark `[done vN]` when folded into a PRD.
+
+## From the 2026-07-28 post-extraction full-system audit (47-item history verification + live tests)
+
+### High severity — client-facing correctness
+- [ ] **PII round-trip is lossy and silently corrupting for multi-value categories** (`scripts/anonymize_transcript.py:174-176` — one mapping key per category, last value wins: three emails in → the last email restored to ALL three occurrences on de-anonymization). Also: generated `.xlsx` is never de-anonymized (`deanonymize_dir` filters to .md/.html/.json/.txt, non-recursive); `.anon_mapping_*.json` files carry the same PII as `.pii_mapping.json` but get no chmod 600 and are never cleaned up; single-word client short forms leak (`[CLIENT-SHORT]` requires ≥2 words); name scrubbing is 100% intake-list-driven with NO warning when the entity list is empty (live test: person names + client name passed through in plaintext). Pre-existing (identical on main).
+- [ ] **step_discovery has no failure gate** — both/all transcript extractions can fail (e.g. auth error) and the pipeline logs, auto-generates an empty checkpoint, auto-approves it, and burns a finalize agent run on zero interims (`orchestrate.py:667-707`). The empty checkpoint also satisfies require-checkpoint + enforce-journal vacuously. Add a threshold gate (e.g. abort if >50% of extractions failed) + make `_generate_discovery_checkpoint` refuse on zero interims. Pre-existing.
+- [ ] **Post-Assembly Cross-Deliverable Review (Step 7) lost** — 61 lines of numeric-consistency/orphan-audit/authority-resolution checks added by 36fcce8 were deleted when the orchestrator agent was slimmed to a thin router (a85212f) and re-homed NOWHERE. Restore as a narrative-assembler mode or a Python validation step. Pre-existing.
+- [ ] **Act 7 phase→lever activation contract broken** — narrative-assembler mandates "Progressive Value Realization" but the producing spec lives only in the DEPRECATED roi-business-case-builder; the live roi-financial-modeler is never told to emit it. Pre-existing.
+- [ ] **Scenario label drift** — roi-financial-modeler + roi_calibrator say conservative/moderate/**aggressive**; narrative-assembler dashboard spec says conservative/**base**/**aspirational**; roi deliverable rubric says conservative/moderate/**aspirational**. Pick one triplet, align all four surfaces. Pre-existing.
+
+### Medium — gates and coverage
+- [ ] **CI evals gate runs no component-altitude evals and no `report` deliverable** (`evals.yml` runs deck+negatives/roi/assessment/pipeline only) — the ROI cap parity checks pass locally but are never enforced in CI. Add `--component` runs for changed components or at least the report deliverable.
+- [ ] `evals/rubrics/deliverable/visual_render.py` is dead code — exists but wired to no registry row; deck calibration figures (golden 1.000 / negative 0.364) recorded nowhere in-tree.
+- [ ] **Stale pre-retune chunking thresholds** — context protocol Rule 9 Step 3 still says 500/1500 (Rule 1 was retuned to 1500/3000); roi-hypothesis-builder/roi-financial-modeler core text still says "chunk files over 500 lines" (live standalone test hit this conflict and had to pick). Align all to Rule 1.
+- [ ] **Rule 10 contradictions** — narrative-assembler (its own :71 forbids what :477 instructs), upgrade-analysis, capability-gap-analyzer still point at the full Product Directory CSV; journey-builder + capability-gap-analyzer at the full taxonomy master. Pre-existing.
+- [ ] **Phantom `benchmarks/` registry paths** — benchmark-librarian body + whitelists reference `benchmarks/benchmark_registry.md`, `benchmarks/regions/*`, `benchmarks/domains/*` which have never existed. Create the structure or repoint to `knowledge/domains/*/benchmarks.md` + `knowledge/learnings/benchmarks/`.
+- [ ] **VERSION (1.2.0) is BEHIND CHANGELOG (1.3.0)** — version-release.yml parses the changelog; reconcile before the next `v*` tag.
+- [ ] Telemetry "Layer 1" (orchestrator direct `gh issue create` after Step 7/8c) is documented in FLYWHEEL.md but was never implemented — implement or correct the docs.
+- [ ] knowledge conflicts: `retail/roi_levers.md` claims NBA/churn-prediction capabilities absent from the Product Directory; BECU call volume 25K/mo vs ~239K/mo implied across two knowledge files; `value_lever_framework.md` states the gap formula in ratio form but its worked example uses percentage-points (production configs use ratio).
+
+### Low — docs, hygiene, prompts
+- [ ] FLYWHEEL.md: five sections below the deprecation banner still describe the killed auto-dev loop as live (File Map, labels, cost model, triggers).
+- [ ] CLAUDE.md: `.claude/skills/` claim wrong (holds bb-* six, not coding-standards); anti-patterns 8-10 (experience map, bullet narratives, silent checkpoint skip) referenced in agent files but never added; CHANGELOG unlogged since 1.3.0 (PRs #70-#123).
+- [ ] Hardcoded `/Users/mayur@backbase.com/...` paths in value-consulting-orchestrator.md (4 command examples), run-pipeline.md, scan-engagement.md — broken for every other consultant. (Also queued for skill-first Phase 3.)
+- [ ] `/executive-briefing` referenced from CLAUDE.md:415 + frontline-long-form.md:32 but no such command exists.
+- [ ] anonymize-guard deny message tells consultants to run `python3 scripts/anonymize_transcript.py <file>` — actual CLI requires `--file`/`--engagement-dir`.
+- [ ] `ACTIONS_STEP_DEBUG: false` exists only as a CHANGELOG claim, in no workflow (default is off — cosmetic).
+- [ ] Deprecated roi-business-case-builder still in the LIVE agents dir (56KB) with off-palette color instructions (#3366FF/#091C35, purple rotation) below its DEPRECATED banner — move to deprecated/ or truncate to a tombstone. (Also queued for Phase 3 pruning.)
+- [ ] eval-case: Decision-4 log convention — benchmark-librarian + knowledge-harvester carry no divergence log (absent log vs "no divergence existed" indistinguishable); add explicit "no contradictions found" notes; capability-assessment's log unlabelled.
+- [ ] journey-builder quality checklist still demands CP2 "NOT SKIPPED" which pipeline mode can never satisfy (reconciled by the Decision-4 note but self-contradictory on its face).
+- [ ] roi-hypothesis-builder prompt's capability-ID examples use a nonexistent range convention ("DOL.1-5", "Flow Foundation") — fabrication-prone; correct to real `PREFIX.Journey.Feature` IDs.
+- [ ] Standalone journal/telemetry ambiguity: no engagement dir → nowhere to append; mode blocks should state the fallback explicitly (input for Phase 2 governance tiering).
+- [ ] Root `.gitignore` doesn't cover `.env.shared` (only evals/.gitignore does) — brittle if the file moves; test-agents.yml directory filter isn't strictly .md-only; step_assembly docstring still describes the superseded 2-way shard split.
+- [ ] roi-hypothesis-builder opus model gap at the non-interactive Block A call site (flagged in #109; spawned task exists) — confirm frontmatter fallback or fix call site.
