@@ -499,7 +499,7 @@ inputs:
 degraded: ask-inline
 knowledge:
   - knowledge/standards/capability_taxonomy_{domain}.md
-  - knowledge/standards/capability_taxonomy.md
+  - knowledge/standards/capability_taxonomy.md   # FALLBACK ONLY — load solely if the domain slice above does not exist
   - knowledge/domains/{domain}/journey_catalog.md
   - knowledge/domains/{domain}/value_drivers.md
 outputs:
@@ -543,7 +543,7 @@ inputs:
 degraded: refuse
 knowledge:
   - knowledge/standards/capability_taxonomy_{domain}.md
-  - knowledge/standards/capability_taxonomy.md
+  - knowledge/standards/capability_taxonomy.md   # FALLBACK ONLY — load solely if the domain slice above does not exist
   - knowledge/domains/{domain}/journey_catalog.md
   - knowledge/domains/{domain}/value_drivers.md
 outputs:

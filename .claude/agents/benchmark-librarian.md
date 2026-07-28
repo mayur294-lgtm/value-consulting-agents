@@ -201,6 +201,8 @@ knowledge:
   - benchmarks/regions/*
   - benchmarks/domains/*
   - knowledge/domains/*/benchmarks.md
+  - knowledge/standards/benchmark_evolution.md
+  - knowledge/learnings/benchmarks/*
 outputs:
   - Benchmark shortlist per Output Format (inline, or a file the consultant names)
 checkpoint: interactive
@@ -235,6 +237,8 @@ knowledge:
   - benchmarks/benchmark_registry.md
   - benchmarks/regions/*
   - benchmarks/domains/*
+  - knowledge/standards/benchmark_evolution.md
+  - knowledge/learnings/benchmarks/*
 outputs:
   - "{outputs_dir}/CHECKPOINT_benchmark.md"
   - "{outputs_dir}/benchmarks_validated.md"
