@@ -37,6 +37,58 @@ _ACCOUNT_RE = re.compile(r'\b(?:account|member|acct|ID)[\s#:]*\d{6,}\b', re.IGNO
 _URL_RE = re.compile(r'https?://[^\s)<>]+')
 
 
+def _next_index_for_category(category: str, *mappings: dict) -> int:
+    """Find the highest numbered [CATEGORY-N] placeholder across the given
+    mapping dicts and return the next index to allocate (starting at 1).
+
+    Legacy `[CATEGORY-REDACTED]` keys don't parse as numbered placeholders
+    and are ignored for numbering purposes (never re-emitted).
+    """
+    pattern = re.compile(r'^\[' + re.escape(category) + r'-(\d+)\]$')
+    max_index = 0
+    for mapping in mappings:
+        for placeholder in mapping:
+            m = pattern.match(placeholder)
+            if m:
+                max_index = max(max_index, int(m.group(1)))
+    return max_index + 1
+
+
+def _replace_numbered_category(
+    result: str,
+    values_in_order: list[str],
+    category: str,
+    shared_mapping: dict,
+    new_mapping: dict,
+) -> str:
+    """Assign numbered placeholders to distinct values (reusing any already
+    present in shared_mapping or new_mapping) and replace ALL occurrences of
+    each value in `result`. Returns the updated text; `new_mapping` is
+    updated in place with reused + newly-allocated entries relevant to this
+    text.
+    """
+    # value -> placeholder, built from existing numbered entries in both maps
+    value_to_placeholder = {}
+    numbered_re = re.compile(r'^\[' + re.escape(category) + r'-\d+\]$')
+    for mapping in (shared_mapping, new_mapping):
+        for placeholder, value in mapping.items():
+            if numbered_re.match(placeholder):
+                value_to_placeholder[value] = placeholder
+
+    for value in values_in_order:
+        placeholder = value_to_placeholder.get(value)
+        if placeholder is None:
+            idx = _next_index_for_category(category, shared_mapping, new_mapping)
+            placeholder = f"[{category}-{idx}]"
+            value_to_placeholder[value] = placeholder
+        # Record in new_mapping even if reused from shared_mapping, so the
+        # per-transcript mapping de-anonymizes this text standalone.
+        new_mapping[placeholder] = value
+        result = result.replace(value, placeholder)
+
+    return result
+
+
 def _load_entity_names(intake_path: Path) -> list[str]:
     """Extract organization and person names from engagement intake."""
     names = []
@@ -99,11 +151,23 @@ def anonymize_text(
     text: str,
     entity_names: list[str],
     client_label: str = "[CLIENT]",
+    shared_mapping: Optional[dict] = None,
 ) -> tuple[str, dict]:
     """Anonymize PII in text. Returns (anonymized_text, mapping).
 
     The mapping dict can be used to de-anonymize outputs later.
+
+    `shared_mapping` is an optional read-only `{placeholder: value}` map
+    accumulated from prior transcripts in the same run. When provided,
+    already-seen values reuse their existing numbered placeholder and
+    per-category numbering continues past the highest existing index,
+    so mappings from multiple transcripts can be merged without collisions.
+    The returned mapping contains only the entries relevant to THIS text
+    (reused + newly allocated), so it de-anonymizes this transcript
+    standalone.
     """
+    if shared_mapping is None:
+        shared_mapping = {}
     mapping = {}
     result = text
 
@@ -169,34 +233,23 @@ def anonymize_text(
                         result = short_pattern.sub(short_placeholder, result)
 
     # 2. Replace emails
-    for match in _EMAIL_RE.finditer(result):
-        email = match.group(0)
-        placeholder = "[EMAIL-REDACTED]"
-        mapping[placeholder] = email
-        result = result.replace(email, placeholder, 1)
+    emails = list(dict.fromkeys(m.group(0) for m in _EMAIL_RE.finditer(result)))
+    result = _replace_numbered_category(result, emails, "EMAIL", shared_mapping, mapping)
 
     # 3. Replace phone numbers
-    for match in _PHONE_RE.finditer(result):
-        phone = match.group(0)
-        placeholder = "[PHONE-REDACTED]"
-        mapping[placeholder] = phone
-        result = result.replace(phone, placeholder, 1)
+    phones = list(dict.fromkeys(m.group(0) for m in _PHONE_RE.finditer(result)))
+    result = _replace_numbered_category(result, phones, "PHONE", shared_mapping, mapping)
 
     # 4. Replace SSNs / Tax IDs
-    for match in _SSN_RE.finditer(result):
-        ssn = match.group(0)
-        placeholder = "[SSN-REDACTED]"
-        mapping[placeholder] = ssn
-        result = result.replace(ssn, placeholder, 1)
+    ssns = list(dict.fromkeys(m.group(0) for m in _SSN_RE.finditer(result)))
+    result = _replace_numbered_category(result, ssns, "SSN", shared_mapping, mapping)
 
     # 5. Replace account/member numbers
-    for match in _ACCOUNT_RE.finditer(result):
-        acct = match.group(0)
-        placeholder = "[ACCOUNT-REDACTED]"
-        mapping[placeholder] = acct
-        result = result.replace(acct, placeholder, 1)
+    accounts = list(dict.fromkeys(m.group(0) for m in _ACCOUNT_RE.finditer(result)))
+    result = _replace_numbered_category(result, accounts, "ACCOUNT", shared_mapping, mapping)
 
     # 6. Replace URLs that contain client domain names
+    client_urls = []
     for match in _URL_RE.finditer(result):
         url = match.group(0)
         # Check if URL contains any entity name
@@ -204,10 +257,10 @@ def anonymize_text(
         for name in entity_names:
             name_parts = name.lower().split()
             if any(part in url_lower for part in name_parts if len(part) > 3):
-                placeholder = "[CLIENT-URL-REDACTED]"
-                mapping[placeholder] = url
-                result = result.replace(url, placeholder, 1)
+                client_urls.append(url)
                 break
+    client_urls = list(dict.fromkeys(client_urls))
+    result = _replace_numbered_category(result, client_urls, "CLIENT-URL", shared_mapping, mapping)
 
     return result, mapping
 
@@ -216,8 +269,12 @@ def anonymize_transcript_file(
     transcript_path: Path,
     engagement_dir: Path,
     output_dir: Optional[Path] = None,
+    shared_mapping: Optional[dict] = None,
 ) -> tuple[Path, Path]:
     """Anonymize a transcript file in-place (or to output_dir).
+
+    `shared_mapping` is an optional read-only `{placeholder: value}` map
+    accumulated from prior transcripts in the same run — see `anonymize_text`.
 
     Returns (anonymized_transcript_path, mapping_path).
     """
@@ -235,7 +292,9 @@ def anonymize_transcript_file(
     original_text = transcript_path.read_text()
 
     # Anonymize
-    anonymized_text, mapping = anonymize_text(original_text, entity_names)
+    anonymized_text, mapping = anonymize_text(
+        original_text, entity_names, shared_mapping=shared_mapping
+    )
 
     # Determine output paths
     if output_dir is None:
@@ -249,6 +308,7 @@ def anonymize_transcript_file(
 
     # Write mapping (for de-anonymization of final outputs)
     mapping_path.write_text(json.dumps(mapping, indent=2))
+    mapping_path.chmod(0o600)  # Restrict access — this file contains PII
 
     return anon_path, mapping_path
 
