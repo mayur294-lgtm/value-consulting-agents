@@ -33,6 +33,10 @@ the member couldn't verify identity over the phone and had to be routed to a
 branch. We also flagged Member ID: 8823410 as a repeat caller, six times in
 two months.
 
+Priya Rao: We logged a related case too — Account #44719825 — a different
+member, but it hit the exact same identity-verification wall during a
+callback attempt.
+
 Priya Rao: I'm Priya Rao, I lead Data & Analytics. One thing worth noting —
 for compliance testing we use a synthetic customer record with SSN
 512-34-6789 to validate the KYC pipeline end to end. It's a test fixture, not

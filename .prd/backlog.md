@@ -23,11 +23,11 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 
 ## From the PR #129 review (2026-07-28, pii-roundtrip v4)
 
-- [ ] evals/rubrics/component/pii_anonymizer.py:327 — `_anon_block_calls_unlink` greps a fixed 4000-char window for the substring "unlink"; strengthen to assert write_text-before-unlink ordering and the per-transcript-mapping target (from PR #129 review)
-- [ ] evals/goldens/pii_roundtrip_fixture.md — no substring value pairs, so the longest-first replacement fix has no regression test; add an account-prefix or phone±country-code pair + assertions (from PR #129 review)
+- [done v4-refine] evals/rubrics/component/pii_anonymizer.py:327 — `_anon_block_calls_unlink` greps a fixed 4000-char window for the substring "unlink"; strengthen to assert write_text-before-unlink ordering and the per-transcript-mapping target (from PR #129 review)
+- [done v4-refine] evals/goldens/pii_roundtrip_fixture.md — no substring value pairs, so the longest-first replacement fix has no regression test; add an account-prefix or phone±country-code pair + assertions (from PR #129 review)
 - [ ] scripts/anonymize_transcript.py:277 — single-word [CLIENT-SHORT] uses IGNORECASE but restores canonical casing only; "ZENITH staff" round-trips as "Zenith staff" — document or use per-casing placeholders (from PR #129 review)
 - [ ] scripts/artifact_boundary.py:324 — openpyxl load→save silently drops charts/images; latent today (no generator adds charts) — sniff zip for xl/charts|xl/media and treat as unrestored (from PR #129 review)
-- [ ] evals/rubrics/component/pii_anonymizer.py — openpyxl-missing / corrupt-workbook `unrestored` branches and `client_ready=False` are untested; add a corrupt-xlsx check with partial-failure isolation (from PR #129 review)
+- [done v4-refine] evals/rubrics/component/pii_anonymizer.py — openpyxl-missing / corrupt-workbook `unrestored` branches and `client_ready=False` are untested; add a corrupt-xlsx check with partial-failure isolation (from PR #129 review)
 - [ ] evals/rubrics/component/pii_anonymizer.py:121 — `dup_keys` scan is structurally dead post-json.loads; delete (from PR #129 review)
 - [ ] evals/rubrics/component/pii_anonymizer.py:166 — bare-Zenith assertion duplicated between checks 4 and 9; keep only in check 9 (from PR #129 review)
 - [ ] scripts/anonymize_transcript.py:283 — steps 2-5 are 4× copy-paste; collapse to a (regex, category) loop (from PR #129 review)

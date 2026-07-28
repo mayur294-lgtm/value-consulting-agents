@@ -329,14 +329,37 @@ def _anon_block_calls_unlink() -> bool:
     per-transcript mapping cleanup call. Not importable standalone (it's an
     async def deep inside orchestrate.py's pipeline), so this asserts the
     SOURCE contains the cleanup call within the anon-mapping section, located
-    by its own comment marker."""
+    by its own comment marker.
+
+    Strengthened beyond a bare "unlink" substring grep (which a 4000-char
+    window could satisfy with an unrelated unlink or the wrong ordering):
+    anchors on the actual identifiers from the block (as of this writing) —
+    `mapping_file.write_text(...)` durably saving the COMBINED mapping,
+    `for mp in anon_mapping_paths:` iterating the PER-TRANSCRIPT mapping
+    files, and `mp.unlink(` cleaning each of them up — and requires the
+    combined-mapping write to happen strictly before the per-transcript
+    unlink loop starts, which strictly precedes the actual unlink call. That
+    ordering is the safety property: per-transcript mapping files must never
+    be deleted before the combined mapping that supersedes them is durably
+    on disk. If a future edit renames these identifiers or reorders the
+    block, update the anchors here to match the new source rather than
+    loosening the check back to a substring grep.
+    """
     src = (_ROOT / "scripts" / "orchestrate.py").read_text()
     marker = "# --- PII Anonymization"
     idx = src.find(marker)
     if idx == -1:
         return False
     block = src[idx: idx + 4000]
-    return "unlink" in block
+    write_idx = block.find("mapping_file.write_text(")
+    loop_idx = block.find("for mp in anon_mapping_paths:")
+    unlink_idx = block.find("mp.unlink(")
+    return (
+        write_idx != -1
+        and loop_idx != -1
+        and unlink_idx != -1
+        and write_idx < loop_idx < unlink_idx
+    )
 
 
 def _check_mapping_mode_and_cleanup(fixture_text: str) -> CheckResult:
@@ -386,6 +409,165 @@ def _check_legacy_mapping(_fixture_text: str) -> CheckResult:
     return _bool_check("legacy_redacted_mapping_still_restores", ok, detail=detail)
 
 
+# ---------------------------------------------------------------------------
+# 11. substring_values_no_fragment_leak
+# ---------------------------------------------------------------------------
+def _check_substring_pair_no_fragment_leak(fixture_text: str) -> CheckResult:
+    """Regression guard for the longest-first replacement fix in
+    `_replace_numbered_category` (`sorted(..., key=len, reverse=True)`). The
+    fixture now contains a genuine substring pair — David Cole's
+    "Account #4471982" and Priya Rao's "Account #44719825" (the same digits
+    plus a trailing "5") — derived here via the real `_ACCOUNT_RE`, not
+    hand-typed, so this can't drift from actual regex behavior.
+
+    Without longest-first replacement, a first-appearance/alphabetical pass
+    over the shorter value blanket-replaces its own text everywhere,
+    including the literal prefix it forms inside the longer value's
+    occurrence, leaving a stray digit fragment (the longer value's tail)
+    sitting immediately after the shorter value's placeholder — the exact
+    fragment-leak signature this check looks for.
+    """
+    anon_text, mapping, _mode = _anonymize_fixture(fixture_text)
+
+    account_values = sorted(
+        {m.group(0) for m in _ACCOUNT_RE.finditer(fixture_text)},
+        key=len, reverse=True,
+    )
+    pair = None
+    for i, longer in enumerate(account_values):
+        for shorter in account_values[i + 1:]:
+            if shorter in longer:
+                pair = (longer, shorter)
+                break
+        if pair:
+            break
+    if pair is None:
+        return _bool_check(
+            "substring_values_no_fragment_leak", False,
+            detail=f"no substring pair found among fixture account matches: {account_values}",
+        )
+    longer, shorter = pair
+
+    longer_ph = next((k for k, v in mapping.items() if v == longer), None)
+    shorter_ph = next((k for k, v in mapping.items() if v == shorter), None)
+    distinct_placeholders = (
+        longer_ph is not None and shorter_ph is not None and longer_ph != shorter_ph
+    )
+
+    raw_leak = (longer in anon_text) or (shorter in anon_text)
+
+    # The fragment-leak signature: the longer value's tail characters (the
+    # part beyond the shorter value's length) sitting immediately after the
+    # shorter value's placeholder, as they would if the shorter value's
+    # replacement pass consumed the longer value's shared prefix first.
+    tail = longer[len(shorter):]
+    fragment_adjacent = bool(shorter_ph) and (shorter_ph + tail) in anon_text
+
+    restored = deanonymize_text(anon_text, mapping)
+    round_trip_ok = restored == fixture_text
+
+    ok = distinct_placeholders and not raw_leak and not fragment_adjacent and round_trip_ok
+    detail = (f"pair=({longer!r}, {shorter!r}); placeholders=({longer_ph}, {shorter_ph}); "
+              f"distinct_placeholders={distinct_placeholders}; raw_leak={raw_leak}; "
+              f"fragment_adjacent(tail={tail!r})={fragment_adjacent}; round_trip_ok={round_trip_ok}")
+    return _bool_check("substring_values_no_fragment_leak", ok, detail=detail)
+
+
+# ---------------------------------------------------------------------------
+# 12. preexisting_placeholder_literal_no_collision
+# ---------------------------------------------------------------------------
+def _check_preexisting_placeholder_literal(_fixture_text: str) -> CheckResult:
+    """Regression guard for the F8 fix: `_next_index_for_category` scanning
+    `text=result` for literal `[CATEGORY-N]`-shaped substrings already
+    present in the input (e.g. a transcript quoting a previously anonymized
+    report) so newly allocated placeholders can never collide in appearance
+    with pre-existing literal text.
+
+    Runs `anonymize_text` directly (no engagement dir needed) on an
+    in-memory text containing a literal "[EMAIL-1]" plus one real synthetic
+    email, with no entity names, to isolate the email-numbering path.
+    """
+    text = (
+        "Please reference the previous report, which said to contact "
+        "[EMAIL-1] for details. The current contact instead is "
+        "sam.ortiz@fixtureco.example.com."
+    )
+    anon_text, mapping = anonymize_text(text, [])
+
+    literal_survives = "[EMAIL-1]" in anon_text
+    literal_not_a_key = "[EMAIL-1]" not in mapping
+
+    real_email_placeholder = next(
+        (k for k, v in mapping.items() if v == "sam.ortiz@fixtureco.example.com"), None
+    )
+    index_above_literal = False
+    if real_email_placeholder:
+        m = re.match(r"^\[EMAIL-(\d+)\]$", real_email_placeholder)
+        index_above_literal = bool(m) and int(m.group(1)) > 1
+
+    restored = deanonymize_text(anon_text, mapping)
+    round_trip_ok = restored == text
+
+    ok = literal_survives and literal_not_a_key and index_above_literal and round_trip_ok
+    detail = (f"literal '[EMAIL-1]' survives verbatim={literal_survives}; "
+              f"literal not a mapping key={literal_not_a_key}; "
+              f"real email placeholder={real_email_placeholder!r} "
+              f"(index_above_literal={index_above_literal}); round_trip_ok={round_trip_ok}")
+    return _bool_check("preexisting_placeholder_literal_no_collision", ok, detail=detail)
+
+
+# ---------------------------------------------------------------------------
+# 13. unrestored_flips_client_ready
+# ---------------------------------------------------------------------------
+def _check_unrestored_flips_client_ready(fixture_text: str) -> CheckResult:
+    """Regression guard for the F2/F5 fixes: per-file isolation (one corrupt
+    output must not block restoration of the others) and the atomic-write
+    hygiene in `_atomic_write` (no leftover `*.tmp-deanon*` files).
+
+    Places a good `.md` file (with a placeholder to restore) alongside a
+    genuinely corrupt `.xlsx` (truncated bytes — not a valid zip/workbook)
+    in a temp outputs tree, runs the real `deanonymize_dir`, and asserts:
+    the good file IS restored, the corrupt file is reported in
+    `report["unrestored"]`, `report["client_ready"]` flips to False, and no
+    `.tmp-deanon` temp files are left behind by the failed write.
+    """
+    _anon_text, mapping, _mode = _anonymize_fixture(fixture_text)
+    client_ph = "[CLIENT]"
+    if client_ph not in mapping:
+        return _bool_check("unrestored_flips_client_ready", False,
+                           detail="[CLIENT] not present in mapping")
+
+    with tempfile.TemporaryDirectory() as td:
+        engagement_dir = Path(td) / "engagement"
+        outputs_dir = engagement_dir / "outputs"
+        outputs_dir.mkdir(parents=True)
+        mapping_file = engagement_dir / ".pii_mapping.json"
+        mapping_file.write_text(json.dumps(mapping))
+
+        good_path = outputs_dir / "summary.md"
+        good_path.write_text(f"Prepared for {client_ph}.\n")
+
+        corrupt_path = outputs_dir / "broken.xlsx"
+        corrupt_path.write_bytes(b"PK\x03\x04not a real zip / xlsx payload, truncated")
+
+        report = artifact_boundary.deanonymize_dir(outputs_dir, mapping_file)
+
+        good_after = good_path.read_text()
+        leftover_tmp = list(outputs_dir.rglob("*.tmp-deanon*"))
+
+    good_restored = good_after == f"Prepared for {mapping[client_ph]}.\n"
+    corrupt_listed = str(corrupt_path) in report.get("unrestored", [])
+    client_ready_false = report.get("client_ready") is False
+    no_leftover_tmp = len(leftover_tmp) == 0
+
+    ok = good_restored and corrupt_listed and client_ready_false and no_leftover_tmp
+    detail = (f"good file restored={good_restored}; corrupt file in unrestored={corrupt_listed} "
+              f"(report.unrestored={report.get('unrestored')}); "
+              f"report.client_ready={report.get('client_ready')} (expected False); "
+              f"leftover .tmp-deanon files={leftover_tmp}")
+    return _bool_check("unrestored_flips_client_ready", ok, detail=detail)
+
+
 CHECKS = {
     "round_trip_byte_identical": _check_round_trip,
     "distinct_values_distinct_placeholders": _check_distinct_mapping,
@@ -397,6 +579,9 @@ CHECKS = {
     "mapping_files_chmod_600_and_cleaned": _check_mapping_mode_and_cleanup,
     "client_short_single_word_redacted": _check_client_short_word,
     "legacy_redacted_mapping_still_restores": _check_legacy_mapping,
+    "substring_values_no_fragment_leak": _check_substring_pair_no_fragment_leak,
+    "preexisting_placeholder_literal_no_collision": _check_preexisting_placeholder_literal,
+    "unrestored_flips_client_ready": _check_unrestored_flips_client_ready,
 }
 
 

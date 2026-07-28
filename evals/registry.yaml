@@ -193,7 +193,7 @@ components:
   # (scripts/anonymize_transcript.py + artifact_boundary.deanonymize_dir), not an
   # agent. Deterministic code checks only — no judge. Threshold 1.00 deliberately
   # above the 0.80 house default (D6, solution-design-v4): every check witnesses a
-  # distinct shipped-PII failure mode; 9/10 must not pass.
+  # distinct shipped-PII failure mode; all 13 must pass — no partial credit.
   pii-anonymizer:
     altitude: component
     threshold: 1.00
@@ -202,7 +202,9 @@ components:
            repeated_value_reuses_placeholder, no_raw_pii_in_anonymized_output,
            cross_transcript_merge_collision_free, xlsx_outputs_deanonymized,
            nested_outputs_deanonymized, mapping_files_chmod_600_and_cleaned,
-           client_short_single_word_redacted, legacy_redacted_mapping_still_restores]
+           client_short_single_word_redacted, legacy_redacted_mapping_still_restores,
+           substring_values_no_fragment_leak, preexisting_placeholder_literal_no_collision,
+           unrestored_flips_client_ready]
 
 # Pipeline (integration) altitude — the most important. When ANY component
 # changes, run orchestrate.py end-to-end on a golden engagement and check the
