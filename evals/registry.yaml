@@ -189,6 +189,21 @@ components:
     code: [hypothesis_validation_statuses, usecase_candidates_present, usecase_classification_present]
     judge: [synthesis_faithful_to_workshops]
 
+  # pii-anonymizer (#127) — the PII round-trip parity gate (PRD v4). Pipeline code
+  # (scripts/anonymize_transcript.py + artifact_boundary.deanonymize_dir), not an
+  # agent. Deterministic code checks only — no judge. Threshold 1.00 deliberately
+  # above the 0.80 house default (D6, solution-design-v4): every check witnesses a
+  # distinct shipped-PII failure mode; 9/10 must not pass.
+  pii-anonymizer:
+    altitude: component
+    threshold: 1.00
+    input: evals/goldens/pii_roundtrip_fixture.md
+    code: [round_trip_byte_identical, distinct_values_distinct_placeholders,
+           repeated_value_reuses_placeholder, no_raw_pii_in_anonymized_output,
+           cross_transcript_merge_collision_free, xlsx_outputs_deanonymized,
+           nested_outputs_deanonymized, mapping_files_chmod_600_and_cleaned,
+           client_short_single_word_redacted, legacy_redacted_mapping_still_restores]
+
 # Pipeline (integration) altitude — the most important. When ANY component
 # changes, run orchestrate.py end-to-end on a golden engagement and check the
 # inter-agent contracts + final deliverable still hold.
