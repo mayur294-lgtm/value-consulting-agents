@@ -21,6 +21,19 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 - [ ] Telemetry "Layer 1" (orchestrator direct `gh issue create` after Step 7/8c) is documented in FLYWHEEL.md but was never implemented — implement or correct the docs.
 - [ ] knowledge conflicts: `retail/roi_levers.md` claims NBA/churn-prediction capabilities absent from the Product Directory; BECU call volume 25K/mo vs ~239K/mo implied across two knowledge files; `value_lever_framework.md` states the gap formula in ratio form but its worked example uses percentage-points (production configs use ratio).
 
+## From the PR #129 review (2026-07-28, pii-roundtrip v4)
+
+- [ ] evals/rubrics/component/pii_anonymizer.py:327 — `_anon_block_calls_unlink` greps a fixed 4000-char window for the substring "unlink"; strengthen to assert write_text-before-unlink ordering and the per-transcript-mapping target (from PR #129 review)
+- [ ] evals/goldens/pii_roundtrip_fixture.md — no substring value pairs, so the longest-first replacement fix has no regression test; add an account-prefix or phone±country-code pair + assertions (from PR #129 review)
+- [ ] scripts/anonymize_transcript.py:277 — single-word [CLIENT-SHORT] uses IGNORECASE but restores canonical casing only; "ZENITH staff" round-trips as "Zenith staff" — document or use per-casing placeholders (from PR #129 review)
+- [ ] scripts/artifact_boundary.py:324 — openpyxl load→save silently drops charts/images; latent today (no generator adds charts) — sniff zip for xl/charts|xl/media and treat as unrestored (from PR #129 review)
+- [ ] evals/rubrics/component/pii_anonymizer.py — openpyxl-missing / corrupt-workbook `unrestored` branches and `client_ready=False` are untested; add a corrupt-xlsx check with partial-failure isolation (from PR #129 review)
+- [ ] evals/rubrics/component/pii_anonymizer.py:121 — `dup_keys` scan is structurally dead post-json.loads; delete (from PR #129 review)
+- [ ] evals/rubrics/component/pii_anonymizer.py:166 — bare-Zenith assertion duplicated between checks 4 and 9; keep only in check 9 (from PR #129 review)
+- [ ] scripts/anonymize_transcript.py:283 — steps 2-5 are 4× copy-paste; collapse to a (regex, category) loop (from PR #129 review)
+- [ ] scripts/anonymize_transcript.py:50 — `_next_index_for_category` re-scans mappings its only caller just walked; merge into the caller's loop (from PR #129 review)
+- [ ] scripts/anonymize_transcript.py:230 — pre-existing: entity-name pass runs before the email/URL pass, so a client name inside an email local-part splits the email redaction; also case-insensitive match restores stored casing (ALL-CAPS mentions not byte-identical) (noted during PR #129 cycle)
+
 ### Low — docs, hygiene, prompts
 - [ ] FLYWHEEL.md: five sections below the deprecation banner still describe the killed auto-dev loop as live (File Map, labels, cost model, triggers).
 - [ ] CLAUDE.md: `.claude/skills/` claim wrong (holds bb-* six, not coding-standards); anti-patterns 8-10 (experience map, bullet narratives, silent checkpoint skip) referenced in agent files but never added; CHANGELOG unlogged since 1.3.0 (PRs #70-#123).
