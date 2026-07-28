@@ -70,7 +70,7 @@ def _compute_5yr_roi(config: dict) -> Optional[float]:
     total_steady_state = 0
     for group in groups.values():
         for dtype in ('revenue_drivers', 'cost_drivers'):
-            for driver in group.get(dtype, {}).values():
+            for driver in (group.get(dtype) or {}).values():
                 baseline = driver.get('baseline_annual', 0)
                 bi = driver.get('inputs', {}).get('backbase_impact', {})
                 impact = bi.get('value', 0) if isinstance(bi, dict) else bi if isinstance(bi, (int, float)) else 0
@@ -144,7 +144,7 @@ def cap_roi_config(config_path) -> dict:
     groups = config.get('value_lever_groups', config.get('journeys', {}))
     for group_key, group in groups.items():
         for driver_type in ('revenue_drivers', 'cost_drivers'):
-            for drv_key, driver in group.get(driver_type, {}).items():
+            for drv_key, driver in (group.get(driver_type) or {}).items():
                 bi = driver.get('inputs', {}).get('backbase_impact', {})
                 val = bi.get('value', 0) if isinstance(bi, dict) else bi if isinstance(bi, (int, float)) else 0
                 if isinstance(val, (int, float)) and val > MAX_BACKBASE_IMPACT:
@@ -159,10 +159,10 @@ def cap_roi_config(config_path) -> dict:
                 total_benefit += baseline * impact
 
     # Cap scenario-level impacts
-    for sc_name, sc in config.get('scenarios', {}).items():
+    for sc_name, sc in (config.get('scenarios') or {}).items():
         if not isinstance(sc, dict):
             continue
-        for imp_key, imp_val in sc.get('backbase_impacts', {}).items():
+        for imp_key, imp_val in (sc.get('backbase_impacts') or {}).items():
             if isinstance(imp_val, (int, float)) and imp_val > MAX_BACKBASE_IMPACT:
                 warnings.append(
                     f"    Scenario '{sc_name}' impact '{imp_key}': {imp_val:.0%} → capped to {MAX_BACKBASE_IMPACT:.0%}"
