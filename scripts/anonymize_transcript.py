@@ -36,6 +36,16 @@ _SSN_RE = re.compile(r'\b\d{3}-\d{2}-\d{4}\b')
 _ACCOUNT_RE = re.compile(r'\b(?:account|member|acct|ID)[\s#:]*\d{6,}\b', re.IGNORECASE)
 _URL_RE = re.compile(r'https?://[^\s)<>]+')
 
+# Generic single-word short forms that are too common to safely redact on
+# their own (e.g. "First" in "First Bank") — a single-word client short form
+# is only redacted if it is NOT in this stoplist.
+_GENERIC_SHORT_NAME_STOPLIST = {
+    'bank', 'banking', 'credit', 'union', 'first', 'national', 'federal',
+    'united', 'community', 'citizens', 'state', 'financial', 'savings',
+    'trust', 'group', 'holdings', 'capital', 'mutual', 'valley', 'coast',
+    'pacific',
+}
+
 
 def _next_index_for_category(category: str, *mappings: dict) -> int:
     """Find the highest numbered [CATEGORY-N] placeholder across the given
@@ -250,9 +260,21 @@ def anonymize_text(
                             short_name = ' '.join(words[:-1])
                             break
 
-                if len(short_name.split()) >= 2 and short_name != name:
+                short_words = short_name.split()
+                is_distinctive_single_word = (
+                    len(short_words) == 1
+                    and len(short_words[0]) >= 4
+                    and short_words[0].lower() not in _GENERIC_SHORT_NAME_STOPLIST
+                )
+                if short_name != name and (len(short_words) >= 2 or is_distinctive_single_word):
                     short_placeholder = "[CLIENT-SHORT]"
-                    short_pattern = re.compile(re.escape(short_name), re.IGNORECASE)
+                    if len(short_words) >= 2:
+                        # Multi-word short form — unchanged behavior.
+                        short_pattern = re.compile(re.escape(short_name), re.IGNORECASE)
+                    else:
+                        # Single-word short form — word-boundary match so it
+                        # doesn't clobber substrings (e.g. "Zenithal").
+                        short_pattern = re.compile(r'\b' + re.escape(short_name) + r'\b', re.IGNORECASE)
                     if short_pattern.search(result):
                         mapping[short_placeholder] = short_name
                         result = short_pattern.sub(short_placeholder, result)
@@ -310,8 +332,16 @@ def anonymize_transcript_file(
     entity_names = list(set(entity_names))
 
     if not entity_names:
-        # No names found — still strip generic PII (emails, phones, SSNs)
-        pass
+        # No names found — still strip generic PII (emails, phones, SSNs),
+        # but warn loudly since client/person names will reach the API
+        # in plaintext.
+        print(
+            "⚠ No client/person names found in inputs/engagement_intake.md or "
+            "ENGAGEMENT_CONTEXT.md — only generic PII (emails, phones, SSNs, "
+            "accounts) was stripped. Client and person names may reach the "
+            "API in plaintext. Check inputs/engagement_intake.md.",
+            file=sys.stderr,
+        )
 
     # Read transcript
     original_text = transcript_path.read_text()
