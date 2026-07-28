@@ -65,7 +65,8 @@ def _replace_numbered_category(
     present in shared_mapping or new_mapping) and replace ALL occurrences of
     each value in `result`. Returns the updated text; `new_mapping` is
     updated in place with reused + newly-allocated entries relevant to this
-    text.
+    text (pruned to exactly what's actually present in the returned text —
+    see the substring note below).
     """
     # value -> placeholder, built from existing numbered entries in both maps
     value_to_placeholder = {}
@@ -75,16 +76,40 @@ def _replace_numbered_category(
             if numbered_re.match(placeholder):
                 value_to_placeholder[value] = placeholder
 
+    # Pass 1: assign placeholder indices in FIRST-APPEARANCE order (this is
+    # the numbering semantics — [CAT-1] is whichever distinct value appears
+    # first in the text). This does NOT touch `result` yet: index assignment
+    # must stay independent of which value happens to be a textual substring
+    # of another (e.g. account "5551234" vs "55512345").
+    next_idx = _next_index_for_category(category, shared_mapping, new_mapping)
     for value in values_in_order:
-        placeholder = value_to_placeholder.get(value)
-        if placeholder is None:
-            idx = _next_index_for_category(category, shared_mapping, new_mapping)
-            placeholder = f"[{category}-{idx}]"
-            value_to_placeholder[value] = placeholder
-        # Record in new_mapping even if reused from shared_mapping, so the
-        # per-transcript mapping de-anonymizes this text standalone.
-        new_mapping[placeholder] = value
+        if value not in value_to_placeholder:
+            value_to_placeholder[value] = f"[{category}-{next_idx}]"
+            next_idx += 1
+
+    # Pass 2: substitute LONGEST value first. A plain first-appearance-order
+    # `str.replace` would let a shorter value's blanket replace mangle a
+    # longer value that contains it as a substring (e.g. account "5551234"
+    # is a substring of "55512345"; a bare phone number can be a substring
+    # of one with a country code; a URL can be a prefix of a longer URL),
+    # leaving an unreplaced remainder of real PII in the anonymized text.
+    # Replacing longest-first consumes the longer occurrence completely
+    # before the shorter value's pass runs, so it can only match genuine
+    # standalone occurrences of the shorter value.
+    for value in sorted(set(values_in_order), key=len, reverse=True):
+        placeholder = value_to_placeholder[value]
         result = result.replace(value, placeholder)
+        new_mapping[placeholder] = value
+
+    # A value allocated an index in pass 1 may turn out to be entirely
+    # consumed as a substring of a longer value already replaced in pass 2
+    # (no standalone occurrence survives) — its placeholder never actually
+    # appears in `result`. Keep the mapping exactly one-to-one with what's
+    # in the text: drop any such dead entry.
+    for value in values_in_order:
+        placeholder = value_to_placeholder[value]
+        if placeholder in new_mapping and placeholder not in result:
+            del new_mapping[placeholder]
 
     return result
 
