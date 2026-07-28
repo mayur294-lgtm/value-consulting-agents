@@ -1096,7 +1096,7 @@ async def step_assembly(
 
         # Phase 1: Quick structure plan (V5: capped to concise briefing)
         result = await run_agent("narrative-assembler", cwd=engagement_dir,
-                                 label="Assembly P1 (plan)", max_turns=5,
+                                 label="Assembly P1 (plan)", max_turns=15,
                                  mode="pipeline-report",
                                  params={**report_params, "phase": "plan",
                                          "upstream_files": upstream_files})
