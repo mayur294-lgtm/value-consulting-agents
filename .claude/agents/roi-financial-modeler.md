@@ -714,6 +714,14 @@ OUTPUT DISCIPLINE:
   files (audit lives in the checkpoint file, overriding the Journal Entry and
   Telemetry Protocol sections). Phase `2` keeps the core Journal Entry and
   Telemetry Protocol.
+- INCREMENTAL WRITES (hard limit — a single response that emits the whole
+  model overflows the SDK output-token ceiling and kills the run): never
+  emit `roi_config.json` and `roi_report.md` in the same response. Write
+  `roi_config.json` first, alone, as soon as the numbers are final. Then
+  write `roi_report.md` across MULTIPLE responses — one Write per major
+  section (exec summary + levers; scenarios + sensitivity; assumptions +
+  self-check), appending to the file. Keep any single Write well under
+  ~15K words. The checkpoint file is small — write it whenever ready.
 
 For each lever in lever_candidates.md (both phases — the legacy production
 task, which is the methodology above in compressed form):
