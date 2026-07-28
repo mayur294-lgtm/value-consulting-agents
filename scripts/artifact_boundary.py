@@ -277,6 +277,7 @@ def deanonymize_dir(outputs_dir, mapping_file=None) -> dict:
         "client_ready": False,
         "files_restored": 0,
         "error": None,
+        "unrestored": [],
     }
 
     if not mapping_file.exists():
@@ -298,16 +299,62 @@ def deanonymize_dir(outputs_dir, mapping_file=None) -> dict:
         pii_mapping = json.loads(mapping_file.read_text())
         if pii_mapping:
             deanon_count = 0
-            for out_file in outputs_dir.iterdir():
-                if out_file.suffix in ('.md', '.html', '.json', '.txt') and not out_file.name.startswith('interim'):
+            spreadsheet_count = 0
+            unrestored = []
+            for out_file in sorted(outputs_dir.rglob('*')):
+                if not out_file.is_file():
+                    continue
+                rel_parts = out_file.relative_to(outputs_dir).parts
+                if any(part.startswith('.') for part in rel_parts):
+                    # Never touch dotfiles/dot-directories (.anon_*, .pii_mapping.json, etc.)
+                    continue
+                if out_file.name.startswith('interim'):
+                    continue
+
+                if out_file.suffix == '.xlsx':
+                    try:
+                        import openpyxl
+                    except ImportError:
+                        log(f"  ✗ openpyxl not installed — cannot restore {out_file.name}. "
+                            f"pip install openpyxl and re-run "
+                            f"`python3 scripts/artifact_boundary.py deanon <dir>`", C.RED)
+                        unrestored.append(str(out_file))
+                        continue
+                    try:
+                        wb = openpyxl.load_workbook(out_file)
+                        changed = False
+                        for ws in wb.worksheets:
+                            restored_title = deanonymize_text(ws.title, pii_mapping)
+                            if restored_title != ws.title:
+                                ws.title = restored_title
+                                changed = True
+                            for row in ws.iter_rows():
+                                for cell in row:
+                                    if isinstance(cell.value, str):
+                                        restored_val = deanonymize_text(cell.value, pii_mapping)
+                                        if restored_val != cell.value:
+                                            cell.value = restored_val
+                                            changed = True
+                        if changed:
+                            wb.save(out_file)
+                            deanon_count += 1
+                            spreadsheet_count += 1
+                    except Exception as xe:
+                        log(f"  ✗ {out_file}: could not open workbook ({type(xe).__name__}) — NOT restored", C.RED)
+                        unrestored.append(str(out_file))
+                    continue
+
+                if out_file.suffix in ('.md', '.html', '.json', '.txt'):
                     content = out_file.read_text()
                     restored = deanonymize_text(content, pii_mapping)
                     if restored != content:
                         out_file.write_text(restored)
                         deanon_count += 1
-            log(f"  ✓ De-anonymized {deanon_count} output file(s)")
+
+            log(f"  ✓ De-anonymized {deanon_count} output file(s) ({spreadsheet_count} spreadsheet(s))")
             report["files_restored"] = deanon_count
-        report["client_ready"] = True
+            report["unrestored"] = unrestored
+        report["client_ready"] = not report["unrestored"]
     except Exception as e:
         log(f"  ⚠ De-anonymization failed: {type(e).__name__} — outputs may contain placeholders", C.YELLOW)
         report["error"] = type(e).__name__
