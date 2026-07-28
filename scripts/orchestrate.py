@@ -592,13 +592,22 @@ async def step_discovery(
     log(f"  Found {len(transcripts)} transcript(s)")
 
     # --- PII Anonymization: strip client names, emails, phones before sending to API ---
-    anon_mappings = {}  # { original_path: mapping_path }
+    # `combined_mapping` is threaded into each call as `shared_mapping` so numbering
+    # (e.g. [EMAIL-N]) is run-global across transcripts: repeated values reuse their
+    # placeholder and each new distinct value continues the counter — the per-transcript
+    # mappings below can never collide on the same key holding two different values.
+    anon_mapping_paths = []  # per-transcript mapping files, cleaned up once combined is saved
     anon_transcripts = []
+    combined_mapping = {}
     for t in transcripts:
         try:
-            anon_path, mapping_path = anonymize_transcript_file(t, engagement_dir, output_dir=inputs_dir)
+            anon_path, mapping_path = anonymize_transcript_file(
+                t, engagement_dir, output_dir=inputs_dir, shared_mapping=combined_mapping
+            )
             anon_transcripts.append(anon_path)
-            anon_mappings[str(t)] = mapping_path
+            anon_mapping_paths.append(mapping_path)
+            if mapping_path.exists():
+                combined_mapping.update(json.loads(mapping_path.read_text()))
             log(f"    Anonymized: {t.name} → {anon_path.name}")
         except Exception as e:
             # FAIL CLOSED: never send raw PII to the API. Skip this transcript and
@@ -610,15 +619,21 @@ async def step_discovery(
     transcripts = anon_transcripts
 
     # Save combined mapping for de-anonymization of final outputs
-    combined_mapping = {}
-    for mp in anon_mappings.values():
-        if mp.exists():
-            combined_mapping.update(json.loads(mp.read_text()))
     if combined_mapping:
         mapping_file = engagement_dir / ".pii_mapping.json"
         mapping_file.write_text(json.dumps(combined_mapping, indent=2))
         mapping_file.chmod(0o600)  # Restrict access — this file contains PII
         log(f"    PII mapping saved ({len(combined_mapping)} substitutions)")
+
+        # Only now that the combined mapping is durably written (and --resume-from
+        # reads only .pii_mapping.json) is it safe to remove the per-transcript files.
+        cleaned = 0
+        for mp in anon_mapping_paths:
+            if mp.exists():
+                mp.unlink(missing_ok=True)
+                cleaned += 1
+        if cleaned:
+            log(f"    Per-transcript mappings cleaned up ({cleaned} file(s))")
 
     # discovery-transcript-interpreter is mode-extracted (skill-first contracts):
     # prompts are composed from .claude/agents/discovery-transcript-interpreter.md
