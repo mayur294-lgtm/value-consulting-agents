@@ -2,9 +2,9 @@ name: Evals (harness gate)
 
 # Tier-1 component-change gate. Runs the eval suite on any PR that touches a
 # content component (agent / command / skill / template / presentation / pipeline).
-# Starts in SHADOW mode: it scores, comments, and tracks in Langfuse, but does NOT
-# block (the job exits 0). Flip to BLOCKING by setting SHADOW: "false" below and
-# marking this check "Required" in branch protection on main.
+# BLOCKING mode (SHADOW: "false") since 2026-07-24: the job exits non-zero when a
+# gated eval fails. To fully enforce, this check must also be marked "Required" in
+# branch protection on main (repo admin). Set SHADOW: "true" to revert to advisory.
 
 on:
   pull_request:
@@ -25,7 +25,7 @@ jobs:
   evals:
     runs-on: ubuntu-latest
     env:
-      SHADOW: "true"                       # <-- set to "false" to make the gate block
+      SHADOW: "false"                      # BLOCKING since 2026-07-24 — goldens re-pointed to committed fixtures (PR #92), gate is now trustworthy
       # Provide these as repo secrets to enable Langfuse logging + LLM-judge:
       LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
       LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
@@ -40,6 +40,13 @@ jobs:
         run: |
           pip install -r evals/requirements.txt
           if [ -n "$LANGFUSE_PUBLIC_KEY" ]; then pip install "langfuse>=2.0" "anthropic>=0.40"; fi
+      - name: Registry preflight
+        # Fail fast if any GATING golden can't resolve in CI (missing or
+        # gitignored) — a silently-skipped golden would make its gate a
+        # vacuous PASS. Bare-name engagement goldens are reported as
+        # non-fatal DEBT. Runs before the suite so a mis-wired registry is a
+        # precise error, not a green-that-verified-nothing.
+        run: python evals/check_registry.py
       - name: Run eval suite
         id: run
         run: |

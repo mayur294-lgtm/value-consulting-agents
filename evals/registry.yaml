@@ -20,11 +20,20 @@ deliverables:
     monitor:
       - engagements/test_inspire/2026-02_retail_ignite/outputs/strategy_workshop_deck.html
 
+  # SLOT RULE (see deck above): `goldens:` / `negatives:` are small, frozen,
+  # COMMITTED fixtures authored to test the rubric — they are what the PR gate
+  # runs. `monitor:` is real shipped engagement output, watched for drift by
+  # evals-monitor.yml and NEVER gating. Real `engagements/**` paths must never
+  # appear under `goldens:` — that tree is gitignored (PII), so the file is
+  # absent in every clean checkout and CI, and a missing golden is [SKIP]-ed,
+  # which counts as a PASS. That made these three gates vacuously green.
   roi:
     altitude: deliverable
     evaluator: rubrics.deliverable.roi
     threshold: 0.80
     goldens:
+      - evals/goldens/roi_report_valid.md        # synthetic (Meridian Mutual) — exercises the rubric
+    monitor:
       - engagements/nfis/2026-02_digital_investor_assessment_v2/outputs/roi_report.md
 
   assessment:
@@ -32,8 +41,9 @@ deliverables:
     evaluator: rubrics.deliverable.assessment
     threshold: 0.80
     goldens:
-      - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_dashboard.html
+      - evals/goldens/assessment_dashboard_valid.html   # synthetic — 7-act arc, on-palette
     monitor:
+      - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_dashboard.html
       - engagements/nfis/2026-02_digital_investor_assessment_v2/outputs/assessment_dashboard.html
 
   report:
@@ -41,6 +51,8 @@ deliverables:
     evaluator: rubrics.deliverable.report
     threshold: 0.80
     goldens:
+      - evals/goldens/assessment_report_valid.md        # synthetic — passes tone + assumption-discipline judges
+    monitor:
       - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_report.md
 
 # Component (unit) altitude — score an agent's direct output on a fixed input.
@@ -52,15 +64,17 @@ components:
   market-context-researcher:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
+    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
+    input: evals/goldens/market_context_golden.md   # scores specifics._market_context via rubrics.component.market_context_researcher
     code: [annual_report_attempted, module1_metrics_present, competitor_benchmark_section]   # incl. the documented miss
     judge: [sources_credible_not_hallucinated]
 
   roi-financial-modeler:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
-    input: evals/goldens/nfis/roi_config.json
+    # Fixture: the committed anonymized provenance golden (the basis the provenance
+    # fix was built on). Re-pointed from a never-created `nfis` golden — see PRD v1.
+    input: evals/goldens/roi_config_provenance.json
     code: [three_scenarios, npv_payback_present, assumptions_register_present, sensitivity_analysis_present,
            basic_information_has_sources_list, basic_fields_have_source_and_confidence, operating_costs_emitted_as_formula]
     judge: [conservative_bias, topdown_bottomup_correlation]
@@ -83,70 +97,80 @@ components:
   roi-hypothesis-builder:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
+    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
+    input: evals/goldens/roi_hypothesis_golden.md   # scores specifics._roi_hypothesis via rubrics.component.roi_hypothesis_builder
     code: [lever_ids_present, four_link_chain_present, problem_statement_present]
     judge: [levers_grounded_in_evidence]
 
   discovery-transcript-interpreter:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
+    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
+    input: evals/goldens/discovery_evidence_register_golden.md   # scores specifics._discovery via rubrics.component.discovery_transcript_interpreter
     code: [evidence_ids_wellformed, evidence_register_present, lifecycle_tags_present, pain_points_present]
     judge: [faithful_extraction_no_invention]
 
   capability-assessment:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
+    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
+    input: evals/goldens/capability_assessment_golden.md   # scores specifics._capability via rubrics.component.capability_assessment
     code: [maturity_scale_0_4, executive_summary_present, front_middle_back_layers, unconsidered_needs_present, scores_have_evidence_refs]
     judge: [scores_justified_by_evidence]
 
   roadmap-prioritization:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
+    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
+    input: evals/goldens/roadmap_golden.md   # scores specifics._roadmap via rubrics.component.roadmap_prioritization
     code: [phases_present, initiatives_sequenced, dependencies_present, gates_or_milestones_present]
     judge: [initiatives_traced_to_gaps_and_levers]
 
   narrative-assembler:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
+    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
+    input: evals/goldens/narrative_golden.md   # scores specifics._narrative via rubrics.component.narrative_assembler
     code: [seven_acts_present, executive_summary_present, transformation_arc_present]
     judge: [transformation_arc_threaded_7_acts]   # the documented assembler weakness
 
   journey-builder:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
+    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
+    input: evals/goldens/journey_maps_golden.md   # scores specifics._journey via rubrics.component.journey_builder
     code: [lifecycle_stages_present, friction_or_leakage_present, as_is_and_future_state]
     judge: [value_leakage_quantified]
 
   benchmark-librarian:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
+    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
+    input: evals/goldens/benchmark_golden.md   # scores specifics._benchmark via rubrics.component.benchmark_librarian
     code: [confidence_levels_present, source_attribution_present]
     judge: [benchmarks_defensible_not_hallucinated]
 
   usecase-designer:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
+    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
+    input: evals/goldens/usecase_golden.md   # scores specifics._usecase via rubrics.component.usecase_designer
     code: [usecase_ids_present, product_directory_mapping, ootb_config_custom_classification, priority_tiers_present]
     judge: [usecases_grounded_in_product_directory]
 
   workshop-preparation:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
+    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
+    input: evals/goldens/workshop_prep_golden.md   # scores specifics._workshop_prep via rubrics.component.workshop_preparation
     code: [hypotheses_present, validation_questions_present, checkpoint_present]
     judge: [hypotheses_specific_and_quantified]
 
   ignite-workshop-synthesizer:
     altitude: component
     threshold: 0.80
-    golden_engagement: nfis
+    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
+    input: evals/goldens/ignite_synthesis_golden.md   # scores specifics._ignite_synth via rubrics.component.ignite_workshop_synthesizer
     code: [hypothesis_validation_statuses, usecase_candidates_present, usecase_classification_present]
     judge: [synthesis_faithful_to_workshops]
 
@@ -157,5 +181,7 @@ pipeline:
   altitude: pipeline
   evaluator: rubrics.pipeline.contracts
   threshold: 0.90
-  golden_engagement: nfis
+  # Committed, anonymized golden engagement outputs (Path-2: score existing).
+  # Re-pointed from a never-created `nfis` engagement — see PRD v1.
+  golden_engagement: evals/goldens/pipeline_engagement/outputs
   orchestrate: orchestrate.py

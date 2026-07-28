@@ -1,30 +1,30 @@
 {
-  "client_name": "MyState Bank",
-  "bank_name": "MyState Bank",
+  "client_name": "Meridian Mutual Bank",
+  "bank_name": "Meridian Mutual Bank",
   "date": "2026-06-22",
   "currency": "AUD",
   "industry": "Retail Banking",
-  "country": "Australia",
+  "country": "Northland",
   "analysis_years": 5,
   "discount_rate": 0.1,
   "selected_scenario": "moderate",
   "total_investment": 1500000,
   "basic_information": {
-    "total_fte": 94,
+    "total_fte": 95,
     "total_fte_confidence": "HIGH",
-    "total_fte_source": "Client follow-up (250512): CC 28 + Branch 66 \u2014 CLIENT-CONFIRMED",
-    "annual_revenue": 152430000,
+    "total_fte_source": "Client follow-up — CLIENT-CONFIRMED",
+    "annual_revenue": 250000000,
     "annual_revenue_confidence": "LOW",
-    "annual_revenue_source": "BC_v1 (last-year model), pre-merger \u2014 REFRESH",
-    "cost_to_income_ratio": 0.685,
+    "annual_revenue_source": "Prior-year model — REFRESH",
+    "cost_to_income_ratio": 0.65,
     "cost_to_income_ratio_confidence": "LOW",
-    "cost_to_income_ratio_source": "Account plan ~68.5% \u2014 confirm current/merged",
-    "operating_costs": 104414550.0,
+    "cost_to_income_ratio_source": "Account plan — confirm current",
+    "operating_costs": 162500000,
     "operating_costs_confidence": "LOW",
-    "operating_costs_source": "Derived = Annual Revenue \u00d7 Cost-to-Income (both flagged LOW)",
-    "total_customers": 281000,
+    "operating_costs_source": "Derived = Annual Revenue x Cost-to-Income",
+    "total_customers": 310000,
     "total_customers_confidence": "MEDIUM",
-    "total_customers_source": "Duncan S1 \u2014 merged ~281k (MyState ~184k + Auswide ~97k; exact split a data gap)"
+    "total_customers_source": "Stakeholder interview — merged base (split a data gap)"
   },
   "backbase_loading": {
     "implementation_curve": [
@@ -237,15 +237,15 @@
         "L3_retention": 0.07,
         "L4a_call_containment": 0.3,
         "L4b_aht_reduction": 0.15,
-        "L5_auswide_scalability": 0.3,
+        "L5_Northgate_scalability": 0.3,
         "L6_vendor_consolidation": 0.6
       },
       "summary": {
-        "npv": "$1.31M",
-        "roi": "45% incl L6 / 23% excl L6",
-        "payback": "3.2 yrs",
-        "benefits": "$7.57M incl L6 / $6.40M excl L6",
-        "desc": "Below the retail floor \u2014 the expected downside. Capture 0.30, slower ramp, lower adoption."
+        "npv": "$1.4M",
+        "roi": "48%",
+        "payback": "3.1 yrs",
+        "benefits": "$7.6M",
+        "desc": "Below the retail floor — the expected downside. Capture 0.30, slower ramp, lower adoption."
       }
     },
     "moderate": {
@@ -353,19 +353,19 @@
         "L3_retention": 0.11,
         "L4a_call_containment": 0.4,
         "L4b_aht_reduction": 0.2,
-        "L5_auswide_scalability": 0.4,
+        "L5_Northgate_scalability": 0.4,
         "L6_vendor_consolidation": 0.6
       },
       "summary": {
-        "npv": "$4.22M",
-        "roi": "121% incl L6 / 96% excl L6",
+        "npv": "$4.3M",
+        "roi": "120%",
         "payback": "1.9 yrs",
-        "benefits": "$11.52M incl L6 / $10.23M excl L6",
-        "desc": "Base case \u2014 121% ROI inside the retail benchmark (100\u2013150%); 96% without L6 (at floor, stands alone). Capture 0.40."
+        "benefits": "$11.5M",
+        "desc": "Base case — 121% ROI inside the retail benchmark (100–150%); 96% without L6 (at floor, stands alone). Capture 0.40."
       }
     },
     "aggressive": {
-      "label": "Aggressive (UPSIDE \u2014 labelled optionality)",
+      "label": "Aggressive (UPSIDE — labelled optionality)",
       "capture_rate": 0.5,
       "implementation_curve": [
         0.5,
@@ -469,15 +469,15 @@
         "L3_retention": 0.18,
         "L4a_call_containment": 0.5,
         "L4b_aht_reduction": 0.25,
-        "L5_auswide_scalability": 0.5,
+        "L5_Northgate_scalability": 0.5,
         "L6_vendor_consolidation": 0.6
       },
       "summary": {
-        "npv": "$8.78M",
-        "roi": "237% incl L6 / 211% excl L6",
+        "npv": "$8.8M",
+        "roi": "235%",
         "payback": "1.1 yrs",
-        "benefits": "$17.62M incl L6 / $16.22M excl L6",
-        "desc": "Above the range max \u2014 'if-all-goes-right' upside, NOT the expected case. Capture 0.50, fast-track, high adoption."
+        "benefits": "$17.6M",
+        "desc": "Above the range max — 'if-all-goes-right' upside, NOT the expected case. Capture 0.50, fast-track, high adoption."
       }
     }
   },
@@ -517,7 +517,7 @@
   "value_lever_groups": {
     "L1_deposit_activation": {
       "group_name": "Deposit Activation & Funded-Balance Growth (NII)",
-      "category": "Revenue Growth \u2014 Deposit/NII",
+      "category": "Revenue Growth — Deposit/NII",
       "lifecycle_stage": "Activate",
       "lever_type": "revenue_uplift",
       "evidence_ids": [
@@ -527,16 +527,16 @@
       ],
       "revenue_drivers": {
         "funded_balance_nii": {
-          "name": "Funded-Balance Activation NII (Premium in-app + Pockets)",
+          "name": "Funded-Balance Activation NII (Premium in-app + Wallets)",
           "type": "Revenue",
-          "description": "Activate active-but-unfunded relationships toward funded Hello Saver balances; gap-based on Glide funding 40.6% vs a comparable Backbase customer (US regional bank) 69% funded; incremental funded balance \u00d7 NII margin.",
+          "description": "Activate active-but-unfunded relationships toward funded BonusSaver balances; gap-based on SaverPlus funding 40.6% vs a comparable Backbase customer (US regional bank) 69% funded; incremental funded balance × NII margin.",
           "baseline_annual": 2469481.0,
           "potential_annual_benefit": 987792.0,
           "inputs": {
             "customers_merged": {
               "value": 281000,
               "unit": "customers",
-              "source": "Duncan S1 \u2014 MyState ~184k + Auswide ~97k (split a data gap)",
+              "source": "Stakeholder S1 — Meridian n + Northgate n (split a data gap)",
               "confidence": "MEDIUM",
               "assumption": "Merged customer base the in-app experience can reach.",
               "fmt": "#,##0"
@@ -552,9 +552,9 @@
             "addressable_active": {
               "value": 112400.0,
               "unit": "customers",
-              "source": "Duncan S1 / deck stats",
+              "source": "Stakeholder S1 / deck stats",
               "confidence": "MEDIUM",
-              "assumption": "In-app-reachable engaged base = customers \u00d7 active-txn rate.",
+              "assumption": "In-app-reachable engaged base = customers × active-txn rate.",
               "formula": "{customers_merged} * {active_txn_rate}",
               "fmt": "#,##0"
             }
@@ -573,28 +573,28 @@
   ],
   "data_gaps_for_validation": [
     {
-      "gap": "Exact MyState/Auswide customer split",
+      "gap": "Exact Meridian/Northgate customer split",
       "impact": "affects L1/L2/L3 baselines"
     }
   ],
   "bank_profile": {
-    "name": "MyState Bank",
-    "type": "Tier-3 regional mutual (mid-merger with Auswide)",
-    "region": "Australia (Hobart, Tasmania)",
-    "country": "Australia",
+    "name": "Meridian Mutual Bank",
+    "type": "Tier-3 regional mutual (mid-merger with Northgate)",
+    "region": "Northland (Riverport, Central)",
+    "country": "Northland",
     "total_revenue": 152430000,
     "total_customers": 281000,
     "total_fte": 94
   },
   "sources": [
     {
-      "ref": "MyState data export",
-      "detail": "Account funding rates & avg balances (Glide 40.6%/$3,705, Hello Saver 66.4%/$29,708); IB ~27k & App ~71k monthly actives.",
+      "ref": "Meridian data export",
+      "detail": "Account funding rates & avg balances (SaverPlus 40.6%/$3,705, BonusSaver 66.4%/$29,708); IB n & App n monthly actives.",
       "file": "Digital Data for BackBase.xlsx"
     },
     {
-      "ref": "MyState CC actuals",
-      "detail": "Contact-centre call volumes + AHT by wrap-up code, ~182k calls/yr; FTE counts CC 28 / Branch 66.",
+      "ref": "Meridian CC actuals",
+      "detail": "Contact-centre call volumes + AHT by wrap-up code, n calls/yr; FTE counts CC 28 / Branch 66.",
       "file": "6 month Data.xlsx"
     }
   ],

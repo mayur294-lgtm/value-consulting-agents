@@ -1,0 +1,193 @@
+<!--
+  SYNTHETIC FIXTURE — not a real client deliverable.
+  Used only to exercise evals/rubrics/deliverable/assessment.py (the "assessment"
+  deliverable eval). "Meridian Mutual Bank" and "Northland" are the fictional house
+  client used across this repo's golden fixtures (see PR #92, pipeline_engagement
+  golden). All figures, quotes, and names below are invented for test purposes and
+  do not describe any real Backbase client or engagement. Do not treat any content
+  in this file as client-derived evidence.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Meridian Mutual Bank — Capability Assessment (Golden Fixture)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#041326; --blue:#3367FF; --red:#FF503C; --bg:#F3F6F9;
+    --muted:#6B7786; --green:#2ECC71; --cyan:#69FEFF; --white:#FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Libre Franklin", Helvetica, Arial, sans-serif;
+    color: var(--navy);
+    background: #ffffff;
+    margin: 0;
+    line-height: 1.5;
+  }
+  header.hero {
+    background: var(--navy);
+    color: var(--white);
+    padding: 48px 56px;
+  }
+  header.hero .eyebrow { color: var(--cyan); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: 13px; }
+  header.hero h1 { margin: 8px 0 12px; font-size: 32px; }
+  header.hero p.sub { color: #C9D3DE; max-width: 640px; margin: 0; }
+  main { max-width: 1080px; margin: 0 auto; padding: 0 56px 64px; }
+  section.act { padding-top: 48px; border-top: 1px solid #E5E9EF; margin-top: 48px; }
+  section.act:first-of-type { border-top: none; }
+  .act-label { color: var(--blue); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+  h2 { font-size: 24px; margin: 6px 0 16px; }
+  h3 { font-size: 17px; margin: 24px 0 8px; }
+  p { color: #1F2A37; max-width: 760px; }
+  .so-what { background: var(--bg); border-radius: 12px; padding: 16px 20px; margin-top: 16px; }
+  .so-what strong { color: var(--blue); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 16px; }
+  .card { background: var(--bg); border-radius: 12px; padding: 18px 20px; }
+  .card .metric { font-size: 26px; font-weight: 800; color: var(--navy); }
+  .card .label { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+  th, td { border: 1px solid #E5E9EF; padding: 10px 12px; text-align: left; font-size: 14px; }
+  th { background: var(--bg); color: var(--muted); font-weight: 600; }
+  td.gap-high { color: var(--red); font-weight: 700; }
+  td.gap-med { color: var(--blue); font-weight: 700; }
+  ul.persona-quotes { list-style: none; padding: 0; margin: 12px 0 0; }
+  ul.persona-quotes li { border-left: 3px solid var(--cyan); padding: 8px 16px; margin-bottom: 10px; color: #1F2A37; font-style: italic; background: var(--bg); border-radius: 0 8px 8px 0; }
+  .phase-row { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+  .phase { flex: 1; min-width: 200px; background: var(--bg); border-radius: 12px; padding: 16px; }
+  .phase .phase-name { color: var(--blue); font-weight: 700; font-size: 13px; text-transform: uppercase; }
+  .badge { display: inline-block; background: var(--green); color: var(--white); font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; margin-left: 8px; }
+  footer { color: var(--muted); font-size: 12px; padding: 24px 56px 40px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow">Meridian Mutual Bank &middot; Capability Assessment &middot; Northland Market</div>
+  <h1>From fragmented servicing to a unified digital core</h1>
+  <p class="sub">A synthetic, illustrative assessment built to exercise the deliverable
+    eval pipeline. Meridian Mutual is a fictional Northland retail bank; all evidence,
+    figures, and quotes below are invented for testing.</p>
+</header>
+
+<main>
+
+  <section class="act" id="act1" data-trace-id="PP-onboarding-drop">
+    <div class="act-label">Act 1 — The Case for Change</div>
+    <h2>Meridian's channels grew up separately, and members feel it</h2>
+    <p>Retail and digital were built on three disconnected systems over a decade of
+       point acquisitions. Members experience Meridian as three different banks
+       depending on the channel they touch, and that fragmentation is now showing up
+       directly in growth and cost metrics.</p>
+    <div class="cards">
+      <div class="card" data-trace-id="PP-onboarding-drop"><div class="metric">38%</div><div class="label">Digital onboarding drop-off (PP-01)</div></div>
+      <div class="card" data-trace-id="PP-callcenter-volume"><div class="metric">+22%</div><div class="label">YoY contact-centre volume (PP-02)</div></div>
+      <div class="card" data-trace-id="PP-dormant-accounts"><div class="metric">1 in 4</div><div class="label">New accounts dormant at 90 days (PP-03)</div></div>
+    </div>
+    <div class="so-what"><strong>So what:</strong> every fragmented handoff is a
+      transformation moment lost — this assessment builds the case for a single,
+      unified digital core rather than another point fix.</div>
+  </section>
+
+  <section class="act" id="act2" data-trace-id="PERSONA-vision-north-star">
+    <div class="act-label">Act 2 — The Vision</div>
+    <h2>One connected experience, not three separate banks</h2>
+    <p>The transformation Meridian needs is a unified digital core: one member
+       identity, one servicing layer, and one data model spanning onboarding,
+       everyday banking, and lending — replacing the current patchwork of
+       channel-specific systems.</p>
+    <ul class="persona-quotes">
+      <li data-trace-id="PERSONA-branch-member">"I opened my account online and still had to walk into a branch to activate it." — Retail member, Northland City</li>
+      <li data-trace-id="PERSONA-frontline-staff">"I can't see what the member already told the call centre, so I ask again." — Frontline branch staff</li>
+    </ul>
+    <div class="so-what"><strong>So what:</strong> the unified digital core is the
+      thread that carries through every act of this assessment — it is the fix
+      being sized, proven, and sequenced below.</div>
+  </section>
+
+  <section class="act" id="act3" data-trace-id="UC-lighthouse-onboarding">
+    <div class="act-label">Act 3 — Proof It Works</div>
+    <h2>A lighthouse pilot shows the unified core closing the gap</h2>
+    <p>A scoped pilot on digital deposit-account onboarding — one identity layer,
+       one onboarding flow, shared across web and mobile — cut the drop-off point
+       that Act 1 identified.</p>
+    <div class="cards">
+      <div class="card" data-trace-id="UC-lighthouse-onboarding"><div class="metric">38% &rarr; 19%</div><div class="label">Onboarding drop-off, pilot branch cluster</div></div>
+      <div class="card" data-trace-id="UC-lighthouse-activation"><div class="metric">+31%</div><div class="label">90-day activation rate</div></div>
+    </div>
+    <div class="so-what"><strong>So what:</strong> the pilot is directional evidence,
+      not proof at scale — it validates the unified-core hypothesis before Meridian
+      commits to full capability build-out.</div>
+  </section>
+
+  <section class="act" id="act4" data-trace-id="CAP-lifecycle-gap-servicing">
+    <div class="act-label">Act 4 — Where the Lifecycle Breaks</div>
+    <h2>Mapping the member lifecycle exposes three fracture points</h2>
+    <p>Walking the lifecycle end to end — acquire, onboard, service, deepen — shows
+       where the absence of a unified core costs Meridian members and revenue.</p>
+    <table>
+      <thead><tr><th>Lifecycle Stage</th><th>Fracture Point</th><th>Evidence</th></tr></thead>
+      <tbody>
+        <tr><td>Onboard</td><td data-trace-id="CAP-lifecycle-gap-onboarding">Identity re-entered 3x across channels</td><td>PP-01</td></tr>
+        <tr><td>Service</td><td data-trace-id="CAP-lifecycle-gap-servicing">Call centre has no digital session context</td><td>PP-02</td></tr>
+        <tr><td>Deepen</td><td data-trace-id="CAP-lifecycle-gap-crosssell">No unified view to trigger next-best offer</td><td>PP-03</td></tr>
+      </tbody>
+    </table>
+    <div class="so-what"><strong>So what:</strong> each fracture point maps to a
+      capability gap the unified core is designed to close — sized next in Act 5.</div>
+  </section>
+
+  <section class="act" id="act5" data-trace-id="CAP-current-target-maturity">
+    <div class="act-label">Act 5 — Capabilities Required</div>
+    <h2>Current vs. target maturity for the unified core</h2>
+    <table>
+      <thead><tr><th>Capability</th><th>Current</th><th>Target</th><th>Gap</th></tr></thead>
+      <tbody>
+        <tr><td data-trace-id="CAP-digital-onboarding">Digital onboarding</td><td>2.0</td><td>3.5</td><td class="gap-high">1.5</td></tr>
+        <tr><td data-trace-id="CAP-servicing-engagement">Servicing &amp; engagement</td><td>2.5</td><td>3.5</td><td class="gap-med">1.0</td></tr>
+        <tr><td data-trace-id="CAP-deposit-activation">Deposit activation</td><td>2.0</td><td>3.0</td><td class="gap-med">1.0</td></tr>
+        <tr><td data-trace-id="CAP-unified-identity">Unified member identity</td><td>1.5</td><td>3.5</td><td class="gap-high">2.0</td></tr>
+      </tbody>
+    </table>
+    <div class="so-what"><strong>So what:</strong> unified identity is the single
+      largest gap and the prerequisite capability the roadmap sequences first.</div>
+  </section>
+
+  <section class="act" id="act6" data-trace-id="INI-phase1-identity">
+    <div class="act-label">Act 6 — How It Gets Built</div>
+    <h2>A three-phase roadmap builds the core in sequence, not all at once</h2>
+    <div class="phase-row">
+      <div class="phase" data-trace-id="INI-phase1-identity"><div class="phase-name">Phase 1 &middot; 0&ndash;6mo</div><p>Unified member identity &amp; onboarding flow<span class="badge">Foundational</span></p></div>
+      <div class="phase" data-trace-id="INI-phase2-servicing"><div class="phase-name">Phase 2 &middot; 6&ndash;12mo</div><p>Shared servicing context across channels</p></div>
+      <div class="phase" data-trace-id="INI-phase3-crosssell"><div class="phase-name">Phase 3 &middot; 12&ndash;18mo</div><p>Cross-sell &amp; next-best-offer engine</p></div>
+    </div>
+    <div class="so-what"><strong>So what:</strong> Phase 1 is scoped as a direct
+      answer to the Act 5 identity gap and the Act 3 pilot proof point, not a
+      standalone project.</div>
+  </section>
+
+  <section class="act" id="act7" data-trace-id="BEN-npv-5yr">
+    <div class="act-label">Act 7 — Why It Pays For Itself</div>
+    <h2>The unified core case: $4.3M moderate-case NPV over five years</h2>
+    <p>Benefits are traced back to the Act 1 pain points the unified core closes:
+       reduced onboarding drop-off, lower contact-centre volume, and higher
+       90-day activation. Figures are illustrative for this fixture.</p>
+    <div class="cards">
+      <div class="card" data-trace-id="BEN-onboarding-recovery"><div class="metric">$1.8M</div><div class="label">Onboarding drop-off recovery (vs. PP-01)</div></div>
+      <div class="card" data-trace-id="BEN-callcenter-reduction"><div class="metric">$1.2M</div><div class="label">Contact-centre cost avoidance (vs. PP-02)</div></div>
+      <div class="card" data-trace-id="BEN-activation-uplift"><div class="metric">$1.3M</div><div class="label">Activation &amp; cross-sell uplift (vs. PP-03)</div></div>
+    </div>
+    <div class="so-what"><strong>So what:</strong> the benefits case closes the loop
+      opened in Act 1 — the same three pain points, now quantified and funded by
+      the Phase 1&ndash;3 roadmap above.</div>
+  </section>
+
+</main>
+
+<footer>Synthetic golden fixture &middot; Meridian Mutual Bank is a fictional test client &middot; generated to exercise evals/rubrics/deliverable/assessment.py</footer>
+
+</body>
+</html>
