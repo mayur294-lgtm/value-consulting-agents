@@ -1,6 +1,6 @@
 ---
 version: 4
-status: draft
+status: built
 date: 2026-08-18
 author: Mariam Titus George
 previous: prd-v3.md
