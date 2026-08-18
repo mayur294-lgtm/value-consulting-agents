@@ -3,10 +3,11 @@
 Artifact boundary gates — shared by the pipeline (orchestrate.py) and
 standalone skill callers (/build-roi, /generate-roi-excel, /publish).
 
-Three gates, one module, two callers:
+Four gates, one module, two callers:
   - cap_roi_config(path)          ROI reasonableness gate (impact caps + benchmarks)
   - deanonymize_dir(dir)          restore client names from .pii_mapping.json
   - validate_outputs(dir, type)   thin wrapper over validate_engagement_outputs.sh
+  - synthetic_policy(dir)         synthetic-test-engagement detection (real|quarantine|never)
 
 This module MUST stay importable by plain python3 (3.9+): no claude_agent_sdk,
 no orchestrate.py imports (dependency direction is orchestrate -> artifact_boundary),
@@ -19,6 +20,7 @@ CLI (what skills call):
 """
 
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime
@@ -345,6 +347,98 @@ def validate_outputs(engagement_dir, engagement_type: str = "assessment") -> dic
     return report
 
 
+# ─── Synthetic-Engagement Detection Gate ──────────────────────────────────────
+
+_HARVEST_POLICY_RE = re.compile(r"(?m)^[ \t]*harvest_policy[ \t]*:[ \t]*(\S+)")
+_KNOWN_POLICIES = {"never", "quarantine"}
+
+
+def _under_tests_segment(path: Path) -> bool:
+    """True if `path`, made relative to the repo root when possible, has a
+    `tests` path segment. Falls back to the raw (absolute) path's segments
+    when `path` isn't under REPO_ROOT — never raises."""
+    try:
+        parts = path.relative_to(REPO_ROOT).parts
+    except ValueError:
+        parts = path.parts
+    return "tests" in parts
+
+
+def synthetic_policy(engagement_dir) -> tuple:
+    """Single source of truth for synthetic-test-engagement detection.
+
+    Returns (policy, reason) where policy is one of "real" | "quarantine" | "never".
+
+    Resolution order (see .design/solution-design-v4.md § Data & Contract Model):
+      1. Walk `engagement_dir` and its parents up to (and including) the repo
+         root looking for a `.synthetic` marker file. The first one found wins.
+         Its `harvest_policy:` line is parsed with a plain-text regex (no yaml
+         dependency): `never` or `quarantine`. A marker present with a missing
+         or unparseable `harvest_policy:` value fails safe to "quarantine".
+      2. No marker anywhere in the walk: if any path segment (relative to the
+         repo root when possible) is literally `tests`, fail safe to
+         "quarantine" — covers engagements living under tests/engagements/
+         that haven't been marked yet.
+      3. Otherwise: "real".
+
+    Marker beats location — a `.synthetic` file found in a non-tests/ location
+    still governs, so an engagement accidentally created under engagements/
+    stays protected.
+
+    Never raises and never writes. Any I/O error while checking/reading a
+    marker fails safe to "quarantine" if the target is under a tests/ path
+    segment, otherwise falls through to "real" with the failure noted in the
+    reason string.
+    """
+    try:
+        target = Path(engagement_dir)
+        try:
+            target = target.resolve()
+        except (OSError, RuntimeError):
+            pass  # keep the unresolved path — existence/parts checks still work
+
+        candidates = [target] + list(target.parents)
+        for d in candidates:
+            marker = d / ".synthetic"
+            try:
+                is_marker = marker.is_file()
+            except OSError as e:
+                under_tests = _under_tests_segment(target)
+                policy = "quarantine" if under_tests else "real"
+                return (policy,
+                        f"could not check for marker at {marker} ({type(e).__name__}) — "
+                        f"fail-safe {policy}")
+            if is_marker:
+                try:
+                    content = marker.read_text(errors="replace")
+                except OSError as e:
+                    return ("quarantine",
+                            f"marker at {marker} unreadable ({type(e).__name__}) — fail-safe quarantine")
+                m = _HARVEST_POLICY_RE.search(content)
+                if not m:
+                    return ("quarantine", f"marker at {marker}, no parseable harvest_policy — fail-safe quarantine")
+                value = m.group(1).strip().lower()
+                if value not in _KNOWN_POLICIES:
+                    return ("quarantine",
+                            f"marker at {marker}, unrecognized harvest_policy '{value}' — fail-safe quarantine")
+                return (value, f"marker at {marker}, harvest_policy: {value}")
+            if d == REPO_ROOT:
+                break  # never walk above the repo root
+
+        # No marker found anywhere in the walk.
+        if _under_tests_segment(target):
+            return ("quarantine", "no marker — under a tests/ path, fail-safe quarantine")
+        return ("real", "no marker, not under a tests/ path")
+    except Exception as e:
+        # Last-resort safety net — the contract is "never raises".
+        try:
+            under_tests = _under_tests_segment(Path(engagement_dir))
+        except Exception:
+            under_tests = False
+        policy = "quarantine" if under_tests else "real"
+        return (policy, f"synthetic_policy internal error ({type(e).__name__}) — fail-safe {policy}")
+
+
 # ─── Minimal CLI for skill callers ────────────────────────────────────────────
 
 def _usage() -> str:
@@ -353,6 +447,7 @@ def _usage() -> str:
         "  python3 scripts/artifact_boundary.py cap <roi_config.json>\n"
         "  python3 scripts/artifact_boundary.py deanon <engagement_or_outputs_dir>\n"
         "  python3 scripts/artifact_boundary.py validate <engagement_dir> [engagement_type]\n"
+        "  python3 scripts/artifact_boundary.py synthetic-policy <engagement_dir>\n"
     )
 
 
@@ -380,6 +475,14 @@ def main(argv) -> int:
         report = validate_outputs(argv[1], engagement_type)
         print(json.dumps(report, indent=2))
         return 0 if report["passed"] else 1
+    elif cmd == "synthetic-policy":
+        if len(argv) < 2:
+            print(_usage(), file=sys.stderr)
+            return 2
+        policy, reason = synthetic_policy(argv[1])
+        print(json.dumps({"gate": "synthetic_policy", "engagement_dir": argv[1],
+                          "policy": policy, "reason": reason}, indent=2))
+        return 0
     else:
         print(_usage(), file=sys.stderr)
         return 2
