@@ -1,0 +1,5 @@
+synthetic: true
+created: 2026-08-18
+purpose: Eval fixture (#130) — marker with harvest_policy never
+harvest_policy: never
+note: Committed, frozen fixture for evals/rubrics/component/knowledge_harvester.py. Not a real engagement.

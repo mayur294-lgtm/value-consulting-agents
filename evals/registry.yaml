@@ -181,6 +181,20 @@ components:
     code: [hypotheses_present, validation_questions_present, checkpoint_present]
     judge: [hypotheses_specific_and_quantified]
 
+  # knowledge-harvester (#130) — pins the shared synthetic-engagement gate
+  # (scripts.artifact_boundary.synthetic_policy) and the quarantine-mode
+  # output contract deterministically. No judge, threshold 1.0 — this is a
+  # negative-gate / contract-shape case, not a "does the prose read well"
+  # case (same pattern as roi-financial-modeler's overcap_negative_gate_witness).
+  # quarantine_mode_outputs_local SKIPs gracefully until the "### Mode:
+  # quarantine" block lands in #131 — RubricResult.score averages only
+  # non-skipped checks, so the SKIP doesn't drag the mean below 1.0.
+  knowledge-harvester:
+    altitude: component
+    threshold: 1.0
+    input: evals/goldens/synthetic_gate
+    code: [quarantine_policy_detected, never_policy_detected, bare_tests_fails_safe, quarantine_mode_outputs_local]
+
   ignite-workshop-synthesizer:
     altitude: component
     threshold: 0.80
