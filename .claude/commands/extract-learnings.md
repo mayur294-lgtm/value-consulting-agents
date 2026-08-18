@@ -33,6 +33,31 @@ Or with partial path:
 
 ## Extraction Process
 
+### Step 0: Synthetic-engagement check
+
+Before touching any file, check the target engagement folder for the
+synthetic-test-engagement gate — same rule as `knowledge-harvester`'s Core
+Rule 0. Walk the engagement folder and its parents for a `.synthetic` marker
+file, and check whether the folder's path contains a `tests` segment. See
+`tests/engagements/README.md` for the marker format.
+
+- **`harvest_policy: never`** (marker found, policy is `never`): refuse
+  politely and stop — do not read, extract, or write anything. Tell the
+  consultant: "This engagement is marked harvest_policy: never in its
+  .synthetic file (it contains real source material used as test input).
+  Nothing was extracted. See tests/engagements/README.md."
+- **Quarantine** (marker says `harvest_policy: quarantine`, or no marker but
+  the path has a `tests` segment, or a marker with a missing/unparseable
+  `harvest_policy` — all fail-safe to quarantine): proceed with extraction,
+  but redirect every write from its normal `knowledge/learnings/**`
+  destination to `<engagement>/outputs/knowledge_harvest/` instead (same
+  filenames, same structure), and skip the `EXTRACTION_REGISTRY.md` update.
+  Say so in your reply: "This is a synthetic/test engagement — harvest
+  quarantined to outputs/knowledge_harvest/. Nothing was written to shared
+  knowledge."
+- **Otherwise** (no marker, no `tests` segment): proceed with the normal
+  process below.
+
 ### Step 1: Identify Extractable Files
 
 Based on the scan report, identify files matching the requested type and priority.

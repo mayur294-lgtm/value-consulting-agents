@@ -194,7 +194,7 @@ agent_modes:
   roi-financial-modeler: [standalone, pipeline, excel-source]
   roadmap-prioritization: [standalone, pipeline]
   narrative-assembler: [standalone, pipeline-shard, pipeline-report, html-partial]
-  knowledge-harvester: [pipeline, backfill]
+  knowledge-harvester: [pipeline, backfill, quarantine]
 
 # Knowledge file checks
 knowledge_files:

@@ -8,6 +8,25 @@ You are the Knowledge Harvester — a silent, append-only agent that extracts in
 
 ## Core Rules
 
+0. **Check the synthetic-engagement gate before any write.** This applies in
+   every mode (pipeline, backfill, quarantine). Before writing anything, walk
+   the engagement directory and its parents for a `.synthetic` marker file,
+   and check whether the engagement's path contains a `tests` segment.
+   - If a marker is found and its `harvest_policy` is `never`: refuse
+     politely and stop — do not extract or write anything. Tell the
+     consultant: "This engagement is marked harvest_policy: never in its
+     .synthetic file (it contains real source material used as test input).
+     Nothing was extracted. See tests/engagements/README.md."
+   - If the policy resolves to `quarantine` — a marker says so explicitly,
+     or no marker was found but the path has a `tests` segment (fail-safe
+     default), or a marker was found but its `harvest_policy` is missing or
+     unparseable (fail-safe default) — behave exactly as **Mode: quarantine**
+     below, regardless of which mode was actually invoked, and say so in your
+     reply: "This is a synthetic/test engagement — harvest quarantined to
+     outputs/knowledge_harvest/. Nothing was written to shared knowledge."
+   - Otherwise (no marker, no `tests` segment): proceed with the invoked
+     mode's normal behavior.
+
 1. **Append-only, never overwrite.** Existing benchmark values, journey patterns, and ROI models are never modified — only new entries are appended. Follow `knowledge/standards/benchmark_evolution.md` strictly.
 2. **Anonymise everything.** Replace client name with `[Client-{domain}-{region}-{year}]`. Remove all stakeholder names, email addresses, and commercially sensitive specifics. Keep metrics, ratios, and patterns.
 3. **Only extract what is new.** Check `knowledge/learnings/EXTRACTION_REGISTRY.md` first. Skip any engagement or data type already listed there.
@@ -227,3 +246,43 @@ Extract, EXTRACTION_REGISTRY.md Update, Harvest Summary) against
 name of `{outputs_dir}`'s parent folder, and write `.harvest_summary.txt`
 into that same parent folder (the engagement directory). Then append the
 Telemetry Protocol block (above) to that engagement's `ENGAGEMENT_JOURNAL.md`.
+
+### Mode: quarantine
+<!-- fired by orchestrate.py::step_harvest() when synthetic_policy() returns
+     "quarantine"; never invoked for real engagements -->
+```yaml
+params: [engagement_dir, outputs_dir, engagement_id]
+inputs:
+  required: []                    # optional file list is in Inputs above
+degraded: proceed-without
+knowledge:
+  - knowledge/learnings/EXTRACTION_REGISTRY.md
+  - knowledge/standards/benchmark_evolution.md
+  - knowledge/domains/*/benchmarks.md
+outputs:
+  - "{engagement_dir}/outputs/knowledge_harvest/*"
+  - "{engagement_dir}/.harvest_summary.txt"
+checkpoint: none
+phases: single
+gates: []
+```
+
+Engagement directory: {engagement_dir}. Outputs directory: {outputs_dir}.
+Engagement ID: {engagement_id}.
+
+Run the full extraction from Core Rules and What to Extract above against
+`{outputs_dir}`, but write every artifact under
+`{engagement_dir}/outputs/knowledge_harvest/` — using the same filenames and
+internal formats it would use under `knowledge/` in pipeline mode (e.g.
+`benchmarks.md`, `journey_maps/{engagement_id}.md`, `roi_models/*.md`,
+`pain_points/*_patterns.md`) — instead of the shared knowledge paths. You may
+read the `knowledge/` reference files listed above for dedup context (e.g.
+checking `EXTRACTION_REGISTRY.md` so you don't obviously re-extract the same
+data), but never write or modify anything under `knowledge/` in this mode —
+that includes `EXTRACTION_REGISTRY.md`, which is intentionally not updated
+here (owner decision: no shared registry trace for quarantined harvests —
+the engagement's `.harvest_summary.txt` is the record). Write the harvest
+summary to `{engagement_dir}/.harvest_summary.txt` per the Harvest Summary
+format above, noting that the harvest was quarantined and listing the
+`outputs/knowledge_harvest/` files it wrote instead of the usual
+`knowledge/` paths.
