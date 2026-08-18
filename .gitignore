@@ -26,7 +26,12 @@ build/
 .claude/worktrees/
 
 # Engagement data (client-confidential — never commit)
-engagements/
+/engagements/
+
+# Test engagements (quarantine zone — may contain real source material used as test input)
+# Only the README documenting the convention is tracked.
+tests/engagements/*
+!tests/engagements/README.md
 
 # Environment files (may contain secrets)
 .env
@@ -49,3 +54,6 @@ Desktop.ini
 
 # Miscellaneous
 *.webloc
+
+# Cortex ontology handover — PII round-trip mappings stay local, never committed
+*.mapping.json

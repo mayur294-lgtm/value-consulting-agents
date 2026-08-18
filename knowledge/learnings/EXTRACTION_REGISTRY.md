@@ -3,17 +3,18 @@
 This registry tracks all knowledge extracted from past engagements into the agent system.
 
 ## Last Updated
-2026-02-06
+2026-07-28
 
 ## Extraction Statistics
 
 | Metric | Count |
 |--------|-------|
 | Engagements Scanned | 100+ |
-| Engagements Extracted | 15 |
+| Engagements Extracted | 16 (1 synthetic — quarantined) |
 | Benchmark Files | 3 |
 | Journey Map Files | 0 |
-| ROI Pattern Files | 4 |
+| ROI Pattern Files | 8 (4 synthetic-origin, marked) |
+| Pain Point Pattern Files | 0 |
 | Capability Framework Files | 0 |
 | Competitor Analysis Files | 0 |
 | Engagement Pattern Files | 1 |
@@ -40,6 +41,7 @@ This registry tracks all knowledge extracted from past engagements into the agen
 | Sandy Spring | NAM | Regional | Retail | Pre-Sales | 2026-02-05 | Template Only |
 | Credins Bank | EMEA (Albania) | Retail Bank | Retail | Pre-Workshop | 2026-02-06 | Extracted |
 | Peoples Group | NAM (Canada) | Digital Bank | Retail | Pre-Workshop | 2026-02-06 | Template Only |
+| harborlight_synthetic / 2026-07_retail_assessment | NAM | Credit Union | Retail | Pipeline Test (Synthetic) | 2026-07-28 | Quarantined (2026-08-18) |
 
 ---
 
@@ -60,6 +62,7 @@ This registry tracks all knowledge extracted from past engagements into the agen
 | Tangerine/Scotiabank | NAM (Canada) | Wealth | roi_model, business_case, advisor_productivity | 2026-02-05 | Updated wealth/benchmarks.md |
 | UFCU | NAM | Credit Union | transaction_costs, channel_economics, fee_income | 2026-02-05 | Updated retail/benchmarks.md |
 | TD Bank Cards | NAM | Cards | credit_card_economics, revenue_per_account | 2026-02-05 | Updated retail/benchmarks.md |
+| 2026-07_retail_assessment [SYNTHETIC — QUARANTINED 2026-08-18] | NAM | Retail/CU | roi_models (formula patterns only) | 2026-07-28 | KEPT (marked synthetic): roi_models/call_deflection_roi.md, card_controls_roi.md, dispute_management_roi.md, digital_onboarding_completion_roi.md — formulas reusable, all [Synthetic-Test] values fabricated. QUARANTINED to tests/engagements/harborlight_synthetic/2026-07_retail_assessment/outputs/knowledge_harvest/: retail benchmarks (+22 entries, reverted from retail/benchmarks.md), journey map, pain-point patterns, digital_lending NAM data points (reverted append) |
 
 ---
 
@@ -126,8 +129,21 @@ _No proposal patterns extracted yet._
 | Engagement ID | Domain | Region | Harvest Date | Entries Written (A:B:C:D) | Method |
 |---------------|--------|--------|--------------|---------------------------|--------|
 | *(auto-populated)* | | | | | auto |
+| 2026-07_retail_assessment [SYNTHETIC] | retail | NAM | 2026-07-28 | A:22 B:8 C:0 D:5 — quarantined 2026-08-18 (only D formula patterns kept, marked [Synthetic-Test]) | auto |
 
 **Legend:** A = Benchmarks, B = Pain Points, C = Capability Maturity, D = ROI Patterns
+
+---
+
+## Synthetic / Test Engagement Policy (2026-08-18)
+
+Test engagements live in `tests/engagements/` (never `engagements/`) and carry a `.synthetic`
+marker file. Harvest from a test run is **quarantined** to the engagement's own
+`outputs/knowledge_harvest/` directory — it must never be written to `knowledge/domains/` or
+`knowledge/learnings/`. Values already in shared knowledge tagged `[Synthetic-Test]` are
+fabricated test data: reusable for formula/pattern structure, never citable as benchmarks.
+See `tests/engagements/README.md` for the full convention. Enforcement in the harvester,
+orchestrator, and retrieval skills is tracked in `.prd/backlog.md`.
 
 ---
 
