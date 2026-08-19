@@ -38,7 +38,7 @@ sys.stderr.reconfigure(line_buffering=True)
 from pathlib import Path
 
 from anonymize_transcript import anonymize_transcript_file
-from artifact_boundary import cap_roi_config, deanonymize_dir, validate_outputs
+from artifact_boundary import cap_roi_config, deanonymize_dir, synthetic_policy, validate_outputs
 from typing import Optional
 
 from claude_agent_sdk import (
@@ -1754,6 +1754,20 @@ async def step_harvest(engagement_dir: Path, outputs_dir: Path, engagement_id: s
     """
     cortex_dir = REPO_ROOT
 
+    # Synthetic-engagement gate — single source of truth (artifact_boundary.
+    # synthetic_policy). "real" falls through unchanged; "quarantine" routes
+    # the harvester into its own quarantine mode and suppresses auto-push;
+    # "never" skips harvest entirely (real source material must not be
+    # extracted).
+    policy, reason = synthetic_policy(engagement_dir)
+    if policy == "never":
+        log("  🧪 Synthetic engagement (harvest_policy: never) — harvest skipped entirely (real source material, must not be extracted)", C.YELLOW)
+        log(f"  {reason}", C.DIM)
+        return
+    if policy == "quarantine":
+        log("  🧪 Synthetic engagement (harvest_policy: quarantine) — harvest redirected to outputs/knowledge_harvest/; shared knowledge untouched", C.CYAN)
+        log(f"  {reason}", C.DIM)
+
     # Check if outputs changed since last harvest
     hash_file = engagement_dir / ".harvest_state"
     current_hash = _harvest_outputs_hash(outputs_dir)
@@ -1765,7 +1779,7 @@ async def step_harvest(engagement_dir: Path, outputs_dir: Path, engagement_id: s
 
     # knowledge-harvester is mode-extracted (skill-first contracts): its
     # prompt is composed from .claude/agents/knowledge-harvester.md
-    # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+    # (## Modes -> pipeline | quarantine) via compose_prompt — no inline f-string.
     harvest_params = {
         "engagement_dir": engagement_dir,
         "outputs_dir": outputs_dir,
@@ -1775,15 +1789,21 @@ async def step_harvest(engagement_dir: Path, outputs_dir: Path, engagement_id: s
     result = await run_agent(
         "knowledge-harvester", cwd=engagement_dir,
         label="Harvest", max_turns=25,
-        mode="pipeline", params=harvest_params,
+        mode=("quarantine" if policy == "quarantine" else "pipeline"), params=harvest_params,
     )
 
     # Read summary written by agent
     summary_file = engagement_dir / ".harvest_summary.txt"
     summary = summary_file.read_text().strip() if summary_file.exists() else "Knowledge updated."
 
-    # Save hash so next run skips if nothing changes
+    # Save hash so next run skips if nothing changes (dedup applies to
+    # repeated quarantine runs too, so re-running a test engagement doesn't
+    # re-harvest every time).
     hash_file.write_text(current_hash)
+
+    if policy == "quarantine":
+        log("  ✓ Quarantined harvest complete — shared knowledge untouched, auto-push skipped", C.DIM)
+        return
 
     # Auto-push if harvest token is available (optional — knowledge is already saved locally)
     env_vars = _load_env_file(cortex_dir)
