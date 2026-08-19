@@ -16,6 +16,8 @@ to a rule that is normative somewhere in the repo, not to taste:
                                  expansion MUST NOT open with a challenger / why-change /
                                  transformation narrative (it measurably raises switching
                                  intent); it opens on delivered value / what hasn't changed.
+                                 The deal type is DECLARED, never inferred — see the
+                                 DEAL-TYPE DECLARATION note below.
   assumptions_section_present    §2 "Constants" — every assumption behind the numbers, on
                                  the record, with who validates it.
   no_unsourced_financial_claims  §3 value-rationale hierarchy — a financial-return claim is
@@ -40,6 +42,15 @@ CI, where an uncalibrated semantic score could flip a blocking gate on a golden
 that was never scored against it. Header/register patterns are the objectively
 checkable part of §4; the subjective part stays out of the gate until a judge
 threshold can be calibrated against real scored runs.
+
+DEAL-TYPE DECLARATION: `story_model_matches_deal_type` reads the deal type from
+`<meta name="deal-type" content="...">`, which /proposal-builder ACT 3 item 7
+emits and /proposal-longform step 4 carries through. There is deliberately NO
+fallback that infers the deal type from the document's own prose: the check
+scores that same prose, so inference is circular — a renewal opened with a
+challenger pitch reads as a new logo and certifies itself, which is precisely
+the defect the check exists to catch. An absent tag is a render-contract
+violation and fails on that basis.
 
 SCENARIO MARKER CONVENTION: scenario cards carry `data-scenario="..."` (one
 attribute per client-facing scenario). When a document carries no such markers
@@ -156,8 +167,20 @@ def _headings(html: str) -> list[str]:
 
 
 def _declared_deal_type(html: str) -> str | None:
-    m = re.search(r'<meta\s+name\s*=\s*"deal-type"\s+content\s*=\s*"([^"]+)"', html, re.I)
-    return m.group(1).strip().lower() if m else None
+    """The `<meta name="deal-type">` declaration, or None if the tag is absent.
+
+    Load-bearing: `_check_story_model` hard-fails when this returns None, so the
+    match must not be defeated by attribute order or quote style. Accepts
+    content-before-name and single-quoted values.
+    """
+    for m in re.finditer(r"<meta\b([^>]*)>", html, re.I):
+        attrs = m.group(1)
+        if not re.search(r"""\bname\s*=\s*["']?\s*deal-type\s*["']?""", attrs, re.I):
+            continue
+        c = re.search(r"""\bcontent\s*=\s*["']([^"']+)["']""", attrs, re.I)
+        if c:
+            return c.group(1).strip().lower()
+    return None
 
 
 def _bool(name: str, ok: bool, *, hard_fail: bool = False, detail: str = "",
@@ -184,12 +207,17 @@ def _check_scenarios(html: str) -> CheckResult:
 
 
 def _check_internal(html: str) -> CheckResult:
-    text = _strip_tags(html)
+    # HTML comments are invisible on screen but one "view source" away, so a leak
+    # parked in a comment is still a leak. `_strip_tags` cannot see them — a whole
+    # `<!-- … -->` matches its `<[^>]+>` tag pattern and is deleted body and all —
+    # so lift the comment bodies out first and scan them alongside visible text.
+    comments = re.findall(r"<!--(.*?)-->", html, re.S)
+    text = _strip_tags(html) + " " + " ".join(comments)
     hits: list[str] = []
     for pat in _INTERNAL_PATTERNS:
         # `INTERNAL_` is the on-disk artifact naming convention — scan the RAW html
-        # (a leak inside an HTML comment is still a leak: the client can view source)
-        # and case-SENSITIVELY, so identifiers like `zero_internal_content` don't hit.
+        # (so it also catches the name inside an attribute or a script string) and
+        # case-SENSITIVELY, so identifiers like `zero_internal_content` don't hit.
         raw = pat == r"INTERNAL_"
         src = html if raw else text
         flags = 0 if raw else re.I
@@ -202,16 +230,22 @@ def _check_internal(html: str) -> CheckResult:
 
 
 def _check_story_model(html: str) -> CheckResult:
+    # The deal type must be DECLARED, never inferred from the same prose this check
+    # then scores — that is circular: a renewal opened with a challenger pitch reads
+    # as new_logo and self-validates, i.e. the exact defect the check exists to catch
+    # becomes its own alibi. Both producers mandate the tag (/proposal-builder ACT 3
+    # item 7, /proposal-longform step 4), so its absence is a contract violation and
+    # fails on its own terms.
+    declared = _declared_deal_type(html)
+    if declared is None:
+        return CheckResult("story_model_matches_deal_type", 0.0, False, hard_fail=True,
+                           detail='no <meta name="deal-type"> — the render contract '
+                                  'requires it; story model cannot be verified')
+
     opening = _strip_tags(_opening_html(html))
     renewal_hits = [p for p in _RENEWAL_OPENING if re.search(p, opening, re.I)]
     challenger_hits = [p for p in _CHALLENGER_OPENING if re.search(p, opening, re.I)]
-
-    declared = _declared_deal_type(html)
-    if declared:
-        deal_type, how = declared, "declared via <meta name=\"deal-type\">"
-    else:  # infer conservatively; an unmarked doc with renewal language is a renewal
-        deal_type = "renewal" if renewal_hits else "new_logo"
-        how = "inferred (no deal-type meta)"
+    deal_type, how = declared, 'declared via <meta name="deal-type">'
 
     if deal_type in ("renewal", "expansion"):
         ok = bool(renewal_hits) and not challenger_hits
@@ -279,7 +313,11 @@ def _check_self_contained(html: str) -> CheckResult:
 
 _DISCLAIMER_EN = r"(not\s+a\s+quote|non-?binding|projected\s+pricing|for\s+planning\s+purposes|" \
                  r"indicative\s+only)"
-_DISCLAIMER_AR = r"(ليس\s+عرض|وليس\s+عرض|غير\s+ملزم|ملزم|تسعير\s+متوقع|لأغراض\s+التخطيط)"
+# Every alternative must be a NEGATED or hedging form. A bare `ملزم` ("binding")
+# is not one: it matches a document asserting the pricing IS binding — the exact
+# opposite of the disclaimer — and, being a substring of `غير ملزم`, it shadowed
+# the negated alternative so the negation was never actually required.
+_DISCLAIMER_AR = r"(ليس\s+عرض|وليس\s+عرض|و?غير\s+ملزم|تسعير\s+متوقع|لأغراض\s+التخطيط)"
 
 
 def _check_disclaimer(html: str) -> CheckResult:

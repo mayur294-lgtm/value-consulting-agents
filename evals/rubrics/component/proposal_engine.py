@@ -12,11 +12,17 @@ check fails when the CLI contract breaks, not only when a function does.
                                         test suite, run by the gate rather than trusted.
   exit_arr_flag_recomputed              the exit-ARR / downsell guard: reported_arr, exit_arr,
                                         downsell_exposure and `flag` are recomputed HERE from
-                                        the config (TCV/term vs the final-year ramp fee) and
-                                        compared to the engine's block. A ramped deal reports
-                                        the average annual fee as ARR while the bank exits the
-                                        term paying the final-year fee; the flag is what stops
-                                        churn exposure being sized off the wrong number.
+                                        the config (software_tcv/term vs the final-year ramp
+                                        fee) and compared to the engine's block. A ramped deal
+                                        reports the average annual fee as ARR while the bank
+                                        exits the term paying the final-year fee; the flag is
+                                        what stops churn exposure being sized off the wrong
+                                        number. The comparison is LIKE-FOR-LIKE: ramp_schedule
+                                        carries software fees, so the reported side is
+                                        software_tcv/term, not the blended (software +
+                                        third-party)/term ACV — blending the bases lets
+                                        third-party revenue inflate the average and suppress
+                                        the flag.
   buffer_arithmetic_correct             the buffer play is a PRICE HOLD: ramp_price =
                                         buffer_units x (software_tcv / commit_units), and
                                         saving_vs_ramp = ramp_price - buffer_price, both
@@ -31,13 +37,13 @@ check fails when the CLI contract breaks, not only when a function does.
   hard_error_on_missing_pricing_inputs  a config with the pricing block removed must exit
                                         NON-ZERO. Silently defaulting missing deal inputs to
                                         zero would emit a confident strategy built on nothing.
-
-OBSERVED LIMIT OF THE HARD-ERROR RULE (deliberately encoded to what is true, not
-to what would be nicer): the engine hard-errors when the `deal` block is ABSENT
-(KeyError -> non-zero exit). A config carrying an EMPTY `deal: {}` still exits 0
-and produces a zeroed strategy. The negative fixture therefore removes the whole
-block, and the empty-block gap is recorded in the ticket report rather than
-asserted here as if it already held.
+  hard_error_on_missing_required_deal_field
+                                        the per-FIELD case: a config that keeps the `deal`
+                                        block but drops one required money input
+                                        (`term_years`) must also exit NON-ZERO and write no
+                                        strategy. Gate 8 — "there are no defaults for money";
+                                        a defaulted term silently re-prices ACV, the ladder and
+                                        the exit-ARR guard.
 
 target: path to a deal-config JSON golden (self-contained; the negative fixture
 is loaded by name, the same way rubrics.component.roi_excel_generator loads its
@@ -55,6 +61,7 @@ from rubrics.base import CheckResult, repo_root
 
 _ENGINE = "tools/proposal_builder.py"
 _MISSING_PRICING_NEGATIVE = "evals/goldens/negatives/deal_config_missing_pricing.json"
+_MISSING_TERM_NEGATIVE = "evals/goldens/negatives/deal_config_missing_term.json"
 
 
 def _bool(name: str, ok: bool, *, detail: str = "", evidence: list[str] | None = None) -> CheckResult:
@@ -124,9 +131,10 @@ def _check_exit_arr(target: str, s: dict | None, err: str) -> CheckResult:
         return _bool("exit_arr_flag_recomputed", False,
                      detail="ramped config produced no exit_arr block")
     software = deal.get("software_tcv") or sum(l.get("total", 0) for l in deal.get("lines", []))
-    total = software + deal.get("thirdparty_tcv", 0)
-    term = deal.get("term_years", 5)
-    expect_reported = round(total / term, 1) if term else float(total)
+    term = deal["term_years"]
+    # SOFTWARE basis — the same basis the ramp schedule is stated on. Recomputed
+    # here independently of the engine (third-party TCV must not enter this side).
+    expect_reported = round(software / term, 1) if term else float(software)
     expect_exit = ramp[max(ramp, key=lambda y: int(y))]
     expect_flag = expect_exit > expect_reported
     diffs = []
@@ -230,8 +238,28 @@ def _check_hard_error(target: str, s: dict | None, err: str) -> CheckResult:
                  evidence=[stderr.strip().splitlines()[-1]] if (ok and stderr.strip()) else [])
 
 
+def _check_hard_error_field(target: str, s: dict | None, err: str) -> CheckResult:
+    name = "hard_error_on_missing_required_deal_field"
+    neg = repo_root() / _MISSING_TERM_NEGATIVE
+    if not neg.exists():
+        return _bool(name, False, detail=f"negative fixture missing: {_MISSING_TERM_NEGATIVE}")
+    cfg = json.loads(neg.read_text())
+    if "deal" not in cfg or "term_years" in cfg.get("deal", {}):
+        return _bool(name, False,
+                     detail="fixture no longer isolates a single missing required field "
+                            "(it must keep the deal block and drop only term_years)")
+    rc, text, stderr = _run(str(neg))
+    ok = rc != 0 and not text
+    return _bool(name, ok,
+                 detail=("config missing deal.term_years exits "
+                         f"{rc} and writes no strategy" if ok else
+                         f"exited {rc} and wrote {len(text)} bytes of strategy — a required "
+                         f"money field was defaulted instead of refused"),
+                 evidence=[stderr.strip().splitlines()[-1]] if (ok and stderr.strip()) else [])
+
+
 CHECKS = (_check_runs_clean, _check_selftest, _check_exit_arr, _check_buffer,
-          _check_provenance, _check_determinism, _check_hard_error)
+          _check_provenance, _check_determinism, _check_hard_error, _check_hard_error_field)
 
 
 def evaluate(target: str) -> list[CheckResult]:

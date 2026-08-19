@@ -2,9 +2,10 @@
   "_synthetic": "SYNTHETIC FIXTURE — Meridian Bank is fictional. Every figure, rate, volume and date is authored for eval use only. Never cite as a real deal, benchmark or price point. Round numbers are deliberate so the arithmetic can be checked by hand.",
   "_hand_math": {
     "total_tcv": "9000 software + 1000 third-party = 10000",
-    "acv": "10000 / 5 yrs = 2000.0  (= reported_arr)",
+    "acv": "10000 / 5 yrs = 2000.0  (blended TCV basis, reported in economics)",
     "ramp_sum": "1200+1600+2000+2100+2100 = 9000 (consistent with software_tcv)",
-    "exit_arr": "final-year fee = 2100 > reported 2000 -> flag true",
+    "reported_arr": "SOFTWARE basis, like-for-like with the ramp: 9000 / 5 yrs = 1800.0",
+    "exit_arr": "final-year fee = 2100 > reported 1800 -> flag true",
     "floor_headroom": "(86-70)/(100-70) = 53.3%",
     "ladder": "Martini 0/0.6/0.9/1.0 x 8 = 0 / 4.8 / 7.2 / 8.0",
     "buffer": "unit price 9000/180 = 50.0; ramp_price 40 x 50.0 = 2000.0; saving 2000.0-1500 = 500.0"

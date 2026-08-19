@@ -100,13 +100,14 @@ ROI, assessment) drift from the PR #71 design system — they are **monitor** ta
 not goldens. The judge `standards_snapshot/` is a FROZEN copy of the design rules;
 bump it deliberately when the live standard changes, or green scores start lying.
 
-**Single-defect negatives (proposal, #150).** The four `proposal_*` negatives each carry
+**Single-defect negatives (proposal, #150).** The seven `proposal_*` negatives each carry
 exactly ONE defect, so a failure names the check that regressed. They are blocked by a
-**hard-fail** check, not by mean score (0.889–0.944 against a 0.85 threshold): a
-single-defect fixture should not have to fail eight unrelated checks to be rejected, so
-each integrity check in `rubrics/deliverable/proposal.py` is declared `hard_fail` and can
-never be averaged away. Multi-defect negatives (e.g. `deck_offpalette.html`, 0.364) push
-the mean down as well — both patterns are valid; pick per what the fixture is testing.
+**hard-fail** check, not by mean score (0.889–0.944 against a 0.85 threshold — on the
+mean alone every one of them would pass): a single-defect fixture should not have to fail
+eight unrelated checks to be rejected, so each integrity check in
+`rubrics/deliverable/proposal.py` is declared `hard_fail` and can never be averaged away.
+Multi-defect negatives (e.g. `deck_offpalette.html`, 0.364) push the mean down as well —
+both patterns are valid; pick per what the fixture is testing.
 
 ## Component evals (path-2 → path-1)
 

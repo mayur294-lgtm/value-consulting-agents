@@ -12,7 +12,7 @@ still open). Same input → same output, every time. No LLM in the numbers.
 The skill (Claude) runs the GATED INTERVIEW that fills the config; this engine does
 the math and the rules. Output: a strategy JSON + a human-readable strategy brief
 (the trace / explainability artifact). The skill then renders the client proposal
-via /frontline-long-form using the JSON.
+via /proposal-longform using the JSON.
 
 Usage:
     python proposal_builder.py --config deal.json --json out.json --out brief.md
@@ -29,6 +29,7 @@ Rule sources (codified, authoritative):
 import json
 import argparse
 import hashlib
+import re
 from pathlib import Path
 
 # ════════════════════════════════════════════════════════════════════
@@ -140,15 +141,25 @@ def fmt_m(n, cur="£"):
     return f"{cur}{n/1000:.1f}M"
 
 
+def require(deal, name):
+    """Gate 8 — money inputs are never defaulted. A missing required field is a
+    hard stop (non-zero exit), the same refusal as a missing `deal` block."""
+    if name not in deal or deal[name] is None:
+        raise SystemExit(f"Missing required deal field: {name} — no defaults for money (Gate 8)")
+    return deal[name]
+
+
 # ════════════════════════════════════════════════════════════════════
 #  ENGINE
 # ════════════════════════════════════════════════════════════════════
 
 def build_strategy(cfg):
     deal = cfg["deal"]
-    cur = deal.get("currency", "£")
-    list_pct = deal.get("region_list_pct", 100)
-    term = deal.get("term_years", 5)
+    # Required money inputs — no silent defaults (Gate 8: "there are no defaults
+    # for money"). eur_per_unit stays optional: it has a documented default.
+    cur = require(deal, "currency")
+    list_pct = require(deal, "region_list_pct")
+    term = require(deal, "term_years")
     eur_rate = deal.get("eur_per_unit", 1.0 if cur == "€" else 1.17)
 
     # ── economics ────────────────────────────────────────────────────
@@ -206,14 +217,20 @@ def build_strategy(cfg):
     increments = [s["increment_pct"] for s in ladder[1:]]
     shape_ok = all(increments[k] >= increments[k + 1] - 0.05 for k in range(len(increments) - 1))
 
+    # Approval ladder display — the Deal Desk band is "everything above the last
+    # named cap", so its lower bound is read off the band table (bands[-2][1] =
+    # the CRO cap), never derived from the SVP cap. On the 70% price list the CRO
+    # cap is 60, not 2 × the SVP cap.
+    bands = TIER_BANDS.get(int(list_pct), TIER_BANDS[100])
+    deal_desk_lower = bands[-2][1]
     approval = {
         "bafo_discount_pct": target,
         "tier_at_bafo": approval_tier(target, list_pct),
         "capped_to_floor": capped,
         "svp_cap_pct": svp_cap(list_pct),
         "ladder": [{"who": w, "rng": r} for w, r in
-                   [("List", "0%")] + [(n, f"≤ {h}%" if h < 1000 else f"> {svp_cap(list_pct)*2}%")
-                                        for n, h in TIER_BANDS.get(int(list_pct), TIER_BANDS[100])[1:]]],
+                   [("List", "0%")] + [(n, f"≤ {h}%" if h < 1000 else f"> {deal_desk_lower}%")
+                                        for n, h in bands[1:]]],
     }
 
     # ── Deal Desk gate (§9) ──────────────────────────────────────────
@@ -230,8 +247,11 @@ def build_strategy(cfg):
         trg(f"Exceptional pricing metric ({metric})", True, f"{metric} applied — always routes to Deal Desk")
     trg("ARR discount above SVP authority", approval_tier(target, list_pct) not in ("List", "SVP"),
         f"BAFO −{target}% → {approval_tier(target, list_pct)} tier")
-    if deal.get("new_logo") and total < 600:
-        trg("New logo < €600K", True, f"{fmt_m(total, cur)} TCV")
+    # €600K threshold — compare in EUR, like the ACV trigger above, so a deal
+    # priced in £ (or any non-EUR unit) is not measured against a euro number.
+    total_eur = total * eur_rate
+    if deal.get("new_logo") and total_eur < 600:
+        trg("New logo < €600K", True, f"{fmt_m(total, cur)} TCV ≈ €{total_eur/1000:.1f}M")
     if term > 5:
         trg("Term > 5 years", True, f"{term}-yr term")
     if deal.get("custom_dev"):
@@ -280,8 +300,11 @@ def build_strategy(cfg):
             "used": used, "extract": extract, "open": open_lv, "na": na,
         })
     lever_ledger = {"families": families, "used_count": used_n, "open_count": open_n}
-    open_levers = [f"Family {f['n']} ({f['name']}): {', '.join(f['open'])}"
-                   for f in families if f["open"]]
+    # ONE ENTRY PER LEVER — reserve is counted in levers, so the round-over-round
+    # diff in INTERNAL_deal_state.json shows exactly which lever got spent. A
+    # per-family grouping would hide that (and breaks the deal-state contract).
+    open_levers = [f"Family {f['n']} ({f['name']}): {lever}"
+                   for f in families for lever in f["open"]]
 
     # ── leverage posture (§5) ────────────────────────────────────────
     ctx = cfg.get("context", {})
@@ -308,16 +331,20 @@ def build_strategy(cfg):
         rationale.append(f"Routes to Deal Desk on: {', '.join(fired)} (§9) — the tool assembles the pack, it doesn't bypass the review.")
 
     # ── exit-ARR / downsell guard ────────────────────────────────────
-    # A ramped deal reports the AVERAGE annual fee (TCV / term) as ARR, but the
-    # bank exits the term paying the FINAL-YEAR fee. On churn/downsell the
-    # exposure is the exit run-rate, not the reported average. Conservative
-    # bias: flag on strictly-greater.
+    # A ramped deal reports the AVERAGE annual fee as ARR, but the bank exits the
+    # term paying the FINAL-YEAR fee. On churn/downsell the exposure is the exit
+    # run-rate, not the reported average. Conservative bias: flag on
+    # strictly-greater.
+    # LIKE-FOR-LIKE BASIS: ramp_schedule carries SOFTWARE annual fees, so the
+    # reported figure here is software_tcv / term — NOT the blended ACV
+    # ((software + third-party) / term) reported in economics. Blending the bases
+    # lets third-party revenue inflate the average and suppress the flag.
     ramp = deal.get("ramp_schedule") or {}
     exit_arr_block = None
     if ramp:
         final_year = max(ramp, key=lambda y: int(y))
         exit_arr_v = ramp[final_year]
-        reported_arr_v = economics["acv"]
+        reported_arr_v = round(software / term, 1) if term else float(software)
         exit_arr_block = {
             "reported_arr": reported_arr_v,
             "exit_arr": exit_arr_v,
@@ -527,8 +554,9 @@ SAMPLE = {
 # exercises the ramped/exit-ARR + buffer path and the pass-through metadata.
 # Hand arithmetic, written before the engine was run:
 #   total_tcv    = 6000 + 0                     = 6000
-#   acv          = 6000 / 5                     = 1200.0   → reported_arr
-#   ramp sum     = 400+900+1400+1650+1650       = 6000     (consistent with TCV)
+#   acv          = 6000 / 5                     = 1200.0   (blended, = software here)
+#   reported_arr = software 6000 / 5            = 1200.0   (SOFTWARE basis — the ramp's basis)
+#   ramp sum     = 400+900+1400+1650+1650       = 6000     (consistent with software_tcv)
 #   exit_arr     = fee at highest year key "5"  = 1650
 #   flag         = 1650 > 1200                  = True
 #   headroom     = (85-70)/(100-70)             = 50.0%
@@ -548,6 +576,24 @@ RAMPED_SAMPLE = {
     "economics": {"gm_arr_pct": 85, "floor_gm_pct": 70},
     "strategy": {"anchor": "best", "alt": "better", "target_bafo_discount_pct": 10,
                  "buffer_offer": {"commit_units": 300, "buffer_units": 100, "buffer_price": 1500}},
+    "context": {"switching_cost": "medium"},
+}
+
+
+# A minimal SYNTHETIC new-logo fixture that sits either side of the €600K Deal Desk
+# threshold in a NON-euro currency — the boundary the trigger has to convert for.
+# Hand arithmetic, written before the engine was run:
+#   total_tcv    = 550 + 0                      = 550   (£k)
+#   in EUR       = 550 × 1.17                   = 643.5 ≥ 600  → trigger does NOT fire
+#   at 500 £k    = 500 × 1.17                   = 585.0 <  600  → trigger fires
+NEW_LOGO_SAMPLE = {
+    "deal": {
+        "client": "Fictional new-logo bank", "lob": "Retail", "basis": "unit",
+        "region_list_pct": 100, "term_years": 5, "currency": "£", "eur_per_unit": 1.17,
+        "new_logo": True, "software_tcv": 550, "thirdparty_tcv": 0,
+    },
+    "economics": {},
+    "strategy": {"anchor": "best", "alt": "better", "target_bafo_discount_pct": 0},
     "context": {"switching_cost": "medium"},
 }
 
@@ -578,9 +624,26 @@ def selftest():
     assert "Exceptional pricing metric (AUM)" in fired
     assert "ARR ACV > €2M" in fired
     assert "GM ARR < 83%" not in fired
+    # approval ladder DISPLAY — the Deal Desk lower bound is the CRO cap read off
+    # the band table, not a multiple of the SVP cap (100 list: 20/40 → "> 40%").
+    assert [r["rng"] for r in s1["approval"]["ladder"]] == ["0%", "≤ 20%", "≤ 40%", "> 40%"], \
+        s1["approval"]["ladder"]
+    # …and on the 70% price list the caps are 40/60, so Deal Desk starts above 60%.
+    s70 = build_strategy({**SAMPLE, "deal": {**SAMPLE["deal"], "region_list_pct": 70}})
+    assert [r["rng"] for r in s70["approval"]["ladder"]] == ["0%", "≤ 40%", "≤ 60%", "> 60%"], \
+        s70["approval"]["ladder"]
+
     # lever ledger has open levers (explainability)
     assert s1["lever_ledger"]["open_count"] > 0
-    assert len(s1["open_levers"]) > 0
+    # open_levers is ONE ENTRY PER LEVER — "Family N (Name): Lever", never a
+    # comma-joined per-family grouping (the deal-state round diff counts levers).
+    assert len(s1["open_levers"]) == s1["lever_ledger"]["open_count"], s1["open_levers"]
+    assert len(s1["open_levers"]) == sum(len(f["open"]) for f in s1["lever_ledger"]["families"])
+    for entry in s1["open_levers"]:
+        m = re.match(r"^Family \d+ \([^)]+\): (.+)$", entry)
+        assert m, f"malformed open lever entry: {entry!r}"
+        assert "," not in m.group(1), f"grouped, not one lever per entry: {entry!r}"
+
     # determinism trace stable
     assert s1["provenance"]["inputs_hash"] == s2["provenance"]["inputs_hash"]
 
@@ -624,6 +687,48 @@ def selftest():
     assert "Pricing basis: Synthetic price list (fixture), 2026-01-01" in rb
     assert re_["max_discount_to_floor_pct"] == 50.0, re_["max_discount_to_floor_pct"]
 
+    # ── exit-ARR is a LIKE-FOR-LIKE (software) comparison ─────────────
+    # Same fixture + €3.0M of third-party revenue. Hand math, written first:
+    #   total_tcv    = 6000 + 3000              = 9000
+    #   economics.acv= 9000 / 5                 = 1800.0   (blended — unchanged)
+    #   reported_arr = software 6000 / 5        = 1200.0   (software basis)
+    #   flag         = 1650 > 1200              = True
+    # On the blended basis this would read 1650 > 1800 = False — third-party
+    # revenue suppressing a real downsell exposure.
+    mixed = json.loads(json.dumps(RAMPED_SAMPLE))
+    mixed["deal"]["thirdparty_tcv"] = 3000
+    m1 = build_strategy(mixed)
+    assert m1["economics"]["total_tcv"] == 9000, m1["economics"]["total_tcv"]
+    assert m1["economics"]["acv"] == 1800.0, m1["economics"]["acv"]      # blended ACV unchanged
+    assert m1["exit_arr"]["reported_arr"] == 1200.0, m1["exit_arr"]["reported_arr"]
+    assert m1["exit_arr"]["flag"] is True, m1["exit_arr"]                # not suppressed
+
+    # ── new-logo trigger converts to EUR before the €600K test ────────
+    # Hand math above: £550k × 1.17 = €643.5k ≥ 600 → no trigger;
+    #                  £500k × 1.17 = €585.0k <  600 → trigger.
+    above = build_strategy(NEW_LOGO_SAMPLE)
+    assert not any(t["label"] == "New logo < €600K" for t in above["deal_desk"]["triggers"]), \
+        "£550k (≈€643.5k) fired the €600K trigger — currency not converted"
+    assert above["deal_desk"]["required"] is False, above["deal_desk"]["triggers"]
+    below_cfg = json.loads(json.dumps(NEW_LOGO_SAMPLE))
+    below_cfg["deal"]["software_tcv"] = 500
+    below = build_strategy(below_cfg)
+    nl = [t for t in below["deal_desk"]["triggers"] if t["label"] == "New logo < €600K"]
+    assert nl and nl[0]["fires"] is True, below["deal_desk"]["triggers"]
+    assert "€0.6M" in nl[0]["detail"], nl[0]["detail"]                   # EUR figure shown
+    assert below["deal_desk"]["required"] is True
+
+    # ── money inputs are never defaulted (Gate 8 hard stop) ───────────
+    for field in ("currency", "region_list_pct", "term_years"):
+        stripped = json.loads(json.dumps(SAMPLE))
+        stripped["deal"].pop(field)
+        try:
+            build_strategy(stripped)
+        except SystemExit as exc:
+            assert field in str(exc), str(exc)
+        else:
+            raise AssertionError(f"missing '{field}' was silently defaulted instead of refused")
+
     print("✓ selftest passed — deterministic, rules verified")
     print(f"  TCV {fmt_m(e['total_tcv'])} · ACV {fmt_m(e['acv'])} · headroom {e['max_discount_to_floor_pct']}% "
           f"· BAFO tier {s1['approval']['tier_at_bafo']} · Deal Desk {'required' if s1['deal_desk']['required'] else 'no'} "
@@ -638,8 +743,12 @@ SCHEMA = """
 Config schema (JSON):
 {
   "deal": {
-    "client", "lob", "basis" (AUM|unit|conversational), "region_list_pct" (100|70),
-    "term_years", "currency", "eur_per_unit", "exceptional_metric" (e.g. "AUM" | null),
+    "client", "lob", "basis" (AUM|unit|conversational),
+    "region_list_pct" (100|70)  REQUIRED,   # no default — hard stop if absent
+    "term_years"                REQUIRED,   # no default — hard stop if absent
+    "currency"                  REQUIRED,   # no default — hard stop if absent
+    "eur_per_unit"?,                        # optional; defaults 1.0 for € else 1.17
+    "exceptional_metric" (e.g. "AUM" | null),
     "new_logo" (bool), "custom_dev" (bool),
     "software_tcv", "thirdparty_tcv",         # £k; software_tcv falls back to sum(lines.total)
     "lines": [ {"name", "total", "years":[...]} ],
@@ -648,7 +757,10 @@ Config schema (JSON):
     "deal_type"?: "new_logo" | "renewal" | "expansion",   # pass-through, no math
     "round"?: int (default 1 when deal_type is given),    # negotiation round, pass-through
     "pricing_source"?: {"source", "date"},                # provenance line in the brief
-    "ramp_schedule"?: {"<year>": fee}                     # £k per contract year; str|int keys
+    "ramp_schedule"?: {"<year>": fee}                     # SOFTWARE annual fee per contract
+                                                          # year (£k; str|int keys), i.e. the
+                                                          # same basis as software_tcv —
+                                                          # third-party is NOT in here
                                                           # → triggers the exit_arr block
   },
   "economics": { "gm_arr_pct", "floor_gm_pct",   # → floor headroom
@@ -664,7 +776,9 @@ Config schema (JSON):
 
 Optional output blocks (emitted only when their config field is supplied):
   "deal_type" / "round" / "pricing_source"   pass-through metadata
-  "exit_arr": { "reported_arr",              # = computed ACV (TCV / term)
+  "exit_arr": { "reported_arr",              # = software_tcv / term — SOFTWARE basis, the
+                                             #   like-for-like comparator for the ramp (NOT the
+                                             #   blended economics.acv, which includes 3rd-party)
                 "exit_arr",                  # = final-year fee in ramp_schedule
                 "downsell_exposure",         # = exit_arr — what churn actually costs
                 "flag" }                     # true when exit_arr > reported_arr

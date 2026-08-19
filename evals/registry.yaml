@@ -67,9 +67,23 @@ deliverables:
   #   proposal_internal_leak.html          0.889  FAIL (hard-fail: zero_internal_content)
   #   proposal_three_scenarios.html        0.889  FAIL (hard-fail: exactly_2_scenarios)
   #   proposal_unsourced_roi.html          0.944  FAIL (hard-fail: no_unsourced_financial_claims)
+  #   proposal_missing_meta.html           0.889  FAIL (hard-fail: story_model_matches_deal_type)
+  #   proposal_comment_leak.html           0.889  FAIL (hard-fail: zero_internal_content)
+  #   proposal_binding_ar.html             0.944  FAIL (hard-fail: disclaimer_present)
   # Negatives are blocked by HARD-FAIL, not by mean score: a single-defect fixture
   # should not have to fail eight unrelated checks to be rejected, and each of the
   # five integrity checks is declared hard_fail so it can never be averaged away.
+  # HARD-FAIL IS LOAD-BEARING BY DESIGN — every negative above scores 0.889-0.944,
+  # i.e. ABOVE the 0.85 threshold; on mean score alone all seven would pass. The
+  # threshold stays 0.85 (raising it to catch one defect out of nine checks would
+  # demand near-perfection of the golden and turn any cosmetic drift into a block).
+  # The last three were added 2026-08-19 with the review fixes they pin:
+  #   missing_meta  — deal type must be DECLARED; inferring it from the prose the
+  #                   check scores let a renewal-with-challenger self-certify.
+  #   comment_leak  — leak patterns now scan HTML-comment bodies too (_strip_tags
+  #                   deleted `<!-- … -->` whole, so view-source leaks passed).
+  #   binding_ar    — the Arabic disclaimer alternation carried a bare `ملزم`
+  #                   ("binding"), so a doc asserting the pricing IS binding passed.
   proposal:
     altitude: deliverable
     evaluator: rubrics.deliverable.proposal
@@ -81,6 +95,9 @@ deliverables:
       - evals/goldens/negatives/proposal_unsourced_roi.html
       - evals/goldens/negatives/proposal_three_scenarios.html
       - evals/goldens/negatives/proposal_internal_leak.html
+      - evals/goldens/negatives/proposal_missing_meta.html
+      - evals/goldens/negatives/proposal_comment_leak.html
+      - evals/goldens/negatives/proposal_binding_ar.html
 
 # Component (unit) altitude — score an agent's direct output on a fixed input.
 # code: objective Python checks. judge: LLM-as-judge rubrics (semantic).
@@ -199,15 +216,18 @@ components:
   # the engine is the "no LLM in the numbers" boundary, so every figure it emits is
   # recomputed here independently rather than compared to a stored expectation.
   # threshold 1.00 — a deterministic engine has no partial credit.
-  # Measured 2026-08-19: 1.000 (7/7 checks). hard_error_on_missing_pricing_inputs
-  # scores the negative fixture evals/goldens/negatives/deal_config_missing_pricing.json
-  # (loaded by the evaluator; the components altitude wires only one `input:`).
+  # Measured 2026-08-19: 1.000 (8/8 checks). The two hard-error checks score the
+  # negative fixtures evals/goldens/negatives/deal_config_missing_pricing.json (the
+  # whole `deal` block removed) and .../deal_config_missing_term.json (one required
+  # money field removed), both loaded by the evaluator — the components altitude
+  # wires only one `input:`.
   proposal-engine:
     altitude: component
     threshold: 1.00
     input: evals/goldens/deal_config_golden.json
     code: [engine_runs_clean, selftest_passes, exit_arr_flag_recomputed, buffer_arithmetic_correct,
-           pricing_provenance_passthrough, deterministic_output, hard_error_on_missing_pricing_inputs]
+           pricing_provenance_passthrough, deterministic_output, hard_error_on_missing_pricing_inputs,
+           hard_error_on_missing_required_deal_field]
 
   # proposal-loop (#150) — the round-N negotiation loop. It has no binary: it is a
   # command driving two artifacts, so what the gate checks is the CONTRACT between

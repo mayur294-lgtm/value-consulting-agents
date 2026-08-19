@@ -1,0 +1,54 @@
+{
+  "_synthetic": "SYNTHETIC NEGATIVE FIXTURE — Meridian Bank is fictional, eval use only.",
+  "_negative": "evals/goldens/deal_config_golden.json with the REQUIRED field `deal.term_years` removed — everything else identical. tools/proposal_builder.py MUST hard-error (non-zero exit) on a missing money input rather than default it (Gate 8: 'there are no defaults for money'). A defaulted term silently re-prices ACV, the whole ladder and the exit-ARR guard. Scored by evals/rubrics/component/proposal_engine.py :: hard_error_on_missing_required_deal_field.",
+  "deal": {
+    "client": "Meridian Bank (fictional)",
+    "lob": "Retail & SME",
+    "basis": "unit",
+    "region_list_pct": 100,
+    "currency": "€",
+    "eur_per_unit": 1.0,
+    "deal_type": "renewal",
+    "round": 2,
+    "pricing_source": {
+      "source": "Published price list (synthetic fixture)",
+      "date": "2026-06-01"
+    },
+    "software_tcv": 9000,
+    "thirdparty_tcv": 1000,
+    "lines": [
+      {"name": "Digital Banking — Retail (Premium) · Base Fee", "total": 3000},
+      {"name": "Digital Banking — Retail (Premium) · Active-user Fee", "total": 3600},
+      {"name": "SME Workspace (Premium) · Base + User", "total": 1600},
+      {"name": "Digital Onboarding — Retail", "total": 800}
+    ],
+    "ramp_schedule": {"1": 1200, "2": 1600, "3": 2000, "4": 2100, "5": 2100}
+  },
+  "economics": {
+    "gm_arr_pct": 86,
+    "floor_gm_pct": 70,
+    "professional_services_gm_pct": 40,
+    "first_year_arr_pct": 65
+  },
+  "scenarios": {
+    "good": 5000,
+    "better": 8000,
+    "best": 10000
+  },
+  "strategy": {
+    "anchor": "best",
+    "alt": "better",
+    "target_bafo_discount_pct": 8,
+    "buffer_offer": {
+      "commit_units": 180,
+      "buffer_units": 40,
+      "buffer_price": 1500
+    }
+  },
+  "levers": {
+    "1": {"used": ["Good/Better/Best anchored on Best"], "extract": ["reference rights"]}
+  },
+  "context": {
+    "switching_cost": "high"
+  }
+}
