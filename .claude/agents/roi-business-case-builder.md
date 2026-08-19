@@ -442,10 +442,10 @@ config = {
 }
 
 generator = ROIModelGenerator(config)
-generator.generate("outputs/2602_Zenith_Nigeria_ROI_Model.xlsx")
+generator.generate("outputs/2602_Client_Country_ROI_Model.xlsx")
 ```
 
-> **IMPORTANT — Output file naming:** Always use the convention `YYMM_[CLIENT_CODE]_ROI_Model.xlsx` where `YYMM` is the year+month of generation (e.g. `2602` = February 2026) and `CLIENT_CODE` is the engagement directory prefix (e.g. `Zenith_Nigeria`). Example: `outputs/2602_Zenith_Nigeria_ROI_Model.xlsx`.
+> **IMPORTANT — Output file naming:** Always use the convention `YYMM_[CLIENT_CODE]_ROI_Model.xlsx` where `YYMM` is the year+month of generation (e.g. `2602` = February 2026) and `CLIENT_CODE` is the engagement directory prefix (e.g. `Client_Country`). Example: `outputs/2602_Client_Country_ROI_Model.xlsx`.
 
 > **IMPORTANT — Config field names:** The Excel generator reads `assumptions_register` and `data_gaps_for_validation` as the canonical top-level keys. The generator also accepts `assumptions` and `data_gaps` as fallbacks, but always prefer the canonical names for new configs.
 

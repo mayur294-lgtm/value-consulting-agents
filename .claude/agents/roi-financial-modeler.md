@@ -40,6 +40,8 @@ Optional but recommended:
 9. **Ramp-up models** — `knowledge/standards/ramp_up_models.md`
 10. **Benchmark evolution rules** — `knowledge/standards/benchmark_evolution.md`
 
+> **Synthetic-data exclusion:** when reading domain benchmarks, ROI levers, or `knowledge/learnings/`, exclude any `[Synthetic-Test]`-tagged entry and anything sourced from a `tests/` path (see `knowledge/standards/benchmark_evolution.md`). If ≥1 entry was excluded, append that standard's canonical excluded-count note; if nothing was excluded, add no note.
+
 ## Backbase Product Knowledge (MCP)
 
 Use MCP tools (`mcp__backbase-infobank__*`) to validate Backbase capabilities named in lever candidates. Every lever that claims "Backbase enables X" should be verifiable. If MCP unavailable, fall back to domain `roi_levers.md` enabler sections.

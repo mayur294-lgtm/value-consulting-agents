@@ -131,6 +131,8 @@ Read the relevant product directory (`knowledge/domains/product_directory_{domai
 **Source 5: Check analogous engagement patterns**
 Read `knowledge/learnings/roi_models/*.md` for proven lever patterns from similar engagements. Also check existing engagement configs in `engagements/outputs/*/roi_config.json` for what levers consultants found for comparable clients.
 
+> **Synthetic-data exclusion:** exclude any `[Synthetic-Test]`-tagged entry and anything sourced from a `tests/` path (see `knowledge/standards/benchmark_evolution.md`). If ≥1 entry was excluded, append that standard's canonical excluded-count note; if nothing was excluded, add no note.
+
 ---
 
 **For EVERY creative lever, you MUST document (following BECU model pattern):**
