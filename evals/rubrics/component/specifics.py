@@ -444,6 +444,37 @@ def _journey(text: str) -> list[CheckResult]:
     return out
 
 
+# Canonical excluded-count note format (knowledge/standards/benchmark_evolution.md):
+#   "Note: N synthetic-test entr(y/ies) excluded — fabricated pipeline-test
+#   data, never citable in client work (see knowledge/standards/benchmark_evolution.md)."
+# A line matching this format is the expected way to ACKNOWLEDGE an exclusion
+# and is not itself a stray citation.
+_SYNTHETIC_NOTE_RE = re.compile(
+    r"^note:\s*\d+\s*synthetic-test entr(?:y|ies)\s*excluded\s*.{0,5}"
+    r"fabricated pipeline-test data.*benchmark_evolution\.md\)\.?\s*$",
+    re.I,
+)
+
+
+def _no_synthetic_citations(text: str) -> CheckResult:
+    """Zero [Synthetic-Test] citations outside an explicit excluded-count note line.
+
+    Honest limitation: this pins the FIXTURE's content contract for the eval —
+    it does not verify the live agent's retrieval behavior. The eval gate
+    scores goldens; it does not execute the agent or its knowledge reads
+    (see memory/eval-gate-is-path2-only.md).
+    """
+    stray = [line.strip() for line in text.splitlines()
+             if re.search(r"synthetic[- ]test", line, re.I)
+             and not _SYNTHETIC_NOTE_RE.match(line.strip())]
+    ok = not stray
+    return _bool_check(
+        "no_synthetic_citations", ok,
+        detail="no stray [Synthetic-Test] citations outside the canonical excluded-count note" if ok
+        else f"{len(stray)} line(s) reference synthetic-test data outside the canonical note",
+    )
+
+
 # ---------------------------------------------------------------------------
 # benchmark-librarian
 #   yaml: confidence levels (High/Medium/Low confidence); source attribution.
@@ -458,6 +489,7 @@ def _benchmark(text: str) -> list[CheckResult]:
                      r"not available|consultant-provided|industry|proxy|estimated)[^\]]*\]", text)
     out.append(_ratio_check("source_attribution_present", min(sources, 3), 3,
                             detail=f"{sources} source: / provenance tags"))
+    out.append(_no_synthetic_citations(text))
     return out
 
 

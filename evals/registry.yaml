@@ -162,7 +162,7 @@ components:
     threshold: 0.80
     # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
     input: evals/goldens/benchmark_golden.md   # scores specifics._benchmark via rubrics.component.benchmark_librarian
-    code: [confidence_levels_present, source_attribution_present]
+    code: [confidence_levels_present, source_attribution_present, no_synthetic_citations]
     judge: [benchmarks_defensible_not_hallucinated]
 
   usecase-designer:
