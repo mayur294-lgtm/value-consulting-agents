@@ -73,6 +73,8 @@ When you encounter a benchmark with field observations:
 
 5. **Date everything.** Benchmark age matters. Always include the source date and flag benchmarks older than 3 years.
 
+6. **Synthetic-data exclusion.** Never serve a benchmark tagged `[Synthetic-Test]` or sourced from a `tests/` path (see `knowledge/standards/benchmark_evolution.md`) — it is fabricated pipeline-test data, not a low-confidence tier. If ≥1 entry was excluded, append that standard's canonical excluded-count note; if nothing was excluded, add no note.
+
 ## Workflow
 
 1. **Receive Request:** Understand the engagement context (domain, region, specific metrics needed)
@@ -134,6 +136,7 @@ Before finalizing any benchmark shortlist, verify:
 - [ ] Downstream agents (ROI, Capability) can use the shortlist without additional sourcing
 - [ ] Assumptions register included for any derived or adjusted benchmark values
 - [ ] Benchmark IDs are consistent and unique for cross-referencing by downstream agents
+- [ ] No `[Synthetic-Test]`-tagged or `tests/`-sourced entry is served (see `knowledge/standards/benchmark_evolution.md`); canonical excluded-count note appended if ≥1 entry was excluded, omitted if none were
 
 ## Anti-Patterns to Avoid
 
@@ -197,9 +200,6 @@ inputs:
     - outputs/stakeholder_intelligence.md
 degraded: proceed-without
 knowledge:
-  - benchmarks/benchmark_registry.md
-  - benchmarks/regions/*
-  - benchmarks/domains/*
   - knowledge/domains/*/benchmarks.md
   - knowledge/standards/benchmark_evolution.md
   - knowledge/learnings/benchmarks/*
@@ -234,9 +234,6 @@ inputs:
 degraded: refuse
 knowledge:
   - knowledge/domains/{domain}/benchmarks.md
-  - benchmarks/benchmark_registry.md
-  - benchmarks/regions/*
-  - benchmarks/domains/*
   - knowledge/standards/benchmark_evolution.md
   - knowledge/learnings/benchmarks/*
 outputs:
