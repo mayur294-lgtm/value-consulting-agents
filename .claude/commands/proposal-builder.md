@@ -105,8 +105,227 @@ against, never as the number to price with.
 **Round N (deal state present).** Open with a delta report instead of a blank intake: what
 changed vs the plan, newly active levers, the original strategy re-surfaced verbatim with why it
 was chosen, and the concession history. Then spar on drift against the ladder before re-running.
-*(The full round-N loop — `/deal-notes` ingestion, delta report, buffer play at BAFO — lands in a
-later ticket; round 1 writes the state file that loop reads.)*
+*(The full loop is **ACT 0-R** below: detection, the five-part delta report, sparring, version
+freezing and the state update. Round 1 writes the state file that loop reads.)*
+
+---
+
+## ACT 0-R — ROUND N (the negotiation loop)
+
+**Detection.** The ACT 0 scan finds `outputs/INTERNAL_deal_state.json` and it carries
+`current.round ≥ 1` → **this is round N = `current.round` + 1**. Enter round-N mode: the blank
+intake does **not** run, and the **delta report opens the conversation** instead of the
+"here is what I know" digest. (No state file, or `current.round` absent → round 1, ACT 0 as written.)
+
+Round-N mode is a *revision* of an agreed plan, not a new deal. Read these before saying anything:
+
+| Source | What you take from it |
+| --- | --- |
+| `outputs/INTERNAL_deal_state.json` | `rounds[]` (the record), `current{}` (round, next planned stage, elasticity exposure), `pending_meeting_notes[]` (stubs `/deal-notes` pushed) |
+| `outputs/DEAL_JOURNAL.md` | The human narrative for every entry dated **after** the last `rounds[]` entry — headline state of play, key exchanges & tensions, strategic reads |
+| `outputs/INTERNAL_strategy_brief_v{N-1}.md` | The agreed strategy — story model, anchor, ladder rationale cited to § . **Quote it; never paraphrase it.** |
+| `outputs/INTERNAL_negotiation_plan_v{N-1}.md` | The planned ladder, each planned concession paired to its extract, the walk-away |
+| `outputs/strategy.json` | Last round's ladder numbers (stage prices, `cum_discount_pct`, `increment_pct`, approval tiers) |
+
+If a `pending_meeting_notes` stub points at a journal entry that does not exist, say so and stop
+guessing — the stub is a pointer, the journal is the content.
+
+**Pricing is still asked fresh.** The standing exception survives round N unchanged: pricing is
+never carried over from `rounds[]`, from a prior `deal_config.json`, or from a prior proposal on
+disk. Gate 8 runs again, pasted fresh, with source and date. The state file stores **hashes and
+history only — never pricing**.
+
+---
+
+### The DELTA REPORT — the first thing on screen, in this exact order
+
+Do not ask a question, do not request pricing, do not open a gate until all five elements are
+presented. Each element is sourced, and each names the file it came from.
+
+**1 · What changed vs the plan.** The client's counter and the new information — drawn from the
+`DEAL_JOURNAL.md` entries and `pending_meeting_notes` stubs recorded **since the last round**.
+State each as *fact → source → what it moves*:
+
+> · They asked for −12% on ACV (`DEAL_JOURNAL.md#2026-08-12-procurement-review`) — a **price** ask.
+> · Active-user volume revised up 150k → 185k (same entry) — moves the **tier**, not the discount.
+> · Core-integration readiness slipped two quarters (same entry) — moves **timing**, not price.
+
+Facts only here. The judgement goes in elements 2 and 5.
+
+**2 · Newly active concession levers.** Diff the new meeting content against the previous round's
+`open_levers_snapshot[]` and the five lever families (`negotiation-tactics.md` §3). Name only the
+levers that **new facts have opened** — a lever that was already open and is still open is not
+news; say "unchanged" for those. Each named lever states the fact that opened it:
+
+> · **Family 4 — Timing & cash flow: staggered activation / stub bill** — newly live, because
+>   their readiness slipped two quarters. Their own delay is now *our* non-price give.
+> · **Family 1 — Phasing** — newly live for the same reason: the deferred scope is theirs to ask
+>   for, so sell it as a phase rather than fund it as a discount.
+> · **Family 2 — Volume tier** — the upward volume revision is *their* lever, not ours; do not
+>   spend margin on something the tier table already gives them.
+
+A slipped date, a budget cycle, a re-org, a new stakeholder and a revised volume are all
+lever-opening facts. A lever nobody has intel on stays **OPEN** — that is reserve, not a gap.
+
+**3 · The ORIGINAL agreed strategy, re-surfaced.** Pull the anchor, the planned ladder and the
+rationale straight out of `INTERNAL_strategy_brief_v{N-1}.md` and show them **quoted, not
+paraphrased** — this is the anchor the conversation is measured against, and paraphrase is how a
+plan quietly drifts:
+
+> **What we agreed at round {N-1}** (quoted from `INTERNAL_strategy_brief_v{N-1}.md`):
+> > "Story model: Why Change. Anchor: Best at full scope, 5-yr term, list-anchored, zero discount
+> > — §2 stage 1. Discount budget 8% of list, spent on the Martini 0 / 4.8 / 7.2 / 8.0 (§1)."
+>
+> **Why it was chosen:** …the brief's own rationale lines, cited to their § .
+
+**4 · Concession history — in client-facing phrasing.** What we have actually moved on so far,
+stated the way it would be said to the client. **No internal budget percentages, no ladder
+internals, no stage names, no extract list, no walk-away** — this element is the sentence the
+consultant can say out loud in the room:
+
+> "We have moved on **payment terms** and **the sandbox environment** — we have not moved on price."
+
+Pull the substance from `rounds[].concessions.given[]`; translate it, do not dump it. If nothing
+has been given yet, say so plainly: "Nothing conceded yet — the anchor is intact."
+
+**5 · SPARRING — the ask against the plan.** Compare the client's ask to the planned increment at
+`current.next_planned_stage` in the prior round's ladder. This is the element that earns the
+command its keep, so make it explicit and arithmetic:
+
+| Say | Sourced from |
+| --- | --- |
+| **The planned figure** — "plan says Counter 1 = −4.8% cumulative (increment 4.8%)" | prior `strategy.json` ladder at `current.next_planned_stage` |
+| **The deviation** — "the ask is −12%: 2.5× the planned move, and above the whole 8% budget" | the ask (element 1) vs the plan |
+| **The Martini implication** — "**this shortens the stem**: a 12% move here leaves nothing smaller to give at Counter 2 and BAFO, and the shape flips from Martini to Wrecking Ball" | `negotiation-tactics.md` §1 |
+| **The extract required to even consider it** — "to take it: year-one prepay **and** a written expansion commitment, plus the 5-yr term signed — §2 stage 3 pricing, pulled forward" | `negotiation-tactics.md` §2 / §4 (every give is traded, never gifted) |
+| **The recommendation** | **The default is HOLD** — see below |
+
+**The default recommendation is HOLD.** Say it as a recommendation with its reason, not as a
+refusal: hold the planned increment, spend families 1→4 against the newly opened levers first
+(§3), and put the price lever back where it belongs — last. Offer the trade as the alternative,
+never as the opener.
+
+**Consultant override → journaled.** The consultant can overrule and take the bigger move. Then:
+state the §1 consequence once, take the instruction, and **journal the override** in
+`ENGAGEMENT_JOURNAL.md` with its reason, the planned figure, the figure actually taken and the
+extract secured in return. Record it in the new round's `concessions.given[]` too. An unlogged
+override is a defect.
+
+---
+
+### After the delta report — the round-N run
+
+The delta report replaces the intake; everything downstream runs as normal, in revise mode:
+
+1. **Revised DEAL BRIEF checkpoint (v{N})** — CHECKPOINT 1 re-run as a *diff on the approved
+   v{N-1} brief*, not a blank brief. It must carry the round-specific sections named at
+   Checkpoint 1 item 5 ("what we heard — and what's changed" + the client-language concession
+   history), plus what element 5 concluded (hold / trade, and the extract). Written to
+   `outputs/CHECKPOINT_deal_brief_v{N}.md` — a **new file**, never an edit of v{N-1}.
+2. **Fresh pricing gate** — Gate 8, unchanged, pasted fresh with source and date. Hard stop if
+   absent; there are no defaults for money and no carry-over from round N-1.
+3. **Engine re-run** — ACT 2 with the revised `deal_config.json` (`deal.round` = N). The engine
+   recomputes the ladder for this round; you do not hand-adjust the prior ladder.
+4. **Commercial checkpoint** — CHECKPOINT 2, adding the **before/after ladder** (planned vs this
+   round's) so the consultant sees the shape is still a Martini after the revision.
+5. **Generate v{N} outputs** — the ACT 4 file set at `v{N}`, then CHECKPOINT 3 verify, then the
+   journal entry, then the **state update** below.
+
+---
+
+### Version freezing — prior versions are immutable
+
+Every `v{<N}` file in `outputs/` is **frozen**: the deal brief, the proposal HTML and zip, the
+strategy brief, the negotiation plan, the Deal Desk fields. They are the record of what was
+actually shown and agreed at that round, and the audit value dies if they move.
+
+If anything in this run would write, edit, patch, re-render or "just fix a typo in" a prior
+version, **refuse with this exact message**:
+
+> v{N-1} is frozen — changes go in v{N}.
+
+Then do the change in the current version instead. This applies to consultant requests as much as
+to your own tidying — the recovery is always a new version, never an in-place edit. (Same rule,
+same wording, as the "Frozen version modified" row in Error behaviors.) `deal_config.json`,
+`strategy.json` and `INTERNAL_deal_state.json` are the exceptions by design: the first two are
+overwritten by the current run and the third is **appended to**, never rewritten.
+
+---
+
+### BAFO round — surface the buffer play
+
+When `current.next_planned_stage` is `bafo`, this round is Best & Final (§2 stage 4: smallest
+move, dated, final). Surface the engine's **`buffer` block** as **the closing-give candidate** —
+in place of reaching for another price cut:
+
+- **Price-hold framing** — it is a **hold on the price of future growth**, never a discount, and
+  never described as one. It costs list-rate upside on volume that has not landed; it does not cut
+  the price of volume that has.
+- **Give-to-get conditions** — the engine's `buffer.conditions[]`, each stated as a condition of
+  the hold, per §4 (extract, not gift). No condition, no hold.
+- **The travel story** — `buffer.buffer_price` vs `buffer.ramp_price` and the resulting
+  `buffer.saving_vs_ramp`: what the client's number *has travelled* from the earlier ramp price to
+  here. This is the closing narrative, and the figures come from the engine verbatim.
+- **Gated, not granted** — the price-hold addendum is Deal Desk sign-off, not rep authority (§9).
+  Say which approval tier the engine returned, and that the deadline is stated **once**.
+
+If the engine returned no `buffer` block, say so — do not invent a buffer offer to have something
+to close with. The BAFO move is then simply the smallest ladder increment, dated and final.
+
+---
+
+### State update — on every generate
+
+After the v{N} outputs are written and verified, append to `outputs/INTERNAL_deal_state.json`.
+**Append and update — never rewrite the file, never edit a prior `rounds[]` entry.** Consume the
+`pending_meeting_notes[]` stubs: their `meeting_ref` values move into this round's
+`meeting_note_refs[]` and the `pending_meeting_notes` array is **cleared** (left as `[]`), so the
+same meeting is never counted into two rounds.
+
+```json
+{
+  "rounds": [
+    { "n": 1, "date": "YYYY-MM-DD", "inputs_hash": "<round-1 hash>",
+      "scenarios_shown": ["A anchor", "B alternative"],
+      "ladder_position": "anchor",
+      "concessions": { "given": [], "extracted": ["Reference rights"] },
+      "meeting_note_refs": [],
+      "open_levers_snapshot": ["<from strategy.json open_levers>"],
+      "strategy_summary": "<one line: story model, anchor, why B is lighter>" },
+
+    { "n": 2, "date": "YYYY-MM-DD", "inputs_hash": "<from THIS run's strategy.json>",
+      "scenarios_shown": ["A anchor (revised)", "B alternative"],
+      "ladder_position": "counter1",
+      "concessions": {
+        "given":     ["Net 60 payment terms", "Staggered activation to Q3"],
+        "extracted": ["Signed 5-yr term", "Reference rights confirmed"]
+      },
+      "meeting_note_refs": ["DEAL_JOURNAL.md#2026-08-12-procurement-review"],
+      "open_levers_snapshot": ["<from THIS run's strategy.json open_levers>"],
+      "strategy_summary": "<one line: what this round held, what it traded, and why>" }
+  ],
+  "current": { "round": 2, "next_planned_stage": "counter2",
+               "elasticity_exposure": "conservative" },
+  "pending_meeting_notes": []
+}
+```
+
+Field rules:
+
+- `n` — the round just generated. `current.round` matches it.
+- `inputs_hash` — copied from **this run's** `strategy.json`, so the round is reproducible.
+- `ladder_position` — the stage this round actually landed on (engine stage keys: `anchor`,
+  `counter1`, `counter2`, `bafo`).
+- `concessions.given[] / extracted[]` — what was actually moved and actually taken, in plain
+  words. This is what element 4 will translate next round; keep it factual, not client-phrased.
+- `meeting_note_refs[]` — the consumed `pending_meeting_notes` refs, in date order.
+- `open_levers_snapshot[]` — this run's `open_levers` from `strategy.json`. Element 2 next round
+  diffs against it, so it must be the engine's list, not a hand-edited one.
+- `strategy_summary` — one line, so a later round can re-surface the plan without re-reading
+  everything.
+- `current.next_planned_stage` — the **next** stage on the ladder, not the one just played.
+- **No pricing in this file. Ever.** Hashes, stage names and history only — prices live in
+  `strategy.json` and in the pricing pasted fresh each run.
 
 ---
 
@@ -345,10 +564,13 @@ All into `engagements/<client>/<engagement>/outputs/`. `{N}` is the negotiation 
       "open_levers_snapshot": ["<from strategy.json open_levers>"],
       "strategy_summary": "<one paragraph: story model, anchor, why B is lighter>" }
   ],
-  "current": { "round": 1, "next_planned_stage": "counter_1",
+  "current": { "round": 1, "next_planned_stage": "counter1",
                "elasticity_exposure": "conservative" }
 }
 ```
+
+Round ≥ 2 appends a new `rounds[]` entry and updates `current{}` — the full shape, the field rules
+and the `pending_meeting_notes` consumption are in **ACT 0-R → State update**.
 
 **Hand-off note (stub).** Mapping the agreed terms onto the Spotdraft order-form structure
 (Parties · Modules · Products · Services · Term table · standard vs special conditions) is
