@@ -79,6 +79,16 @@ FAMILIES = [
      "levers": ["Volume discount", "VPA / price hold", "Renewal cap"]},
 ]
 
+# §2 / §5 — the buffer play is a PRICE HOLD, never a discount: the give-to-get list
+# that must be pre-agreed before the price of growth is held.
+BUFFER_CONDITIONS = [
+    "Timing of commitment",
+    "No attrition on current agreements",
+    "Inclusions & exclusions agreed",
+    "Contract term held",
+    "Funding commitment confirmed",
+]
+
 # §6 — bands
 DEAL_SIZE = [("large", 10_000), ("mid", 3_000), ("small", 0)]      # £k TCV
 HEADROOM = [("ample", 18.0), ("moderate", 8.0), ("tight", 0.0)]    # % to floor
@@ -297,9 +307,58 @@ def build_strategy(cfg):
         fired = [t["label"] for t in triggers if t["fires"]]
         rationale.append(f"Routes to Deal Desk on: {', '.join(fired)} (§9) — the tool assembles the pack, it doesn't bypass the review.")
 
+    # ── exit-ARR / downsell guard ────────────────────────────────────
+    # A ramped deal reports the AVERAGE annual fee (TCV / term) as ARR, but the
+    # bank exits the term paying the FINAL-YEAR fee. On churn/downsell the
+    # exposure is the exit run-rate, not the reported average. Conservative
+    # bias: flag on strictly-greater.
+    ramp = deal.get("ramp_schedule") or {}
+    exit_arr_block = None
+    if ramp:
+        final_year = max(ramp, key=lambda y: int(y))
+        exit_arr_v = ramp[final_year]
+        reported_arr_v = economics["acv"]
+        exit_arr_block = {
+            "reported_arr": reported_arr_v,
+            "exit_arr": exit_arr_v,
+            "downsell_exposure": exit_arr_v,
+            "flag": bool(exit_arr_v > reported_arr_v),
+        }
+
+    # ── buffer play (Family 5 · price hold, NOT a discount) ──────────
+    # Pre-agree the price of future growth at today's unit economics. The
+    # "travel story" prices what that growth would have cost at the anchor's
+    # per-unit price — it is a hold, never a discount.
+    bo = strat.get("buffer_offer") or {}
+    buffer_block = None
+    if bo:
+        commit_units = bo.get("commit_units", 0) or 0
+        buffer_units = bo.get("buffer_units", 0) or 0
+        buffer_price = bo.get("buffer_price", 0) or 0
+        unit_price = (software / commit_units) if commit_units > 0 else 0.0
+        ramp_price = round(buffer_units * unit_price, 1)
+        buffer_block = {
+            "ramp_price": ramp_price,
+            "buffer_price": buffer_price,
+            "saving_vs_ramp": round(ramp_price - buffer_price, 1),
+            "conditions": list(BUFFER_CONDITIONS),
+            # inputs echoed so the brief can state the offer without re-reading cfg
+            "commit_units": commit_units,
+            "buffer_units": buffer_units,
+        }
+
+    if exit_arr_block and exit_arr_block["flag"]:
+        rationale.append(
+            f"Reported ARR {fmt_m(exit_arr_block['reported_arr'], cur)} understates the exit run-rate "
+            f"{fmt_m(exit_arr_block['exit_arr'], cur)} — size downsell/churn exposure off the exit ARR, not the average (§6).")
+    if buffer_block:
+        rationale.append(
+            "The buffer is a PRICE HOLD on future growth, not a discount — it is gated on the give-to-get "
+            "conditions and does not reset the renewal reference (§4, §5).")
+
     cfg_hash = hashlib.sha256(json.dumps(cfg, sort_keys=True).encode()).hexdigest()[:8]
 
-    return {
+    out = {
         "deal": {k: deal.get(k) for k in ("client", "lob", "basis", "region_list_pct", "term_years", "currency")},
         "economics": economics,
         "scenarios": scenarios,
@@ -317,6 +376,22 @@ def build_strategy(cfg):
         "provenance": {"generated_by": "proposal_builder.py", "rule_source": RULE_SOURCE,
                        "inputs_hash": cfg_hash},
     }
+
+    # ── optional pass-through metadata + new blocks ──────────────────
+    # Emitted ONLY when supplied, so a config without the new fields yields
+    # byte-identical output to the pre-change engine.
+    if "deal_type" in deal:
+        out["deal_type"] = deal["deal_type"]          # new_logo | renewal | expansion (no math)
+    if "round" in deal or "deal_type" in deal:
+        out["round"] = deal.get("round", 1)           # default 1 for a typed deal
+    if deal.get("pricing_source"):
+        out["pricing_source"] = deal["pricing_source"]
+    if exit_arr_block:
+        out["exit_arr"] = exit_arr_block
+    if buffer_block:
+        out["buffer"] = buffer_block
+
+    return out
 
 
 # ════════════════════════════════════════════════════════════════════
@@ -337,6 +412,21 @@ def render_brief(s):
     L.append(f"- Deal size: **{e['deal_size_band']}** · "
              + (f"GM ~{e['gm_arr_pct']}% · floor headroom **{e['max_discount_to_floor_pct']}%** ({e['headroom_band']})"
                 if e['max_discount_to_floor_pct'] is not None else "GM/floor not supplied"))
+    if s.get("deal_type"):
+        L.append(f"- Deal type: **{s['deal_type']}** · negotiation round {s.get('round', 1)}")
+    if s.get("pricing_source"):
+        ps = s["pricing_source"]
+        L.append(f"- Pricing basis: {ps.get('source','(source not stated)')}, {ps.get('date','(date not stated)')}")
+
+    # exit-ARR / downsell guard — sits high, before any scenario framing
+    if s.get("exit_arr"):
+        x = s["exit_arr"]
+        if x["flag"]:
+            L.append(f"\n> **⚠ EXIT-ARR:** reported ARR {fmt_m(x['reported_arr'],cur)} but final-year run-rate "
+                     f"{fmt_m(x['exit_arr'],cur)} — downsell exposure on churn is {fmt_m(x['downsell_exposure'],cur)}.")
+        else:
+            L.append(f"\n- Exit ARR {fmt_m(x['exit_arr'],cur)} vs reported ARR {fmt_m(x['reported_arr'],cur)} — "
+                     "no downsell exposure flagged.")
 
     L.append("\n## Scenarios (present two)")
     for sc in s["scenarios"]:
@@ -357,6 +447,15 @@ def render_brief(s):
     L.append(f"\n## Approval — BAFO −{s['approval']['bafo_discount_pct']}% → "
              f"**{s['approval']['tier_at_bafo']}**"
              + (" · ⚠ EXCEEDS floor" if s['approval']['capped_to_floor'] else ""))
+
+    if s.get("buffer"):
+        b = s["buffer"]
+        L.append("\n## Buffer — a price hold, not a discount")
+        L.append(f"- **Buffer (price hold):** {b['buffer_units']} units @ {fmt_m(b['buffer_price'],cur)} — "
+                 "pre-agree the price of growth.")
+        L.append(f"- _Travel story:_ at anchor unit economics this growth would have cost "
+                 f"{fmt_m(b['ramp_price'],cur)} (saving {fmt_m(b['saving_vs_ramp'],cur)}).")
+        L.append("- **Conditions:** " + " · ".join(b["conditions"]))
 
     dd = s["deal_desk"]
     L.append(f"\n## Deal Desk — {'**REQUIRED**' if dd['required'] else 'not required'}")
@@ -424,6 +523,35 @@ SAMPLE = {
 }
 
 
+# A second, deliberately SYNTHETIC fixture (fictional client, invented numbers) that
+# exercises the ramped/exit-ARR + buffer path and the pass-through metadata.
+# Hand arithmetic, written before the engine was run:
+#   total_tcv    = 6000 + 0                     = 6000
+#   acv          = 6000 / 5                     = 1200.0   → reported_arr
+#   ramp sum     = 400+900+1400+1650+1650       = 6000     (consistent with TCV)
+#   exit_arr     = fee at highest year key "5"  = 1650
+#   flag         = 1650 > 1200                  = True
+#   headroom     = (85-70)/(100-70)             = 50.0%
+#   ladder       = 0/0.6/0.9/1.0 × 10           = 0 / 6.0 / 9.0 / 10.0
+#   unit price   = 6000 / 300 commit units      = 20.0
+#   ramp_price   = 100 buffer units × 20.0      = 2000.0
+#   saving       = 2000.0 − 1500                = 500.0
+RAMPED_SAMPLE = {
+    "deal": {
+        "client": "Northwind Mutual (fictional)", "lob": "Retail", "basis": "unit",
+        "region_list_pct": 100, "term_years": 5, "currency": "€", "eur_per_unit": 1.0,
+        "deal_type": "renewal", "round": 2,
+        "pricing_source": {"source": "Synthetic price list (fixture)", "date": "2026-01-01"},
+        "software_tcv": 6000, "thirdparty_tcv": 0,
+        "ramp_schedule": {"1": 400, "2": 900, "3": 1400, "4": 1650, "5": 1650},
+    },
+    "economics": {"gm_arr_pct": 85, "floor_gm_pct": 70},
+    "strategy": {"anchor": "best", "alt": "better", "target_bafo_discount_pct": 10,
+                 "buffer_offer": {"commit_units": 300, "buffer_units": 100, "buffer_price": 1500}},
+    "context": {"switching_cost": "medium"},
+}
+
+
 def selftest():
     s1 = build_strategy(SAMPLE)
     s2 = build_strategy(json.loads(json.dumps(SAMPLE)))
@@ -456,10 +584,53 @@ def selftest():
     # determinism trace stable
     assert s1["provenance"]["inputs_hash"] == s2["provenance"]["inputs_hash"]
 
+    # ── BACKWARD COMPAT: a config without the new fields adds no new keys ──
+    for k in ("exit_arr", "buffer", "deal_type", "round", "pricing_source"):
+        assert k not in s1, f"backward-compat broken: {k} emitted for a config that never asked for it"
+    render_brief(s1)                                       # brief still renders
+
+    # ── ramped / buffer fixture (new blocks) ─────────────────────────
+    r1 = build_strategy(RAMPED_SAMPLE)
+    r2 = build_strategy(json.loads(json.dumps(RAMPED_SAMPLE)))
+    assert json.dumps(r1, sort_keys=True) == json.dumps(r2, sort_keys=True), \
+        "NON-DETERMINISTIC: identical ramped input produced different output"
+
+    # pass-through metadata (engine does no math with these)
+    assert r1["deal_type"] == "renewal", r1["deal_type"]
+    assert r1["round"] == 2, r1["round"]
+    assert r1["pricing_source"]["date"] == "2026-01-01", r1["pricing_source"]
+
+    # exit-ARR guard — hand math above: 6000/5 = 1200.0 reported vs 1650 exit
+    re_ = r1["economics"]
+    assert re_["total_tcv"] == 6000, re_["total_tcv"]
+    assert re_["acv"] == 1200.0, re_["acv"]
+    x = r1["exit_arr"]
+    assert x["reported_arr"] == 1200.0, x["reported_arr"]
+    assert x["exit_arr"] == 1650, x["exit_arr"]            # final-year fee, highest year key
+    assert x["downsell_exposure"] == 1650, x["downsell_exposure"]
+    assert x["flag"] is True, x["flag"]                    # 1650 > 1200 → exposure understated
+
+    # buffer play — hand math above: 6000/300 = 20.0/unit; 100 × 20.0 = 2000.0; −1500 = 500.0
+    b = r1["buffer"]
+    assert b["ramp_price"] == 2000.0, b["ramp_price"]
+    assert b["buffer_price"] == 1500, b["buffer_price"]
+    assert b["saving_vs_ramp"] == 500.0, b["saving_vs_ramp"]
+    assert b["conditions"] == BUFFER_CONDITIONS, b["conditions"]
+
+    # the buffer is a PRICE HOLD — the word "discount" never describes it
+    rb = render_brief(r1)
+    assert "⚠ EXIT-ARR:" in rb, "exit-ARR warning missing from brief"
+    assert "price hold, not a discount" in rb
+    assert "Pricing basis: Synthetic price list (fixture), 2026-01-01" in rb
+    assert re_["max_discount_to_floor_pct"] == 50.0, re_["max_discount_to_floor_pct"]
+
     print("✓ selftest passed — deterministic, rules verified")
     print(f"  TCV {fmt_m(e['total_tcv'])} · ACV {fmt_m(e['acv'])} · headroom {e['max_discount_to_floor_pct']}% "
           f"· BAFO tier {s1['approval']['tier_at_bafo']} · Deal Desk {'required' if s1['deal_desk']['required'] else 'no'} "
           f"· {s1['lever_ledger']['open_count']} levers open · trace {s1['provenance']['inputs_hash']}")
+    print(f"  ramped fixture: reported ARR {fmt_m(x['reported_arr'],'€')} vs exit ARR {fmt_m(x['exit_arr'],'€')} "
+          f"(flag {x['flag']}) · buffer hold {fmt_m(b['buffer_price'],'€')} vs ramp {fmt_m(b['ramp_price'],'€')} "
+          f"(saving {fmt_m(b['saving_vs_ramp'],'€')}) · backward-compat OK")
     return s1
 
 
@@ -471,16 +642,37 @@ Config schema (JSON):
     "term_years", "currency", "eur_per_unit", "exceptional_metric" (e.g. "AUM" | null),
     "new_logo" (bool), "custom_dev" (bool),
     "software_tcv", "thirdparty_tcv",         # £k; software_tcv falls back to sum(lines.total)
-    "lines": [ {"name", "total", "years":[...]} ]
+    "lines": [ {"name", "total", "years":[...]} ],
+
+    # ── all optional; omit them and the output is byte-identical to before ──
+    "deal_type"?: "new_logo" | "renewal" | "expansion",   # pass-through, no math
+    "round"?: int (default 1 when deal_type is given),    # negotiation round, pass-through
+    "pricing_source"?: {"source", "date"},                # provenance line in the brief
+    "ramp_schedule"?: {"<year>": fee}                     # £k per contract year; str|int keys
+                                                          # → triggers the exit_arr block
   },
   "economics": { "gm_arr_pct", "floor_gm_pct",   # → floor headroom
                  "managed_hosting_gm_pct"?, "managed_services_gm_pct"?,
                  "professional_services_gm_pct"?, "first_year_arr_pct"? },
   "scenarios": { "good", "better", "best", "<id>_name"? },     # £k TCV
-  "strategy": { "anchor", "alt", "target_bafo_discount_pct", "why_alt", "walkaway" },
+  "strategy": { "anchor", "alt", "target_bafo_discount_pct", "why_alt", "walkaway",
+                "buffer_offer"?: {"commit_units", "buffer_units", "buffer_price"}
+                                       # optional → triggers the buffer (price-hold) block },
   "levers": { "1".."5": { "used":[], "extract":[], "open":[], "na":[] } },
   "context": { "switching_cost" (high|medium|low), "champion", "competition", "budget" }
 }
+
+Optional output blocks (emitted only when their config field is supplied):
+  "deal_type" / "round" / "pricing_source"   pass-through metadata
+  "exit_arr": { "reported_arr",              # = computed ACV (TCV / term)
+                "exit_arr",                  # = final-year fee in ramp_schedule
+                "downsell_exposure",         # = exit_arr — what churn actually costs
+                "flag" }                     # true when exit_arr > reported_arr
+  "buffer":   { "ramp_price",                # = buffer_units × (software_tcv / commit_units)
+                "buffer_price", "saving_vs_ramp", "conditions"[],
+                "commit_units", "buffer_units" }
+                # a PRICE HOLD on future growth — never described as a discount
+
 Output: strategy JSON (--json) + markdown strategy brief (--out / stdout).
 """
 
