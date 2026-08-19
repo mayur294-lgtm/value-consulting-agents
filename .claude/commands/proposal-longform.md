@@ -29,6 +29,11 @@ document itself, all pricing is **projected, list/published basis, explicitly no
 Never put in a client document: internal floors or minimum prices, discount percentages
 off rack, competitor pricing intel, internal steers, or "prepared for [person]" covers.
 
+Files named `INTERNAL_*` belong to `/proposal-builder`'s internal workspace (strategy briefs,
+negotiation plans, Deal Desk fields, deal state) and must never be read into or shipped with
+this skill's output — the client zip contains only the proposal HTML, renamed `index.html` at
+the zip root.
+
 ## Workflow
 
 1. **Intake.** Gather: client name, deal shape (LOB, pricing basis, drivers), the published
@@ -43,7 +48,9 @@ off rack, competitor pricing intel, internal steers, or "prepared for [person]" 
 4. **Wire the pricing.** Edit the `PRICING` object (base fee, tiers, presets) and the driver
    sliders' min/max/step. Keep the math panel lines honest — each line must state its own
    formula with live numbers. If the deal's math needs a different shape (e.g. AUM-based),
-   adjust `recompute()` but keep every displayed line self-explanatory.
+   adjust `recompute()` but keep every displayed line self-explanatory. When invoked from
+   `/proposal-builder`, carry the provided `<meta name="deal-type" content="...">` into the
+   document `<head>` unchanged (standalone runs may omit it).
 5. **Verify in a browser** (checklist below), then deliver the single HTML file.
 
 ## QA checklist

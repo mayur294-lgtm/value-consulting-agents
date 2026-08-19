@@ -516,6 +516,11 @@ The client artifact is produced by **`/proposal-longform`**, not by this command
 5. **Assumptions table** — every assumed number with its validation owner.
 6. **Non-binding disclaimer** — projected, list/published basis, explicitly not a quote, in every
    language rendered.
+7. **`deal-type` meta tag** — the exact `deal.deal_type` recorded at Gate 2
+   (`new_logo` | `renewal` | `expansion`), passed to `/proposal-longform` so it renders
+   `<meta name="deal-type" content="{deal_type}">` in the document head. This is not
+   negotiation content — it is what lets the deliverable eval's story-model check confirm the
+   rendered opening matches the deal type without re-inferring it from prose.
 
 **PROHIBITED — these NEVER cross to the renderer, in any form, paraphrased or numeric:**
 
@@ -543,6 +548,16 @@ All into `engagements/<client>/<engagement>/outputs/`. `{N}` is the negotiation 
 | --- | --- | --- |
 | `{CLIENT}_Proposal_v{N}.html` | **Client** | The rendered interactive proposal from `/proposal-longform` |
 | `{CLIENT}_Proposal_v{N}.zip` | **Client** | Packaging: **client HTML ONLY**, with `index.html` at the zip root |
+
+**Zip packaging — mechanical rule.** The client zip contains **exactly one file**: the rendered
+client proposal, renamed to `index.html`, at the zip root. Nothing else — no `INTERNAL_*`, no
+`CHECKPOINT_*`, no `deal_config.json`, no `strategy.json`. Build it by copying only
+`{CLIENT}_Proposal_v{N}.html` into a clean staging directory as `index.html`, then zip that
+directory's contents (not the engagement `outputs/` folder). **Verification step (part of
+CHECKPOINT 3):** list the zip's contents (`unzip -l` or equivalent) and confirm the listing is
+exactly `index.html`. Any `INTERNAL_*` or `CHECKPOINT_*` name in the listing is a failure — per
+the ux-design error behavior, treat it the same as an INTERNAL leak: block delivery, rebuild the
+zip from a clean staging directory, and re-verify.
 | `CHECKPOINT_deal_brief_v{N}.md` | Internal | The approved brief (written at Checkpoint 1) |
 | `deal_config.json` | Internal | The exact engine input for this run |
 | `strategy.json` | Internal | The engine output — the number source of truth |
@@ -594,7 +609,13 @@ Reconcile before declaring done, and report honestly:
 4. **`/proposal-longform` QA checklist** — run it in full: language toggle, slider sweeps with no
    NaN and reconciling totals, presets, the executive readout in each language, the disclaimer
    present everywhere, no internal-only content, assumptions table complete.
-5. **Defects enumerated.** State "N defects found and fixed: …" plainly. Do not report a clean run
+5. **`meta deal-type` present and matches the brief.** Confirm
+   `<meta name="deal-type" content="...">` is in the rendered HTML head and its value equals
+   `deal.deal_type` from the approved brief — the deliverable eval's story-model check reads this
+   tag directly.
+6. **Zip contents.** List the zip; the listing is exactly `index.html` (see the zip packaging
+   rule under ACT 4). Any other name is a failure.
+7. **Defects enumerated.** State "N defects found and fixed: …" plainly. Do not report a clean run
    you did not get.
 
 ---
@@ -635,6 +656,86 @@ Two more standing refusals:
 - **No invented data** — missing intel is an *open lever*, never a silent assumption. Conservative
   bias on any pricing. Every assumption carries a confidence level and a validation owner.
 - **Anonymization** — any transcript or meeting input passes the anonymize-guard before it is read.
+
+### Journal entry template (copy-paste, then fill)
+
+Every run — round 1 or round N, interactive or non-interactive — appends one entry to
+`ENGAGEMENT_JOURNAL.md` following `templates/outputs/engagement_journal.md`'s Decision Log
+convention. This is the concrete block; do not summarize it in prose instead.
+
+```markdown
+### [YYYY-MM-DD HH:MM] — proposal-builder
+
+**Action:** [e.g., "Generated v{N} commercial proposal for {CLIENT} — {deal_type}, round {N}"]
+
+<!-- TELEMETRY_START -->
+- Agent: proposal-builder
+- Session ID: [from .engagement_session_id]
+- Start Time: [ISO timestamp]
+- End Time: [ISO timestamp]
+- Duration: [seconds]
+- Input Files: [count + total size — incl. deal_config.json, pricing_source: {source, date}]
+- Output Files: [count + total size — list each ACT 4 file with its size]
+- Errors Encountered: [none | brief description]
+- Quality Self-Check: [passed | failed | passed_with_warnings]
+<!-- TELEMETRY_END -->
+
+**Input Files Read:**
+- [CPQ export / prior deal_config.json / upstream ROI model / DEAL_JOURNAL.md entries, etc.]
+- Pricing source: [source name] · dated [date] — pasted fresh this run, not carried over
+
+**Output Files Written:**
+- [Every ACT 4 file for v{N}: proposal HTML + zip, CHECKPOINT_deal_brief_v{N}.md,
+  deal_config.json, strategy.json, INTERNAL_strategy_brief_v{N}.md,
+  INTERNAL_negotiation_plan_v{N}.md, INTERNAL_deal_desk_fields_v{N}.md,
+  INTERNAL_deal_state.json (appended)]
+
+### Checkpoint: pre-generation
+
+- Deal brief (`CHECKPOINT_deal_brief_v{N}.md`) presented and approved as a whole.
+- Story model: [Why Change | Why Stay | Why Pay] — [deal_type], round [N].
+- Consultant corrections to the scan: [none | list]
+
+### Checkpoint: post-generation (verification)
+
+- Numbers traced to `strategy.json`: [pass/fail]
+- Rendered sections match the approved brief: [pass/fail]
+- INTERNAL leak scan (client HTML + zip): [zero hits | N hits found and fixed — list]
+- `/proposal-longform` QA checklist: [pass/fail — note any defect]
+- Zip contents verified as `index.html` only: [pass/fail]
+- meta deal-type present and matches the brief: [pass/fail — value: {deal_type}]
+- Defects enumerated: [N defects found and fixed: … | none]
+
+**Key Findings:**
+- [Finding 1 — e.g., "Deal Desk triggered: discount exceeds SVP authority"]
+
+**Decisions Made:**
+- [e.g., "Anchored on Family 1 (phasing) per Gate 5 — deferred scope sold as a phase, not discounted"]
+
+**Assumptions Made:**
+- [One row per deal-brief assumption — mirror into the Assumptions Register below]
+
+**Consultant Direction:**
+- [What the consultant confirmed, corrected, or overrode — including any journaled override]
+
+**Status After This Step:**
+- **Completed:** v{N} generated and verified
+- **Next:** [e.g., "Awaiting client response — round {N+1} on counter"]
+- **Blocked/Pending:** [none | e.g., "GM unknown — Deal Desk pack flagged needs Finance"]
+
+**Provenance:** `tools/proposal_builder.py` · rule source: `negotiation-tactics.md` §[x],
+`proposal-narrative.md` §[y], `pricing-methodology.md` · `inputs_hash`: [from strategy.json]
+
+---
+```
+
+**Assumptions Register rows** — every assumption named in the deal brief (Checkpoint 1 item 6)
+gets a row in the journal's cumulative Assumptions Register table, using the same ID/confidence/
+basis/owner columns `engagement_journal.md` defines:
+
+| ID | Assumption | Made By | Confidence | Basis | Validation Owner | Status |
+|----|-----------|---------|------------|-------|------------------|--------|
+| A[n] | [e.g., "GM ARR % assumed at regional band median"] | proposal-builder | H/M/L | [basis] | [e.g., Finance] | Open |
 
 ## Anti-patterns
 
