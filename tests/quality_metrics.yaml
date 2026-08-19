@@ -204,6 +204,17 @@ knowledge_files:
       max_matches: 0
       description: "Knowledge files should use anonymized references"
 
+    - name: "No [Synthetic-Test] data in domain knowledge"
+      pattern: "\\[Synthetic-Test\\]"
+      max_matches: 0
+      applies_to: "knowledge/domains/**"
+      description: "Fabricated data from synthetic pipeline-test engagements must never reach domain knowledge — see tests/engagements/README.md"
+
+    - name: "No fictional test-bank names in knowledge"
+      pattern: "\\bHarborlight\\b"
+      max_matches: 0
+      description: "Harborlight is a fictional synthetic-test bank invented to exercise the pipeline; it must never be cited as a real client — see tests/engagements/README.md"
+
     - name: "Has confidence levels for benchmarks"
       pattern: "[Hh]igh|[Mm]edium|[Ll]ow"
       min_matches: 1

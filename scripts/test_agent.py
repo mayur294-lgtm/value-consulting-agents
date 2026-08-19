@@ -14,6 +14,7 @@ Usage:
 """
 
 import argparse
+import fnmatch
 import json
 import os
 import re
@@ -86,6 +87,21 @@ def check_file(filepath: str, checks: list) -> list:
         })
 
     return results
+
+
+def check_applies_to(filepath: str, check: dict) -> bool:
+    """Whether a check's optional `applies_to` glob matches this file.
+
+    No `applies_to` means the check applies to every file of its type
+    (existing behavior). Matching uses fnmatch, which is path-separator
+    agnostic — e.g. "knowledge/domains/**" matches
+    "knowledge/domains/retail/benchmarks.md".
+    """
+    applies_to = check.get('applies_to')
+    if not applies_to:
+        return True
+    patterns = applies_to if isinstance(applies_to, list) else [applies_to]
+    return any(fnmatch.fnmatch(filepath, pattern) for pattern in patterns)
 
 
 def determine_file_type(filepath: str) -> str:
@@ -301,7 +317,9 @@ def run_checks(files: list, metrics: dict) -> dict:
             # We only check definition structure here.
 
         elif file_type == 'knowledge':
-            checks_to_run.extend(metrics.get('knowledge_files', {}).get('structural', []))
+            for check in metrics.get('knowledge_files', {}).get('structural', []):
+                if check_applies_to(filepath, check):
+                    checks_to_run.append(check)
 
         if not checks_to_run:
             continue
