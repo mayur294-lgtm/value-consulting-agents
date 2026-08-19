@@ -182,6 +182,8 @@ See `.claude/agents/roi-financial-modeler.md` for the full authoritative schema 
 
 **Reference Data:** `knowledge/learnings/roi_models/tech_rationalization_decommission.md`
 
+> **Synthetic-data exclusion:** exclude any `[Synthetic-Test]`-tagged entry and anything sourced from a `tests/` path (see `knowledge/standards/benchmark_evolution.md`). If ≥1 entry was excluded, append that standard's canonical excluded-count note; if nothing was excluded, add no note.
+
 ### Tech Rationalization Sheet Structure
 
 | Section | Content |

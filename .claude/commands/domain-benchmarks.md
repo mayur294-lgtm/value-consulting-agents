@@ -30,6 +30,8 @@ When this skill is invoked:
 
 1. **Read the master benchmark file**: `knowledge/Consulting Playbook Metrics Benchmark [Master] - Benchmarks.csv`
 
+   > **Synthetic-data exclusion:** exclude any `[Synthetic-Test]`-tagged entry and anything sourced from a `tests/` path (see `knowledge/standards/benchmark_evolution.md`). If ≥1 entry was excluded, append that standard's canonical excluded-count note; if nothing was excluded, add no note.
+
 2. **Filter by domain-relevant journeys**:
    - **Retail/SME:** General, Digital Onboarding, Loan Origination, Cards, Online Registration, Payments, Deposits & Loans, Transaction Dispute, Loan Servicing
    - **Investing:** Account Opening, Digital Adoption, Revenue & AUM, Operational Efficiency, Customer Experience (benchmarks use confidence tiers: `[Industry]`/`[Proxy]`/`[Estimated]`/`[Client-Validated]`)

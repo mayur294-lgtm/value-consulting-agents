@@ -16,6 +16,19 @@ Every benchmark value carries a confidence tier. The tier determines how the val
 | **2** | `[Proxy]` | From an adjacent domain, region, or time period. Reasonable but not exact. | Use with 20% conservative haircut. Flag in assumptions. | "Proxy benchmark: [value] (adjusted from [original context])" |
 | **3** | `[Estimated]` | Derived from logic, analogies, or expert judgment. No direct empirical source. | Use as directional only. Wide confidence interval (±30-50%). | "Estimated: [range] (basis: [reasoning])" |
 | **4** | `[Client-Validated]` | Confirmed by actual client data during an engagement. The gold standard. | Direct use. Highest confidence. | "Client-validated: [value] ([anonymized engagement ref])" |
+| **Excluded** | `[Synthetic-Test]` | Fabricated data from synthetic test engagements (`tests/engagements/`). | **NEVER.** Excluded from all retrieval. Not promotable. | Not displayed — excluded before presentation. |
+
+### `[Synthetic-Test]` — excluded tier detail
+
+**Provenance:** entries tagged `[Synthetic-Test]`, and anything sourced from a `tests/` path, originate from `tests/engagements/` — fictional engagements (e.g. Harborlight, Zenith demo fixtures) used to exercise the pipeline. They are marked with a `.synthetic` file at the engagement root. See `tests/engagements/README.md` for the full quarantine mechanism.
+
+**Retrieval exclusion rule (canonical wording — referenced, not restated, by every retrieval surface):** when reading knowledge sources, exclude any entry tagged `[Synthetic-Test]` and anything sourced from a `tests/` path. This data must never be cited in ROI models, client deliverables, or benchmark comparisons — it is not a low-confidence tier to be used cautiously, it is fabricated pipeline-test data and cannot be promoted to any real tier.
+
+**Canonical excluded-count note** (append when ≥1 entry was excluded; omit entirely when nothing was excluded):
+
+```
+Note: N synthetic-test entr(y/ies) excluded — fabricated pipeline-test data, never citable in client work (see knowledge/standards/benchmark_evolution.md).
+```
 
 ---
 
