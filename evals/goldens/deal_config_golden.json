@@ -1,0 +1,74 @@
+{
+  "_synthetic": "SYNTHETIC FIXTURE — Meridian Bank is fictional. Every figure, rate, volume and date is authored for eval use only. Never cite as a real deal, benchmark or price point. Round numbers are deliberate so the arithmetic can be checked by hand.",
+  "_hand_math": {
+    "total_tcv": "9000 software + 1000 third-party = 10000",
+    "acv": "10000 / 5 yrs = 2000.0  (= reported_arr)",
+    "ramp_sum": "1200+1600+2000+2100+2100 = 9000 (consistent with software_tcv)",
+    "exit_arr": "final-year fee = 2100 > reported 2000 -> flag true",
+    "floor_headroom": "(86-70)/(100-70) = 53.3%",
+    "ladder": "Martini 0/0.6/0.9/1.0 x 8 = 0 / 4.8 / 7.2 / 8.0",
+    "buffer": "unit price 9000/180 = 50.0; ramp_price 40 x 50.0 = 2000.0; saving 2000.0-1500 = 500.0"
+  },
+  "deal": {
+    "client": "Meridian Bank (fictional)",
+    "lob": "Retail & SME",
+    "basis": "unit",
+    "region_list_pct": 100,
+    "term_years": 5,
+    "currency": "€",
+    "eur_per_unit": 1.0,
+    "deal_type": "renewal",
+    "round": 2,
+    "pricing_source": {
+      "source": "Published price list (synthetic fixture)",
+      "date": "2026-06-01"
+    },
+    "software_tcv": 9000,
+    "thirdparty_tcv": 1000,
+    "lines": [
+      {"name": "Digital Banking — Retail (Premium) · Base Fee", "total": 3000},
+      {"name": "Digital Banking — Retail (Premium) · Active-user Fee", "total": 3600},
+      {"name": "SME Workspace (Premium) · Base + User", "total": 1600},
+      {"name": "Digital Onboarding — Retail", "total": 800}
+    ],
+    "ramp_schedule": {"1": 1200, "2": 1600, "3": 2000, "4": 2100, "5": 2100}
+  },
+  "economics": {
+    "gm_arr_pct": 86,
+    "floor_gm_pct": 70,
+    "professional_services_gm_pct": 40,
+    "first_year_arr_pct": 65
+  },
+  "scenarios": {
+    "good": 5000,
+    "better": 8000,
+    "best": 10000,
+    "best_name": "A · Recommended — five years, full scope",
+    "better_name": "B · Alternative — three years, retail only"
+  },
+  "strategy": {
+    "anchor": "best",
+    "alt": "better",
+    "target_bafo_discount_pct": 8,
+    "why_alt": "Shorter term with the SME workspace left out — it carries less, so it costs less.",
+    "walkaway": "Below €8.4M software over the term, we do not renew on these terms.",
+    "buffer_offer": {
+      "commit_units": 180,
+      "buffer_units": 40,
+      "buffer_price": 1500
+    }
+  },
+  "levers": {
+    "1": {"used": ["Good/Better/Best anchored on Best"], "extract": ["reference rights"]},
+    "2": {"used": ["5-yr term"], "extract": ["signed reference"], "open": ["Year-one prepay", "Expansion commit"]},
+    "3": {"open": ["Sandbox", "Training credits", "Program architect"]},
+    "4": {"open": ["Payment terms", "Staggered activation"]},
+    "5": {"used": ["Volume discount to BAFO"], "na": ["Renewal cap"]}
+  },
+  "context": {
+    "switching_cost": "high",
+    "champion": "validated",
+    "competition": "incumbent-none",
+    "budget": "confirmed"
+  }
+}

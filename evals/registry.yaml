@@ -55,6 +55,33 @@ deliverables:
     monitor:
       - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_report.md
 
+  # proposal (#150) — the CLIENT-facing proposal HTML that /proposal-longform
+  # renders from the client-safe contract /proposal-builder hands it. Deterministic
+  # checks only (voice is header/register heuristics, not a judge — see the rubric
+  # docstring for why an uncalibrated judge would degrade a blocking gate).
+  # Golden = the fictional Meridian Bank demo rewritten to the RENEWAL story model.
+  # Each negative carries exactly ONE defect, so a failure names the regressed check.
+  # Calibrated 2026-08-19 (measured, threshold 0.85):
+  #   proposal_valid.html                  1.000  PASS
+  #   proposal_challenger_on_renewal.html  0.889  FAIL (hard-fail: story_model_matches_deal_type)
+  #   proposal_internal_leak.html          0.889  FAIL (hard-fail: zero_internal_content)
+  #   proposal_three_scenarios.html        0.889  FAIL (hard-fail: exactly_2_scenarios)
+  #   proposal_unsourced_roi.html          0.944  FAIL (hard-fail: no_unsourced_financial_claims)
+  # Negatives are blocked by HARD-FAIL, not by mean score: a single-defect fixture
+  # should not have to fail eight unrelated checks to be rejected, and each of the
+  # five integrity checks is declared hard_fail so it can never be averaged away.
+  proposal:
+    altitude: deliverable
+    evaluator: rubrics.deliverable.proposal
+    threshold: 0.85
+    goldens:
+      - evals/goldens/proposal_valid.html               # synthetic (Meridian Bank) — renewal story model
+    negatives:
+      - evals/goldens/negatives/proposal_challenger_on_renewal.html
+      - evals/goldens/negatives/proposal_unsourced_roi.html
+      - evals/goldens/negatives/proposal_three_scenarios.html
+      - evals/goldens/negatives/proposal_internal_leak.html
+
 # Component (unit) altitude — score an agent's direct output on a fixed input.
 # code: objective Python checks. judge: LLM-as-judge rubrics (semantic).
 # All `code` checks below are implemented in rubrics.component.specifics (which
@@ -165,6 +192,37 @@ components:
     input: evals/goldens/workshop_prep_golden.md   # scores specifics._workshop_prep via rubrics.component.workshop_preparation
     code: [hypotheses_present, validation_questions_present, checkpoint_present]
     judge: [hypotheses_specific_and_quantified]
+
+  # proposal-engine (#150) — the canonical deal engine tools/proposal_builder.py,
+  # exercised through its CLI on a committed synthetic config (fictional Meridian
+  # Bank, round numbers so the arithmetic is hand-checkable). Deterministic only:
+  # the engine is the "no LLM in the numbers" boundary, so every figure it emits is
+  # recomputed here independently rather than compared to a stored expectation.
+  # threshold 1.00 — a deterministic engine has no partial credit.
+  # Measured 2026-08-19: 1.000 (7/7 checks). hard_error_on_missing_pricing_inputs
+  # scores the negative fixture evals/goldens/negatives/deal_config_missing_pricing.json
+  # (loaded by the evaluator; the components altitude wires only one `input:`).
+  proposal-engine:
+    altitude: component
+    threshold: 1.00
+    input: evals/goldens/deal_config_golden.json
+    code: [engine_runs_clean, selftest_passes, exit_arr_flag_recomputed, buffer_arithmetic_correct,
+           pricing_provenance_passthrough, deterministic_output, hard_error_on_missing_pricing_inputs]
+
+  # proposal-loop (#150) — the round-N negotiation loop. It has no binary: it is a
+  # command driving two artifacts, so what the gate checks is the CONTRACT between
+  # them — the round record carries what the next round re-plans from, and the deal
+  # notes carry the signals it must pick up in a machine-detectable shape.
+  # The paired notes fixture (evals/goldens/meeting_notes_golden.md) is loaded by
+  # the evaluator. threshold 1.00 — measured 2026-08-19: 1.000 (9/9 checks).
+  proposal-loop:
+    altitude: component
+    threshold: 1.00
+    input: evals/goldens/deal_state_golden.json
+    code: [deal_state_parses, rounds_schema_present, current_block_schema,
+           pending_meeting_notes_stub_shape, open_levers_snapshot_per_lever,
+           state_notes_cross_reference, meeting_notes_schema_headings,
+           meeting_notes_telemetry_block, planted_signals_detectable]
 
   ignite-workshop-synthesizer:
     altitude: component

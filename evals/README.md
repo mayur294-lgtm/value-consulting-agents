@@ -19,7 +19,7 @@ evals/
     negatives/                  #   known-bad per check (must FAIL)
   rubrics/
     base.py                     # CheckResult / RubricResult
-    deliverable/                # CODE evaluators: decks.py, roi.py, assessment.py
+    deliverable/                # CODE evaluators: decks.py, roi.py, assessment.py, proposal.py
     pipeline/contracts.py       # integration altitude: inter-agent contracts
     component/                  # unit altitude: per-agent behaviour (see "Component evals")
     judge/                      # LLM-as-judge harness (Opus) + prompts/ + standards_snapshot/
@@ -99,6 +99,14 @@ decoration. Findings so far: most pre-2026-06-22 engagement artifacts (NFIS v2 d
 ROI, assessment) drift from the PR #71 design system — they are **monitor** targets,
 not goldens. The judge `standards_snapshot/` is a FROZEN copy of the design rules;
 bump it deliberately when the live standard changes, or green scores start lying.
+
+**Single-defect negatives (proposal, #150).** The four `proposal_*` negatives each carry
+exactly ONE defect, so a failure names the check that regressed. They are blocked by a
+**hard-fail** check, not by mean score (0.889–0.944 against a 0.85 threshold): a
+single-defect fixture should not have to fail eight unrelated checks to be rejected, so
+each integrity check in `rubrics/deliverable/proposal.py` is declared `hard_fail` and can
+never be averaged away. Multi-defect negatives (e.g. `deck_offpalette.html`, 0.364) push
+the mean down as well — both patterns are valid; pick per what the fixture is testing.
 
 ## Component evals (path-2 → path-1)
 
