@@ -1,7 +1,7 @@
 # ROI Pattern: Digital Membership / Account Onboarding Completion
 
 > ⚠️ **SYNTHETIC-ORIGIN PATTERN — the numbers in this file are NOT real client data.**
-> Harvested from a synthetic pipeline-test engagement ("Harborlight", 2026-07 — a fictional NAM credit union invented to validate the assessment pipeline).
+> Harvested from a synthetic pipeline-test engagement — a fictional NAM credit union invented to validate the assessment pipeline (2026-07 synthetic test engagement; see tests/engagements/README.md).
 > The value-lever structure, formulas, and applicability logic are reusable methodology and may be applied to real engagements.
 > Every value tagged [Synthetic-Test] is fabricated. NEVER cite these numbers as benchmarks, baselines, or client-validated data in client work — source real figures from knowledge/domains/ or the Consulting Playbook Master benchmarks instead. (Values tagged [Client-Validated, ref] reference real named Backbase clients and remain valid.)
 

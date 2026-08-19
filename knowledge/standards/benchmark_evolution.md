@@ -20,7 +20,7 @@ Every benchmark value carries a confidence tier. The tier determines how the val
 
 ### `[Synthetic-Test]` — excluded tier detail
 
-**Provenance:** entries tagged `[Synthetic-Test]`, and anything sourced from a `tests/` path, originate from `tests/engagements/` — fictional engagements (e.g. Harborlight, Zenith demo fixtures) used to exercise the pipeline. They are marked with a `.synthetic` file at the engagement root. See `tests/engagements/README.md` for the full quarantine mechanism.
+**Provenance:** entries tagged `[Synthetic-Test]`, and anything sourced from a `tests/` path, originate from `tests/engagements/` — fictional engagements (e.g. Zenith demo fixtures) used to exercise the pipeline. They are marked with a `.synthetic` file at the engagement root. See `tests/engagements/README.md` for the full quarantine mechanism.
 
 **Retrieval exclusion rule (canonical wording — referenced, not restated, by every retrieval surface):** when reading knowledge sources, exclude any entry tagged `[Synthetic-Test]` and anything sourced from a `tests/` path. This data must never be cited in ROI models, client deliverables, or benchmark comparisons — it is not a low-confidence tier to be used cautiously, it is fabricated pipeline-test data and cannot be promoted to any real tier.
 
