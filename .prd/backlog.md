@@ -42,6 +42,9 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 
 ## From the 2026-08-25 Presidio PII cycle (v6, PR 1)
 
+- [ ] knowledge/standards/security_protocol.md:103 — §5 and the MCP snippet describe the deny-list as "resolved from the active engagement", omit the empty-deny-list allow case, and claim stakeholder/financial coverage the hook does not implement (from PR #171 review)
+- [ ] .claude/hooks/mcp-query-guard.py:147 — paren-acronym extraction is dead code, fully subsumed by the bare ALL-CAPS sweep; becomes load-bearing again if that sweep is removed (from PR #171 review)
+
 ### High severity — the gate that certifies our work measures nothing
 
 - [ ] **`--altitude pipeline` does not run the pipeline.** Measured during v6 PR 1: `python3 evals/run_experiment.py --altitude pipeline` returns **1.000 in ~5 seconds** against `Target: evals/goldens/pipeline_engagement/outputs`. It scores pre-existing golden fixture files on disk; it never executes an agent, never invokes a model, and never reads the changed component. It returned green for three consecutive tickets whose bytes it had not read — a new PreToolUse hook, a security-standard rewrite, and edits to seven agent prompts. This is the measured confirmation of the previously-suspected "path-2 only" problem (PRs #118–#123 were certified the same way). Component-altitude rows with deterministic `code:` checks DO exercise real modules and do bite (proven by the deliberate break/restore on `mcp-query-guard`) — so the fix is not "distrust all evals", it is: (a) never treat a pipeline-altitude green as evidence about a change, (b) require a gate-bites proof for every new component row, (c) decide whether the altitude should actually run the pipeline or be renamed to something honest like `deliverable-structural`, because the current name is what makes it misleading.
