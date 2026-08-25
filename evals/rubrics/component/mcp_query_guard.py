@@ -190,6 +190,53 @@ def _seed_generic_words_label_project(root: Path) -> Path:
     return client_dir
 
 
+# Regression coverage for finding 6: templates/client_profile.md's "##
+# Client Identity" section stores the client's legal name as a bare
+# "- **Name:** ..." field (not "Client Name:"), which _LABEL_LINE_RE never
+# matched. PLACEHOLDER_PROFILE_NAME stands in for a populated legal name —
+# NOT a fictional bank name (no "Bank"/institution word), per the repo's
+# synthetic-quarantine programme.
+PLACEHOLDER_PROFILE_NAME = "Zzzplaceholder Fifth Test Holdings"
+
+
+def _seed_profile_name_label_project(root: Path) -> Path:
+    """A fixture isolated from _seed_denylist_project (different client slug,
+    no overlapping terms) with a CLIENT_PROFILE.md shaped exactly like
+    templates/client_profile.md's real "## Client Identity" section: a
+    populated bare "- **Name:**" field. Used by
+    denies_client_name_from_profile_name_label."""
+    client_dir = root / "engagements" / "zzznamelabeltest"
+    client_dir.mkdir(parents=True)
+    (client_dir / "CLIENT_PROFILE.md").write_text(
+        "# Client Profile — Zzzplaceholder\n\n"
+        "## Client Identity\n\n"
+        f"- **Name:** {PLACEHOLDER_PROFILE_NAME}\n"
+        "- **Short Name:** zzznamelabeltest\n",
+        encoding="utf-8",
+    )
+    return client_dir
+
+
+def _seed_unfilled_profile_template_project(root: Path) -> Path:
+    """A fixture whose CLIENT_PROFILE.md is the literal, unfilled
+    templates/client_profile.md — the exact live shape of
+    engagements/wsfs/CLIENT_PROFILE.md today: "- **Name:** [Full legal
+    name]". Used by ignores_unfilled_template_placeholders (this is the
+    trap-1 guard: naively adding "name" to the label alternation would
+    harvest "Full"/"legal"/"name" as bare deny-list terms and deny every
+    query containing the ordinary word "name")."""
+    client_dir = root / "engagements" / "zzzunfilledprofiletest"
+    client_dir.mkdir(parents=True)
+    (client_dir / "CLIENT_PROFILE.md").write_text(
+        "# Client Profile — [Client Name]\n\n"
+        "## Client Identity\n\n"
+        "- **Name:** [Full legal name]\n"
+        "- **Short Name:** [slug used in directory names, e.g., `navy_federal`]\n",
+        encoding="utf-8",
+    )
+    return client_dir
+
+
 def _run_in_tmp(fn, *args) -> CheckResult:
     """Run a check body inside a fresh tempdir, converting any unexpected
     exception (subprocess timeout, missing interpreter, ...) into a failing
@@ -464,6 +511,47 @@ def _denies_identifier_from_engagement_intake_file(root: Path) -> CheckResult:
     ))
 
 
+def _denies_client_name_from_profile_name_label(root: Path) -> CheckResult:
+    """Regression guard for finding 6: CLIENT_PROFILE.md's canonical "##
+    Client Identity" section stores the client's legal name as a bare
+    "- **Name:**" field, not "Client Name:". A query containing that
+    populated name must be DENIED — proving the CLIENT_PROFILE.md-only
+    "Name:" label path (_CLIENT_PROFILE_LABEL_LINE_RE) actually extracts
+    it."""
+    name = "denies_client_name_from_profile_name_label"
+    _seed_profile_name_label_project(root)
+    payload = _payload({"query": f"engagement notes for {PLACEHOLDER_PROFILE_NAME}"})
+    result = _run_hook(root, payload)
+    denied, _ = _is_deny(result)
+    ok = result.returncode == 0 and denied
+    return _bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={denied} "
+        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ))
+
+
+def _ignores_unfilled_template_placeholders(root: Path) -> CheckResult:
+    """Regression guard for finding 6's trap 1: with CLIENT_PROFILE.md's
+    "- **Name:**" field still holding the literal unfilled
+    "[Full legal name]" placeholder (the exact live shape of
+    engagements/wsfs/CLIENT_PROFILE.md), a query containing the ordinary
+    word "name" must be ALLOWED. This is the more important of the two new
+    checks: naively adding "name" to a label alternation without
+    placeholder-skipping would harvest "Full"/"legal"/"name" as bare
+    deny-list terms and deny every query that happens to contain the word
+    "name"."""
+    name = "ignores_unfilled_template_placeholders"
+    _seed_unfilled_profile_template_project(root)
+    payload = _payload({"query": "what is this customer's account name field used for"})
+    result = _run_hook(root, payload)
+    denied, _ = _is_deny(result)
+    ok = result.returncode == 0 and not denied and not result.stdout.strip()
+    return _bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={denied} "
+        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ))
+
+
 def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained, ignores target
     hook = _hook_path()
     if not hook.exists():
@@ -487,4 +575,6 @@ def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained
         _run_in_tmp(_matching_is_case_insensitive),
         _run_in_tmp(_denies_identifier_from_engagement_context_file),
         _run_in_tmp(_denies_identifier_from_engagement_intake_file),
+        _run_in_tmp(_denies_client_name_from_profile_name_label),
+        _run_in_tmp(_ignores_unfilled_template_placeholders),
     ]

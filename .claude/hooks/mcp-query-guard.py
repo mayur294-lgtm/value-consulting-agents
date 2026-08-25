@@ -143,10 +143,42 @@ _LABEL_LINE_RE = re.compile(
     r"\s*\**\s*:\s*(.+)$",
     re.IGNORECASE | re.MULTILINE,
 )
+
+# CLIENT_PROFILE.md-only: templates/client_profile.md's canonical "## Client
+# Identity" section stores the client's legal name as a bare "- **Name:**"
+# field (not "Client Name:"), e.g. "- **Name:** [Full legal name]". A bare
+# "name" label is deliberately NOT added to _LABEL_LINE_RE above, which
+# applies to every markdown document this hook reads (ENGAGEMENT_CONTEXT.md,
+# engagement_intake.md, and any future doc type): those files use "Name:" as
+# a generic section/field label too (e.g. "AE: [Name]", "CS: [Name]"), and
+# enabling it everywhere would harvest product names, system names, and
+# ordinary headings as deny-list terms — the same over-extraction class as
+# finding 1 (711b56c). CLIENT_PROFILE.md is different: it is the
+# client-identity document by definition, so its "**Name:**" field IS the
+# client's name and nothing else. This regex is therefore only ever passed
+# in for that one filename (see _resolve_deny_list).
+_CLIENT_PROFILE_LABEL_LINE_RE = re.compile(
+    r"^\s*[-*#]{0,3}\s*\**\s*"
+    r"(?:name)"
+    r"\s*\**\s*:\s*(.+)$",
+    re.IGNORECASE | re.MULTILINE,
+)
 _PAREN_ACRONYM_RE = re.compile(r"\(([A-Z]{2,8})\)")
 _ALLCAPS_TOKEN_RE = re.compile(r"\b[A-Z]{2,8}\b")
 _HEADING_RE = re.compile(r"^\s*#{1,3}\s+(.+)$", re.MULTILINE)
 _WORD_RE = re.compile(r"[A-Za-z]+")
+
+# Unfilled template placeholder segments look like "[Full legal name]" or
+# "[slug used in directory names, e.g., `navy_federal`]" — every unfilled
+# field across templates/client_profile.md (and other templates) uses this
+# convention. A label value that is nothing but a bracketed placeholder (or
+# becomes empty once the placeholder text is removed) carries no real
+# identifier and must not be mined for words/phrases/acronyms. Without this,
+# "- **Name:** [Full legal name]" would harvest "Full", "legal", "name" as
+# bare deny-list terms — "name" alone clears _single_word_ok's length floor
+# and isn't in GENERIC_STOPLIST, so every query containing the ordinary word
+# "name" would be denied (an exact repeat of finding 1).
+_BRACKET_SEGMENT_RE = re.compile(r"\[[^\]]*\]")
 
 
 def _single_word_ok(word):
@@ -165,45 +197,68 @@ def _add_term(terms, raw):
     terms.add(t)
 
 
-def _extract_terms_from_text(text, terms):
-    # Explicit "Client:"/"Bank Name:"/... label lines.
-    for m in _LABEL_LINE_RE.finditer(text):
-        # Strip markdown emphasis (*, _) in addition to whitespace before any
-        # further processing. Without this, "- **Client Name:** X" captures
-        # "** X" (the regex's own \**\s*:\s* only consumes stars BEFORE the
-        # colon; the closing "**" of "**Client Name:**" lands inside the
-        # captured value) and every downstream heuristic below operates on
-        # junk. str.strip(chars) removes any mix of the given chars from
-        # each end regardless of order, so this is safe for a legitimate
-        # name that happens to start/end with '*' or '_' — only the
-        # leading/trailing run is touched, nothing interior.
-        value = m.group(1).strip(" \t*_")
-        for acr in _PAREN_ACRONYM_RE.findall(value):
-            if acr not in ACRONYM_STOPLIST:
-                _add_term(terms, acr)
-        cleaned = _PAREN_ACRONYM_RE.sub(" ", value)
-        for w in _WORD_RE.findall(cleaned):
-            if _single_word_ok(w):
-                _add_term(terms, w)
-        phrase = cleaned.strip()
-        if phrase and len(phrase.split()) >= 2:
-            _add_term(terms, phrase)
+def _extract_terms_from_text(text, terms, label_res=(_LABEL_LINE_RE,)):
+    # Explicit "Client:"/"Bank Name:"/... label lines. `label_res` is the
+    # tuple of label regexes to run against this document; callers pass an
+    # extra, more permissive regex only for CLIENT_PROFILE.md (see
+    # _CLIENT_PROFILE_LABEL_LINE_RE above and _resolve_deny_list below) — the
+    # default here keeps every other document scoped to the original,
+    # narrower label set.
+    for label_re in label_res:
+        for m in label_re.finditer(text):
+            # Strip markdown emphasis (*, _) in addition to whitespace before
+            # any further processing. Without this, "- **Client Name:** X"
+            # captures "** X" (the regex's own \**\s*:\s* only consumes
+            # stars BEFORE the colon; the closing "**" of "**Client Name:**"
+            # lands inside the captured value) and every downstream
+            # heuristic below operates on junk. str.strip(chars) removes any
+            # mix of the given chars from each end regardless of order, so
+            # this is safe for a legitimate name that happens to start/end
+            # with '*' or '_' — only the leading/trailing run is touched,
+            # nothing interior.
+            value = m.group(1).strip(" \t*_")
 
-        # Bare ALL-CAPS acronyms *within this label's value* (bank short
-        # codes like "HNB", "BECU" written as "**Client:** HNB" with no
-        # parentheses). Deliberately scoped to label-line values rather than
-        # the whole document: a whole-document sweep of \b[A-Z]{2,8}\b turns
-        # ordinary emphasis-caps prose ("ALL", "NOT", "NEVER", "SME", ...)
-        # into client identifiers and makes the gate unusable (see the
-        # mcp-query-guard finding this fixed). Scoping to text that already
-        # passed the client/bank/institution label-line gate keeps the same
-        # false-positive discipline as the acronym-in-parens path above.
-        for tok in _ALLCAPS_TOKEN_RE.findall(cleaned):
-            if tok in ACRONYM_STOPLIST:
+            # Skip unfilled template placeholders. Every unfilled field in
+            # this repo's templates (templates/client_profile.md and
+            # friends) is written as "[some description]" — e.g.
+            # "- **Name:** [Full legal name]". Strip bracketed segments
+            # before mining the value for terms; if nothing real is left,
+            # this match carries no identifier and is skipped entirely (no
+            # acronym, word, phrase, or ALL-CAPS extraction runs on it). This
+            # also correctly handles a real value that merely contains an
+            # incidental bracketed aside (e.g. "Acme Corp [confidential]")
+            # by mining the non-bracketed remainder instead of discarding it.
+            value = _BRACKET_SEGMENT_RE.sub(" ", value).strip()
+            if not value:
                 continue
-            if tok.lower() in GENERIC_STOPLIST:
-                continue
-            _add_term(terms, tok)
+
+            for acr in _PAREN_ACRONYM_RE.findall(value):
+                if acr not in ACRONYM_STOPLIST:
+                    _add_term(terms, acr)
+            cleaned = _PAREN_ACRONYM_RE.sub(" ", value)
+            for w in _WORD_RE.findall(cleaned):
+                if _single_word_ok(w):
+                    _add_term(terms, w)
+            phrase = cleaned.strip()
+            if phrase and len(phrase.split()) >= 2:
+                _add_term(terms, phrase)
+
+            # Bare ALL-CAPS acronyms *within this label's value* (bank short
+            # codes like "HNB", "BECU" written as "**Client:** HNB" with no
+            # parentheses). Deliberately scoped to label-line values rather
+            # than the whole document: a whole-document sweep of
+            # \b[A-Z]{2,8}\b turns ordinary emphasis-caps prose ("ALL",
+            # "NOT", "NEVER", "SME", ...) into client identifiers and makes
+            # the gate unusable (see the mcp-query-guard finding this
+            # fixed). Scoping to text that already passed a label-line gate
+            # keeps the same false-positive discipline as the
+            # acronym-in-parens path above.
+            for tok in _ALLCAPS_TOKEN_RE.findall(cleaned):
+                if tok in ACRONYM_STOPLIST:
+                    continue
+                if tok.lower() in GENERIC_STOPLIST:
+                    continue
+                _add_term(terms, tok)
 
     # NOTE: a generic "**bold phrase**" heuristic was tried and dropped —
     # engagement docs bold topic/section headings just as often as names
@@ -309,7 +364,13 @@ def _resolve_deny_list():
 
         profile = client_dir / CLIENT_PROFILE_NAME
         if profile.is_file():
-            _extract_terms_from_text(_read_bounded(profile), terms)
+            # CLIENT_PROFILE.md is the one document scanned with the extra
+            # bare-"Name:" label regex — see _CLIENT_PROFILE_LABEL_LINE_RE's
+            # docstring for why this is scoped to this filename only.
+            _extract_terms_from_text(
+                _read_bounded(profile), terms,
+                label_res=(_LABEL_LINE_RE, _CLIENT_PROFILE_LABEL_LINE_RE),
+            )
 
         for doc_name in ENGAGEMENT_DOC_NAMES:
             for doc_path in _iter_doc_paths(client_dir, doc_name):
