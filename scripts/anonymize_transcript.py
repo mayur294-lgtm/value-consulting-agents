@@ -1,277 +1,267 @@
 #!/usr/bin/env python3
 """
-Transcript PII Anonymizer — strips identifying information from client
-transcripts before they are sent to the Anthropic API.
+Transcript PII Anonymizer — thin facade over scripts/pii/engine.py (Presidio).
 
-Replaces:
-  - Client/organization names (from engagement intake)
-  - Person names mentioned in transcripts
-  - Email addresses
-  - Phone numbers
-  - Account/member numbers
-  - SSNs/Tax IDs
-  - URLs containing client domains
+WHAT CHANGED (ticket #160, .prd/prd-v6.md, .design/solution-design-v6.md D1/D2)
+  Detection used to be five hand-rolled regexes plus an intake-list scrape,
+  with a flat `{placeholder: value}` mapping — one key PER CATEGORY, so three
+  emails in restored as three copies of the last one (backlog item 1,
+  2026-07-28 audit). That implementation is gone. This module now DELEGATES
+  to `scripts/pii/engine.py`: NER (spaCy) + validated identifier patterns +
+  the engagement deny-list recognizer (the PRIMARY client-identity detector —
+  see engine.py's module docstring, D3), with Presidio's instance-counter
+  operator giving every DISTINCT value its own placeholder.
 
-Keeps:
-  - Business concepts, pain points, processes
-  - Financial figures (amounts, percentages) — needed for ROI analysis
-  - Product names (Backbase, vendor names)
-  - Roles/titles (CIO, VP Digital, etc.)
+  The CLI surface and all four public function signatures
+  (`anonymize_text`, `anonymize_transcript_file`, `deanonymize_text`,
+  `deanonymize_file`) are UNCHANGED — that is what makes rollback a single
+  `git revert` (D1, PRD §10). Only what happens inside them changed.
 
-A mapping file is written alongside the anonymized transcript so outputs
-can be de-anonymized later for the final deliverable.
+  Placeholders are now `<ENTITY_N>` (e.g. `<PERSON_1>`, `<EMAIL_ADDRESS_2>`),
+  not `[CLIENT]` / `[PERSON-1]`. `[CLIENT]` was simultaneously a PII
+  placeholder AND a filename/prose template token
+  (`[CLIENT]_Business_Case_Questionnaire.xlsx` in five components,
+  `"[Client]'s path from X to Y"` in narrative-assembler) — angle brackets
+  end that collision (D2). Mappings written by this module are now the v2
+  nested-by-entity-type shape; legacy v1 flat mappings and `[X-REDACTED]`
+  placeholders still restore, forever (see `_flatten_mapping` below).
+
+THE INTERPRETER SPLIT (read this before "simplifying" the imports)
+  Presidio needs Python 3.10-3.13 and lives in `.venv`
+  (`scripts/setup_pii.sh`); the system interpreter is 3.9.6 here.
+
+  - ANONYMIZATION (`anonymize_text`, `anonymize_transcript_file`) needs the
+    engine, so it imports `scripts/pii/engine.py` LAZILY, on first call, and
+    turns a failed import into a clear, plain-language error naming
+    `bash scripts/setup_pii.sh` instead of a raw `ModuleNotFoundError`
+    traceback (see `_load_engine` / `PIIEngineUnavailable`).
+
+  - DE-ANONYMIZATION (`deanonymize_text`, `deanonymize_file`) stays PURE
+    STDLIB and must NEVER import `scripts/pii/engine.py` — directly or
+    transitively — because `engine.py` does `import presidio_analyzer` at
+    MODULE level, so merely importing it would break exactly the callers
+    this has to keep working on 3.9:
+      - `scripts/artifact_boundary.py` (`deanonymize_dir`) — imports
+        `deanonymize_text` lazily, inside a function, inside a try, and must
+        stay importable/runnable on plain 3.9 so a consultant can restore a
+        deliverable without the Presidio venv.
+      - the guard's own deny message below (`_deny_message`-equivalent in
+        `.claude/hooks/anonymize-guard.py`), which runs under the system
+        interpreter.
+    The restore logic (`_flatten_mapping`) is therefore a SELF-CONTAINED
+    stdlib copy of `scripts/pii/engine.py`'s `flatten_mapping` /
+    `deanonymize_text` — same algorithm, independently maintained, the same
+    duplication pattern this repo already uses for
+    `scripts/pii/denylist.py` vs `.claude/hooks/mcp-query-guard.py` (see
+    `scripts/pii/drift_check.py`'s header for why: a hook/module that must
+    keep working when its sibling can't import cannot import that sibling).
 """
 
+import argparse
 import json
-import re
 import sys
 from pathlib import Path
 from typing import Optional
 
-
-# PII regex patterns
-_EMAIL_RE = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
-_PHONE_RE = re.compile(r'\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b')
-_SSN_RE = re.compile(r'\b\d{3}-\d{2}-\d{4}\b')
-_ACCOUNT_RE = re.compile(r'\b(?:account|member|acct|ID)[\s#:]*\d{6,}\b', re.IGNORECASE)
-_URL_RE = re.compile(r'https?://[^\s)<>]+')
-
-
-def _load_entity_names(intake_path: Path) -> list[str]:
-    """Extract organization and person names from engagement intake."""
-    names = []
-    if not intake_path.exists():
-        return names
-
-    content = intake_path.read_text()
-
-    # Extract client/organization name from common intake patterns
-    for pattern in [
-        r'(?:Client|Organization|Institution|Bank|Credit Union|Company)\s*:\s*(.+)',
-        r'(?:client_name|org_name)\s*:\s*(.+)',
-    ]:
-        for match in re.finditer(pattern, content, re.IGNORECASE):
-            name = match.group(1).strip().strip('"\'')
-            if name and len(name) > 2:
-                names.append(name)
-
-    # Extract stakeholder names
-    for pattern in [
-        r'(?:Name|Contact|Stakeholder|Attendee)\s*:\s*([A-Z][a-z]+ [A-Z][a-z]+)',
-        r'(?:with|from|by)\s+([A-Z][a-z]+ [A-Z][a-z]+)\s*(?:,|\(|—|-)',
-    ]:
-        for match in re.finditer(pattern, content):
-            name = match.group(1).strip()
-            if name and len(name) > 3:
-                names.append(name)
-
-    return list(set(names))
+# Make `scripts/` importable as the package root for `pii` regardless of how
+# this file itself was reached (run as a script, or imported after some
+# caller did `sys.path.insert(0, 'scripts')` per the discovery-transcript-
+# interpreter agent's snippet).
+_SCRIPTS_DIR = Path(__file__).resolve().parent
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
 
 
-def _load_context_file(context_path: Path) -> list[str]:
-    """Extract additional entity names from ENGAGEMENT_CONTEXT.md."""
-    names = []
-    if not context_path.exists():
-        return names
+class PIIEngineUnavailable(RuntimeError):
+    """Raised when scripts/pii/engine.py (Presidio) cannot be imported under
+    the current interpreter — e.g. the system Python (3.9.6 here), which
+    Presidio does not support (needs 3.10-3.13). Never let the raw
+    ModuleNotFoundError reach a consultant; this carries the fix."""
 
-    content = context_path.read_text()
-    for pattern in [
-        r'(?:Client|Organization)\s*:\s*(.+)',
-        r'(?:Key Stakeholders|Participants).*?\n((?:[-*]\s+.+\n)+)',
-    ]:
-        for match in re.finditer(pattern, content, re.IGNORECASE):
-            text = match.group(1).strip()
-            # If it's a list block, extract individual names
-            if '\n' in text:
-                for line in text.split('\n'):
-                    line = re.sub(r'^[-*]\s+', '', line).strip()
-                    name_match = re.match(r'^([A-Z][a-z]+ [A-Z][a-z]+)', line)
-                    if name_match:
-                        names.append(name_match.group(1))
-            else:
-                if len(text) > 2:
-                    names.append(text.strip('"\''))
 
-    return list(set(names))
+_ENGINE_UNAVAILABLE_MSG = (
+    "PII anonymization engine (Presidio) is not available on this Python "
+    "interpreter ({version}). Presidio requires Python 3.10-3.13.\n"
+    "Fix: run  bash scripts/setup_pii.sh\n"
+    "  (creates a virtual environment at .venv with everything anonymization "
+    "needs), then re-run this command through that interpreter — "
+    "`.venv/bin/python`, or via `.claude/hooks/_resolve_python.sh`."
+)
 
+
+def _load_engine():
+    """Lazily import scripts/pii/engine.py. ONLY called from the
+    anonymization path (never from deanonymize_text/deanonymize_file — see
+    the module docstring's INTERPRETER SPLIT)."""
+    try:
+        from pii import engine as _engine  # noqa: PLC0415 - intentionally lazy
+    except ImportError as exc:
+        raise PIIEngineUnavailable(
+            _ENGINE_UNAVAILABLE_MSG.format(version=sys.version.split()[0])
+        ) from None
+    return _engine
+
+
+# --- de-anonymization: pure stdlib, no engine import, ever ------------------
+#
+# Self-contained copy of scripts/pii/engine.py's flatten_mapping /
+# deanonymize_text. See module docstring for why this can't just import
+# engine.py. Keep these two in sync with engine.py's copies by hand — there
+# is no drift_check for this pair yet (unlike denylist.py's), so a change to
+# one should be mirrored in the other.
+
+def _flatten_mapping(mapping) -> dict:
+    """Normalise ANY accepted mapping shape to {placeholder: original_value}.
+
+    Accepted, forever:
+      v2 nested  {"version": 2, "entities": {"PERSON": {"Priya Nair": "<PERSON_1>"}}}
+      v2 bare    {"PERSON": {"Priya Nair": "<PERSON_1>"}}   (a raw entity_mapping)
+      v1 legacy  {"[CLIENT]": "Zzz Holdings", "[EMAIL-REDACTED]": "a@b.com"}
+
+    v1 is the pre-Presidio flat form and is inverted relative to v2 (it is
+    placeholder -> value, where v2 is value -> placeholder). Distinguishing
+    them structurally (rather than by a version field) is what lets a
+    six-month-old engagement mapping still restore: legacy mappings were
+    written with no version key at all.
+    """
+    if not mapping:
+        return {}
+
+    flat: dict = {}
+
+    entities = None
+    if isinstance(mapping, dict) and isinstance(mapping.get("entities"), dict):
+        entities = mapping["entities"]
+    elif isinstance(mapping, dict) and all(
+        isinstance(v, dict) for k, v in mapping.items() if k != "version"
+    ):
+        entities = {k: v for k, v in mapping.items() if k != "version"}
+
+    if entities is not None:
+        for _etype, values in entities.items():
+            if not isinstance(values, dict):
+                continue
+            for original, placeholder in values.items():
+                # v2 stores value -> placeholder; invert for replacement.
+                flat[str(placeholder)] = str(original)
+        return flat
+
+    # v1 legacy: already placeholder -> value.
+    for placeholder, original in mapping.items():
+        if placeholder == "version":
+            continue
+        if isinstance(original, (str, int, float)):
+            flat[str(placeholder)] = str(original)
+    return flat
+
+
+def deanonymize_text(text: str, mapping: dict) -> str:
+    """Restore original names/PII from anonymized text using the mapping.
+
+    Accepts both the v2 nested-by-entity-type shape this module now writes
+    and legacy v1 flat `{placeholder: value}` mappings, indefinitely — a
+    consultant with a six-month-old engagement must still be able to produce
+    a client-ready deliverable. Longest placeholder first so a placeholder
+    that is a textual prefix of another cannot partially consume it
+    (`[CLIENT]` is a prefix of `[CLIENT-ABBR]`; `<ENTITY_N>`'s trailing `>`
+    already makes v2 placeholders unambiguous, but legacy ones are not).
+
+    Pure stdlib — see module docstring. Must not import scripts/pii/engine.
+    """
+    if not text or not mapping:
+        return text
+    flat = _flatten_mapping(mapping)
+    result = text
+    for placeholder in sorted(flat.keys(), key=len, reverse=True):
+        result = result.replace(placeholder, flat[placeholder])
+    return result
+
+
+def deanonymize_file(file_path: Path, mapping_path: Path) -> str:
+    """De-anonymize a file using a mapping file. Returns de-anonymized text.
+
+    Pure stdlib — see module docstring. Must not import scripts/pii/engine.
+    """
+    mapping = json.loads(mapping_path.read_text())
+    text = file_path.read_text()
+    return deanonymize_text(text, mapping)
+
+
+# --- anonymization: lazily pulls in the Presidio engine ---------------------
 
 def anonymize_text(
     text: str,
-    entity_names: list[str],
+    entity_names: list,
     client_label: str = "[CLIENT]",
-) -> tuple[str, dict]:
-    """Anonymize PII in text. Returns (anonymized_text, mapping).
+) -> tuple:
+    """Anonymize PII in `text` using scripts/pii/engine.py (Presidio).
 
-    The mapping dict can be used to de-anonymize outputs later.
+    Signature preserved exactly for backward compatibility (ticket #160).
+    `entity_names` is used as the deny-list (client/stakeholder terms) —
+    the PRIMARY client-identity detector (D3); Presidio's NER and validated
+    patterns run alongside it for people, emails, phones, IDs, etc.
+
+    `client_label` is accepted but UNUSED: placeholders are now Presidio's
+    `<ENTITY_N>` form, which cannot collide with `[CLIENT]`-style filename
+    or prose templates the way the old convention did (D2). Kept only so
+    existing call sites that pass it positionally or by keyword don't break.
+
+    Returns (anonymized_text, mapping) where `mapping` is the v2
+    nested-by-entity-type shape (`{"version": 2, "entities": {...}}`) —
+    also accepted directly by `deanonymize_text`.
     """
-    mapping = {}
-    result = text
-
-    # 1. Replace known entity names (longest first to avoid partial matches)
-    sorted_names = sorted(entity_names, key=len, reverse=True)
-    for i, name in enumerate(sorted_names):
-        if not name or len(name) < 3:
-            continue
-        # Determine placeholder
-        if i == 0:
-            placeholder = client_label
-        else:
-            placeholder = f"[PERSON-{i}]"
-
-        # Case-insensitive replacement
-        pattern = re.compile(re.escape(name), re.IGNORECASE)
-        if pattern.search(result):
-            mapping[placeholder] = name
-            result = pattern.sub(placeholder, result)
-
-        # For the client org name: also replace acronyms and common short forms
-        # Use distinct placeholders so de-anonymization restores the original form
-        if i == 0:
-            words = name.split()
-            if len(words) >= 2:
-                # Acronym (e.g., "NFCU" for "Navy Federal Credit Union")
-                acronym = ''.join(w[0].upper() for w in words if w[0].isupper() or len(w) > 3)
-                if len(acronym) >= 2:
-                    acr_placeholder = "[CLIENT-ABBR]"
-                    acr_pattern = re.compile(r'\b' + re.escape(acronym) + r'\b')
-                    if acr_pattern.search(result):
-                        mapping[acr_placeholder] = acronym
-                        result = acr_pattern.sub(acr_placeholder, result)
-
-                # Partial name variants — drop common suffixes and try shorter forms
-                # e.g., "Navy Federal Credit Union" → also match "Navy Federal"
-                name_lower = name.lower()
-                multi_suffixes = ['credit union', 'savings bank', 'mutual bank',
-                                  'financial group', 'financial services']
-                single_suffixes = ['bank', 'corporation', 'corp', 'inc',
-                                   'limited', 'ltd', 'group', 'holdings',
-                                   'financial', 'services', 'bancorp',
-                                   'bancshares', 'co', 'plc', 'sa', 'ag']
-
-                short_name = name
-                # First strip multi-word suffixes
-                for suffix in multi_suffixes:
-                    if name_lower.endswith(suffix):
-                        short_name = name[:-(len(suffix))].strip()
-                        break
-                else:
-                    # Then try single-word suffixes
-                    for suffix in single_suffixes:
-                        if words[-1].lower() == suffix:
-                            short_name = ' '.join(words[:-1])
-                            break
-
-                if len(short_name.split()) >= 2 and short_name != name:
-                    short_placeholder = "[CLIENT-SHORT]"
-                    short_pattern = re.compile(re.escape(short_name), re.IGNORECASE)
-                    if short_pattern.search(result):
-                        mapping[short_placeholder] = short_name
-                        result = short_pattern.sub(short_placeholder, result)
-
-    # 2. Replace emails
-    for match in _EMAIL_RE.finditer(result):
-        email = match.group(0)
-        placeholder = "[EMAIL-REDACTED]"
-        mapping[placeholder] = email
-        result = result.replace(email, placeholder, 1)
-
-    # 3. Replace phone numbers
-    for match in _PHONE_RE.finditer(result):
-        phone = match.group(0)
-        placeholder = "[PHONE-REDACTED]"
-        mapping[placeholder] = phone
-        result = result.replace(phone, placeholder, 1)
-
-    # 4. Replace SSNs / Tax IDs
-    for match in _SSN_RE.finditer(result):
-        ssn = match.group(0)
-        placeholder = "[SSN-REDACTED]"
-        mapping[placeholder] = ssn
-        result = result.replace(ssn, placeholder, 1)
-
-    # 5. Replace account/member numbers
-    for match in _ACCOUNT_RE.finditer(result):
-        acct = match.group(0)
-        placeholder = "[ACCOUNT-REDACTED]"
-        mapping[placeholder] = acct
-        result = result.replace(acct, placeholder, 1)
-
-    # 6. Replace URLs that contain client domain names
-    for match in _URL_RE.finditer(result):
-        url = match.group(0)
-        # Check if URL contains any entity name
-        url_lower = url.lower()
-        for name in entity_names:
-            name_parts = name.lower().split()
-            if any(part in url_lower for part in name_parts if len(part) > 3):
-                placeholder = "[CLIENT-URL-REDACTED]"
-                mapping[placeholder] = url
-                result = result.replace(url, placeholder, 1)
-                break
-
-    return result, mapping
+    del client_label  # unused; see docstring
+    engine = _load_engine()
+    session = engine.PIISession(entity_names)
+    anonymized = session.anonymize(text)
+    return anonymized, session.mapping_file_dict()
 
 
 def anonymize_transcript_file(
     transcript_path: Path,
     engagement_dir: Path,
     output_dir: Optional[Path] = None,
-) -> tuple[Path, Path]:
-    """Anonymize a transcript file in-place (or to output_dir).
+) -> tuple:
+    """Anonymize a transcript file, writing the anonymized copy and its
+    mapping file alongside it (or under `output_dir`).
 
-    Returns (anonymized_transcript_path, mapping_path).
+    Signature preserved exactly (ticket #160). The deny-list is resolved
+    from the engagement's own documents — `inputs/engagement_intake.md`,
+    `ENGAGEMENT_CONTEXT.md`, `CLIENT_PROFILE.md`, and the engagement/client
+    directory name (see `scripts/pii/denylist.resolve_engagement_deny_list`)
+    — which is broader than the old intake-only scrape and is what makes the
+    empty-deny-list warning (engine.py's `EMPTY_DENY_LIST_WARNING`) fire
+    correctly when none of those documents name the client.
+
+    Returns (anonymized_transcript_path, mapping_path). The mapping file is
+    written in the v2 nested-by-entity-type shape and chmod'd 0600 — it
+    contains real client PII (solution-design-v6.md §9).
     """
-    # Collect entity names from intake and context files
-    entity_names = []
-    entity_names.extend(_load_entity_names(engagement_dir / "inputs" / "engagement_intake.md"))
-    entity_names.extend(_load_context_file(engagement_dir / "ENGAGEMENT_CONTEXT.md"))
-    entity_names = list(set(entity_names))
+    engine = _load_engine()
+    transcript_path = Path(transcript_path)
+    engagement_dir = Path(engagement_dir)
 
-    if not entity_names:
-        # No names found — still strip generic PII (emails, phones, SSNs)
-        pass
+    session = engine.PIISession.for_engagement(engagement_dir)
 
-    # Read transcript
     original_text = transcript_path.read_text()
+    anonymized_text = session.anonymize(original_text)
 
-    # Anonymize
-    anonymized_text, mapping = anonymize_text(original_text, entity_names)
-
-    # Determine output paths
     if output_dir is None:
         output_dir = transcript_path.parent
+    output_dir = Path(output_dir)
 
     anon_path = output_dir / f".anon_{transcript_path.name}"
     mapping_path = output_dir / f".anon_mapping_{transcript_path.stem}.json"
 
-    # Write anonymized transcript
     anon_path.write_text(anonymized_text)
 
-    # Write mapping (for de-anonymization of final outputs)
-    mapping_path.write_text(json.dumps(mapping, indent=2))
+    mapping_path.write_text(json.dumps(session.mapping_file_dict(), indent=2))
+    mapping_path.chmod(0o600)  # contains real PII — see solution-design-v6.md §9
 
     return anon_path, mapping_path
 
 
-def deanonymize_text(text: str, mapping: dict) -> str:
-    """Restore original names/PII from anonymized text using the mapping."""
-    result = text
-    # Replace longest placeholders first to avoid partial matches
-    for placeholder in sorted(mapping.keys(), key=len, reverse=True):
-        result = result.replace(placeholder, mapping[placeholder])
-    return result
-
-
-def deanonymize_file(file_path: Path, mapping_path: Path) -> str:
-    """De-anonymize a file using a mapping file. Returns de-anonymized text."""
-    mapping = json.loads(mapping_path.read_text())
-    text = file_path.read_text()
-    return deanonymize_text(text, mapping)
-
-
 if __name__ == '__main__':
-    import argparse
-
     parser = argparse.ArgumentParser(description='Anonymize transcript PII')
     parser.add_argument('--file', required=True, help='Path to transcript file')
     parser.add_argument('--engagement-dir', required=True, help='Path to engagement directory')
@@ -286,8 +276,12 @@ if __name__ == '__main__':
         result = deanonymize_file(Path(args.file), Path(args.mapping))
         print(result)
     else:
-        anon_path, mapping_path = anonymize_transcript_file(
-            Path(args.file), Path(args.engagement_dir)
-        )
+        try:
+            anon_path, mapping_path = anonymize_transcript_file(
+                Path(args.file), Path(args.engagement_dir)
+            )
+        except PIIEngineUnavailable as exc:
+            print(f'Error: {exc}', file=sys.stderr)
+            sys.exit(1)
         print(f'Anonymized: {anon_path}')
         print(f'Mapping: {mapping_path}')
