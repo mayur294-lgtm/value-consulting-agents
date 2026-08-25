@@ -81,7 +81,7 @@ GENERIC_STOPLIST = {
     "bank", "banking", "credit", "union", "first", "national", "federal",
     "united", "community", "citizens", "state", "financial", "savings",
     "trust", "group", "holdings", "capital", "mutual", "valley", "coast",
-    "pacific",
+    "pacific", "fund", "society",
 }
 
 # Common short all-caps tokens that are NOT client identifiers, so a bare
@@ -159,7 +159,7 @@ def _single_word_ok(word):
 
 
 def _add_term(terms, raw):
-    t = (raw or "").strip().strip(".,;:()’'\"")
+    t = (raw or "").strip().strip(".,;:()’'\"*_")
     if not t:
         return
     terms.add(t)
@@ -168,7 +168,16 @@ def _add_term(terms, raw):
 def _extract_terms_from_text(text, terms):
     # Explicit "Client:"/"Bank Name:"/... label lines.
     for m in _LABEL_LINE_RE.finditer(text):
-        value = m.group(1).strip()
+        # Strip markdown emphasis (*, _) in addition to whitespace before any
+        # further processing. Without this, "- **Client Name:** X" captures
+        # "** X" (the regex's own \**\s*:\s* only consumes stars BEFORE the
+        # colon; the closing "**" of "**Client Name:**" lands inside the
+        # captured value) and every downstream heuristic below operates on
+        # junk. str.strip(chars) removes any mix of the given chars from
+        # each end regardless of order, so this is safe for a legitimate
+        # name that happens to start/end with '*' or '_' — only the
+        # leading/trailing run is touched, nothing interior.
+        value = m.group(1).strip(" \t*_")
         for acr in _PAREN_ACRONYM_RE.findall(value):
             if acr not in ACRONYM_STOPLIST:
                 _add_term(terms, acr)
@@ -180,13 +189,21 @@ def _extract_terms_from_text(text, terms):
         if phrase and len(phrase.split()) >= 2:
             _add_term(terms, phrase)
 
-    # Bare ALL-CAPS acronyms anywhere (bank short codes like "HNB", "BECU").
-    for tok in _ALLCAPS_TOKEN_RE.findall(text):
-        if tok in ACRONYM_STOPLIST:
-            continue
-        if tok.lower() in GENERIC_STOPLIST:
-            continue
-        _add_term(terms, tok)
+        # Bare ALL-CAPS acronyms *within this label's value* (bank short
+        # codes like "HNB", "BECU" written as "**Client:** HNB" with no
+        # parentheses). Deliberately scoped to label-line values rather than
+        # the whole document: a whole-document sweep of \b[A-Z]{2,8}\b turns
+        # ordinary emphasis-caps prose ("ALL", "NOT", "NEVER", "SME", ...)
+        # into client identifiers and makes the gate unusable (see the
+        # mcp-query-guard finding this fixed). Scoping to text that already
+        # passed the client/bank/institution label-line gate keeps the same
+        # false-positive discipline as the acronym-in-parens path above.
+        for tok in _ALLCAPS_TOKEN_RE.findall(cleaned):
+            if tok in ACRONYM_STOPLIST:
+                continue
+            if tok.lower() in GENERIC_STOPLIST:
+                continue
+            _add_term(terms, tok)
 
     # NOTE: a generic "**bold phrase**" heuristic was tried and dropped —
     # engagement docs bold topic/section headings just as often as names
@@ -226,15 +243,49 @@ def _extract_terms_from_slug(slug, terms):
 _read_count = [0]
 
 
+class _ScanLimitExceeded(Exception):
+    """Raised when MAX_FILES_SCANNED is hit. Past this point the deny-list is
+    provably incomplete — some engagement document that could contain a
+    client identifier was never read. Treated as fail-closed by the caller,
+    same as any other read failure."""
+
+
 def _read_bounded(path):
+    """Read one of the named engagement documents this hook depends on for
+    the deny-list (CLIENT_PROFILE.md / ENGAGEMENT_CONTEXT.md /
+    engagement_intake.md). Deliberately does NOT catch OSError: an unreadable
+    file here (permission-denied, gone mid-scan, ...) is indistinguishable
+    from an empty one if swallowed, which would silently drop identifiers
+    from a fail-closed gate. Let it propagate — _resolve_deny_list's own
+    caller in main() already fails closed on any exception. Scoped
+    deliberately to just these three filenames, not every file under
+    engagements/, so an unrelated unreadable stray file elsewhere doesn't
+    deny every query."""
     if _read_count[0] >= MAX_FILES_SCANNED:
-        return ""
+        raise _ScanLimitExceeded(
+            "MAX_FILES_SCANNED (%d) reached while scanning engagements/ — "
+            "deny-list is incomplete" % MAX_FILES_SCANNED
+        )
     _read_count[0] += 1
-    try:
-        with path.open("r", encoding="utf-8", errors="replace") as fh:
-            return fh.read(MAX_FILE_BYTES)
-    except OSError:
-        return ""
+    with path.open("r", encoding="utf-8", errors="replace") as fh:
+        return fh.read(MAX_FILE_BYTES)
+
+
+def _iter_doc_paths(client_dir, doc_name):
+    """Recursively find every file named doc_name under client_dir. Replaces
+    Path.rglob(), which silently skips a permission-denied subdirectory
+    instead of raising (pathlib's internal scandir swallows OSError). A
+    permission error partway through a client's engagement tree means the
+    deny-list may be missing a document, so it must surface and fail closed
+    rather than be swallowed — os.walk's onerror callback re-raises to make
+    that happen."""
+
+    def _onerror(err):
+        raise err
+
+    for dirpath, _dirnames, filenames in os.walk(str(client_dir), onerror=_onerror):
+        if doc_name in filenames:
+            yield Path(dirpath) / doc_name
 
 
 def _resolve_deny_list():
@@ -261,9 +312,7 @@ def _resolve_deny_list():
             _extract_terms_from_text(_read_bounded(profile), terms)
 
         for doc_name in ENGAGEMENT_DOC_NAMES:
-            for doc_path in client_dir.rglob(doc_name):
-                if _read_count[0] >= MAX_FILES_SCANNED:
-                    break
+            for doc_path in _iter_doc_paths(client_dir, doc_name):
                 _extract_terms_from_text(_read_bounded(doc_path), terms)
 
     return terms
