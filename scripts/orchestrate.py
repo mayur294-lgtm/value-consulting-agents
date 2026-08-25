@@ -398,6 +398,11 @@ async def run_agent(
         max_turns=max_turns,
         # Unset CLAUDECODE to allow nested sessions when running inside Claude Code
         env={"CLAUDECODE": ""},
+        # Explicit, not left to the SDK default: makes project .claude/settings.json
+        # hooks (anonymize-guard.py, mcp-query-guard.py, ...) load independently of
+        # the setting_sources=None-vs-[] serialization change across SDK 0.1.59 —
+        # see the claude-agent-sdk pin comment in requirements.txt for the full story.
+        setting_sources=["user", "project", "local"],
     )
 
     result = None
