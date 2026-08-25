@@ -22,8 +22,22 @@ pointed to via the `CLAUDE_PROJECT_DIR` env var the hook reads its
 `engagements/` deny-list root from (see `PROJECT_DIR` in the hook). Nothing is
 ever written inside the repo, and no real `engagements/**` data (gitignored
 client PII) is read. Per the repo's active synthetic-quarantine programme, no
-fixture uses a fictional bank name — an obviously-placeholder token
-(`zzzplaceholderclient`) stands in for "a client identifier" instead.
+fixture uses a fictional bank name — obviously-placeholder tokens
+(`zzzplaceholderclient`, `Placeholder Holdings Group (ZPC)`, and friends)
+stand in for "a client identifier" instead.
+
+The shared `_seed_denylist_project` fixture deliberately resembles a real
+engagement document, not a two-line stub: it carries ALL-CAPS prose emphasis
+that must NOT become deny terms, a bold "- **Client Name:** ... (ACRONYM)"
+label line in the repo's actual template form, and a per-engagement
+ENGAGEMENT_CONTEXT.md / inputs/engagement_intake.md pair each carrying an
+identifier that exists nowhere else in the fixture. This exists because an
+earlier, minimal version of this fixture (two lines, one nonsense token)
+certified 1.000 on a hook that denied ordinary consultant queries and leaked
+client names under two reproducible conditions — see commit 711b56c. A
+fixture that never varies case, never puts prose outside a label line, and
+never populates ENGAGEMENT_CONTEXT.md/engagement_intake.md cannot catch a
+regression in any of those paths; do not simplify it back down.
 
 threshold: 1.00 in the registry (see registry.yaml comment) — a privacy
 control is pass/fail, not "mostly correct." No `judge:` entries — every check
@@ -48,6 +62,15 @@ HOOK_REL_PATH = Path(".claude") / "hooks" / "mcp-query-guard.py"
 # fixtures — NOT a fictional bank name (the repo's synthetic-quarantine
 # programme treats those as contamination; see synthetic-knowledge-guard.py).
 PLACEHOLDER_CLIENT = "zzzplaceholderclient"
+
+# Identifiers that must be extractable ONLY from one specific engagement
+# document apiece — never from the client slug, CLIENT_PROFILE.md, or each
+# other. That isolation is what makes denies_identifier_from_engagement_
+# context_file / _intake_file fail if the corresponding scanning loop in
+# _resolve_deny_list() is removed, instead of passing by coincidence via
+# some other extraction path.
+CONTEXT_ONLY_IDENTIFIER = "placeholdercontextonly"
+INTAKE_ONLY_IDENTIFIER = "placeholderintakeonly"
 
 SUBPROCESS_TIMEOUT_S = 15.0
 
@@ -101,13 +124,67 @@ def _bool_check(name: str, ok: bool, *, detail: str = "", hard_fail: bool = True
 
 
 def _seed_denylist_project(root: Path) -> Path:
-    """A fixture project root with exactly one engagement, whose slug and
-    CLIENT_PROFILE.md both carry PLACEHOLDER_CLIENT as an identifier term —
-    mirrors how _resolve_deny_list() aggregates real engagements/**."""
+    """A fixture project root with one engagement whose documents resemble a
+    real engagement tree, exercising every extraction path
+    _resolve_deny_list() depends on:
+
+      - the client directory slug (PLACEHOLDER_CLIENT), unconditionally
+        added by _extract_terms_from_slug
+      - CLIENT_PROFILE.md, written with ALL-CAPS prose emphasis ("**NEVER**",
+        "ALL", "SME", "MEDIUM") OUTSIDE any label line — words that must NOT
+        become deny terms — plus a bold "- **Client Name:** ... (ACRONYM)"
+        label line in the repo's actual template form, carrying a paren
+        acronym. This is the exact shape ("**Client Name:**" with the
+        closing stars landing after the colon) that corrupted label-value
+        extraction before it was fixed — see _extract_terms_from_text's
+        docstring in the hook.
+      - ENGAGEMENT_CONTEXT.md and inputs/engagement_intake.md, nested under
+        a per-engagement subdirectory the way a real engagement is laid out,
+        each carrying an identifier (CONTEXT_ONLY_IDENTIFIER /
+        INTAKE_ONLY_IDENTIFIER) that appears NOWHERE else in this fixture —
+        not in the slug, not in CLIENT_PROFILE.md — so a check built on one
+        of them can only pass via that document's own scanning loop.
+    """
     client_dir = root / "engagements" / PLACEHOLDER_CLIENT
     client_dir.mkdir(parents=True)
     (client_dir / "CLIENT_PROFILE.md").write_text(
-        f"# {PLACEHOLDER_CLIENT}\n\nClient: {PLACEHOLDER_CLIENT}\n",
+        "# CLIENT_PROFILE\n\n"
+        "## EXECUTIVE SUMMARY\n\n"
+        "**NEVER** share these figures outside the account team. This "
+        "profile covers ALL engagement details for the SME segment at "
+        "MEDIUM sensitivity — internal use only.\n\n"
+        "- **Client Name:** Placeholder Holdings Group (ZPC)\n"
+        "- **Primary Contact:** Jane Placeholder, SVP Digital Banking\n",
+        encoding="utf-8",
+    )
+    engagement_dir = client_dir / "2026-01_test_engagement"
+    (engagement_dir / "inputs").mkdir(parents=True)
+    (engagement_dir / "ENGAGEMENT_CONTEXT.md").write_text(
+        "# ENGAGEMENT_CONTEXT\n\n"
+        f"- **Client Name:** {CONTEXT_ONLY_IDENTIFIER}\n",
+        encoding="utf-8",
+    )
+    (engagement_dir / "inputs" / "engagement_intake.md").write_text(
+        "# Engagement Intake\n\n"
+        f"- **Client Name:** {INTAKE_ONLY_IDENTIFIER}\n",
+        encoding="utf-8",
+    )
+    return client_dir
+
+
+def _seed_generic_words_label_project(root: Path) -> Path:
+    """A separate, minimal fixture (deliberately isolated from
+    _seed_denylist_project so its terms can't leak in) for the bold-label
+    regression: a "- **Client Name:** ..." value made ENTIRELY of words that
+    are individually on GENERIC_STOPLIST ("First", "National", "Trust" are
+    all in it), so the single-word extraction path cannot catch it — only
+    the multi-word phrase path can. The slug is unrelated filler so it can't
+    accidentally supply the same terms via a different path."""
+    client_dir = root / "engagements" / "zzzboldlabeltest"
+    client_dir.mkdir(parents=True)
+    (client_dir / "CLIENT_PROFILE.md").write_text(
+        "# Engagement Profile\n\n"
+        "- **Client Name:** First National Trust\n",
         encoding="utf-8",
     )
     return client_dir
@@ -260,6 +337,133 @@ def _deny_decision_shape_matches_hook_contract(root: Path) -> CheckResult:
     ))
 
 
+def _allows_query_with_common_emphasis_words(root: Path) -> CheckResult:
+    """Regression guard for finding 1: the shared fixture's CLIENT_PROFILE.md
+    carries ALL-CAPS prose emphasis ("NEVER", "ALL", "SME", "MEDIUM")
+    OUTSIDE any client/bank/institution label line. A query using those same
+    ordinary words generically must be ALLOWED — the ALL-CAPS acronym sweep
+    must stay scoped to label-line values, not swept across the whole
+    document. This is the exact class of bug that made the gate deny routine
+    consultant queries like "list all onboarding capabilities"."""
+    name = "allows_query_with_common_emphasis_words"
+    _seed_denylist_project(root)
+    payload = _payload({"query": "please list all SME digital onboarding options"})
+    result = _run_hook(root, payload)
+    denied, _ = _is_deny(result)
+    ok = result.returncode == 0 and not denied and not result.stdout.strip()
+    return _bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={denied} "
+        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ))
+
+
+def _denies_bold_markdown_label_client_name(root: Path) -> CheckResult:
+    """Regression guard for finding 3: a "- **Client Name:** ..." value made
+    only of GENERIC_STOPLIST words (so single-word extraction can't catch
+    it) must still deny via the multi-word phrase path, with markdown
+    emphasis fully stripped from the captured value rather than leaking a
+    stray "**"/leading-space into the deny term (which would silently break
+    matching against ordinary mid-sentence text)."""
+    name = "denies_bold_markdown_label_client_name"
+    _seed_generic_words_label_project(root)
+    payload = _payload({"query": "engagement notes for First National Trust digital onboarding"})
+    result = _run_hook(root, payload)
+    denied, _ = _is_deny(result)
+    ok = result.returncode == 0 and denied
+    return _bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={denied} "
+        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ))
+
+
+def _fails_closed_on_unreadable_profile_file(root: Path) -> CheckResult:
+    """Regression guard for finding 2: a single-file permission fault on
+    CLIENT_PROFILE.md itself — distinct from fails_closed_on_unresolvable_
+    denylist, which chmods the top-level engagements/ directory and never
+    exercises a per-file read failure — must still deny-closed, even for a
+    fully generic query with no identifier in it, because _read_bounded must
+    propagate OSError rather than swallow it into an empty string."""
+    name = "fails_closed_on_unreadable_profile_file"
+    if hasattr(os, "getuid") and os.getuid() == 0:
+        return CheckResult(name, 1.0, True, skipped=True,
+                            detail="running as root — chmod-based permission fault injection "
+                                   "cannot be exercised (root bypasses file perms); skipping "
+                                   "rather than reporting a false pass or fail")
+
+    client_dir = root / "engagements" / PLACEHOLDER_CLIENT
+    client_dir.mkdir(parents=True)
+    profile = client_dir / "CLIENT_PROFILE.md"
+    profile.write_text(f"Client: {PLACEHOLDER_CLIENT}\n", encoding="utf-8")
+    original_mode = profile.stat().st_mode
+    try:
+        profile.chmod(0o000)
+        payload = _payload({"query": "digital onboarding capabilities for a Tier-2 retail bank"})
+        result = _run_hook(root, payload)
+    finally:
+        # Restore perms unconditionally so tempdir cleanup can remove the file.
+        profile.chmod(original_mode | stat.S_IRUSR | stat.S_IWUSR)
+
+    denied, parsed = _is_deny(result)
+    reason = ((parsed or {}).get("hookSpecificOutput") or {}).get("permissionDecisionReason", "")
+    ok = result.returncode == 0 and denied and "could not verify" in reason.lower()
+    return _bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={denied} reason={reason[:200]!r}"
+    ))
+
+
+def _matching_is_case_insensitive(root: Path) -> CheckResult:
+    """Regression guard for finding 5's first mutation (removing
+    re.IGNORECASE from _term_pattern()): the fixture writes PLACEHOLDER_CLIENT
+    in lowercase, via the client directory slug. A query using a DIFFERENT
+    case must still be DENIED — proving matching is actually
+    case-insensitive rather than merely happening to match the fixture's own
+    case, which no other check here exercises."""
+    name = "matching_is_case_insensitive"
+    _seed_denylist_project(root)
+    payload = _payload({"query": f"capabilities for {PLACEHOLDER_CLIENT.upper()} digital onboarding"})
+    result = _run_hook(root, payload)
+    denied, _ = _is_deny(result)
+    ok = result.returncode == 0 and denied
+    return _bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={denied} "
+        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ))
+
+
+def _denies_identifier_from_engagement_context_file(root: Path) -> CheckResult:
+    """Regression guard for finding 5's second mutation: CONTEXT_ONLY_IDENTIFIER
+    appears ONLY in ENGAGEMENT_CONTEXT.md — never in the slug or
+    CLIENT_PROFILE.md — so this fails if the ENGAGEMENT_CONTEXT.md scanning
+    loop in _resolve_deny_list() is removed, and can't pass by coincidence
+    via some other extraction path."""
+    name = "denies_identifier_from_engagement_context_file"
+    _seed_denylist_project(root)
+    payload = _payload({"query": f"capabilities for {CONTEXT_ONLY_IDENTIFIER} digital onboarding"})
+    result = _run_hook(root, payload)
+    denied, _ = _is_deny(result)
+    ok = result.returncode == 0 and denied
+    return _bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={denied} "
+        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ))
+
+
+def _denies_identifier_from_engagement_intake_file(root: Path) -> CheckResult:
+    """Same as above for inputs/engagement_intake.md and
+    INTAKE_ONLY_IDENTIFIER — fails if that document's scanning loop is
+    removed."""
+    name = "denies_identifier_from_engagement_intake_file"
+    _seed_denylist_project(root)
+    payload = _payload({"query": f"capabilities for {INTAKE_ONLY_IDENTIFIER} digital onboarding"})
+    result = _run_hook(root, payload)
+    denied, _ = _is_deny(result)
+    ok = result.returncode == 0 and denied
+    return _bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={denied} "
+        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ))
+
+
 def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained, ignores target
     hook = _hook_path()
     if not hook.exists():
@@ -277,4 +481,10 @@ def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained
         _run_in_tmp(_fails_closed_on_malformed_payload),
         _run_in_tmp(_allows_with_warning_when_no_denylist_configured),
         _run_in_tmp(_deny_decision_shape_matches_hook_contract),
+        _run_in_tmp(_allows_query_with_common_emphasis_words),
+        _run_in_tmp(_denies_bold_markdown_label_client_name),
+        _run_in_tmp(_fails_closed_on_unreadable_profile_file),
+        _run_in_tmp(_matching_is_case_insensitive),
+        _run_in_tmp(_denies_identifier_from_engagement_context_file),
+        _run_in_tmp(_denies_identifier_from_engagement_intake_file),
     ]

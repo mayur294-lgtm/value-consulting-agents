@@ -214,13 +214,24 @@ components:
   # `judge:` entries: every check is deterministic, $0, no LLM. Ticket #161
   # may later fold this into a broader `pii-anonymizer` row; standing this
   # up now is explicitly what #155's ticket permitted.
+  # Post-711b56c hardening: the original 7 checks ran against a two-line
+  # fixture stub that never exercised label-line extraction, ALL-CAPS
+  # scoping, per-file read failures, case-insensitivity, or the
+  # ENGAGEMENT_CONTEXT.md/engagement_intake.md scanning loop — certifying
+  # 1.000 on a hook that failed all of those. The 6 checks below close that
+  # gap; each was proven to fail against the specific mutation it targets
+  # before being accepted (see the rubric module's evaluate() and the PR
+  # description for the mutation-testing transcript).
   mcp-query-guard:
     altitude: component
     threshold: 1.00
     code: [denies_query_containing_client_identifier, allows_generic_query,
            detects_identifier_nested_in_dict_or_list, fails_closed_on_unresolvable_denylist,
            fails_closed_on_malformed_payload, allows_with_warning_when_no_denylist_configured,
-           deny_decision_shape_matches_hook_contract]
+           deny_decision_shape_matches_hook_contract, allows_query_with_common_emphasis_words,
+           denies_bold_markdown_label_client_name, fails_closed_on_unreadable_profile_file,
+           matching_is_case_insensitive, denies_identifier_from_engagement_context_file,
+           denies_identifier_from_engagement_intake_file]
 
 # Pipeline (integration) altitude — the most important. When ANY component
 # changes, run orchestrate.py end-to-end on a golden engagement and check the
