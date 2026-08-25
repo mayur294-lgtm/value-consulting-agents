@@ -105,7 +105,16 @@ EOF
 fi
 
 # Core protection is fine — only the OCR piece (screenshots) is missing.
-cat <<'EOF'
+# Print the actual fix directly (not setup_pii.sh, which by design never
+# installs this — it only reports it's missing). Platform detection mirrors
+# setup_pii.sh's own tesseract-missing branch so the two never drift.
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    TESS_CMD="brew install tesseract"
+else
+    TESS_CMD="sudo apt install tesseract-ocr   # or your distro's package manager"
+fi
+
+cat <<EOF
 ⚠️  Cortex can't process screenshots yet
 
 What's wrong
@@ -119,10 +128,10 @@ What this means for you
    • Screenshots and other images in your engagement's inputs/ folder
      won't be usable until this is fixed.
 
-How to fix it — about 5 minutes, once
+How to fix it — about a minute, once
    Paste this into your terminal:
 
-       bash scripts/setup_pii.sh
+       $TESS_CMD
 
    Stuck? Just ask Claude: "help me set up PII protection"
 EOF
