@@ -47,16 +47,16 @@ The `require-harness.py` hook blocks direct edits to component paths when no bb-
 
 ## Commands
 
-The system `python3` on most consultant machines is 3.9.6 — that runs the pipeline and hooks fine. The PII protection tooling (Presidio) additionally requires **Python 3.10–3.13**, installed into a separate `.venv` by `bash scripts/setup_pii.sh` (see README "Installation") rather than assumed as the default interpreter. Install base deps with `pip install -r requirements.txt` (only `openpyxl` and the pinned `claude-agent-sdk`; CI also installs `pyyaml`). There is no Makefile and no npm/unit-test suite in the repo root — the engine is `scripts/orchestrate.py` and quality is enforced structurally in CI.
+The system `python3` on most consultant machines is 3.9.6 — that runs the **hooks** fine (they're stdlib-only, or lazily import Presidio only when anonymizing). It does **not** run `scripts/orchestrate.py`: the pipeline imports `claude_agent_sdk` at module level, which is declared in `requirements.txt` but is not installed under the system interpreter, and (as of the Presidio PII gate) `step_discovery` also needs `scripts/pii/engine.py`, which requires **Python 3.10–3.13**. Both live in one place: the `.venv` created by `bash scripts/setup_pii.sh` (see README "Installation") installs the *entire* `requirements.txt` — `claude-agent-sdk` included — so `.venv/bin/python` is the interpreter that actually runs the pipeline, not system `python3`. There is no Makefile and no npm/unit-test suite in the repo root — the engine is `scripts/orchestrate.py` and quality is enforced structurally in CI.
 
-**Run the assessment pipeline** — the core engine for Ignite Assess (Discovery → Block A's 5 parallel agents → Roadmap → Assembly → HTML → Excel → Validation). Run from repo root; `CLAUDECODE=` clears the env var so checkpoints work:
+**Run the assessment pipeline** — the core engine for Ignite Assess (Discovery → Block A's 5 parallel agents → Roadmap → Assembly → HTML → Excel → Validation). Run from repo root, through `.venv` (`bash scripts/setup_pii.sh` once if `.venv` doesn't exist yet); `CLAUDECODE=` clears the env var so checkpoints work:
 
 ```bash
-CLAUDECODE= python3 scripts/orchestrate.py {engagement_dir}                 # interactive (consultant checkpoints)
-CLAUDECODE= python3 scripts/orchestrate.py --express {engagement_dir}        # fewer checkpoints
-CLAUDECODE= python3 scripts/orchestrate.py --non-interactive {engagement_dir} # fully automated
-CLAUDECODE= python3 scripts/orchestrate.py --resume-from {step} {engagement_dir} # resume after interruption
-CLAUDECODE= python3 scripts/orchestrate.py --dry-run {engagement_dir}        # plan only, no API calls
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py {engagement_dir}                 # interactive (consultant checkpoints)
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --express {engagement_dir}        # fewer checkpoints
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --non-interactive {engagement_dir} # fully automated
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --resume-from {step} {engagement_dir} # resume after interruption
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --dry-run {engagement_dir}        # plan only, no API calls
 ```
 
 **Bootstrap a new engagement** (creates the client→engagement hierarchy, intake + journal templates, session UUID). Run from repo root:
