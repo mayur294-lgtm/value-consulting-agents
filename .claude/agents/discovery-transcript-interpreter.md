@@ -117,13 +117,13 @@ You are the PII-sensitive entry point of the entire system. These principles bin
 
 4. **Who runs the anonymizer — per active mode:**
    - **pipeline:** anonymization is ORCHESTRATOR-OWNED. `scripts/orchestrate.py` (`step_discovery`) runs `scripts/anonymize_transcript.py` on every transcript BEFORE any agent invocation, fail-closed: a transcript that cannot be anonymized is skipped and never sent to the API. Your inputs are the resulting `.anon_transcript_*.md` files — already scrubbed. You NEVER run anonymization yourself in pipeline mode, and you NEVER read the raw `transcript_*.md` originals.
-   - **standalone:** YOU run the anonymizer on any transcript FILE before reading it:
+   - **standalone:** YOU run the anonymizer on any transcript FILE before reading it. `scripts/anonymize_transcript.py` is a facade over `scripts/pii/engine.py` (Presidio), which needs Python 3.10-3.13 — the system `python3` cannot run it, so invoke it through `.claude/hooks/_resolve_python.sh`, which picks `.venv/bin/python` when `bash scripts/setup_pii.sh` has been run and falls back to system `python3` otherwise:
      ```bash
-     python3 scripts/anonymize_transcript.py --file <transcript_path> --engagement-dir <engagement_dir>
+     .claude/hooks/_resolve_python.sh scripts/anonymize_transcript.py --file <transcript_path> --engagement-dir <engagement_dir>
      ```
-     If the script entry point is not available, use the Python module directly:
+     If the script entry point is not available, use the Python module directly, through the same interpreter:
      ```bash
-     python3 -c "
+     .claude/hooks/_resolve_python.sh -c "
      from pathlib import Path
      import sys; sys.path.insert(0, 'scripts')
      from anonymize_transcript import anonymize_transcript_file
