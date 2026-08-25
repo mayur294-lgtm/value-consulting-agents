@@ -40,6 +40,18 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 - [ ] **Live dashboard violated design hard-gates** (Harborlight run 7, scored 0.36): 16 gradient-text occurrences — the audit's "assembler bans gradient text then shows a gradient-text code example" contradiction manifested in production; PLUS 1 external Unsplash image URL (self-contained rule) and 1 unfilled {{PLACEHOLDER}}. Fix the assembler's html-partial example block (remove the -webkit-text-fill-color example), add an explicit no-external-images rule, and have the Python assembler fail on leftover {{...}} markers.
 - [ ] **eval-on-run rubric drift** (Harborlight run 7): roi deliverable rubric scored the produced roi_config.json 0/0 on levers_have_5yr_values + assumptions_sourced — its parser doesn't recognize the current value_lever_groups schema (config demonstrably has 22 impact values; Excel built fine). Also runtime applies the full discovery rubric to EACH discovery output file, so evidence_register.md fails "pain_points_present" even though pain_points.md exists. Fix rubric schema parsing + per-file check scoping.
 
+## From the 2026-08-25 Presidio PII cycle (v6, PR 1)
+
+### High severity — the gate that certifies our work measures nothing
+
+- [ ] **`--altitude pipeline` does not run the pipeline.** Measured during v6 PR 1: `python3 evals/run_experiment.py --altitude pipeline` returns **1.000 in ~5 seconds** against `Target: evals/goldens/pipeline_engagement/outputs`. It scores pre-existing golden fixture files on disk; it never executes an agent, never invokes a model, and never reads the changed component. It returned green for three consecutive tickets whose bytes it had not read — a new PreToolUse hook, a security-standard rewrite, and edits to seven agent prompts. This is the measured confirmation of the previously-suspected "path-2 only" problem (PRs #118–#123 were certified the same way). Component-altitude rows with deterministic `code:` checks DO exercise real modules and do bite (proven by the deliberate break/restore on `mcp-query-guard`) — so the fix is not "distrust all evals", it is: (a) never treat a pipeline-altitude green as evidence about a change, (b) require a gate-bites proof for every new component row, (c) decide whether the altitude should actually run the pipeline or be renamed to something honest like `deliverable-structural`, because the current name is what makes it misleading.
+
+### Medium — client identity already committed to shared knowledge
+- [ ] **`NFCU` (Navy Federal — a real client) appears in four `knowledge/Ignite Inspire/` files** (`agent-0-engagement-plan.md`, `agent-2-member.md`, `agent-3-employee.md`, `agent-4-architecture.md`). Two occurrences are checklist items reading "No hardcoded references to BECU, NFCU…" — the rule stated in the file that breaks it. `BECU` is named alongside and likely has the same footprint. This is the read-side mirror of v6: v6 stops client names reaching the model from *engagement inputs*, but names already committed to `knowledge/**` are shipped on every retrieval, and are in git history. Found during v6 #156; out of scope for that ticket.
+
+### Low — hygiene
+- [ ] `test_results.json` (written by the documented `scripts/test_agent.py --output` invocation in CLAUDE.md) is not in `.gitignore`, so every structural run leaves an untracked artifact in the tree.
+
 ## From the 2026-08-18 synthetic-data contamination incident (Harborlight/Zenith quarantine)
 
 ### High severity — knowledge integrity
