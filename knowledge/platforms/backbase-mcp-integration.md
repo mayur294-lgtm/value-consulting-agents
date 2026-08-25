@@ -45,7 +45,17 @@ Always prefer MCP queries over static knowledge files when you need:
 - Architecture and integration patterns
 - API and technical specifications
 - Release and version information
+
+Anonymize every MCP query: never include the client's name, stakeholder names
+or quotes, or specific financial figures — ask about Backbase capabilities in
+generic terms instead (e.g. "a Tier-2 retail bank in South Asia", not the
+client's name). If a query is denied, rephrase it generically rather than
+retrying the same wording or attempting to work around the block.
 ```
+
+### Queries Are Gated
+
+Outbound Infobank queries are not just anonymized by convention — `.claude/hooks/mcp-query-guard.py` enforces it at PreToolUse, scanning every `mcp__.*` call against the active engagement's client/stakeholder deny-list and denying (fail-closed) on a match, so a client-named query never reaches the server. See `knowledge/standards/security_protocol.md` §5 for the full rule and what to do on a denial.
 
 ## MCP Tool Names
 
