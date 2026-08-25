@@ -12,9 +12,11 @@ deterministic and free.
 SEQUENCING (read before adding a check here)
   #161 runs 7th in the v6 build order, deliberately: the gate exists before
   more code lands on top of it. Six checks from the PRD's original 16-check
-  list are NOT authored here because their subject does not exist yet:
+  list were NOT authored then because their subject did not exist yet. One
+  of them, `document_formats_converted_and_scrubbed`, landed with #162 and
+  is the 11th check below. The rest still wait on their ticket:
 
-    document_formats_converted_and_scrubbed   -> #162 (pii/ingest.py)
+    document_formats_converted_and_scrubbed   -> #162 — LANDED (check 11)
     image_input_produces_sidecar_and_redacted_copy -> #163 (image ingest)
     guard_fails_closed_on_inputs_path         -> #164 (guard rewrite)
     xlsx_outputs_deanonymized                 -> #165 (deanonymize_dir xlsx)
@@ -31,9 +33,10 @@ SEQUENCING (read before adding a check here)
   two-line mcp-query-guard fixture pre-711b56c). The clean option, taken
   here, is simply not writing those checks until their ticket lands.
 
-  The 10 checks below all exercise code that exists TODAY: `scripts/pii/
+  The 11 checks below all exercise code that exists TODAY: `scripts/pii/
   engine.py`, `scripts/pii/denylist.py` (via the engine's deny-list
-  recognizer), and `scripts/anonymize_transcript.py`'s facade.
+  recognizer), `scripts/pii/ingest.py` (#162), and
+  `scripts/anonymize_transcript.py`'s facade.
 
 WHY THE VENV INTERPRETER
   `scripts/pii/engine.py` does `import presidio_analyzer` at module level, and
@@ -74,6 +77,16 @@ FIXTURE
   inspecting the mapping files `anonymize_transcript_file` writes to disk).
   Nothing here ever mutates the committed golden — it is read-only.
 
+  #162 adds a THIRD inline fixture set: one PDF, DOCX, PPTX, XLSX and CSV
+  built programmatically in a tempdir by `_build_document_fixtures`, all
+  carrying the same planted PII. No binary is ever committed — a committed
+  .docx or .xlsx is opaque to review and, if ever built from real content,
+  is exactly the contamination the synthetic-quarantine cycle exists to
+  stop. Four of the five carry a person's name inside a REAL TABLE
+  (a Word table, a PowerPoint table, a worksheet, CSV rows), because that
+  is the shape #162 was most likely to get wrong — see
+  `_document_formats_converted_and_scrubbed`.
+
 KNOWN, DOCUMENTED GAP — the markdown-table PERSON miss
   `evals/goldens/pii_roundtrip_fixture.md`'s Stakeholder Directory table
   carries "Aisha Rahman" in a table cell specifically because, on the
@@ -94,8 +107,10 @@ KNOWN, DOCUMENTED GAP — the markdown-table PERSON miss
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import re
 import stat
 import sys
 import tempfile
@@ -636,6 +651,383 @@ def _legacy_flat_mapping_still_restores(target: str) -> CheckResult:  # noqa: AR
                         "correctly through both maintained copies")
 
 
+# --- #162 document ingest: fixtures, built programmatically ----------------
+#
+# Never committed as binaries. See the module docstring's FIXTURE note.
+
+# The same planted PII in every format, so the check is a genuine
+# cross-format comparison rather than five unrelated documents.
+DOC_TITLE = f"{CLIENT_FULL} — Stakeholder Directory"
+DOC_INTRO = (
+    f"Prepared for {CLIENT_SHORT} as part of the digital onboarding review."
+)
+DOC_HEADERS = ["Name", "Role", "Email", "Phone", "Account No."]
+DOC_ROWS = [
+    ["Aisha Rahman", "Chief Financial Officer",
+     "a.rahman@zzzplaceholdermeridian.com", "(555) 201-4477", "8834021177"],
+    ["Marcus Chen", "Head of Digital Banking",
+     "m.chen@zzzplaceholdermeridian.com", "555.201.9981", "5521873390"],
+]
+
+# Values that must not survive into any `.anon_` artifact. Job titles are
+# deliberately excluded — they are not PII and redacting them would destroy
+# the analysis (engine.py's DEFAULT_ENTITIES comment).
+DOC_MUST_NOT_LEAK = [CLIENT_FULL] + [
+    v for row in DOC_ROWS for v in row if v not in ("Chief Financial Officer",
+                                                     "Head of Digital Banking")
+]
+
+# "Aisha Rahman" is planted in TABULAR data in four of the five formats on
+# purpose: on `en_core_web_lg` this is the exact name #159 recorded as
+# tagged ORGANIZATION inside a markdown table cell, i.e. the name that
+# leaks if ingest renders tables as pipe tables. A fixture without it would
+# certify the gap #162 exists to close as passing.
+DOC_TABULAR_PERSON = "Aisha Rahman"
+
+# Per-format structural marker the extract must carry, proving structure
+# survived rather than being flattened into a wall of text.
+DOC_STRUCTURE_MARKER = {
+    "pdf": "## Page 1",
+    "docx": "## Table 1",
+    "pptx": "## Slide 2",
+    "xlsx": "## Sheet: Contacts",
+    "csv": "### Row 1",
+}
+
+
+def _build_minimal_pdf(pages, encrypted: bool = False) -> bytes:
+    """A valid single-font PDF, hand-assembled — no PDF writer is installed
+    and adding one just to build a fixture is not worth a dependency.
+
+    `encrypted=True` attaches a standard-security-handler `/Encrypt`
+    dictionary the empty password cannot open, which is how the
+    password-protected path is exercised without shipping a real encrypted
+    binary.
+    """
+    def esc(s: str) -> str:
+        return s.replace("\\", r"\\").replace("(", r"\(").replace(")", r"\)")
+
+    n_pages = len(pages)
+    kids = " ".join(f"{4 + 2 * i} 0 R" for i in range(n_pages))
+    objs = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        f"<< /Type /Pages /Kids [{kids}] /Count {n_pages} >>".encode(),
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ]
+    for lines in pages:
+        stream = "BT /F1 11 Tf 13 TL 56 760 Td\n"
+        stream += "".join(f"({esc(line)}) Tj T*\n" for line in lines)
+        stream += "ET"
+        body = stream.encode("latin-1", "replace")
+        content_num = len(objs) + 2
+        objs.append(
+            (f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+             f"/Resources << /Font << /F1 3 0 R >> >> "
+             f"/Contents {content_num} 0 R >>").encode()
+        )
+        objs.append(b"<< /Length %d >>\nstream\n" % len(body) + body + b"\nendstream")
+
+    encrypt_ref = ""
+    extra_trailer = ""
+    if encrypted:
+        objs.append(b"<< /Filter /Standard /V 1 /R 2 /O <" + b"11" * 32 +
+                     b"> /U <" + b"22" * 32 + b"> /P -1 >>")
+        encrypt_ref = f" /Encrypt {len(objs)} 0 R"
+        extra_trailer = " /ID [<%s> <%s>]" % ("33" * 16, "33" * 16)
+
+    out = bytearray(b"%PDF-1.4\n")
+    offsets = []
+    for i, body in enumerate(objs, start=1):
+        offsets.append(len(out))
+        out += f"{i} 0 obj\n".encode() + body + b"\nendobj\n"
+    xref = len(out)
+    out += f"xref\n0 {len(objs) + 1}\n".encode() + b"0000000000 65535 f \n"
+    for off in offsets:
+        out += f"{off:010d} 00000 n \n".encode()
+    out += (f"trailer\n<< /Size {len(objs) + 1} /Root 1 0 R{encrypt_ref}"
+            f"{extra_trailer} >>\nstartxref\n{xref}\n%%EOF\n").encode()
+    return bytes(out)
+
+
+def _build_document_fixtures(directory: Path) -> dict:
+    """One document per supported format, same planted PII in each.
+
+    Returns {format: path}. Tables are REAL tables (a Word table, a
+    PowerPoint table, a worksheet, CSV rows) — not pre-rendered text — so
+    the check exercises ingest's own rendering decision rather than a shape
+    the fixture chose for it. The PDF is the exception and carries the
+    contact block as label lines: a PDF has no table structure to re-render,
+    so its layout is whatever the file says (documented seam in
+    `scripts/pii/ingest.py`).
+    """
+    import csv as _csv  # noqa: PLC0415
+    paths = {}
+
+    # --- PDF -------------------------------------------------------------
+    pdf_pages = [[DOC_TITLE, "", DOC_INTRO], ["Contacts", ""]]
+    for row in DOC_ROWS:
+        for header, value in zip(DOC_HEADERS, row):
+            pdf_pages[1].append(f"{header}: {value}.")
+        pdf_pages[1].append("")
+    paths["pdf"] = directory / "stakeholders.pdf"
+    paths["pdf"].write_bytes(_build_minimal_pdf(pdf_pages))
+
+    # --- DOCX: headings + a real table ------------------------------------
+    import docx  # noqa: PLC0415
+    document = docx.Document()
+    document.add_heading(DOC_TITLE, level=1)
+    document.add_paragraph(DOC_INTRO)
+    document.add_heading("Contacts", level=2)
+    table = document.add_table(rows=1 + len(DOC_ROWS), cols=len(DOC_HEADERS))
+    for j, header in enumerate(DOC_HEADERS):
+        table.cell(0, j).text = header
+    for i, row in enumerate(DOC_ROWS, start=1):
+        for j, value in enumerate(row):
+            table.cell(i, j).text = value
+    paths["docx"] = directory / "stakeholders.docx"
+    document.save(str(paths["docx"]))
+
+    # --- PPTX: two slides, one carrying a real table ----------------------
+    from pptx import Presentation  # noqa: PLC0415
+    from pptx.util import Inches  # noqa: PLC0415
+    presentation = Presentation()
+    slide = presentation.slides.add_slide(presentation.slide_layouts[5])
+    slide.shapes.title.text = DOC_TITLE
+    box = slide.shapes.add_textbox(Inches(0.5), Inches(1.6), Inches(8.5), Inches(0.8))
+    box.text_frame.text = DOC_INTRO
+    slide2 = presentation.slides.add_slide(presentation.slide_layouts[5])
+    slide2.shapes.title.text = "Contacts"
+    graphic = slide2.shapes.add_table(
+        1 + len(DOC_ROWS), len(DOC_HEADERS),
+        Inches(0.4), Inches(1.5), Inches(9), Inches(2),
+    )
+    for j, header in enumerate(DOC_HEADERS):
+        graphic.table.cell(0, j).text = header
+    for i, row in enumerate(DOC_ROWS, start=1):
+        for j, value in enumerate(row):
+            graphic.table.cell(i, j).text = value
+    paths["pptx"] = directory / "stakeholders.pptx"
+    presentation.save(str(paths["pptx"]))
+
+    # --- XLSX: two sheets --------------------------------------------------
+    import openpyxl  # noqa: PLC0415
+    workbook = openpyxl.Workbook()
+    overview = workbook.active
+    overview.title = "Overview"
+    overview["A1"] = DOC_TITLE
+    overview["A2"] = DOC_INTRO
+    contacts = workbook.create_sheet("Contacts")
+    contacts.append(DOC_HEADERS)
+    for row in DOC_ROWS:
+        contacts.append(row)
+    paths["xlsx"] = directory / "stakeholders.xlsx"
+    workbook.save(str(paths["xlsx"]))
+
+    # --- CSV ---------------------------------------------------------------
+    paths["csv"] = directory / "stakeholders.csv"
+    with paths["csv"].open("w", newline="", encoding="utf-8") as handle:
+        writer = _csv.writer(handle)
+        writer.writerow(DOC_HEADERS)
+        for row in DOC_ROWS:
+            writer.writerow(row)
+
+    return paths
+
+
+def _document_formats_converted_and_scrubbed(target: str) -> CheckResult:  # noqa: ARG001
+    """#162: every text-bearing input format is converted to text, anonymised
+    through the SAME engine transcripts use, and written as `.anon_<name>.md`.
+
+    The gate the PRD's "5 of 5 formats covered, from 0 today" metric rests
+    on. Nine properties, all of which must hold for every one of PDF, DOCX,
+    PPTX, XLSX and CSV:
+
+      1. `.anon_<name>.md` is written at the path `anon_path_for` predicts.
+      2. NO planted raw value survives into it — client name, both person
+         names, both emails, both phones, both account numbers.
+      3. The person name planted in TABULAR data is redacted. Asserted
+         separately and explicitly, because this is the shape a markdown
+         pipe-table rendering silently fails on: "Aisha Rahman" in a table
+         cell is tagged ORGANIZATION by `en_core_web_lg` (#159), which is
+         not an enabled entity type. A fixture that only planted names in
+         prose would pass while the real gap stayed open.
+      4. Structure survived — the format's own boundary markers (pages,
+         sheets, slides, tables) are present, so the extract is a usable
+         document rather than a wall of text.
+      5. Tabular data is NOT rendered as a markdown pipe table (the one
+         shape measured to lose names — see ingest.py's measurement table).
+      6. ONE scheme: the mapping built by ingest restores every planted
+         value, through the same `deanonymize_text` transcripts use, and the
+         placeholder for a value shared across formats is IDENTICAL in all
+         of them.
+      7. Deterministic: ingesting the same bytes twice produces a
+         byte-identical `.anon_` artifact.
+      8. Read-only: the source file's sha256 is unchanged.
+      9. Failure is typed and never silent: an unsupported format, an
+         image, a password-protected PDF and a document that yields no text
+         each raise their own error naming the format.
+    """
+    name = "document_formats_converted_and_scrubbed"
+    engine = _engine()
+    from pii import ingest  # noqa: PLC0415
+
+    problems: list = []
+    evidence: list = []
+
+    with tempfile.TemporaryDirectory(prefix="pii_eval_ingest_") as td:
+        root = Path(td)
+        fixtures = _build_document_fixtures(root)
+
+        missing = [f for f in ("pdf", "docx", "pptx", "xlsx", "csv") if f not in fixtures]
+        if missing:
+            problems.append(f"fixture build produced no {missing}")
+
+        # ONE session across every format — that is what makes a value seen
+        # in a spreadsheet and in a deck share a placeholder.
+        session = _new_session(engine)
+        shared_placeholders: dict = {}
+
+        for fmt in ("pdf", "docx", "pptx", "xlsx", "csv"):
+            src = fixtures[fmt]
+            digest_before = hashlib.sha256(src.read_bytes()).hexdigest()
+
+            # Which planted values this particular document actually carries.
+            # The CSV is a bare table with no title row, so it has no client
+            # name to redact — asserting a value is restored when it was
+            # never in the document is a fixture bug, not a finding. The
+            # floor below stops that leniency hiding an empty extraction.
+            extracted = ingest.extract_text(src)
+            present = [v for v in DOC_MUST_NOT_LEAK if v in extracted]
+            if len(present) < 8:
+                problems.append(
+                    f"{fmt}: extract carries only {len(present)} of the "
+                    f"{len(DOC_MUST_NOT_LEAK)} planted values — the document did "
+                    f"not convert properly, so the checks below prove nothing"
+                )
+            if DOC_TABULAR_PERSON not in extracted:
+                problems.append(
+                    f"{fmt}: the tabular person name never reached the extract — "
+                    f"the fixture is not testing what it claims to"
+                )
+
+            result = ingest.ingest_file(src, session=session)
+            expected_path = ingest.anon_path_for(src)
+
+            # 1. output contract
+            if result.anon_path != expected_path or not expected_path.is_file():
+                problems.append(f"{fmt}: expected {expected_path.name}, got {result.anon_path.name}")
+                continue
+            anonymized = expected_path.read_text(encoding="utf-8")
+
+            # 2. no planted raw value survives
+            leaked = [v for v in present if v in anonymized]
+            if leaked:
+                problems.append(f"{fmt}: leaked {leaked!r}")
+                evidence.extend(f"{fmt}: leaked raw value: {v}" for v in leaked)
+
+            # 3. the TABULAR person name specifically
+            if DOC_TABULAR_PERSON in anonymized:
+                problems.append(
+                    f"{fmt}: person name in tabular data ({DOC_TABULAR_PERSON!r}) "
+                    f"survived — the rendering is producing a shape the detector misses"
+                )
+
+            # 4. structure survived
+            marker = DOC_STRUCTURE_MARKER[fmt]
+            if marker not in anonymized:
+                problems.append(f"{fmt}: structure marker {marker!r} missing from extract")
+
+            # 5. no pipe-table rendering
+            if re.search(r"^\|\s*-{3,}", anonymized, re.MULTILINE):
+                problems.append(f"{fmt}: tabular data rendered as a markdown pipe table")
+
+            # 6. one scheme — the shared mapping restores everything
+            restored = engine.deanonymize_text(anonymized, session.mapping_file_dict())
+            unrestored = [v for v in present if v not in restored]
+            if unrestored:
+                problems.append(f"{fmt}: mapping did not restore {unrestored!r}")
+            for value in present:
+                for etype, values in session.entity_mapping.items():
+                    if value in values:
+                        seen = shared_placeholders.setdefault(value, values[value])
+                        if seen != values[value]:
+                            problems.append(
+                                f"{fmt}: {value!r} has placeholder {values[value]} "
+                                f"but {seen} elsewhere — schemes have diverged"
+                            )
+                        break
+
+            # 7. determinism — same bytes in, byte-identical artifact out
+            first_bytes = expected_path.read_bytes()
+            replay_session = _new_session(engine)
+            ingest.ingest_file(src, session=replay_session,
+                                output_dir=root / ("replay_%s" % fmt))
+            replay_bytes = ingest.anon_path_for(src, root / ("replay_%s" % fmt)).read_bytes()
+            if replay_bytes != first_bytes:
+                problems.append(f"{fmt}: second ingest of the same file differed byte-for-byte")
+
+            # 8. the original was never modified
+            if hashlib.sha256(src.read_bytes()).hexdigest() != digest_before:
+                problems.append(f"{fmt}: SOURCE FILE WAS MODIFIED by ingest")
+
+            evidence.append(
+f"{fmt}: {src.name} -> {expected_path.name} "
+                f"({result.extracted_chars} chars extracted, "
+                f"{len(present)} planted values present, all redacted and restored)"
+            )
+
+        # 9. typed errors — never silent, never empty output
+        unsupported = root / "deck.key"
+        unsupported.write_bytes(b"not really a keynote file")
+        try:
+            ingest.extract_text(unsupported)
+            problems.append(".key: no error raised for an unsupported format")
+        except ingest.UnsupportedFormatError as exc:
+            if "KEY" not in exc.message.upper():
+                problems.append(f".key: error does not name the format: {exc.message!r}")
+        except Exception as exc:  # noqa: BLE001
+            problems.append(f".key: wrong error type {type(exc).__name__}")
+
+        image = root / "screenshot.png"
+        image.write_bytes(b"\x89PNG\r\n\x1a\n")
+        try:
+            ingest.extract_text(image)
+            problems.append(".png: no error raised for an image")
+        except ingest.ImageIngestNotSupportedError:
+            pass
+        except Exception as exc:  # noqa: BLE001
+            problems.append(f".png: wrong error type {type(exc).__name__}")
+
+        encrypted = root / "locked.pdf"
+        encrypted.write_bytes(_build_minimal_pdf([[DOC_TITLE]], encrypted=True))
+        try:
+            ingest.extract_text(encrypted)
+            problems.append("encrypted pdf: no error raised")
+        except ingest.ExtractionFailedError:
+            pass
+        except Exception as exc:  # noqa: BLE001
+            problems.append(f"encrypted pdf: wrong error type {type(exc).__name__}")
+
+        blank = root / "blank.csv"
+        blank.write_text("\n\n", encoding="utf-8")
+        try:
+            ingest.extract_text(blank)
+            problems.append("textless file: no error raised — an empty scrub reported as success")
+        except ingest.EmptyExtractionError:
+            pass
+        except Exception as exc:  # noqa: BLE001
+            problems.append(f"textless file: wrong error type {type(exc).__name__}")
+
+    ok = not problems
+    detail = ("; ".join(problems) if problems else
+              "5/5 formats (pdf, docx, pptx, xlsx, csv) converted, scrubbed, "
+              "structure preserved, tabular person name redacted, deterministic, "
+              "sources unmodified, one shared mapping restores all; 4 typed "
+              "error paths (unsupported, image, encrypted pdf, textless) fire")
+    return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=True,
+                        detail=detail, evidence=evidence)
+
+
 def evaluate(target: str) -> list:
     fixture = _fixture_path(target)
     if not fixture.exists():
@@ -668,6 +1060,7 @@ def evaluate(target: str) -> list:
         _allowlist_prevents_generic_overredaction,
         _empty_entity_list_warns,
         _legacy_flat_mapping_still_restores,
+        _document_formats_converted_and_scrubbed,
     ]
     results = []
     for fn in checks:

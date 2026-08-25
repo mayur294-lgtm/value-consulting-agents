@@ -251,7 +251,7 @@ components:
   # wired here — see evals/rubrics/component/pii_anonymizer.py's module
   # docstring "SEQUENCING" section for the full mapping to the tickets that
   # will add them:
-  #   document_formats_converted_and_scrubbed   -> #162 (pii/ingest.py)
+  #   document_formats_converted_and_scrubbed   -> #162 — LANDED, wired below
   #   image_input_produces_sidecar_and_redacted_copy -> #163 (image ingest)
   #   guard_fails_closed_on_inputs_path         -> #164 (guard rewrite)
   #   xlsx_outputs_deanonymized                 -> #165 (deanonymize_dir xlsx)
@@ -274,7 +274,8 @@ components:
            repeated_value_reuses_placeholder, no_raw_pii_in_anonymized_output,
            cross_transcript_merge_collision_free, mapping_files_chmod_600_and_cleaned,
            client_name_redacted_via_denylist, allowlist_prevents_generic_overredaction,
-           empty_entity_list_warns, legacy_flat_mapping_still_restores]
+           empty_entity_list_warns, legacy_flat_mapping_still_restores,
+           document_formats_converted_and_scrubbed]
 
 # Pipeline (integration) altitude — the most important. When ANY component
 # changes, run orchestrate.py end-to-end on a golden engagement and check the
