@@ -51,3 +51,17 @@ python-pptx==1.0.2
 # OCR binding (Tesseract) for image ingest — the `tesseract` binary itself
 # is a separate system-level install; see scripts/setup_pii.sh.
 pytesseract==0.3.13
+# Image decoding and the redaction drawing itself (#163). pytesseract already
+# pulls Pillow in transitively, but `scripts/pii/ingest.py` imports it DIRECTLY
+# — it opens the image, draws the fill rectangles and writes the redacted PNG —
+# so it is pinned here as the direct dependency it actually is. A transitive
+# pin would let a pytesseract bump silently move the library that decides
+# whether a redaction box lands on the right pixels.
+#
+# NOTE: `presidio-image-redactor` is deliberately ABSENT. It was installed and
+# measured head-to-head (see ingest.py's "D5b DECISION"): its analysis text is
+# a flat space-join that detects 6/8 person names to our reflow's 8/8, it
+# cannot produce the placeholder sidecar at all, and it hard-depends on
+# `azure-ai-formrecognizer` — a cloud OCR client this local-only privacy
+# control must not ship.
+Pillow==12.3.0
