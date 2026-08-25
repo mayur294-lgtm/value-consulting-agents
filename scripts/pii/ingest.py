@@ -789,11 +789,16 @@ def _redact_image(Image, image, words: Sequence[_Word], spans: Sequence[Tuple[in
             continue
         if not any(word.start < end and start < word.end for start, end in spans):
             continue
-        # Pillow's rectangle is inclusive of both corners, so the far edge is
-        # -1; a 1px bleed either way covers antialiasing on the glyph edges.
+        # Bleed 2px past the word box on every side. Tesseract's box is tight
+        # to the ink it recognised, which can sit a pixel or two inside the
+        # glyph's real extent — an ascender, a descender, the tail of a "(",
+        # or the antialiased edge of any letter. Measured at a 1px bleed, up
+        # to 6% of a word's own background was left unfilled at the boundary;
+        # at 2px it is none. Over-covering a neighbouring pixel is the safe
+        # direction to err in.
         draw.rectangle(
-            [word.left - 1, word.top - 1,
-             word.left + word.width, word.top + word.height],
+            [word.left - 2, word.top - 2,
+             word.left + word.width + 1, word.top + word.height + 1],
             fill=(0, 0, 0),
         )
         boxed += 1

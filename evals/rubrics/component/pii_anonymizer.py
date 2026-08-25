@@ -12,12 +12,13 @@ deterministic and free.
 SEQUENCING (read before adding a check here)
   #161 runs 7th in the v6 build order, deliberately: the gate exists before
   more code lands on top of it. Six checks from the PRD's original 16-check
-  list were NOT authored then because their subject did not exist yet. One
-  of them, `document_formats_converted_and_scrubbed`, landed with #162 and
-  is the 11th check below. The rest still wait on their ticket:
+  list were NOT authored then because their subject did not exist yet. Two
+  have since landed — `document_formats_converted_and_scrubbed` with #162 and
+  `image_input_produces_sidecar_and_redacted_copy` with #163 — and are checks
+  11 and 12 below. The rest still wait on their ticket:
 
     document_formats_converted_and_scrubbed   -> #162 — LANDED (check 11)
-    image_input_produces_sidecar_and_redacted_copy -> #163 (image ingest)
+    image_input_produces_sidecar_and_redacted_copy -> #163 — LANDED (check 12)
     guard_fails_closed_on_inputs_path         -> #164 (guard rewrite)
     xlsx_outputs_deanonymized                 -> #165 (deanonymize_dir xlsx)
     nested_outputs_deanonymized               -> #165 (deanonymize_dir recursive)
@@ -33,7 +34,7 @@ SEQUENCING (read before adding a check here)
   two-line mcp-query-guard fixture pre-711b56c). The clean option, taken
   here, is simply not writing those checks until their ticket lands.
 
-  The 11 checks below all exercise code that exists TODAY: `scripts/pii/
+  The 12 checks below all exercise code that exists TODAY: `scripts/pii/
   engine.py`, `scripts/pii/denylist.py` (via the engine's deny-list
   recognizer), `scripts/pii/ingest.py` (#162), and
   `scripts/anonymize_transcript.py`'s facade.
@@ -87,6 +88,18 @@ FIXTURE
   is the shape #162 was most likely to get wrong — see
   `_document_formats_converted_and_scrubbed`.
 
+  #163 adds a FOURTH inline fixture set, on the same no-committed-binaries
+  rule: a screenshot drawn with Pillow (`_build_screenshot`), plus a DOCX and
+  a PPTX that embed it. The screenshot lays its person name out in COLUMNS,
+  because that is the shape tesseract's own page segmentation shreds before
+  the detector ever runs — a screenshot of prose would certify the easy case.
+  It renders with `ImageFont.load_default(size=...)`, which ships inside
+  Pillow, so it OCRs identically on a laptop and on the CI runner; a system
+  font path would pass locally and quietly degrade in CI. The check asserts
+  on the redacted copy's PIXELS — per OCR word, and on the BACKGROUND between
+  the letters, since black fill over black glyphs is indistinguishable from
+  the glyphs — so "a file was written" cannot pass it.
+
 KNOWN, DOCUMENTED GAP — the markdown-table PERSON miss
   `evals/goldens/pii_roundtrip_fixture.md`'s Stakeholder Directory table
   carries "Aisha Rahman" in a table cell specifically because, on the
@@ -108,6 +121,7 @@ KNOWN, DOCUMENTED GAP — the markdown-table PERSON miss
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import os
 import re
@@ -988,13 +1002,17 @@ f"{fmt}: {src.name} -> {expected_path.name} "
         except Exception as exc:  # noqa: BLE001
             problems.append(f".key: wrong error type {type(exc).__name__}")
 
+        # Images are SUPPORTED since #163 — a truncated one is a damaged file,
+        # not an unsupported format, and must still fail loudly rather than be
+        # reported as "successfully anonymised, 0 bytes".
         image = root / "screenshot.png"
         image.write_bytes(b"\x89PNG\r\n\x1a\n")
         try:
             ingest.extract_text(image)
-            problems.append(".png: no error raised for an image")
-        except ingest.ImageIngestNotSupportedError:
-            pass
+            problems.append(".png: no error raised for a damaged image")
+        except ingest.ExtractionFailedError as exc:
+            if "PNG" not in exc.message.upper():
+                problems.append(f".png: error does not name the format: {exc.message!r}")
         except Exception as exc:  # noqa: BLE001
             problems.append(f".png: wrong error type {type(exc).__name__}")
 
@@ -1024,6 +1042,447 @@ f"{fmt}: {src.name} -> {expected_path.name} "
               "structure preserved, tabular person name redacted, deterministic, "
               "sources unmodified, one shared mapping restores all; 4 typed "
               "error paths (unsupported, image, encrypted pdf, textless) fire")
+    return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=True,
+                        detail=detail, evidence=evidence)
+
+
+# --- #163 image ingest: fixtures, built programmatically -------------------
+#
+# Never committed as binaries — same rule as #162's document fixtures, and the
+# real images under `engagements/` are real client data, gitignored, and
+# blocked by the guard. Everything here is drawn from scratch with Pillow.
+
+# The screenshot's planted PII. Same client identity and the same tabular
+# person name as the document fixtures, so the two checks are comparable.
+IMG_PERSON = DOC_TABULAR_PERSON          # "Aisha Rahman"
+IMG_ROLE = "Chief Financial Officer"     # the control: NOT PII, must survive
+IMG_EMAIL = "a.rahman@zzzplaceholdermeridian.com"
+IMG_PHONE = "(555) 201-4477"
+IMG_ACCOUNT = "8834021177"
+
+# Everything the sidecar must not carry and the redacted copy must not show.
+IMG_MUST_NOT_LEAK = [CLIENT_FULL, IMG_PERSON, IMG_EMAIL, IMG_PHONE, IMG_ACCOUNT]
+
+
+def _image_font(size: int):
+    """Pillow's own scalable default face.
+
+    Deliberately NOT a system font: `ImageFont.load_default(size=...)` ships
+    inside Pillow, so this fixture renders and OCRs identically on a macOS
+    laptop and on the CI runner. A system font path would make the check pass
+    locally and fail — or worse, quietly degrade — in CI.
+    """
+    from PIL import ImageFont  # noqa: PLC0415
+    return ImageFont.load_default(size=size)
+
+
+def _build_screenshot(path: Path) -> dict:
+    """A synthetic screenshot of a stakeholder table.
+
+    The person name sits in a TABULAR/columnar layout on purpose — the shape
+    #162 measured the detector failing on, and the shape tesseract's own page
+    segmentation shreds into columns before the detector ever sees it. A
+    screenshot of prose would certify the easy case.
+
+    Returns {value: [per-WORD boxes]} — where each word of each planted string
+    was drawn, so the check can assert on the PIXELS of those exact regions
+    rather than on the mere existence of an output file. Per WORD, not per
+    value, because redaction draws one box per OCR word: the space between two
+    words carries no ink and is correctly left alone, so measuring the whole
+    value's box would score a perfect redaction at ~0.90 and invite someone to
+    "fix" it by loosening the threshold.
+    """
+    from PIL import Image, ImageDraw  # noqa: PLC0415
+
+    font = _image_font(20)
+    image = Image.new("RGB", (1500, 230), "white")
+    draw = ImageDraw.Draw(image)
+    boxes = {}
+
+    def put(x, y, text, track=True):
+        draw.text((x, y), text, font=font, fill="black")
+        if not track:
+            return
+        word_boxes = []
+        cursor = x
+        for word in text.split(" "):
+            if word:
+                word_boxes.append(draw.textbbox((cursor, y), word, font=font))
+            cursor += draw.textlength(word + " ", font=font)
+        boxes[text] = word_boxes
+
+    put(24, 18, CLIENT_FULL)
+    draw.text((360, 18), "- Stakeholder Directory", font=font, fill="black")
+    for x, header in ((24, "Name"), (300, "Role"), (640, "Email"), (1260, "Account")):
+        draw.text((x, 70), header, font=font, fill="black")
+    put(24, 112, IMG_PERSON)
+    put(300, 112, IMG_ROLE)          # tracked as the CONTROL region
+    put(640, 112, IMG_EMAIL)
+    put(1260, 112, IMG_ACCOUNT)
+    draw.text((24, 160), "Direct line:", font=font, fill="black")
+    put(190, 160, IMG_PHONE)
+
+    image.save(str(path), format="PNG")
+    return boxes
+
+
+def _regions_are_filled(original, redacted, word_boxes, *, threshold: float = 0.98) -> bool:
+    """Is every WORD of a planted value actually covered over in the copy?"""
+    return bool(word_boxes) and all(
+        _region_is_filled(original, redacted, box, threshold=threshold)
+        for box in word_boxes
+    )
+
+
+def _region_is_filled(original, redacted, box, *, threshold: float = 0.98) -> bool:
+    """Is the word drawn in `box` actually covered over in the redacted copy?
+
+    Asserts on PIXELS, not on a file existing — a straight copy, a resize, or
+    a box drawn in the wrong place all fail here.
+
+    The signal is the BACKGROUND, not the ink. Black fill over black glyphs is
+    indistinguishable from the glyphs themselves, so "is the ink black?" would
+    pass on an untouched image. What proves a fill landed is that the WHITE
+    space between and around the letters is now black. `box` is also widened
+    restricted to the rows that actually carried ink first: `ImageDraw.textbbox`
+    reports the font's ascender-to-descender line box, which is taller than the
+    glyphs and taller than the OCR word box, so measuring it raw would count
+    untouched padding as a miss.
+    """
+    left, top, right, bottom = box
+    before = original.convert("L").crop((left, top, right, bottom))
+    after = redacted.convert("L").crop((left, top, right, bottom))
+    width = before.width
+    if width == 0 or before.height == 0:
+        return False
+
+    before_pixels = list(before.getdata())
+    after_pixels = list(after.getdata())
+
+    # Rows that carried ink in the original — the glyph band.
+    ink_rows = [y for y in range(before.height)
+                if any(before_pixels[y * width + x] < 128 for x in range(width))]
+    if not ink_rows:
+        return False
+
+    background = 0
+    covered = 0
+    for y in ink_rows:
+        for x in range(width):
+            if before_pixels[y * width + x] >= 200:      # was background
+                background += 1
+                if after_pixels[y * width + x] < 16:     # is now fill
+                    covered += 1
+    if not background:
+        return False
+    return covered / float(background) >= threshold
+
+
+def _regions_untouched(original, redacted, word_boxes) -> bool:
+    """Are these boxes pixel-identical between the original and the copy?
+
+    The over-redaction guard: a redactor that blanked the whole image would
+    satisfy every "is it filled?" assertion above and destroy the artifact's
+    entire reason for existing.
+    """
+    return all(
+        original.convert("RGB").crop(box).tobytes()
+        == redacted.convert("RGB").crop(box).tobytes()
+        for box in word_boxes
+    )
+
+
+def _build_docx_with_image(directory: Path, image: Path) -> Path:
+    """A Word document whose only PII is inside an embedded picture."""
+    import docx  # noqa: PLC0415
+    document = docx.Document()
+    document.add_heading("Review pack", level=1)
+    document.add_paragraph("The console screenshot below was supplied by the client.")
+    document.add_picture(str(image))
+    document.add_paragraph("End of pack.")
+    target = directory / "pack.docx"
+    document.save(str(target))
+    return target
+
+
+def _build_pptx_with_image(directory: Path, image: Path) -> Path:
+    """A deck whose only PII is inside an embedded picture."""
+    from pptx import Presentation  # noqa: PLC0415
+    from pptx.util import Inches  # noqa: PLC0415
+    presentation = Presentation()
+    slide = presentation.slides.add_slide(presentation.slide_layouts[5])
+    slide.shapes.title.text = "Console review"
+    slide.shapes.add_picture(str(image), Inches(0.4), Inches(1.6), width=Inches(9))
+    target = directory / "deck.pptx"
+    presentation.save(str(target))
+    return target
+
+
+def _image_input_produces_sidecar_and_redacted_copy(target: str) -> CheckResult:  # noqa: ARG001
+    """#163: an image produces BOTH an anonymised text sidecar and a redacted
+    copy, from one local OCR pass, with the round-trip carried by the text.
+
+    Eleven properties, deferred here by #161 and gated at 1.00:
+
+      1. BOTH artifacts are written, at the paths `anon_path_for` and
+         `redacted_image_path_for` predict.
+      2. The OCR actually read the planted values — otherwise everything
+         below would pass vacuously against an empty extract.
+      3. No planted raw value survives into the sidecar, including the person
+         name in TABULAR layout (the shape the detector misses and the shape
+         tesseract shreds into columns).
+      4. ONE scheme: the same session's mapping restores every planted value
+         out of the sidecar, via the same `deanonymize_text` transcripts use.
+      5. The redacted copy's PIXELS changed where the PII was — each planted
+         value's drawn region is blanked. Not "a file was written": a straight
+         copy fails property 5 outright.
+      6. It is a redaction, not a wipe — the non-PII control region (a job
+         title) is pixel-identical to the original.
+      7. Originals are never modified (sha256 before/after).
+      8. Deterministic: the same image twice gives byte-identical artifacts,
+         both the sidecar and the PNG.
+      9. Images embedded in a DOCX and a PPTX route through the IDENTICAL
+         path — their text lands in the host document's sidecar and each
+         picture gets its own redacted copy.
+     10. The Flow C logo notice fires ONCE PER ENGAGEMENT, not once per image.
+     11. A missing local OCR binary raises the typed `OCRUnavailableError`
+         and REFUSES — no artifact is written and the raw image is not passed
+         through unread.
+    """
+    name = "image_input_produces_sidecar_and_redacted_copy"
+    engine = _engine()
+    from PIL import Image  # noqa: PLC0415
+    from pii import ingest  # noqa: PLC0415
+
+    problems: list = []
+    evidence: list = []
+
+    with tempfile.TemporaryDirectory(prefix="pii_eval_image_") as td:
+        root = Path(td)
+        source = root / "shot.png"
+        boxes = _build_screenshot(source)
+        digest_before = hashlib.sha256(source.read_bytes()).hexdigest()
+
+        ingest.reset_engagement_notices()
+
+        # 2. the OCR has to have read the planted values first
+        extracted = ingest.extract_text(source)
+        present = [v for v in IMG_MUST_NOT_LEAK if v in extracted]
+        if len(present) < len(IMG_MUST_NOT_LEAK):
+            problems.append(
+                "OCR read only %d of the %d planted values %r — the checks below "
+                "would prove nothing" % (len(present), len(IMG_MUST_NOT_LEAK),
+                                          [v for v in IMG_MUST_NOT_LEAK if v not in extracted])
+            )
+        if IMG_PERSON not in extracted:
+            problems.append(
+                "the person name in tabular layout never reached the OCR text — "
+                "the fixture is not testing what it claims to"
+            )
+
+        session = _new_session(engine)
+        notices = io.StringIO()
+        result = ingest.ingest_file(
+            source, session=session, engagement_dir=root, notice_stream=notices,
+        )
+
+        # 1. both artifacts, at the predicted paths
+        expected_sidecar = ingest.anon_path_for(source)
+        expected_redacted = ingest.redacted_image_path_for(source)
+        if result.anon_path != expected_sidecar or not expected_sidecar.is_file():
+            problems.append("sidecar: expected %s, got %s"
+                            % (expected_sidecar.name, result.anon_path.name))
+        if result.redacted_path != expected_redacted or not expected_redacted.is_file():
+            problems.append("redacted copy: expected %s, got %s"
+                            % (expected_redacted.name,
+                               result.redacted_path.name if result.redacted_path else None))
+
+        if expected_sidecar.is_file():
+            sidecar = expected_sidecar.read_text(encoding="utf-8")
+
+            # 3. nothing planted survives — the tabular name called out by name
+            leaked = [v for v in present if v in sidecar]
+            if leaked:
+                problems.append("sidecar leaked %r" % leaked)
+            if IMG_PERSON in sidecar:
+                problems.append(
+                    "the person name in tabular layout (%r) survived into the "
+                    "sidecar — the OCR reflow is producing a shape the detector "
+                    "misses" % IMG_PERSON
+                )
+            # An empty or contentless sidecar is not a pass: the non-PII
+            # content has to be there, and so do the placeholders.
+            if IMG_ROLE not in sidecar:
+                problems.append(
+                    "sidecar does not carry the non-PII content (%r) — it is "
+                    "empty or the OCR text never reached it" % IMG_ROLE
+                )
+            if not re.search(r"<[A-Z][A-Z0-9_]*_\d+>", sidecar):
+                problems.append("sidecar carries no placeholders at all")
+
+            # 4. one scheme — the shared mapping restores everything
+            restored = engine.deanonymize_text(sidecar, session.mapping_file_dict())
+            unrestored = [v for v in present if v not in restored]
+            if unrestored:
+                problems.append("mapping did not restore %r from the sidecar" % unrestored)
+
+        if expected_redacted.is_file():
+            original_image = Image.open(str(source))
+            redacted_image = Image.open(str(expected_redacted))
+
+            # 5. the PIXELS changed, in the PII regions specifically
+            if expected_redacted.read_bytes() == source.read_bytes():
+                problems.append("the redacted copy is a byte-for-byte copy of the original")
+            for value in (CLIENT_FULL, IMG_PERSON, IMG_EMAIL, IMG_PHONE, IMG_ACCOUNT):
+                box = boxes.get(value)
+                if box is None:
+                    continue
+                if not _regions_are_filled(original_image, redacted_image, box):
+                    problems.append(
+                        "the region where %r was drawn is still legible in the "
+                        "redacted copy" % value
+                    )
+
+            # 6. redaction, not a wipe
+            if not _regions_untouched(original_image, redacted_image, boxes[IMG_ROLE]):
+                problems.append(
+                    "the non-PII control region (%r) was altered — this is a wipe, "
+                    "not a redaction" % IMG_ROLE
+                )
+            evidence.append(
+                "shot.png -> %s + %s (%d region(s) blanked, %d planted values "
+                "redacted and restored)" % (expected_sidecar.name,
+                                            expected_redacted.name,
+                                            result.regions_redacted, len(present))
+            )
+
+        # 7. the original was never modified
+        if hashlib.sha256(source.read_bytes()).hexdigest() != digest_before:
+            problems.append("SOURCE IMAGE WAS MODIFIED by ingest")
+
+        # 8. determinism — both artifacts, byte for byte
+        replay_dir = root / "replay"
+        replay_session = _new_session(engine)
+        ingest.ingest_file(source, session=replay_session, engagement_dir=root,
+                           output_dir=replay_dir, notice_stream=io.StringIO())
+        for label, first, second in (
+            ("sidecar", expected_sidecar, ingest.anon_path_for(source, replay_dir)),
+            ("redacted copy", expected_redacted,
+             ingest.redacted_image_path_for(source, replay_dir)),
+        ):
+            if not (first.is_file() and second.is_file()):
+                continue
+            if first.read_bytes() != second.read_bytes():
+                problems.append("%s: a second ingest of the same image differed "
+                                "byte-for-byte" % label)
+
+        # 9. embedded images route through the IDENTICAL path
+        for fmt, builder in (("docx", _build_docx_with_image),
+                             ("pptx", _build_pptx_with_image)):
+            host = builder(root, source)
+            host_digest = hashlib.sha256(host.read_bytes()).hexdigest()
+            host_session = _new_session(engine)
+            host_result = ingest.ingest_file(
+                host, session=host_session, engagement_dir=root,
+                notice_stream=io.StringIO(),
+            )
+            host_text = host_result.anon_path.read_text(encoding="utf-8")
+            if ingest.IMAGE_SEAM_MARKER in host_text:
+                problems.append("%s: the embedded picture was left unread" % fmt)
+            if IMG_ROLE not in host_text:
+                problems.append("%s: the embedded picture's text never reached "
+                                "the document sidecar" % fmt)
+            embedded_leaks = [v for v in IMG_MUST_NOT_LEAK if v in host_text]
+            if embedded_leaks:
+                problems.append("%s: embedded picture leaked %r" % (fmt, embedded_leaks))
+            if not host_result.redacted_paths:
+                problems.append("%s: no redacted copy was written for the "
+                                "embedded picture" % fmt)
+            else:
+                copy = host_result.redacted_paths[0]
+                if copy != ingest.redacted_image_path_for(host, index=1):
+                    problems.append("%s: redacted copy named %s, expected %s"
+                                    % (fmt, copy.name,
+                                       ingest.redacted_image_path_for(host, index=1).name))
+                if copy.is_file() and not _regions_are_filled(
+                    Image.open(str(source)), Image.open(str(copy)), boxes[IMG_PERSON]
+                ):
+                    problems.append("%s: the embedded picture's copy still shows "
+                                    "the person name" % fmt)
+            if hashlib.sha256(host.read_bytes()).hexdigest() != host_digest:
+                problems.append("%s: SOURCE DOCUMENT WAS MODIFIED by ingest" % fmt)
+            evidence.append("%s: embedded picture OCR'd into %s, redacted copy %s"
+                            % (fmt, host_result.anon_path.name,
+                               host_result.redacted_paths[0].name
+                               if host_result.redacted_paths else "MISSING"))
+
+        # 10. the logo notice — once per ENGAGEMENT, not once per image
+        ingest.reset_engagement_notices()
+        notice_stream = io.StringIO()
+        second_image = root / "shot2.png"
+        _build_screenshot(second_image)
+        flags = []
+        for image_path in (source, second_image,
+                           root / "pack.docx", root / "deck.pptx"):
+            flags.append(ingest.ingest_file(
+                image_path, session=_new_session(engine), engagement_dir=root,
+                output_dir=root / "notice", notice_stream=notice_stream,
+            ).logo_notice_shown)
+        printed = notice_stream.getvalue()
+        if printed.count("About screenshots") != 1:
+            problems.append(
+                "the logo notice printed %d times across 4 image ingests in one "
+                "engagement — it must fire once per engagement, not per image"
+                % printed.count("About screenshots")
+            )
+        if flags[:1] != [True] or any(flags[1:]):
+            problems.append("logo-notice flags across one engagement were %r — "
+                            "expected only the first ingest to report it" % flags)
+        if ingest.LOGO_NOTICE.strip() not in printed:
+            problems.append("the notice printed is not the Flow C copy verbatim")
+        if "logo" not in printed.lower():
+            problems.append("the notice does not state the logo limitation")
+
+        # 11. no local OCR -> typed refusal, nothing written, image not read
+        import pytesseract  # noqa: PLC0415
+        real_cmd = pytesseract.pytesseract.tesseract_cmd
+        refusal_dir = root / "refused"
+        refusal_dir.mkdir()
+        pytesseract.pytesseract.tesseract_cmd = str(root / "no-such-ocr-binary")
+        try:
+            try:
+                ingest.ingest_file(source, session=_new_session(engine),
+                                   engagement_dir=root, output_dir=refusal_dir,
+                                   notice_stream=io.StringIO())
+                problems.append("no OCR installed: the image was NOT refused")
+            except ingest.OCRUnavailableError as exc:
+                if not isinstance(exc, ingest.IngestError) or not exc.message:
+                    problems.append("no OCR installed: error carries no message")
+                prose = exc.message.lower()
+                for banned in ("presidio", "spacy", "pytesseract", "pip install"):
+                    if banned in prose:
+                        problems.append(
+                            "no OCR installed: message names %r — copy rule 1 "
+                            "keeps tool names out of consultant-facing text"
+                            % banned
+                        )
+            except Exception as exc:  # noqa: BLE001
+                problems.append("no OCR installed: wrong error type %s"
+                                % type(exc).__name__)
+            if list(refusal_dir.iterdir()):
+                problems.append("no OCR installed: artifacts were written anyway (%r)"
+                                % [p.name for p in refusal_dir.iterdir()])
+        finally:
+            pytesseract.pytesseract.tesseract_cmd = real_cmd
+
+    ok = not problems
+    detail = ("; ".join(problems) if problems else
+              "image -> sidecar + redacted copy; tabular person name, client "
+              "name, email, phone and account redacted in the text and blanked "
+              "in the pixels; non-PII region untouched; mapping restores all; "
+              "deterministic; source unmodified; embedded docx/pptx pictures "
+              "route through the same path; logo notice once per engagement; "
+              "missing OCR refuses with a typed error and writes nothing")
     return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=True,
                         detail=detail, evidence=evidence)
 
@@ -1061,6 +1520,7 @@ def evaluate(target: str) -> list:
         _empty_entity_list_warns,
         _legacy_flat_mapping_still_restores,
         _document_formats_converted_and_scrubbed,
+        _image_input_produces_sidecar_and_redacted_copy,
     ]
     results = []
     for fn in checks:
