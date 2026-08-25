@@ -82,6 +82,58 @@ MEASURED DETECTION LIMITS (know these before quoting coverage)
   heuristics here is how that gate acquired six false-positive classes the
   first time. Broadening it is a scoped follow-up, not a drive-by.
 
+INTERNAL-DOMAIN EMAILS — WHY THERE ARE TWO EMAIL RECOGNIZERS (#181 leak fix)
+  Presidio's built-in `EmailRecognizer` validates the matched domain with
+  `tldextract`, which checks against the real, registered public-suffix
+  list. That is correct for the open internet and wrong for engagement
+  material: `.internal`, `.corp`, `.local`, `.lan`, `.intranet`, `.priv`,
+  `.home` are the standard internal domains at essentially every bank, and
+  `.test` / `.example` / `.invalid` are the RFC 2606 reserved names people
+  paste into a screenshot or a Word doc. None of those resolve on the real
+  DNS root, so `tldextract` rejects them, `validate_result` returns False,
+  and the built-in recognizer silently drops the match — an internal staff
+  address then reaches the API in cleartext with zero warning. This was
+  found on a REAL document (an internal-domain email survived a DOCX ingest
+  that correctly redacted the person's name next to it).
+
+  The fix is `_InternalDomainEmailRecognizer`, a second PatternRecognizer
+  also emitting `EMAIL_ADDRESS`, that detects on SHAPE
+  (`local-part@domain.tld-like-token`) instead of TLD registration. It
+  reuses `EmailRecognizer.PATTERNS` — the built-in's own regex, unmodified,
+  imported not copied — so it only ever proposes a span the built-in would
+  also have proposed; it changes which spans are ACCEPTED, never which are
+  found. `validate_result` accepts when the final dot-label reads as a
+  plausible TLD token (`^[A-Za-z]{2,24}$`) — alphabetic, no digits. That one
+  condition is deliberately narrow:
+    - it catches every internal/reserved TLD above (all pure alphabetic)
+      and real multi-label suffixes like `.co.uk` (final label "uk" is
+      alphabetic) with no separate case needed;
+    - it REJECTS `pkg@1.2.3` (npm-style version pin — final label "3" is
+      numeric) and IP-shaped hosts, which is what keeps this a PII
+      recognizer and not a generic "any @ and a dot" matcher. A denylist
+      that blocked the word "all" is exactly the failure class this guards
+      against — see evals'
+      `internal_domain_email_redacted_no_over_detection` check.
+    - it does NOT try to distinguish "person@host.example" appearing after
+      `scp` in a shell one-liner from a real address — that string is
+      shape-identical to an internal-domain email and Presidio has no way
+      to know it followed `scp`. Redacting it is the conservative, correct
+      call for a PII scrubber (a false positive there costs nothing — the
+      placeholder round-trips back to the exact original text — while a
+      false negative on a real staff email is the leak this exists to
+      close).
+
+  Both recognizers are registered on the SAME shared AnalyzerEngine (see
+  `_get_analyzer`), so on a real-TLD address they both fire on the identical
+  span with identical score (Presidio bumps a validated pattern's score to
+  1.0 — see `PatternRecognizer.__analyze_patterns`), and Presidio's own
+  `EntityRecognizer.remove_duplicates` — same entity type, same start/end —
+  collapses them to ONE result before `analyze()` ever returns. There is no
+  double placeholder, no second pass, and no anonymizer-side special
+  casing: this is standard Presidio overlap resolution, not something this
+  module implements. Verified empirically (not just reasoned about) against
+  every case in the module's leak report before this landed.
+
 LOCAL ONLY
   In-process, no network at analysis time. Presidio's Docker/HTTP deployment
   mode is explicitly rejected (PRD §6): a synchronous PreToolUse guard cannot
@@ -104,6 +156,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 from presidio_analyzer import AnalyzerEngine, PatternRecognizer
 from presidio_analyzer.nlp_engine import NlpEngineProvider
+from presidio_analyzer.predefined_recognizers import EmailRecognizer
 from presidio_anonymizer import AnonymizerEngine, DeanonymizeEngine
 from presidio_anonymizer.entities import OperatorConfig
 from presidio_anonymizer.operators import Operator, OperatorType
@@ -356,6 +409,10 @@ def _get_analyzer(model: Optional[str] = None) -> AnalyzerEngine:
             nlp_engine=provider.create_engine(),
             supported_languages=["en"],
         )
+        # Second EMAIL_ADDRESS recognizer, additive — the built-in stays as
+        # shipped (unmodified, unweakened). See module docstring
+        # "INTERNAL-DOMAIN EMAILS" and _InternalDomainEmailRecognizer.
+        engine.registry.add_recognizer(_InternalDomainEmailRecognizer())
         _ANALYZERS[name] = engine
     return engine
 
@@ -376,6 +433,43 @@ def _get_deanonymizer() -> DeanonymizeEngine:
         engine.add_deanonymizer(InstanceCounterDeanonymizer)
         _DEANONYMIZER = engine
     return _DEANONYMIZER
+
+
+# Shape, not registration: the final dot-label of an email-looking match
+# must read as a plausible TLD token — alphabetic only, 2-24 chars. See the
+# module docstring's "INTERNAL-DOMAIN EMAILS" section for the full
+# rationale, including why this rejects `pkg@1.2.3` and IP-shaped hosts.
+_INTERNAL_TLD_SHAPE_RE = re.compile(r"^[A-Za-z]{2,24}$")
+
+
+class _InternalDomainEmailRecognizer(PatternRecognizer):
+    """Catches email-shaped addresses on internal/reserved TLDs that
+    Presidio's built-in `EmailRecognizer` legitimately excludes via
+    real-registry (`tldextract`) validation — see the module docstring.
+
+    Reuses the built-in's own `PATTERNS` (the exact regex object, imported
+    not copied) so this recognizer can never propose a span the built-in
+    would not also propose; it only changes which spans are ACCEPTED. That
+    is also what guarantees clean overlap resolution on a real-TLD address:
+    identical span, identical post-validation score (1.0), so Presidio's
+    own `EntityRecognizer.remove_duplicates` collapses the two recognizers'
+    results into one.
+    """
+
+    PATTERNS = EmailRecognizer.PATTERNS
+
+    def __init__(self):
+        super().__init__(
+            supported_entity="EMAIL_ADDRESS",
+            patterns=self.PATTERNS,
+            context=EmailRecognizer.CONTEXT,
+            name="internal_domain_email_shape",
+        )
+
+    def validate_result(self, pattern_text: str) -> bool:
+        domain = pattern_text.rsplit("@", 1)[-1]
+        tld = domain.rsplit(".", 1)[-1]
+        return bool(_INTERNAL_TLD_SHAPE_RE.match(tld))
 
 
 def _build_deny_recognizer(deny_terms: Sequence[str]) -> PatternRecognizer:

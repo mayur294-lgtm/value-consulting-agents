@@ -24,6 +24,7 @@ SEQUENCING (read before adding a check here)
     image_input_produces_sidecar_and_redacted_copy -> #163 — LANDED (check 12)
     image_unreadable_script_refuses_and_writes_nothing -> #173 — LANDED (check 13)
     guard_fails_closed_on_inputs_path         -> #164 — LANDED (check 14)
+    internal_domain_email_redacted_no_over_detection -> #181 — LANDED (check 15)
     xlsx_outputs_deanonymized                 -> #165 (deanonymize_dir xlsx)
     nested_outputs_deanonymized               -> #165 (deanonymize_dir recursive)
     mcp_query_client_name_blocked             -> already covered by the
@@ -49,11 +50,33 @@ SEQUENCING (read before adding a check here)
   internals, since that would only prove the Python function behaves, not
   that the process-level contract (stdout JSON shape, exit code) holds.
 
-  The 14 checks below all exercise code that exists TODAY: `scripts/pii/
+  The 15 checks below all exercise code that exists TODAY: `scripts/pii/
   engine.py`, `scripts/pii/denylist.py` (via the engine's deny-list
   recognizer), `scripts/pii/ingest.py` (#162, #163, #173),
   `scripts/anonymize_transcript.py`'s facade, and `.claude/hooks/
   anonymize-guard.py` (#164).
+
+  Check 15, `internal_domain_email_redacted_no_over_detection` (#181),
+  closes a production leak: Presidio's built-in `EMAIL_ADDRESS` recognizer
+  validates the matched domain against REAL, REGISTERED TLDs via
+  `tldextract`, so an address on a bank's own internal domain
+  (`.internal`, `.corp`, `.local`, …) or an RFC 2606 reserved name
+  (`.test`, `.example`, `.invalid`) was never recognised as an email at all
+  and reached anonymised output in cleartext — found on a real DOCX where
+  the person's name redacted and the internal-domain email next to it did
+  not. The fix (`engine.py`'s `_InternalDomainEmailRecognizer`) detects on
+  SHAPE instead of TLD registration; this check has two halves in ONE
+  gate-bitable assertion: internal-domain addresses ARE redacted and
+  restore byte-identical (the leak), and a set of plausible non-email
+  `@`-bearing strings that are NOT shaped like `local-part@host.tld` — an
+  npm-style `pkg@1.2.3` (numeric final label), a Python decorator, a
+  bare `@` in prose — are NOT redacted (the over-detection guard — see the
+  "denylist blocked the word 'all'" lesson in this file's own history).
+  An `scp user@host.example:/path`-style remote path is DELIBERATELY
+  excluded from that negative set: `user@host.example` is genuinely
+  shape-identical to a real internal-domain email and the fix redacts it,
+  which is documented as the correct, conservative call in engine.py's
+  own "INTERNAL-DOMAIN EMAILS" note, not asserted as a false positive here.
 
 WHY THE VENV INTERPRETER
   `scripts/pii/engine.py` does `import presidio_analyzer` at module level, and
@@ -1788,6 +1811,127 @@ def _guard_fails_closed_on_inputs_path(target: str) -> CheckResult:  # noqa: ARG
         ))
 
 
+# --- #181 internal-domain email shape recognizer ---------------------------
+#
+# Deliberately does NOT reuse the committed golden fixture — the leak this
+# closes is specifically about TLDs no golden fixture has ever contained
+# (every existing fixture uses real-looking TLDs, which is exactly how 14
+# checks at 1.00 and 4 gate-bites proofs all passed while this leaked).
+# Both halves below run against the real engine, in a fresh session, with
+# the standard synthetic client identity — never real client material.
+
+# Addresses that were confirmed LEAKING before the #181 fix — internal and
+# RFC 2606 reserved TLDs Presidio's built-in EmailRecognizer rejects via
+# tldextract because they are not real, registered public-suffix entries.
+INTERNAL_DOMAIN_EMAIL_CASES = [
+    "j.smith@zzzplaceholderbank.internal",
+    "j.smith@zzzplaceholderbank.corp",
+    "j.smith@zzzplaceholderbank.local",
+    "j.smith@zzzplaceholderbank.lan",
+    "j.smith@zzzplaceholderbank.intranet",
+    "p.nair@zzzplaceholderbank.test",
+    "p.nair@zzzplaceholderbank.example",
+]
+
+# Real-TLD addresses that already worked before #181 — must show NO
+# regression: still a single EMAIL_ADDRESS entity, still restores clean.
+# The overlap-dedup guarantee (module docstring's "INTERNAL-DOMAIN EMAILS")
+# is what this list actually exercises.
+REAL_TLD_EMAIL_CASES = [
+    "j.smith@zzzplaceholderbank.com",
+    "j.smith@zzzplaceholderbank.co.uk",
+]
+
+# Plausible non-email strings containing "@" and a dot — the over-detection
+# guard. Every one of these must survive UNCHANGED. Deliberately excludes
+# the scp-style "user@host.example:/path" case — see module docstring: that
+# string is genuinely shape-identical to a real internal-domain email and
+# the fix redacts it on purpose, so asserting it here would be asserting
+# the wrong thing, not a real over-detection bug.
+MUST_NOT_OVER_DETECT = [
+    "install pkg@1.2.3 from npm",              # version pin, numeric TLD-slot
+    "@app.route('/users')\ndef list_users(): pass",  # decorator + sentence
+    "@property\ndef area(self):\n    return self._radius ** 2",  # python decorator
+    "Follow @jack_doe for updates.",            # Twitter-style handle
+    "Reach me @ the office later.",             # bare @ in prose
+]
+
+
+def _internal_domain_email_redacted_no_over_detection(target: str) -> CheckResult:  # noqa: ARG001
+    """#181 gate: internal-domain / reserved-TLD email addresses are
+    redacted as EMAIL_ADDRESS and restore byte-identical (the leak); real-TLD
+    addresses still redact as a single clean span, no regression from the
+    overlap between the two recognizers; and a set of plausible non-email
+    `@`-bearing strings are left completely unchanged (the over-detection
+    guard).
+
+    Gate-bites mandatory (see the PR description): reverting
+    `_InternalDomainEmailRecognizer`'s registration in `_get_analyzer` must
+    make the INTERNAL_DOMAIN_EMAIL_CASES half of this check fail, while
+    leaving REAL_TLD_EMAIL_CASES and MUST_NOT_OVER_DETECT passing —
+    demonstrating this check actually depends on the new recognizer, not on
+    something else in the engine.
+    """
+    name = "internal_domain_email_redacted_no_over_detection"
+    engine = _engine()
+    problems = []
+
+    # 1) internal/reserved-TLD addresses: redacted, round-trip byte-identical.
+    for addr in INTERNAL_DOMAIN_EMAIL_CASES:
+        session = _new_session(engine)
+        text = f"Contact {addr} for details."
+        anonymized = session.anonymize(text)
+        if addr in anonymized:
+            problems.append(f"LEAKED (not redacted): {addr!r}")
+            continue
+        restored = session.deanonymize(anonymized)
+        if restored != text:
+            problems.append(
+                f"round-trip broken for {addr!r}: {restored!r} != {text!r}"
+            )
+        placeholders = session.entity_mapping.get("EMAIL_ADDRESS", {})
+        if placeholders.get(addr, "").rpartition("_")[0] != "<EMAIL_ADDRESS":
+            problems.append(
+                f"{addr!r} redacted under an unexpected entity — mapping={placeholders!r}"
+            )
+
+    # 2) real-TLD addresses: still exactly one clean EMAIL_ADDRESS span each
+    #    (the overlap-dedup guarantee — no duplicate/nested placeholder).
+    for addr in REAL_TLD_EMAIL_CASES:
+        session = _new_session(engine)
+        text = f"Contact {addr} for details."
+        results = session.analyze(text)
+        email_spans = [r for r in results if r.entity_type == "EMAIL_ADDRESS"]
+        if len(email_spans) != 1:
+            problems.append(
+                f"expected exactly 1 EMAIL_ADDRESS span for {addr!r}, got "
+                f"{len(email_spans)}: {[(r.start, r.end, r.score) for r in email_spans]!r}"
+            )
+        anonymized = session.anonymize(text)
+        if addr in anonymized:
+            problems.append(f"regression — real-TLD address no longer redacted: {addr!r}")
+        elif session.deanonymize(anonymized) != text:
+            problems.append(f"round-trip broken for real-TLD address {addr!r}")
+
+    # 3) plausible non-email strings: must survive completely unchanged.
+    for text in MUST_NOT_OVER_DETECT:
+        session = _new_session(engine)
+        anonymized = session.anonymize(text)
+        if anonymized != text:
+            problems.append(f"OVER-DETECTED: {text!r} -> {anonymized!r}")
+
+    ok = not problems
+    return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=True,
+                        detail="; ".join(problems) if problems else (
+                            f"{len(INTERNAL_DOMAIN_EMAIL_CASES)} internal/reserved-TLD "
+                            f"addresses redacted + round-tripped clean; "
+                            f"{len(REAL_TLD_EMAIL_CASES)} real-TLD addresses still a "
+                            f"single clean span; {len(MUST_NOT_OVER_DETECT)} lookalike "
+                            f"strings left unchanged"
+                        ),
+                        evidence=[f"issue: {p}" for p in problems])
+
+
 def evaluate(target: str) -> list:
     fixture = _fixture_path(target)
     if not fixture.exists():
@@ -1824,6 +1968,7 @@ def evaluate(target: str) -> list:
         _image_input_produces_sidecar_and_redacted_copy,
         _image_unreadable_script_refuses_and_writes_nothing,
         _guard_fails_closed_on_inputs_path,
+        _internal_domain_email_redacted_no_over_detection,
     ]
     results = []
     for fn in checks:
