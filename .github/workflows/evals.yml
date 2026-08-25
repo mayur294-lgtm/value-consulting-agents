@@ -40,6 +40,18 @@ jobs:
         run: |
           pip install -r evals/requirements.txt
           if [ -n "$LANGFUSE_PUBLIC_KEY" ]; then pip install "langfuse>=2.0" "anthropic>=0.40"; fi
+      - name: Install PII deps (pii-anonymizer component)
+        # scripts/pii/engine.py imports presidio_analyzer at module level and
+        # needs Python 3.10-3.13 (see its module docstring) — actions/setup-python
+        # above already pins 3.11, so `sys.executable` here is Presidio-capable
+        # and the pii-anonymizer rubric can import the engine in-process with no
+        # separate venv step. requirements.txt carries the Presidio/spaCy pins;
+        # the model download is the ~380 MB en_core_web_lg the engine loads on
+        # first use (see requirements.txt / scripts/setup_pii.sh — the same
+        # model everywhere, not a CI-only substitute).
+        run: |
+          pip install -r requirements.txt
+          python -m spacy download en_core_web_lg
       - name: Registry preflight
         # Fail fast if any GATING golden can't resolve in CI (missing or
         # gitignored) — a silently-skipped golden would make its gate a
@@ -61,6 +73,7 @@ jobs:
               "--deliverable roi" \
               "--deliverable assessment" \
               "--component mcp-query-guard" \
+              "--component pii-anonymizer" \
               "--altitude pipeline"; do
               echo "### run_experiment.py $cmd"
               python evals/run_experiment.py $cmd || rc=1
