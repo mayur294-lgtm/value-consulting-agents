@@ -172,6 +172,18 @@ No new agents. Every change is pipeline code, hooks, or prompt edits — consist
 
 **D11 — `presidio-structured` is 0.0.8; keep a fallback.** For XLSX/CSV, if the pre-1.0 package proves unstable, extract cell strings and run them through the plain text analyzer/anonymizer — the inverse of what `deanonymize_dir` already does for restore. Chosen in build on evidence.
 
+**D12 — Interpreter resolution: a wrapper script settings.json points hooks at, not a per-hook helper or a dependency-free hook policy.** `.claude/settings.json` invokes every hook as `python3 <script>` — the system interpreter (3.9.6 here), which cannot import Presidio (needs 3.10–3.13, installed into `.venv` by `scripts/setup_pii.sh`; see D8). PR 3 rewrites `anonymize-guard.py` onto the Presidio engine, so from that point the hook process itself must run under `.venv`'s interpreter, not the system one. Three options were weighed:
+
+- *(a) a per-hook Python helper each script calls at runtime* — every dependent hook would duplicate (or import) the same "find my venv" logic in Python, but the hook is already the wrong interpreter by the time its own code runs, so the resolution has to happen *before* the process starts, not inside it. Rejected.
+- *(b) keep hooks dependency-free; run Presidio only in pipeline/CLI code* — contradicts D7 (hooks are the enforcement layer for both interactive and pipeline paths) and the PRD's own plan to rewrite `anonymize-guard.py` onto Presidio. Rejected — it would mean the guard keeps doing regex detection forever, which is the exact defect this PRD exists to fix.
+- *(c) a wrapper script that settings.json invokes in place of `python3`, which execs `.venv/bin/python` when present and falls back to system `python3` otherwise* — resolution happens at process-launch time, in one place, before any hook-specific code runs. **Chosen.**
+
+Implemented now as `.claude/hooks/_resolve_python.sh`: `exec "$VENV_PY" "$@"` if `.venv/bin/python` is executable, else `exec python3 "$@"`. It is a pure interpreter selector — it never inspects *why* the venv is missing and never decides whether to block; that stays each hook's own job (`pii-preflight.sh` warns and continues; `anonymize-guard.py` fails open outside `inputs/` and closed inside it; `mcp-query-guard.py` fails closed) per D4 and the UX spec's per-hook state tables. Because the fallback is unconditional and silent, the script is safe to route *any* hook through, dependency or not — running a stdlib-only hook under system `python3` (no `.venv` yet) or under `.venv/bin/python` (once created) behaves identically.
+
+*Scope of this ticket:* the resolver is implemented and independently verified (both branches: venv present, venv absent) but **not yet wired into `settings.json`** — no hook in this ticket imports Presidio, so pointing `anonymize-guard.py`'s entry at it now would be an inert change that only adds review surface. PR 3 changes exactly one line — `anonymize-guard.py`'s `PreToolUse` command — from `python3 "$CLAUDE_PROJECT_DIR"/.claude/hooks/anonymize-guard.py` to `"$CLAUDE_PROJECT_DIR"/.claude/hooks/_resolve_python.sh "$CLAUDE_PROJECT_DIR"/.claude/hooks/anonymize-guard.py`, at the same time the hook itself starts importing `presidio_analyzer`. `mcp-query-guard.py` stays on plain `python3` — D3 keeps it on deny-list string matching, not Presidio NER, so it has no venv dependency to resolve.
+
+*Trade-off:* one more file in `.claude/hooks/`, and a hook's effective interpreter is no longer visually obvious from `settings.json` alone — mitigated by the comment block in `_resolve_python.sh` itself pointing back here.
+
 ---
 
 ## Build Sequence
