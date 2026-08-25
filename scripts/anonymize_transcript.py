@@ -17,6 +17,15 @@ WHAT CHANGED (ticket #160, .prd/prd-v6.md, .design/solution-design-v6.md D1/D2)
   `deanonymize_file`) are UNCHANGED — that is what makes rollback a single
   `git revert` (D1, PRD §10). Only what happens inside them changed.
 
+  UPDATE (ticket #161, run-global numbering) — `anonymize_text` and
+  `anonymize_transcript_file` each gained one ADDITIVE keyword-only
+  `entity_mapping=None` param. Default `None` still preserves the exact
+  behaviour above; passed a shared dict, a caller can run every transcript
+  in an engagement through one growing, collision-free mapping instead of
+  N independent ones (see `anonymize_transcript_file`'s docstring — this is
+  what `orchestrate.py`'s `step_discovery` now does). Nothing else about
+  the four signatures, or the CLI, changed.
+
   Placeholders are now `<ENTITY_N>` (e.g. `<PERSON_1>`, `<EMAIL_ADDRESS_2>`),
   not `[CLIENT]` / `[PERSON-1]`. `[CLIENT]` was simultaneously a PII
   placeholder AND a filename/prose template token
@@ -193,10 +202,14 @@ def anonymize_text(
     text: str,
     entity_names: list,
     client_label: str = "[CLIENT]",
+    *,
+    entity_mapping: Optional[dict] = None,
 ) -> tuple:
     """Anonymize PII in `text` using scripts/pii/engine.py (Presidio).
 
-    Signature preserved exactly for backward compatibility (ticket #160).
+    Signature preserved exactly for backward compatibility (ticket #160),
+    plus one ADDITIVE keyword-only param (ticket #161, run-global numbering
+    fix — see `anonymize_transcript_file` below for the full rationale).
     `entity_names` is used as the deny-list (client/stakeholder terms) —
     the PRIMARY client-identity detector (D3); Presidio's NER and validated
     patterns run alongside it for people, emails, phones, IDs, etc.
@@ -206,13 +219,25 @@ def anonymize_text(
     or prose templates the way the old convention did (D2). Kept only so
     existing call sites that pass it positionally or by keyword don't break.
 
+    `entity_mapping`: optional shared `{entity_type: {value: placeholder}}`
+    dict. Default `None` preserves today's behaviour exactly — a fresh
+    mapping starting numbering at 1. When supplied, this call CONTINUES
+    numbering from its current state and mutates it in place (Presidio's
+    instance-counter operator, see `pii/engine.py`), so passing the same
+    dict across repeated calls gives every distinct value one placeholder,
+    reused, for the whole run — not one flat key per category, and not one
+    restarted counter per call. Sequential use only: the shared dict is
+    mutated with no locking (engine.py's thread-safety note).
+
     Returns (anonymized_text, mapping) where `mapping` is the v2
     nested-by-entity-type shape (`{"version": 2, "entities": {...}}`) —
-    also accepted directly by `deanonymize_text`.
+    also accepted directly by `deanonymize_text`. When `entity_mapping` is
+    supplied, `mapping` reflects the full accumulated state, not just this
+    call's own contributions.
     """
     del client_label  # unused; see docstring
     engine = _load_engine()
-    session = engine.PIISession(entity_names)
+    session = engine.PIISession(entity_names, entity_mapping=entity_mapping)
     anonymized = session.anonymize(text)
     return anonymized, session.mapping_file_dict()
 
@@ -221,11 +246,14 @@ def anonymize_transcript_file(
     transcript_path: Path,
     engagement_dir: Path,
     output_dir: Optional[Path] = None,
+    *,
+    entity_mapping: Optional[dict] = None,
 ) -> tuple:
     """Anonymize a transcript file, writing the anonymized copy and its
     mapping file alongside it (or under `output_dir`).
 
-    Signature preserved exactly (ticket #160). The deny-list is resolved
+    Signature preserved exactly (ticket #160), plus one ADDITIVE
+    keyword-only param (ticket #161). The deny-list is resolved
     from the engagement's own documents — `inputs/engagement_intake.md`,
     `ENGAGEMENT_CONTEXT.md`, `CLIENT_PROFILE.md`, and the engagement/client
     directory name (see `scripts/pii/denylist.resolve_engagement_deny_list`)
@@ -233,15 +261,34 @@ def anonymize_transcript_file(
     empty-deny-list warning (engine.py's `EMPTY_DENY_LIST_WARNING`) fire
     correctly when none of those documents name the client.
 
+    `entity_mapping`: optional shared `{entity_type: {value: placeholder}}`
+    dict, mutated in place — see `anonymize_text` above. This is what lets
+    `orchestrate.py`'s `step_discovery` run every transcript in an
+    engagement through ONE growing mapping instead of N independent ones:
+    each transcript anonymized standalone restarts Presidio's instance
+    counter at 1, so the same email in transcript A and transcript B would
+    otherwise get the SAME placeholder (`<EMAIL_ADDRESS_1>`) bound to TWO
+    DIFFERENT values — a collision, not a fix, if a later merge just
+    concatenated the per-transcript mappings. Passing one shared dict
+    through the whole transcript loop keeps numbering continuous and
+    reuses a placeholder for a value already seen, so the merged mapping
+    is both complete and collision-free. Default `None` preserves today's
+    standalone behaviour exactly (numbering restarts at 1, own dict).
+    Sequential use only — see `anonymize_text`'s docstring.
+
     Returns (anonymized_transcript_path, mapping_path). The mapping file is
     written in the v2 nested-by-entity-type shape and chmod'd 0600 — it
-    contains real client PII (solution-design-v6.md §9).
+    contains real client PII (solution-design-v6.md §9). When
+    `entity_mapping` is supplied, the written file reflects the full
+    accumulated state at the time of this call (all transcripts processed
+    so far through the shared dict, this one included), not just this
+    transcript's own entities.
     """
     engine = _load_engine()
     transcript_path = Path(transcript_path)
     engagement_dir = Path(engagement_dir)
 
-    session = engine.PIISession.for_engagement(engagement_dir)
+    session = engine.PIISession.for_engagement(engagement_dir, entity_mapping=entity_mapping)
 
     original_text = transcript_path.read_text()
     anonymized_text = session.anonymize(original_text)

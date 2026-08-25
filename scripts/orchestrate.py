@@ -597,13 +597,36 @@ async def step_discovery(
     log(f"  Found {len(transcripts)} transcript(s)")
 
     # --- PII Anonymization: strip client names, emails, phones before sending to API ---
-    anon_mappings = {}  # { original_path: mapping_path }
+    # Ticket #161 fix: one SHARED entity_mapping dict threads through the whole
+    # transcript loop instead of each transcript anonymizing standalone. Two bugs,
+    # fixed together — fixing only one reintroduces the other:
+    #   1. A shallow `combined_mapping.update(json.loads(...))` across per-transcript
+    #      v2 mappings ({"version": 2, "entities": {...}}) REPLACES the whole
+    #      `entities` sub-dict each time, discarding every earlier transcript's
+    #      mapping. Fixed by accumulating in one dict instead of merging N files.
+    #   2. Each transcript anonymized standalone restarts Presidio's instance
+    #      counter at 1, so transcript A's <EMAIL_ADDRESS_1> and transcript B's
+    #      <EMAIL_ADDRESS_1> would be DIFFERENT values — a deep merge of `entities`
+    #      would then bind one placeholder to two different values, the exact
+    #      one-key-per-category collision this whole engine exists to eliminate.
+    #      Fixed by sharing one entity_mapping dict (mutated in place by
+    #      engine.py's instance-counter operator) so numbering is continuous and a
+    #      repeated value reuses its existing placeholder across every file.
+    #
+    # NOT THREAD-SAFE — this shared dict is mutated with no locking (see
+    # scripts/pii/engine.py's module docstring). Anonymization MUST stay
+    # sequential; do not parallelize this loop without replacing the operator.
+    entity_mapping: dict = {}
     anon_transcripts = []
     for t in transcripts:
         try:
-            anon_path, mapping_path = anonymize_transcript_file(t, engagement_dir, output_dir=inputs_dir)
+            # per-transcript mapping_path is written to disk (chmod 0600) but not
+            # used here — the combined .pii_mapping.json below is built directly
+            # from the shared entity_mapping dict, which is the authoritative state.
+            anon_path, _mapping_path = anonymize_transcript_file(
+                t, engagement_dir, output_dir=inputs_dir, entity_mapping=entity_mapping
+            )
             anon_transcripts.append(anon_path)
-            anon_mappings[str(t)] = mapping_path
             log(f"    Anonymized: {t.name} → {anon_path.name}")
         except Exception as e:
             # FAIL CLOSED: never send raw PII to the API. Skip this transcript and
@@ -614,16 +637,20 @@ async def step_discovery(
     # Use anonymized transcripts for all downstream processing
     transcripts = anon_transcripts
 
-    # Save combined mapping for de-anonymization of final outputs
-    combined_mapping = {}
-    for mp in anon_mappings.values():
-        if mp.exists():
-            combined_mapping.update(json.loads(mp.read_text()))
-    if combined_mapping:
+    # Save combined mapping for de-anonymization of final outputs. `entity_mapping`
+    # is already the full accumulated state (every transcript that succeeded above,
+    # continuously numbered, one placeholder per distinct value) — write it
+    # directly in the v2 nested-by-entity-type shape rather than re-merging files.
+    if entity_mapping:
+        combined_mapping = {
+            "version": 2,
+            "entities": {etype: dict(values) for etype, values in sorted(entity_mapping.items())},
+        }
         mapping_file = engagement_dir / ".pii_mapping.json"
         mapping_file.write_text(json.dumps(combined_mapping, indent=2))
         mapping_file.chmod(0o600)  # Restrict access — this file contains PII
-        log(f"    PII mapping saved ({len(combined_mapping)} substitutions)")
+        substitution_count = sum(len(values) for values in entity_mapping.values())
+        log(f"    PII mapping saved ({substitution_count} substitutions)")
 
     # discovery-transcript-interpreter is mode-extracted (skill-first contracts):
     # prompts are composed from .claude/agents/discovery-transcript-interpreter.md
