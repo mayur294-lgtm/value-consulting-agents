@@ -36,6 +36,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            evals/requirements.txt
+            requirements.txt
       - name: Install deps
         run: |
           pip install -r evals/requirements.txt
@@ -45,13 +49,14 @@ jobs:
         # needs Python 3.10-3.13 (see its module docstring) — actions/setup-python
         # above already pins 3.11, so `sys.executable` here is Presidio-capable
         # and the pii-anonymizer rubric can import the engine in-process with no
-        # separate venv step. requirements.txt carries the Presidio/spaCy pins;
-        # the model download is the ~380 MB en_core_web_lg the engine loads on
-        # first use (see requirements.txt / scripts/setup_pii.sh — the same
-        # model everywhere, not a CI-only substitute).
+        # separate venv step. requirements.txt carries the Presidio/spaCy pins,
+        # including the ~380 MB en_core_web_lg model as a pinned direct wheel
+        # URL dependency — this single install pulls the same model everywhere
+        # (see requirements.txt / scripts/setup_pii.sh), no separate download
+        # step needed. The setup-python cache above keys on this file so the
+        # wheel isn't re-fetched every run.
         run: |
           pip install -r requirements.txt
-          python -m spacy download en_core_web_lg
       - name: Registry preflight
         # Fail fast if any GATING golden can't resolve in CI (missing or
         # gitignored) — a silently-skipped golden would make its gate a

@@ -11,8 +11,11 @@
 #   1. Finds a Python interpreter in the 3.10-3.13 range Presidio supports
 #      (the system `python3` here is 3.9.6 and cannot run it)
 #   2. Creates (or reuses) a virtualenv at .venv
-#   3. Installs requirements.txt into it
-#   4. Downloads the spaCy NER model Presidio uses (en_core_web_lg, ~380 MB)
+#   3. Installs requirements.txt into it — this includes the spaCy NER model
+#      Presidio uses (en_core_web_lg, ~380 MB), pinned there as a direct wheel
+#      URL so the version installed matches the one #159's D10 measurement
+#      was taken against (see requirements.txt for why)
+#   4. Confirms the model actually loads
 #   5. Checks for the `tesseract` OCR binary — reports if missing, does NOT
 #      install it (it's a large system-level package, and only needed for
 #      screenshot ingest — see PRD v6 §3 Out of Scope)
@@ -79,7 +82,7 @@ if [ -z "$PYTHON_BIN" ]; then
 
     On Linux, use your package manager (e.g. `apt install python3.11`).
     This script does NOT install a Python interpreter for you — everything
-    else it does (creating the environment, installing packages, downloading
+    else it does (creating the environment, installing packages including
     the language model) happens after that one step.
 
 EOF
@@ -119,20 +122,19 @@ fi
 echo "  [OK] Dependencies installed"
 echo ""
 
-# --- 4. Download the spaCy model Presidio uses for name/entity detection ---
+# --- 4. Confirm the spaCy model Presidio uses for name/entity detection ---
+# The model itself installs as part of requirements.txt above (pinned direct
+# wheel URL — see that file). This just confirms it actually loads.
 
-echo "Checking language model ($SPACY_MODEL, ~380 MB)..."
+echo "Checking language model ($SPACY_MODEL)..."
 if "$VENV_PY" -c "import spacy; spacy.load('$SPACY_MODEL')" >/dev/null 2>&1; then
-    echo "  [OK] Model already present"
+    echo "  [OK] Model present and loads"
 else
-    echo "  Downloading — this is the slow step, give it a few minutes..."
-    if ! "$VENV_PY" -m spacy download "$SPACY_MODEL"; then
-        echo ""
-        echo "[X] Model download failed. Check your network connection and re-run"
-        echo "    this script — it will skip everything already done."
-        exit 1
-    fi
-    echo "  [OK] Model downloaded"
+    echo ""
+    echo "[X] Model not found after installing requirements.txt. Check your"
+    echo "    network connection and re-run this script — it will skip"
+    echo "    everything already done."
+    exit 1
 fi
 echo ""
 

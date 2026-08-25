@@ -30,6 +30,16 @@ claude-agent-sdk==0.1.39
 presidio-analyzer==2.2.364
 # Reversible pseudonymisation (instance-counter operator) on top of analyzer output.
 presidio-anonymizer==2.2.364
+# spaCy NER model Presidio's analyzer loads for name/entity detection. PINNED
+# (direct wheel URL, not `spacy download`, which always fetches whatever
+# version is current) — detection quality is version-dependent, and ticket
+# #159's D10 measurement (137/150 person names detected on `lg` vs 108/150 on
+# `sm`) was taken against exactly this version. An unpinned upgrade would
+# silently invalidate that recorded number and could pass or fail the
+# pii-anonymizer eval gate (threshold 1.00) differently machine to machine.
+# Do not change the model tier (`lg`) here — only re-pin the version, and only
+# after re-running the D10 measurement.
+en_core_web_lg @ https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl
 # Structured-data (xlsx/csv) analysis/anonymization built on the above two.
 presidio-structured==0.0.8
 # PDF text extraction for inputs/*.pdf ingest.
