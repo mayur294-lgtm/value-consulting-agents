@@ -42,6 +42,9 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 
 ## From the 2026-08-25 Presidio PII cycle (v6, PR 1)
 
+- [ ] .claude/hooks/mcp-query-guard.py `_LABEL_LINE_RE` — does not match `- **Name:**`, the label the real `templates/client_profile.md:9` and the live `engagements/wsfs/CLIENT_PROFILE.md` actually use (it matches only client/bank/institution/company/organization). A fresh engagement where only the profile is populated leaks the client's full legal name past the gate. **This is a live leak path, score 85, deferred because the refine was scoped to criticals only** (from PR #171 refine)
+- [ ] .claude/hooks/mcp-query-guard.py `_add_term` — the strip set removes a trailing `)` from a phrase containing a mid-string `(`, producing an unbalanced term like `'WSFS Bank (Wilmington Savings Fund Society'` that can never match a query. Over-inclusive rather than under-matching, and masked today by the acronym path, but the multi-word phrase heuristic is effectively dead for any client name written with a parenthetical (found during PR #171 refine, out of scope for the three findings fixed)
+
 - [ ] .github/workflows/evals.yml:11 — `paths:` omits `.claude/hooks/**`, so a PR editing only a hook skips the blocking eval gate entirely; the mcp-query-guard gate ran only because the PR also touched `evals/` (PR #171 review finding 7, score 85 — deferred) (from PR #171 refine)
 - [ ] .claude/hooks/mcp-query-guard.py:274 — `_iter_strings` recurses into dict values but not keys, so `{"filters":{"Acmeco":true}}` is allowed while `{"filters":{"x":"Acmeco"}}` is denied (PR #171 review finding 8, score 65 — deferred) (from PR #171 refine)
 - [ ] evals/rubrics/component/mcp_query_guard.py:73 — rubric invokes the hook via `sys.executable` (3.11 in CI) while `.claude/settings.json` registers bare `python3` (3.9.6 locally); the gate can certify under an interpreter consultants never run (PR #171 review finding 9, score 40) (from PR #171 refine)
@@ -49,7 +52,7 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 - [ ] Decision to revisit: `711b56c` added `fund` and `society` to `GENERIC_STOPLIST` to stop them being extracted as standalone terms from "Wilmington Savings Fund Society". Correct for that case, but it means a client whose name is literally one of those words is only caught via slug/label/acronym paths, never standalone (from PR #171 refine)
 
 - [ ] knowledge/standards/security_protocol.md:103 — §5 and the MCP snippet describe the deny-list as "resolved from the active engagement", omit the empty-deny-list allow case, and claim stakeholder/financial coverage the hook does not implement (from PR #171 review)
-- [ ] .claude/hooks/mcp-query-guard.py:147 — paren-acronym extraction is dead code, fully subsumed by the bare ALL-CAPS sweep; becomes load-bearing again if that sweep is removed (from PR #171 review)
+- [done v6] ~~paren-acronym extraction is dead code~~ — RESOLVED by `711b56c`: the whole-document ALL-CAPS sweep was removed, so the paren-acronym paths (label value + heading) are now load-bearing and must not be deleted. Recorded so nobody removes them as dead code later (from PR #171 review)
 
 ### High severity — the gate that certifies our work measures nothing
 
