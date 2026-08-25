@@ -42,6 +42,12 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 
 ## From the 2026-08-25 Presidio PII cycle (v6, PR 1)
 
+- [ ] .github/workflows/evals.yml:11 — `paths:` omits `.claude/hooks/**`, so a PR editing only a hook skips the blocking eval gate entirely; the mcp-query-guard gate ran only because the PR also touched `evals/` (PR #171 review finding 7, score 85 — deferred) (from PR #171 refine)
+- [ ] .claude/hooks/mcp-query-guard.py:274 — `_iter_strings` recurses into dict values but not keys, so `{"filters":{"Acmeco":true}}` is allowed while `{"filters":{"x":"Acmeco"}}` is denied (PR #171 review finding 8, score 65 — deferred) (from PR #171 refine)
+- [ ] evals/rubrics/component/mcp_query_guard.py:73 — rubric invokes the hook via `sys.executable` (3.11 in CI) while `.claude/settings.json` registers bare `python3` (3.9.6 locally); the gate can certify under an interpreter consultants never run (PR #171 review finding 9, score 40) (from PR #171 refine)
+- [ ] eval-case: no coverage that the fail-closed contract holds when `MAX_FILES_SCANNED` is hit. `711b56c` made a scan-limit hit raise `_ScanLimitExceeded` (fail closed) rather than silently truncating the deny-list — a deliberate, defensible choice, but nothing in the 13-check rubric exercises it (from PR #171 refine)
+- [ ] Decision to revisit: `711b56c` added `fund` and `society` to `GENERIC_STOPLIST` to stop them being extracted as standalone terms from "Wilmington Savings Fund Society". Correct for that case, but it means a client whose name is literally one of those words is only caught via slug/label/acronym paths, never standalone (from PR #171 refine)
+
 - [ ] knowledge/standards/security_protocol.md:103 — §5 and the MCP snippet describe the deny-list as "resolved from the active engagement", omit the empty-deny-list allow case, and claim stakeholder/financial coverage the hook does not implement (from PR #171 review)
 - [ ] .claude/hooks/mcp-query-guard.py:147 — paren-acronym extraction is dead code, fully subsumed by the bare ALL-CAPS sweep; becomes load-bearing again if that sweep is removed (from PR #171 review)
 
