@@ -101,18 +101,50 @@ def _resolve(raw: str) -> Path:
         return p
 
 
+def _engagement_dir_for(p: Path):
+    """Best-effort: engagements/<client>/<engagement>/inputs/... -> the
+    <engagement> directory (parent of `inputs/`), for the deny message's
+    `--engagement-dir` argument. None if there's no `inputs` segment
+    (shouldn't happen — the caller already confirmed one via _in_raw_inputs)."""
+    parts = p.parts
+    lowered = [part.lower() for part in parts]
+    try:
+        idx = lowered.index("inputs")
+    except ValueError:
+        return None
+    if idx == 0:
+        return None
+    return Path(*parts[:idx])
+
+
 def _deny_message(p: Path) -> str:
     try:
         label = p.relative_to(PROJECT_DIR)
     except ValueError:
         label = p
+    engagement_dir = _engagement_dir_for(p)
+    if engagement_dir is not None:
+        try:
+            engagement_label = engagement_dir.relative_to(PROJECT_DIR)
+        except ValueError:
+            engagement_label = engagement_dir
+    else:
+        engagement_label = "<engagement_dir>"
+    # scripts/anonymize_transcript.py is now a facade over scripts/pii/engine.py
+    # (Presidio), which needs Python 3.10-3.13 — the system `python3` here is
+    # 3.9.6 and cannot run it. _resolve_python.sh picks .venv/bin/python when
+    # `bash scripts/setup_pii.sh` has been run, and falls back to system
+    # python3 otherwise (in which case the command below fails with its own
+    # plain-language pointer back to that same setup command — see
+    # scripts/anonymize_transcript.py's PIIEngineUnavailable).
     return (
         f"🛑 Anonymization guard: '{label}' looks like RAW client material under "
         f"inputs/ that still contains PII (names/emails/phones/account numbers) and "
         f"has not been anonymized. Reading it would pull unscrubbed PII into context "
         f"where it could reach an MCP server or the knowledge graph.\n"
         f"Scrub it first, then read the anonymized copy:\n"
-        f"  python3 scripts/anonymize_transcript.py {label}\n"
+        f"  .claude/hooks/_resolve_python.sh scripts/anonymize_transcript.py "
+        f"--file {label} --engagement-dir {engagement_label}\n"
         f"  # -> writes a sibling .anon_{p.name} (and .anon_mapping_*.json)\n"
         f"Then Read the .anon_ version instead. (Binary inputs like .pdf/.xlsx are "
         f"not gated here — convert/anonymize them before ingesting.)"
