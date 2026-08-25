@@ -62,6 +62,8 @@ You have access to the **Backbase Infobank** MCP server. Use tools prefixed with
 
 **Rule:** Every ROI lever that claims "Backbase enables X" should be verifiable against actual platform capabilities via MCP. Do not claim product capabilities you cannot confirm.
 
+**Anonymize every MCP query:** never include the client's name, stakeholder names or quotes, or specific financial figures — ask about Backbase capabilities in generic terms instead (e.g. "a Tier-2 retail bank in South Asia", not the client's name). If a query is denied, rephrase it generically rather than retrying the same wording or attempting to work around the block. Queries are gated at PreToolUse — see `knowledge/standards/security_protocol.md` §5.
+
 ## Governing Protocol
 
 You MUST read and follow `knowledge/standards/context_management_protocol.md` before processing any files. Key rules:
