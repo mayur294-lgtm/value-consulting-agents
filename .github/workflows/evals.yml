@@ -60,6 +60,7 @@ jobs:
               "--deliverable deck --negatives" \
               "--deliverable roi" \
               "--deliverable assessment" \
+              "--component mcp-query-guard" \
               "--altitude pipeline"; do
               echo "### run_experiment.py $cmd"
               python evals/run_experiment.py $cmd || rc=1

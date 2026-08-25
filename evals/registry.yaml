@@ -203,6 +203,25 @@ components:
     code: [hypothesis_validation_statuses, usecase_candidates_present, usecase_classification_present]
     judge: [synthesis_faithful_to_workshops]
 
+  # mcp-query-guard (PR #171 hardening) — regression coverage for the
+  # .claude/hooks/mcp-query-guard.py fail-closed outbound-query gate
+  # (security_protocol.md §5). No `input:` — the evaluator is self-contained:
+  # every check synthesizes its own fixtures in a tempdir and invokes the
+  # real hook script as a subprocess (never imports + monkeypatches it), so
+  # there is no static golden file to point at.
+  # threshold: 1.00 is a DELIBERATE deviation from the house 0.80 default —
+  # this is a privacy/security control, pass/fail, not "mostly correct." No
+  # `judge:` entries: every check is deterministic, $0, no LLM. Ticket #161
+  # may later fold this into a broader `pii-anonymizer` row; standing this
+  # up now is explicitly what #155's ticket permitted.
+  mcp-query-guard:
+    altitude: component
+    threshold: 1.00
+    code: [denies_query_containing_client_identifier, allows_generic_query,
+           detects_identifier_nested_in_dict_or_list, fails_closed_on_unresolvable_denylist,
+           fails_closed_on_malformed_payload, allows_with_warning_when_no_denylist_configured,
+           deny_decision_shape_matches_hook_contract]
+
 # Pipeline (integration) altitude — the most important. When ANY component
 # changes, run orchestrate.py end-to-end on a golden engagement and check the
 # inter-agent contracts + final deliverable still hold.
