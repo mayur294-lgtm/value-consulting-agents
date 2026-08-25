@@ -234,6 +234,48 @@ components:
            denies_identifier_from_engagement_intake_file, denies_client_name_from_profile_name_label,
            ignores_unfilled_template_placeholders]
 
+  # pii-anonymizer (ticket #161, PRD v6 §5, solution-design-v6.md D9) — the
+  # acceptance gate for the whole v6 Presidio PII cycle. Covers
+  # scripts/pii/engine.py (Presidio detection + reversible pseudonymisation)
+  # and its scripts/anonymize_transcript.py facade against a committed
+  # synthetic fixture (evals/goldens/pii_roundtrip_fixture.md).
+  #
+  # threshold: 1.00 is a DELIBERATE deviation from the house 0.80 default —
+  # same rationale as mcp-query-guard above: a privacy control is pass/fail,
+  # not "mostly correct." No `judge:` entries — every check is deterministic
+  # and free.
+  #
+  # #161 runs 7th in the v6 build order, deliberately: this gate exists
+  # before more code lands on top of it. The PRD's original 16-check list
+  # names 6 checks whose SUBJECT does not exist yet and are therefore NOT
+  # wired here — see evals/rubrics/component/pii_anonymizer.py's module
+  # docstring "SEQUENCING" section for the full mapping to the tickets that
+  # will add them:
+  #   document_formats_converted_and_scrubbed   -> #162 (pii/ingest.py)
+  #   image_input_produces_sidecar_and_redacted_copy -> #163 (image ingest)
+  #   guard_fails_closed_on_inputs_path         -> #164 (guard rewrite)
+  #   xlsx_outputs_deanonymized                 -> #165 (deanonymize_dir xlsx)
+  #   nested_outputs_deanonymized               -> #165 (deanonymize_dir recursive)
+  #   mcp_query_client_name_blocked             -> already covered by the
+  #                                                 mcp-query-guard row above;
+  #                                                 intentionally not duplicated.
+  #
+  # Requires the Presidio-capable interpreter (scripts/pii/engine.py imports
+  # presidio_analyzer at module level, needs Python 3.10-3.13): run this row
+  # via `.venv/bin/python evals/run_experiment.py --component pii-anonymizer`
+  # locally. In CI, requirements.txt (Presidio + spaCy model) is installed
+  # under actions/setup-python's 3.11 before the suite runs, so
+  # `sys.executable` there is already Presidio-capable.
+  pii-anonymizer:
+    altitude: component
+    threshold: 1.00
+    input: evals/goldens/pii_roundtrip_fixture.md
+    code: [round_trip_byte_identical, distinct_values_distinct_placeholders,
+           repeated_value_reuses_placeholder, no_raw_pii_in_anonymized_output,
+           cross_transcript_merge_collision_free, mapping_files_chmod_600_and_cleaned,
+           client_name_redacted_via_denylist, allowlist_prevents_generic_overredaction,
+           empty_entity_list_warns, legacy_flat_mapping_still_restores]
+
 # Pipeline (integration) altitude — the most important. When ANY component
 # changes, run orchestrate.py end-to-end on a golden engagement and check the
 # inter-agent contracts + final deliverable still hold.
