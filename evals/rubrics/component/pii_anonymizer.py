@@ -1,0 +1,681 @@
+"""pii-anonymizer component evaluator — deterministic regression coverage for
+the Presidio PII engine (ticket #161, PRD v6 §5, solution-design-v6.md D9).
+
+`scripts/pii/engine.py` (Presidio detection + reversible pseudonymisation) and
+`scripts/anonymize_transcript.py` (its public facade) are what every agent's
+input text passes through before it ever reaches the model — this is the
+acceptance gate for the whole v6 cycle. threshold: 1.00 in the registry
+(deliberate deviation from the house 0.80 default) — a privacy control is
+pass/fail, not "mostly correct." No `judge:` entries — every check here is
+deterministic and free.
+
+SEQUENCING (read before adding a check here)
+  #161 runs 7th in the v6 build order, deliberately: the gate exists before
+  more code lands on top of it. Six checks from the PRD's original 16-check
+  list are NOT authored here because their subject does not exist yet:
+
+    document_formats_converted_and_scrubbed   -> #162 (pii/ingest.py)
+    image_input_produces_sidecar_and_redacted_copy -> #163 (image ingest)
+    guard_fails_closed_on_inputs_path         -> #164 (guard rewrite)
+    xlsx_outputs_deanonymized                 -> #165 (deanonymize_dir xlsx)
+    nested_outputs_deanonymized               -> #165 (deanonymize_dir recursive)
+    mcp_query_client_name_blocked             -> already covered by the
+                                                  separate `mcp-query-guard`
+                                                  registry row (15 checks) —
+                                                  intentionally NOT duplicated
+                                                  here.
+
+  A check for a module that does not exist yet must never be added as a
+  silent pass or a SKIP — this repo has already shipped two gates that scored
+  1.000 while certifying nothing (the path-2-only eval gate, and the
+  two-line mcp-query-guard fixture pre-711b56c). The clean option, taken
+  here, is simply not writing those checks until their ticket lands.
+
+  The 10 checks below all exercise code that exists TODAY: `scripts/pii/
+  engine.py`, `scripts/pii/denylist.py` (via the engine's deny-list
+  recognizer), and `scripts/anonymize_transcript.py`'s facade.
+
+WHY THE VENV INTERPRETER
+  `scripts/pii/engine.py` does `import presidio_analyzer` at module level, and
+  Presidio needs Python 3.10-3.13 — the system `python3` here is 3.9.6 and
+  cannot import it at all (see engine.py's own module docstring, "THE
+  INTERPRETER SPLIT"). `mcp_query_guard.py` (this directory's sibling
+  rubric) runs its subject as a subprocess via `sys.executable` and does not
+  care which interpreter that is, because the hook it tests
+  (`.claude/hooks/mcp-query-guard.py`) is deliberately stdlib-only. This
+  rubric is different: it IMPORTS `scripts/pii/engine.py` directly, in
+  process, because several checks (distinct-placeholder bijectivity, shared
+  entity_mapping identity across two files, mapping-file bytes on disk) need
+  to inspect engine internals that a subprocess boundary would hide. That
+  means whatever interpreter runs `evals/run_experiment.py` for THIS
+  component must itself be able to import Presidio — i.e. `.venv/bin/python`,
+  not bare `python3`. CI resolves this the same way: `actions/setup-python`
+  pins 3.11 and the workflow installs `requirements.txt` (which carries the
+  Presidio/spaCy pins) before running the suite, so `sys.executable` in CI is
+  already Presidio-capable — no separate venv step needed there. Locally,
+  run this file with `.venv/bin/python evals/run_experiment.py --component
+  pii-anonymizer`, not the system `python3`.
+
+FIXTURE
+  `evals/goldens/pii_roundtrip_fixture.md` — entirely invented, synthetic
+  multi-stakeholder transcript (see its own header comment). It deliberately
+  spans FOUR document shapes because PERSON detection is shape-dependent, not
+  just fixture-dependent (see engine.py's "MEASURED DETECTION LIMITS" and
+  #159's 30-name x 5-shape measurement): a markdown table row, an
+  attendee-bullet list, a speaker-label line, and prose. A prose-only fixture
+  scores 30/30 on PERSON and would certify that gap as passing — this one
+  does not, on purpose (see `_person_detection_by_shape` and
+  KNOWN_TABLE_SHAPE_MISS below).
+
+  Two more fixtures are synthesised INLINE, in a tempdir, never touching the
+  repo: `_cross_transcript_merge_collision_free` (two small transcripts
+  sharing one email address, per #160's regression) and
+  `_mapping_files_chmod_600_and_cleaned` (the same two-transcript shape,
+  inspecting the mapping files `anonymize_transcript_file` writes to disk).
+  Nothing here ever mutates the committed golden — it is read-only.
+
+KNOWN, DOCUMENTED GAP — the markdown-table PERSON miss
+  `evals/goldens/pii_roundtrip_fixture.md`'s Stakeholder Directory table
+  carries "Aisha Rahman" in a table cell specifically because, on the
+  current `en_core_web_lg` model, spaCy tags a name in that shape as
+  ORGANIZATION rather than PERSON (engine.py's own docstring documents this;
+  ORGANIZATION is deliberately not an enabled entity type, because enabling
+  it would strip "Backbase" and every vendor/product name from every
+  deliverable). This is a real, live, unfixed detection gap TODAY — not a
+  hypothetical. `no_raw_pii_in_anonymized_output` therefore does NOT assert
+  "Aisha Rahman" is redacted (that would be weakening the check to dodge a
+  real failure, exactly what this ticket exists to stop). Instead
+  `_person_detection_by_shape` measures and reports per-shape PERSON
+  detection on this fixture as evidence, separate from the gating
+  assertions, so the gap is visible rather than hidden. Closing it is
+  out of scope for #161 — it needs stakeholder names on the deny-list the
+  way client names already are (engine.py's own "real fix" note) or an
+  ORGANIZATION-aware table-cell recognizer; flagged for a follow-up ticket.
+"""
+from __future__ import annotations
+
+import json
+import os
+import stat
+import sys
+import tempfile
+from pathlib import Path
+from typing import Optional
+
+from rubrics.base import CheckResult, repo_root
+
+# Make `scripts/` importable as a package root, exactly as
+# scripts/anonymize_transcript.py does for itself.
+_SCRIPTS_DIR = repo_root() / "scripts"
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
+
+FIXTURE_REL_PATH = Path("evals") / "goldens" / "pii_roundtrip_fixture.md"
+
+# The fixture's client identity (see the fixture's own header comment) —
+# an obviously-synthetic institution name, not a real bank.
+CLIENT_FULL = "Zzzplaceholder Meridian Holdings"
+CLIENT_SHORT = "Meridian"
+DENY_TERMS = [CLIENT_FULL, CLIENT_SHORT]
+
+# Raw values planted in the fixture that MUST NEVER appear in anonymised
+# output. Deliberately excludes "Aisha Rahman" (the documented table-shape
+# PERSON miss — see module docstring) and the CLIENT_ENTITY's own case
+# variants, which are asserted separately by _client_name_redacted_via_denylist.
+MUST_NOT_LEAK = [
+    "priya.iyer@zzzplaceholdermeridian.com",
+    "marcus.chen@zzzplaceholdermeridian.com",
+    "ops.desk@zzzplaceholdermeridian.com",
+    "(555) 201-4477",
+    "555.201.9981",
+    "923-45-6781",     # SSN
+    "8834021177",      # account number 1
+    "5521873390",      # account number 2
+    "Marcus Chen",
+    "Priya Iyer",
+]
+
+# The documented, currently-unfixed PERSON miss (see module docstring).
+KNOWN_TABLE_SHAPE_MISS = "Aisha Rahman"
+
+# Person names planted in the fixture, one per document shape, used by
+# _person_detection_by_shape's evidence-only measurement. "table" is
+# expected to miss today — see module docstring.
+PERSON_BY_SHAPE = {
+    "prose": "Priya Iyer",
+    "attendee_bullet": "Marcus Chen",
+    "speaker_label": "Priya Iyer",
+    "table": "Aisha Rahman",
+}
+
+def _bool_check(name: str, ok: bool, *, detail: str = "", hard_fail: bool = True) -> CheckResult:
+    return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=hard_fail, detail=detail)
+
+
+def _fixture_path(target: str) -> Path:
+    if target:
+        p = Path(target)
+        if p.is_file():
+            return p
+    return repo_root() / FIXTURE_REL_PATH
+
+
+def _fixture_text(target: str) -> str:
+    return _fixture_path(target).read_text(encoding="utf-8")
+
+
+def _engine():
+    from pii import engine as _e  # noqa: PLC0415 - only this rubric needs Presidio
+    return _e
+
+
+def _facade():
+    import anonymize_transcript as _at  # noqa: PLC0415
+    return _at
+
+
+def _new_session(engine, *, entity_mapping: Optional[dict] = None, deny_terms=None):
+    return engine.PIISession(
+        deny_terms if deny_terms is not None else DENY_TERMS,
+        entity_mapping=entity_mapping,
+        warn_on_empty=False,
+    )
+
+
+# --- checks ------------------------------------------------------------
+
+def _round_trip_byte_identical(target: str) -> CheckResult:
+    """anonymize(fixture) -> deanonymize(...) must restore the ORIGINAL bytes
+    exactly, through BOTH maintained copies of deanonymize_text: the engine's
+    own (`pii.engine.deanonymize_text`) and the pure-stdlib facade copy
+    (`scripts/anonymize_transcript.deanonymize_text`) that
+    `artifact_boundary.deanonymize_dir` actually calls in production. The
+    facade module docstring itself warns these are two independently
+    maintained copies with "no drift_check for this pair yet" — so this
+    check also catches the two silently diverging, not just one of them
+    breaking round-trip.
+    """
+    name = "round_trip_byte_identical"
+    engine = _engine()
+    at = _facade()
+    original = _fixture_text(target)
+
+    session = _new_session(engine)
+    anonymized = session.anonymize(original)
+    mapping = session.mapping_file_dict()
+
+    restored_engine = engine.deanonymize_text(anonymized, mapping)
+    restored_facade = at.deanonymize_text(anonymized, mapping)
+
+    ok = (restored_engine == original) and (restored_facade == original)
+    return _bool_check(name, ok, detail=(
+        f"engine round-trip identical={restored_engine == original}; "
+        f"facade round-trip identical={restored_facade == original}; "
+        f"len(original)={len(original)} len(anonymized)={len(anonymized)}"
+    ))
+
+
+def _distinct_values_distinct_placeholders(target: str) -> CheckResult:
+    """Every DISTINCT raw value that got detected must map to its OWN
+    placeholder — no two different original values collapsing onto the same
+    `<ENTITY_N>` token. Checked structurally (the mapping is injective, per
+    entity type) AND against the known, hand-verified raw values planted in
+    the fixture (3 distinct emails, 2 distinct phones, 2 distinct account-ish
+    numbers, 1 SSN, >=2 distinct CLIENT strings, 2 distinct PERSON names)."""
+    name = "distinct_values_distinct_placeholders"
+    engine = _engine()
+    session = _new_session(engine)
+    session.anonymize(_fixture_text(target))
+    mapping = session.entity_mapping
+
+    problems = []
+    for etype, values in mapping.items():
+        placeholders = list(values.values())
+        if len(placeholders) != len(set(placeholders)):
+            problems.append(f"{etype}: {len(placeholders)} values but only "
+                             f"{len(set(placeholders))} distinct placeholders")
+
+    expected_min = {
+        "EMAIL_ADDRESS": 3, "PHONE_NUMBER": 2, "US_SSN": 1,
+        "CLIENT": 2, "PERSON": 2,
+    }
+    for etype, minimum in expected_min.items():
+        got = len(mapping.get(etype, {}))
+        if got < minimum:
+            problems.append(f"{etype}: expected >= {minimum} distinct values, got {got}")
+
+    ok = not problems
+    return _bool_check(name, ok, detail=(
+        "; ".join(problems) if problems else
+        f"all {sum(len(v) for v in mapping.values())} distinct values across "
+        f"{len(mapping)} entity types map 1:1 to distinct placeholders"
+    ))
+
+
+def _repeated_value_reuses_placeholder(target: str) -> CheckResult:
+    """The fixture repeats one email address (priya.iyer@...) three times.
+    All three occurrences in the anonymized text must be the SAME
+    placeholder, and the mapping must hold exactly one entry for that value
+    (not three)."""
+    name = "repeated_value_reuses_placeholder"
+    engine = _engine()
+    session = _new_session(engine)
+    original = _fixture_text(target)
+    repeated_value = "priya.iyer@zzzplaceholdermeridian.com"
+    assert original.count(repeated_value) >= 3, "fixture regression: repeated email no longer repeats >=3x"
+
+    anonymized = session.anonymize(original)
+    mapping = session.entity_mapping
+    placeholder = mapping.get("EMAIL_ADDRESS", {}).get(repeated_value)
+
+    ok = (
+        placeholder is not None
+        and anonymized.count(placeholder) >= 3
+        and repeated_value not in anonymized
+    )
+    return _bool_check(name, ok, detail=(
+        f"placeholder={placeholder!r} occurrences_in_output="
+        f"{anonymized.count(placeholder) if placeholder else 'n/a'} "
+        f"(expected >=3, one mapping entry, raw value gone)"
+    ))
+
+
+def _no_raw_pii_in_anonymized_output(target: str) -> CheckResult:
+    """The gate-bites-mandatory check (D9 / PRD §5): none of the fixture's
+    deterministic PII values (emails, phones, SSN, account-ish numbers) or
+    reliably-detected PERSON names may survive into the anonymized text.
+    Reverting the Presidio detector (disabling the entities passed to
+    analyze(), or the deny-list recognizer) must make this fail — see the
+    PR description's gate-bites transcript.
+
+    Gating scope deliberately excludes KNOWN_TABLE_SHAPE_MISS ("Aisha
+    Rahman") — see the module docstring. Asserting it here would either
+    (a) fail today for a reason this ticket doesn't fix, or (b) require
+    quietly dropping it from the fixture, which would hide the exact gap
+    #159/#161 exist to surface. Instead this check's `detail`/`evidence`
+    carry the full per-shape PERSON measurement (PERSON_BY_SHAPE) as
+    non-gating REPORTING — every shape's detection result, table included —
+    so the gap is visible in every run of this rubric, not just in a
+    one-off script.
+    """
+    name = "no_raw_pii_in_anonymized_output"
+    engine = _engine()
+    session = _new_session(engine)
+    anonymized = session.anonymize(_fixture_text(target))
+
+    leaked = [v for v in MUST_NOT_LEAK if v in anonymized]
+
+    # Per-shape PERSON measurement — reporting only, never gates this check.
+    # A name is "detected for its shape" if it no longer appears raw
+    # anywhere post-anonymization; each PERSON_BY_SHAPE name is unique to
+    # its shape's sentence in the fixture, so this attribution is sound
+    # even though the flat mapping itself doesn't carry shape provenance.
+    per_shape = {shape: (person not in anonymized) for shape, person in PERSON_BY_SHAPE.items()}
+
+    ok = not leaked
+    detail = (
+        f"leaked={leaked!r}; per-shape PERSON detection: " +
+        ", ".join(f"{s}={'DETECTED' if v else 'MISSED'} ({PERSON_BY_SHAPE[s]!r})"
+                   for s, v in per_shape.items()) +
+        " (table is the documented, currently-unfixed gap — see module docstring; "
+        "not gated here)"
+    )
+    return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=True, detail=detail,
+                        evidence=[f"leaked raw value: {v}" for v in leaked])
+
+
+def _cross_transcript_merge_collision_free(target: str) -> CheckResult:  # noqa: ARG001
+    """#160 regression guard — the ONE thing keeping cross-transcript
+    numbering collision-free. Exercises TWO transcripts sharing one email
+    address, run through `anonymize_transcript_file` with a SHARED
+    `entity_mapping` dict — exactly what `orchestrate.py`'s `step_discovery`
+    does. Before the #160 fix, each transcript numbered independently, so
+    transcript A's `<EMAIL_ADDRESS_1>` and transcript B's
+    `<EMAIL_ADDRESS_1>` were DIFFERENT values — a later merge bound one
+    placeholder to two originals. Asserts all four properties the ticket
+    calls out: distinct values -> distinct placeholders across both files;
+    the SHARED value -> the SAME placeholder in both; no placeholder maps to
+    two different values; both files restore byte-identical from the final
+    combined mapping alone.
+    """
+    name = "cross_transcript_merge_collision_free"
+    at = _facade()
+    with tempfile.TemporaryDirectory(prefix="pii_eval_cross_") as td:
+        root = Path(td)
+        engagement_dir = root / "zzzplaceholder_engagement"
+        inputs_dir = engagement_dir / "inputs"
+        inputs_dir.mkdir(parents=True)
+
+        shared_email = "shared.contact@zzzplaceholdermeridian.com"
+        transcript_a = inputs_dir / "transcript_a.md"
+        transcript_b = inputs_dir / "transcript_b.md"
+        transcript_a.write_text(
+            f"Contact for this workstream: {shared_email}. "
+            f"Local lead: Naledi Dube can also help.\n"
+        )
+        transcript_b.write_text(
+            f"Escalation goes to {shared_email}. "
+            f"Secondary contact: someone.else@zzzplaceholdermeridian.com.\n"
+        )
+
+        shared_mapping: dict = {}
+        anon_a, _map_a = at.anonymize_transcript_file(
+            transcript_a, engagement_dir, output_dir=inputs_dir, entity_mapping=shared_mapping)
+        anon_b, map_b = at.anonymize_transcript_file(
+            transcript_b, engagement_dir, output_dir=inputs_dir, entity_mapping=shared_mapping)
+
+        text_a = anon_a.read_text()
+        text_b = anon_b.read_text()
+        final_mapping = json.loads(map_b.read_text())
+
+        # 1. distinct values -> distinct placeholders, across BOTH files combined.
+        email_map = shared_mapping.get("EMAIL_ADDRESS", {})
+        distinct_ok = len(set(email_map.values())) == len(email_map)
+
+        # 2. the shared value gets the SAME placeholder in both files' text.
+        shared_placeholder = email_map.get(shared_email)
+        same_placeholder_ok = (
+            shared_placeholder is not None
+            and shared_placeholder in text_a
+            and shared_placeholder in text_b
+        )
+
+        # 3. no placeholder maps to two different originals (across ALL types).
+        no_collision_ok = True
+        for etype, values in shared_mapping.items():
+            inverse: dict = {}
+            for original, placeholder in values.items():
+                if inverse.setdefault(placeholder, original) != original:
+                    no_collision_ok = False
+
+        # 4. both files restore byte-identical from the FINAL combined mapping
+        #    alone (no per-transcript mapping needed).
+        restored_a = at.deanonymize_text(text_a, final_mapping)
+        restored_b = at.deanonymize_text(text_b, final_mapping)
+        restore_ok = (
+            restored_a == transcript_a.read_text()
+            and restored_b == transcript_b.read_text()
+        )
+
+        ok = distinct_ok and same_placeholder_ok and no_collision_ok and restore_ok
+        return _bool_check(name, ok, detail=(
+            f"distinct_ok={distinct_ok} same_placeholder_ok={same_placeholder_ok} "
+            f"(placeholder={shared_placeholder!r}) no_collision_ok={no_collision_ok} "
+            f"restore_ok={restore_ok}"
+        ))
+
+
+def _mapping_files_chmod_600_and_cleaned(target: str) -> CheckResult:  # noqa: ARG001
+    """`anonymize_transcript_file` writes a per-transcript
+    `.anon_mapping_<stem>.json` file, chmod 0600, because it carries real
+    PII (PRD v6 §9). This check asserts that mode AND the precondition that
+    makes it SAFE for a caller to delete every per-transcript mapping file
+    once a later one has been written with the shared `entity_mapping`:
+    each earlier per-transcript mapping must be a strict SUBSET of the
+    final, most-recently-written one, and the final one alone must be
+    sufficient to restore every transcript's anonymized text byte-for-byte
+    — i.e. discarding the earlier files loses no information.
+
+    SCOPE NOTE: this checks the FACADE's contract (`anonymize_transcript.
+    anonymize_transcript_file` + the shared `entity_mapping` param), which is
+    what exists today. `orchestrate.py`'s `step_discovery` does NOT
+    currently delete the per-transcript files it writes (verified by
+    inspection: the mapping_path returned by each call is discarded, never
+    unlinked) despite PRD v6 §9 asserting "per-transcript mappings are
+    deleted once the combined mapping is written" — that deletion call is a
+    real, separate gap, not exercised here because it lives in orchestrate.py
+    and PR2 (this ticket's scope, per solution-design-v6.md's Build Sequence)
+    is the engine + facade, not orchestrate.py's pipeline wiring. Flagged as
+    a finding for a follow-up ticket rather than silently asserted or
+    silently dropped.
+    """
+    name = "mapping_files_chmod_600_and_cleaned"
+    at = _facade()
+    with tempfile.TemporaryDirectory(prefix="pii_eval_mapclean_") as td:
+        root = Path(td)
+        engagement_dir = root / "zzzplaceholder_engagement"
+        inputs_dir = engagement_dir / "inputs"
+        inputs_dir.mkdir(parents=True)
+
+        transcript_a = inputs_dir / "transcript_a.md"
+        transcript_b = inputs_dir / "transcript_b.md"
+        transcript_a.write_text("Lead: Naledi Dube. Contact: a.person@zzzplaceholdermeridian.com.\n")
+        transcript_b.write_text("Follow-up: a.person@zzzplaceholdermeridian.com and b.person@zzzplaceholdermeridian.com.\n")
+
+        shared_mapping: dict = {}
+        anon_a, map_a = at.anonymize_transcript_file(
+            transcript_a, engagement_dir, output_dir=inputs_dir, entity_mapping=shared_mapping)
+        anon_b, map_b = at.anonymize_transcript_file(
+            transcript_b, engagement_dir, output_dir=inputs_dir, entity_mapping=shared_mapping)
+
+        mode_a = stat.S_IMODE(map_a.stat().st_mode)
+        mode_b = stat.S_IMODE(map_b.stat().st_mode)
+        mode_ok = (mode_a == 0o600) and (mode_b == 0o600)
+
+        snapshot_a = json.loads(map_a.read_text()).get("entities", {})
+        snapshot_b = json.loads(map_b.read_text()).get("entities", {})
+
+        # snapshot_a must be a strict subset of snapshot_b (every value ->
+        # placeholder pair present in A is present, IDENTICALLY, in B) — the
+        # property that makes deleting A safe once B is on disk.
+        subset_ok = True
+        for etype, values in snapshot_a.items():
+            for original, placeholder in values.items():
+                if snapshot_b.get(etype, {}).get(original) != placeholder:
+                    subset_ok = False
+
+        # Discarding map_a entirely and restoring BOTH transcripts from
+        # map_b alone must still work byte-identical.
+        restored_a = at.deanonymize_file(anon_a, map_b)
+        restored_b = at.deanonymize_file(anon_b, map_b)
+        cleanup_safe_ok = (
+            restored_a == transcript_a.read_text()
+            and restored_b == transcript_b.read_text()
+        )
+
+        ok = mode_ok and subset_ok and cleanup_safe_ok
+        return _bool_check(name, ok, detail=(
+            f"mode_a={oct(mode_a)} mode_b={oct(mode_b)} mode_ok={mode_ok} "
+            f"subset_ok={subset_ok} cleanup_safe_ok={cleanup_safe_ok} — NOTE: "
+            f"orchestrate.py does not currently delete per-transcript mapping "
+            f"files; this check proves it WOULD be safe to, see docstring"
+        ))
+
+
+def _client_name_redacted_via_denylist(target: str) -> CheckResult:
+    """D3: the deny-list, not Presidio NER, is the PRIMARY client-identity
+    detector. Asserts the client's full legal name, its short form, AND the
+    short form embedded in the client's own portal domain
+    (https://portal.meridian.com/...) are all redacted via the CLIENT
+    entity — none of Presidio's built-in recognizers know what "the client"
+    is; only the deny-list does."""
+    name = "client_name_redacted_via_denylist"
+    engine = _engine()
+    session = _new_session(engine)
+    original = _fixture_text(target)
+    assert CLIENT_FULL in original and "portal.meridian.com" in original, \
+        "fixture regression: client full name / portal domain no longer present"
+
+    anonymized = session.anonymize(original)
+    mapping = session.entity_mapping.get("CLIENT", {})
+
+    full_name_redacted = CLIENT_FULL not in anonymized and CLIENT_FULL in mapping
+    domain_redacted = "portal.meridian.com" not in anonymized
+    has_client_entities = len(mapping) >= 2  # full name + at least one short-form case variant
+
+    ok = full_name_redacted and domain_redacted and has_client_entities
+    return _bool_check(name, ok, detail=(
+        f"full_name_redacted={full_name_redacted} domain_redacted={domain_redacted} "
+        f"distinct_CLIENT_values={len(mapping)} (expected >=2)"
+    ))
+
+
+def _allowlist_prevents_generic_overredaction(target: str) -> CheckResult:
+    """The engine's allow-list (engine.py's `_build_allow_list`, built from
+    `denylist.GENERIC_STOPLIST`) exists to stop generic banking words
+    ("First", "National", "Trust", "Capital", "Pacific", "Union", "State", …)
+    being redacted when they appear on their own, not as part of the
+    client's registered name.
+
+    Two assertions, because on the CURRENT entity configuration (no
+    ORGANIZATION/LOCATION recognizer enabled — see engine.py's
+    DEFAULT_ENTITIES comment) generic prose words don't trigger any OTHER
+    recognizer either, so an end-to-end "redact without the allow-list"
+    demonstration is not reproducible against today's model/config — that is
+    reported here, not hidden:
+
+      1. STRUCTURAL (the gate-bites-verified assertion): the allow-list is
+         actually built and wired into the session — every
+         GENERIC_STOPLIST word not already a deny term appears as an anchored
+         allow-list pattern.
+      2. BEHAVIOURAL (a regression guard, not gate-bitable via the allow-list
+         alone today, but real): a paragraph of generic banking peer-comparison
+         language stays fully unredacted end-to-end.
+    """
+    name = "allowlist_prevents_generic_overredaction"
+    engine = _engine()
+    from pii import denylist  # noqa: PLC0415
+
+    session = _new_session(engine)
+    allow_list = session._allow_list  # noqa: SLF001 - inspecting the real wired state, not a copy
+
+    stoplist_words = sorted(denylist.GENERIC_STOPLIST)
+    expected_patterns = {r"^" + w + r"$" for w in stoplist_words}
+    structural_ok = expected_patterns.issubset(set(allow_list)) and len(allow_list) > 0
+
+    generic_text = ("The team benchmarked results against First National, Pacific Trust, "
+                     "Capital Union, and State Savings as generic regional peers.")
+    anonymized = session.anonymize(generic_text)
+    behavioural_ok = anonymized == generic_text
+
+    ok = structural_ok and behavioural_ok
+    return _bool_check(name, ok, detail=(
+        f"structural_ok={structural_ok} (allow_list has {len(allow_list)} patterns) "
+        f"behavioural_ok={behavioural_ok}"
+    ))
+
+
+def _empty_entity_list_warns(target: str) -> CheckResult:  # noqa: ARG001
+    """Loud, non-blocking warning when the deny-list resolves empty
+    (EMPTY_DENY_LIST_WARNING) — the exact failure mode PRD v6 §1 opens with
+    ("a live audit had person names AND the client name reach the API in
+    plaintext with no warning at all"). Must warn AND must not block: the
+    session still works and generic entities (email/phone/SSN) still get
+    redacted."""
+    name = "empty_entity_list_warns"
+    engine = _engine()
+    import io
+
+    warn_stream = io.StringIO()
+    session = engine.PIISession([], warn_stream=warn_stream, warn_on_empty=True)
+    warned = engine.EMPTY_DENY_LIST_WARNING.strip() in warn_stream.getvalue()
+
+    quiet_stream = io.StringIO()
+    _configured_session = engine.PIISession(DENY_TERMS, warn_stream=quiet_stream, warn_on_empty=True)
+    stayed_quiet = quiet_stream.getvalue() == ""
+
+    text = "Reach out at generic.person@zzzplaceholdermeridian.com for details."
+    anonymized = session.anonymize(text)
+    still_functional = "generic.person@zzzplaceholdermeridian.com" not in anonymized
+
+    ok = warned and stayed_quiet and still_functional
+    return _bool_check(name, ok, detail=(
+        f"warned_when_empty={warned} silent_when_configured={stayed_quiet} "
+        f"still_redacts_generic_pii={still_functional}"
+    ))
+
+
+def _legacy_flat_mapping_still_restores(target: str) -> CheckResult:  # noqa: ARG001
+    """Every accepted mapping shape (flatten_mapping's docstring: v2 nested,
+    v2 bare, v1 legacy flat) must still restore — "mappings on disk are
+    data, and a consultant with a six-month-old engagement must still be
+    able to produce a client-ready deliverable." Exercises BOTH maintained
+    copies (engine.py's and the facade's pure-stdlib copy) so a future
+    change to one that isn't mirrored to the other is caught here rather
+    than only in production."""
+    name = "legacy_flat_mapping_still_restores"
+    engine = _engine()
+    at = _facade()
+
+    v1_legacy = {
+        "[CLIENT]": "Zzzplaceholder Legacy Holdings",
+        "[EMAIL-REDACTED]": "legacy.contact@zzzplaceholdermeridian.com",
+        "[PERSON-1]": "Legacy Testperson",
+    }
+    v1_text = "Client: [CLIENT]. Contact [PERSON-1] at [EMAIL-REDACTED]."
+    v1_expected = "Client: Zzzplaceholder Legacy Holdings. Contact Legacy Testperson at legacy.contact@zzzplaceholdermeridian.com."
+
+    v2_bare = {"PERSON": {"Bare Testperson": "<PERSON_1>"}}
+    v2_bare_text = "Attendee: <PERSON_1>."
+    v2_bare_expected = "Attendee: Bare Testperson."
+
+    v2_nested = {"version": 2, "entities": {"CLIENT": {"Zzzplaceholder Nested Co": "<CLIENT_1>"}}}
+    v2_nested_text = "Regarding <CLIENT_1>'s engagement."
+    v2_nested_expected = "Regarding Zzzplaceholder Nested Co's engagement."
+
+    cases = [
+        ("v1_legacy", v1_text, v1_legacy, v1_expected),
+        ("v2_bare", v2_bare_text, v2_bare, v2_bare_expected),
+        ("v2_nested", v2_nested_text, v2_nested, v2_nested_expected),
+    ]
+
+    problems = []
+    for label, text, mapping, expected in cases:
+        got_engine = engine.deanonymize_text(text, mapping)
+        got_facade = at.deanonymize_text(text, mapping)
+        if got_engine != expected:
+            problems.append(f"{label}: engine.deanonymize_text -> {got_engine!r} (expected {expected!r})")
+        if got_facade != expected:
+            problems.append(f"{label}: facade.deanonymize_text -> {got_facade!r} (expected {expected!r})")
+        if got_engine != got_facade:
+            problems.append(f"{label}: engine/facade DIVERGED — {got_engine!r} != {got_facade!r}")
+
+    ok = not problems
+    return _bool_check(name, ok, detail="; ".join(problems) if problems else
+                        "all 3 mapping shapes (v1 legacy, v2 bare, v2 nested) restore "
+                        "correctly through both maintained copies")
+
+
+def evaluate(target: str) -> list:
+    fixture = _fixture_path(target)
+    if not fixture.exists():
+        return [CheckResult(
+            "fixture_present", 0.0, False, hard_fail=True,
+            detail=f"{fixture} not found — cannot run any check",
+        )]
+
+    try:
+        _engine()
+    except Exception as exc:  # noqa: BLE001 - convert to a reportable failure, not a crash
+        return [CheckResult(
+            "presidio_importable", 0.0, False, hard_fail=True,
+            detail=(
+                f"could not import scripts/pii/engine.py ({type(exc).__name__}: {exc}). "
+                f"This component requires the Presidio-capable interpreter — run via "
+                f".venv/bin/python evals/run_experiment.py --component pii-anonymizer, "
+                f"not the system python3. See this module's docstring."
+            ),
+        )]
+
+    checks = [
+        _round_trip_byte_identical,
+        _distinct_values_distinct_placeholders,
+        _repeated_value_reuses_placeholder,
+        _no_raw_pii_in_anonymized_output,
+        _cross_transcript_merge_collision_free,
+        _mapping_files_chmod_600_and_cleaned,
+        _client_name_redacted_via_denylist,
+        _allowlist_prevents_generic_overredaction,
+        _empty_entity_list_warns,
+        _legacy_flat_mapping_still_restores,
+    ]
+    results = []
+    for fn in checks:
+        try:
+            results.append(fn(str(fixture)))
+        except Exception as exc:  # noqa: BLE001 - a raising check must still report, not crash the suite
+            results.append(CheckResult(
+                fn.__name__.lstrip("_"), 0.0, False, hard_fail=True,
+                detail=f"check raised {type(exc).__name__}: {exc}",
+            ))
+    return results
