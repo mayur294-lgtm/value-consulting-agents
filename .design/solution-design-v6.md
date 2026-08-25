@@ -184,6 +184,29 @@ Implemented now as `.claude/hooks/_resolve_python.sh`: `exec "$VENV_PY" "$@"` if
 
 *Trade-off:* one more file in `.claude/hooks/`, and a hook's effective interpreter is no longer visually obvious from `settings.json` alone — mitigated by the comment block in `_resolve_python.sh` itself pointing back here.
 
+**D13 — `anonymize-guard.py` does NOT import the Presidio engine; it stays a purely path/timestamp-based gate. This supersedes D12's PR-3 plan to wire it onto `_resolve_python.sh`.** Ticket #164 originally called for replacing the guard's inline regexes with `scripts/pii/engine.py` so detection logic existed in exactly one place. Measured before implementing (fresh process, what a hook is on every Read/Bash call):
+
+| | measured |
+| --- | --- |
+| engine import + first use | 0.67 – 1.12 s |
+| pre-#164 stdlib guard | 0.04 s |
+
+*Why not the engine:* this hook fires synchronously on every Read and every Bash call, in every session. Paying ~1s per tool call would make every session feel broken (17-28x the pre-#164 budget). It would also reintroduce the exact fail-open risk the guard exists to prevent: a module-level `import presidio_analyzer` that fails raises *before* `main()`'s try/except, and a PreToolUse hook that exits that way is treated as non-blocking by Claude Code — i.e. it fails OPEN, backwards for a guard whose job is failing closed. This is the same reasoning D3/D7 already applied to keep `mcp-query-guard.py` on deny-list string matching instead of Presidio NER.
+
+*What replaces detection:* the guard was re-scoped from "detect PII in this file's content" to a narrower, purely structural question answerable from paths and timestamps alone — "has this raw file under `engagements/*/inputs/` already been run through the anonymizer, and is that scrubbed copy still current?" Per format:
+
+- Plain text (`.md .txt .text .vtt .srt .json .log`, via `scripts/anonymize_transcript.py`) — sibling is `.anon_<name>` verbatim.
+- Documents (`.pdf .docx .pptx .xlsx .csv`, via `scripts/pii/ingest.py`, #162) and images (`.png .jpg .jpeg .gif .bmp .tif .tiff .webp .heic`, via the same module, #163) — sibling is the `.anon_<name>.md` text sidecar (ingest.py's OUTPUT NAMING; the sidecar, not the redacted `.anon_<name>.png`, is what "carries the round-trip").
+- No sibling, or a sibling OLDER than the raw file (mtime comparison) — denied, with the raw-vs-stale cases getting distinct messages.
+- A format with no extractor — denied outright, never silently passed through.
+- Any file already named `.anon_*` — allowed unconditionally, by name only; the guard never opens it to check which placeholder convention (today's `<ENTITY_N>` or a legacy `[CLIENT]`/`[PERSON-N]`/`[X-REDACTED]` engagement) produced its contents, because that distinction is irrelevant to whether it is raw client material.
+
+The extension/naming lists are a hand-copied, self-contained duplicate of `scripts/pii/ingest.py`'s `DOCUMENT_SUFFIXES`/`IMAGE_SUFFIXES`/output-naming convention — not an import, even though `scripts/pii/ingest.py` is itself stdlib-only and fast to import (measured ~15-60ms under system Python 3.9.6). Same rationale as `mcp-query-guard.py` not importing `scripts/pii/denylist.py` (`scripts/pii/drift_check.py`'s header): a guard whose job is failing closed must stay self-contained so a future change anywhere under `scripts/pii/` can never silently change what it allows. The two copies must be kept in sync by hand.
+
+*Consequence for D12:* since this hook never imports Presidio, it has no venv dependency to resolve and stays on plain `python3` in `settings.json`, exactly as `mcp-query-guard.py` does — D12's PR-3 plan to point `anonymize-guard.py` at `_resolve_python.sh` does not happen. `_resolve_python.sh` remains implemented and available for a future hook that does need the venv.
+
+*Alternative considered:* the ticket's original ask (shared engine, one place for detection logic). *Why not:* the timing above, and the fail-open risk. *Trade-off accepted:* detection logic now genuinely exists in two forms — content-based (`scripts/pii/engine.py`, used by the anonymizer tools themselves) and structural (this guard) — rather than one. This is judged acceptable because the guard was never a reliable content detector even before this rewrite (5 regexes covered 3 of 77 real input files); the structural rule is *stricter*, not weaker: previously a raw file whose PII didn't match a regex passed through unchallenged, and now nothing under `inputs/` passes without a scrubbed sibling to point at, regardless of content.
+
 ---
 
 ## Build Sequence
