@@ -103,7 +103,7 @@ Stakeholder intelligence (ownership signals, sensitivity flags, communication pr
 When querying the Backbase Infobank MCP server (`mcp__backbase-infobank__*`), this rule is **enforced, not advisory**: `.claude/hooks/mcp-query-guard.py` runs as a PreToolUse hook on every `mcp__.*` call, scans the full tool input against a deny-list of client and stakeholder identifiers resolved from the active engagement, and denies the call outright on a match. The hook **fails closed** — if the deny-list cannot be resolved or the scan itself errors, the query is denied rather than allowed through unverified. See `knowledge/platforms/backbase-mcp-integration.md` for the copy-paste agent-prompt snippet that carries this constraint into every new agent.
 
 - **Never include the client's name** in MCP queries. Use generic descriptors instead:
-  - Bad: "What capabilities support a specific bank's digital investor onboarding?"
+  - Bad: "What capabilities support [Client Name]'s digital investor onboarding?"
   - Good: "What capabilities support digital investor onboarding for a large US credit union?"
 - **Never include specific financial figures** from the client in MCP queries
 - **Never include stakeholder names or quotes** in MCP queries
