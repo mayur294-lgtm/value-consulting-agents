@@ -20,3 +20,24 @@ openpyxl>=3.1.0
 # defense: do not remove it without re-verifying the setting_sources fix is
 # still in place and hooks still fire end-to-end.
 claude-agent-sdk==0.1.39
+
+# --- PII gate (Presidio) — requires Python 3.10-3.13, installed into .venv
+# by scripts/setup_pii.sh (see README "Installation" and .design/solution-
+# design-v6.md D8). Not importable under the system python3 (3.9.6) — that
+# is why these live in a venv rather than as a flat repo dependency.
+
+# Detects PII (names, emails, IDs, ...) via NER + validated patterns.
+presidio-analyzer==2.2.364
+# Reversible pseudonymisation (instance-counter operator) on top of analyzer output.
+presidio-anonymizer==2.2.364
+# Structured-data (xlsx/csv) analysis/anonymization built on the above two.
+presidio-structured==0.0.8
+# PDF text extraction for inputs/*.pdf ingest.
+pdfminer.six==20260107
+# Word (.docx) text extraction for inputs/*.docx ingest.
+python-docx==1.2.0
+# PowerPoint (.pptx) text extraction for inputs/*.pptx ingest.
+python-pptx==1.0.2
+# OCR binding (Tesseract) for image ingest — the `tesseract` binary itself
+# is a separate system-level install; see scripts/setup_pii.sh.
+pytesseract==0.3.13
