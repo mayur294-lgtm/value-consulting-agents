@@ -140,6 +140,12 @@ NEVER SILENT, NEVER DESTRUCTIVE
   - An unsupported format raises `UnsupportedFormatError` naming the format.
   - A missing local OCR binary raises `OCRUnavailableError` and the image is
     REFUSED — never passed through unread (#163).
+  - OCR output the engine cannot trust (mean per-word confidence below
+    `_MIN_OCR_CONFIDENCE` — see "NON-LATIN SCRIPT IN IMAGES" below) raises
+    `OCRLowConfidenceError` for a direct image and REFUSES it the same way —
+    no sidecar, no redacted copy (#173). An embedded picture degrades to
+    `IMAGE_SEAM_MARKER` instead of refusing its host document, matching how
+    a missing OCR binary is already handled for embedded pictures.
   - A password-protected or corrupt document raises `ExtractionFailedError`.
   - A document that yields NO text raises `EmptyExtractionError` — a scanned
     PDF must not be reported as "successfully anonymised, 0 bytes".
@@ -251,7 +257,7 @@ IMAGES — LOCAL OCR, TWO ARTIFACTS, NO CLASSIFIER (#163, design D5, Flow C)
   which lives in `engine.py`/`denylist.py`; #163 is forbidden from touching
   either, so it is backlogged rather than bodged here.
 
-⚠️ NON-ENGLISH TEXT IN IMAGES — MEASURED, AND A REAL LEAK IN THE IMAGE COPY
+⚠️ NON-LATIN SCRIPT IN IMAGES — MEASURED, AND FIXED BY REFUSAL, NOT TRANSLATION
   Only the `eng` language pack is installed (plus `osd`/`snum`, which are
   orientation and number models, not languages). Measured on rendered
   screenshots:
@@ -269,19 +275,83 @@ IMAGES — LOCAL OCR, TWO ARTIFACTS, NO CLASSIFIER (#163, design D5, Flow C)
   emails/account numbers stay Latin even inside a non-Latin UI (all three
   non-Latin cases above still had their email read and detected correctly).
 
-  But a name in a NON-LATIN script is transliterated into noise. It is
-  therefore not in the sidecar in any readable form — no leak there — and it
-  is also NOT DETECTED, which means **its pixels are not blanked and it stays
-  fully legible in the redacted image copy.** That copy is an artifact an
-  agent may open. This is the one place in this module where an artifact can
-  carry a real, readable client name.
+  A name in a NON-LATIN script is transliterated into noise. It is therefore
+  not in the sidecar in any readable form — no leak there — but until #173 it
+  was also NOT DETECTED, which meant its pixels were never blanked and it
+  stayed fully legible in the redacted image copy: an artifact an agent may
+  open, asserting a scrub it had not performed.
 
-  It is not fixed here: the fix is installing the language packs
-  (`brew install tesseract-lang`) and choosing a language per engagement,
-  which is a system-dependency and design decision — the same install-friction
-  risk PRD v6 already tracks for the model — not a drive-by. Backlogged.
-  Until then, treat the redacted copy of a non-Latin-script screenshot as
-  unredacted.
+  ⚠️ DO NOT "FIX" THIS BY INSTALLING LANGUAGE PACKS. It looks like the fix —
+  `brew install tesseract-lang` — and it is exactly backwards. Today the
+  redacted copy is accidentally safe only because OCR yields garbage that the
+  detector also cannot read as noise: no leak in the sidecar, but the pixels
+  stay unblanked. Transcribe the name CORRECTLY and it lands in the sidecar in
+  CLEARTEXT, where `en_core_web_lg` still will not detect it — non-English NER
+  is explicitly out of scope for v6 (PRD §6) — and the image is STILL
+  unredacted, because detection (not OCR) is what drives which pixels get
+  boxed. That trade makes a hidden leak into a plainer one. Both artifacts
+  need fixing together, later, or not at all.
+
+  #173 FIX — REFUSE THE WHOLE IMAGE when OCR is not confident, recognisable
+  text, rather than pass it through unredacted. The signal is tesseract's own
+  per-word confidence from `pytesseract.image_to_data` (already parsed for the
+  bounding boxes — see `_ocr_words`): `_mean_confidence` averages it across
+  every recognised word, and `_MIN_OCR_CONFIDENCE` (60.0, on tesseract's own
+  0-100 scale) is the refusal floor. A CHARACTER-RANGE heuristic ("proportion
+  of non-Latin characters tesseract could not map") was considered and
+  REJECTED as a primary signal: `eng.traineddata` always emits from ITS OWN
+  ASCII-only alphabet regardless of what script it was shown — the Sinhala
+  example above OCRs to `"HO: 8OE Gs5ebd)"`, not to any non-Latin codepoint —
+  so a character-range check on the OUTPUT text is blind to the exact failure
+  this exists to catch. Confidence is not blind to it, and one clean signal
+  beats two where the second contributes nothing measured.
+
+  CALIBRATED, BOTH DIRECTIONS, on the fixtures this ticket was required not to
+  break (`_image_font(20)` — the same Pillow-bundled, OS-independent face
+  every OCR fixture in this module already uses, so these numbers reproduce
+  identically on a laptop and in CI):
+
+    fixture                                            mean confidence
+    --------------------------------------------------- ---------------
+    table layout (#163's own screenshot fixture)              91.5
+    form layout (label: value, stacked)                       95.4
+    cards layout (3 boxed records side by side)                89.1
+    prose layout (wrapped paragraph)                           91.8
+    small-font (13px) table                                    82.6
+    small-font (13px) prose                                    91.6
+    "Nimal Perera" alone, Latin, English UI                    93.0
+    "Maria Clara Santos" alone, Latin, English UI               95.3
+    ---------------------------------------------------  ---- REFUSE FLOOR (60.0) ----
+    non-Latin UI labels + Latin email/account (mixed)          38.6
+    Devanagari name alone                                       20.0
+    Sinhala name alone                                           7.0
+    Tamil name alone                                             7.0
+
+  60.0 sits ~23 points below the WORST passing fixture (82.6) and ~22 points
+  above the WORST refusing fixture (38.6) — comfortable margin on both sides,
+  not a hairline. Every fixture #163 proved working (four layouts, two Latin
+  names, two font sizes) stays above the floor; every non-Latin fixture
+  measured falls below it.
+
+  THE MIXED CASE, NAMED EXPLICITLY: a screenshot with non-Latin UI labels
+  around a Latin email and account number scores 38.6 and is REFUSED, even
+  though the email (89 conf) and account number (91 conf) were individually
+  read correctly — per-word confidence on those two values is fine; it is the
+  surrounding label noise (confidence 0-40) that drags the image mean below
+  the floor. This is deliberate, not a false positive: the fixture that
+  produces this shape is exactly a non-Latin label next to a Latin-script
+  NAME (see `_build_mixed`-shaped fixtures) — refusing errs safe because nothing
+  in this module can tell "harmless non-Latin caption" apart from "a name that
+  transliterates into noise" without reading the caption, which is the exact
+  thing it just failed to do with confidence. An artifact that cannot prove a
+  region has no PII does not get to keep it.
+
+  A GENUINELY TEXTLESS image (a chart, a logo, a photo) is not affected: zero
+  recognised words means `_mean_confidence` returns -1 rather than a low
+  score, the refusal check is skipped, and the existing `EmptyExtractionError`
+  path handles it — an ordinary empty result, not a refusal. The two must stay
+  distinguishable: one says "there was nothing to read here", the other says
+  "there was something here and it could not be trusted."
 
 D5b DECISION — `presidio-image-redactor` 0.0.60 REJECTED
   PRD §4 and the ticket asked for this to be settled on evidence. Installed
@@ -342,6 +412,7 @@ __all__ = [
     "UnsupportedFormatError",
     "ExtractorUnavailableError",
     "OCRUnavailableError",
+    "OCRLowConfidenceError",
     "ExtractionFailedError",
     "EmptyExtractionError",
     "IngestResult",
@@ -434,6 +505,36 @@ class OCRUnavailableError(ExtractorUnavailableError):
     the `.anon_` text, never the source deck — so refusing an entire annual
     report over one logo would cost the consultant everything and protect
     nothing.
+    """
+
+
+class OCRLowConfidenceError(IngestError):
+    """The local OCR ran but could not read the image's text with enough
+    confidence to trust it — refuses. (#173, closing the #163 non-Latin-script
+    leak: see the module docstring's "NON-LATIN SCRIPT IN IMAGES" section.)
+
+    THE LEAK THIS CLOSES: a non-Latin-script name (Sinhala, Tamil,
+    Devanagari — the only scripts measured, not necessarily the only ones
+    affected) transliterates into ASCII noise the detector cannot recognise
+    as a name. Before this error existed, that meant no box was drawn, so the
+    real name stayed fully legible in the redacted image copy — an artifact
+    whose `.anon_` prefix asserts it has been scrubbed. Refusing the whole
+    image is the fix: no sidecar and no redacted copy are written, so nothing
+    claims a protection it did not provide.
+
+    A DIRECT image ingest raises this and REFUSES — see `_extract_image`.
+    An image EMBEDDED in a DOCX/PPTX does NOT raise it: `_ocr_embedded`
+    degrades to `IMAGE_SEAM_MARKER` instead, for the same reason a missing
+    OCR binary or a corrupt embedded picture already degrades rather than
+    refusing the whole host document (see `OCRUnavailableError`'s own note) —
+    but it also withholds that picture's redacted copy, for the identical
+    reason: an embedded picture gets its own `.anon_...imageN.png`, which an
+    agent can open directly, and that copy would carry the same unblanked
+    leak if it were written from low-confidence OCR.
+
+    Distinct from `OCRUnavailableError`: that is raised when the local OCR
+    tool cannot run at all. This is raised when it DID run, on real image
+    data, and produced output not trustworthy enough to detect against.
     """
 
 
@@ -566,14 +667,21 @@ _COLUMN_GAP_RATIO = 1.2
 class _Word(object):
     """One OCR'd word and where it sits in the image."""
 
-    __slots__ = ("text", "left", "top", "width", "height", "start", "end")
+    __slots__ = ("text", "left", "top", "width", "height", "confidence", "start", "end")
 
-    def __init__(self, text: str, left: int, top: int, width: int, height: int):
+    def __init__(self, text: str, left: int, top: int, width: int, height: int,
+                 confidence: float):
         self.text = text
         self.left = left
         self.top = top
         self.width = width
         self.height = height
+        # tesseract's own 0-100 confidence for THIS word. Never used to drop
+        # or filter the word itself (see `_ocr_words`'s own note: dropping a
+        # low-confidence word would un-blank it) — carried only so the WHOLE
+        # image's confidence can be judged before any word is rendered or
+        # redacted at all. See `_mean_confidence` / `_MIN_OCR_CONFIDENCE`.
+        self.confidence = confidence
         # Filled in by `_render_ocr_rows`: this word's character span in the
         # rendered text. That span is what turns an engine detection back into
         # a rectangle of pixels.
@@ -610,16 +718,56 @@ _OCR_MISSING_MESSAGE = (
     "`sudo apt install tesseract-ocr` (Linux), then try again."
 )
 
+# Refusal floor for `_mean_confidence` — tesseract's own 0-100 word-confidence
+# scale from `image_to_data`. Below this, the image is refused outright rather
+# than passed through with an unredacted leak (#173; see the module
+# docstring's "NON-LATIN SCRIPT IN IMAGES" for the full calibration table).
+# 60.0 sits ~23 points below the worst-scoring fixture that MUST keep working
+# (82.6, a small-font table) and ~22 points above the worst-scoring fixture
+# that MUST refuse (38.6, a non-Latin UI with a Latin email/account still
+# individually legible) — comfortable margin on both sides, not a hairline.
+_MIN_OCR_CONFIDENCE = 60.0
+
+# Copy rules (ux-design-v6.md): consequence before instruction, say whether
+# they're blocked, no tool names. Mirrors `_OCR_MISSING_MESSAGE`'s shape for
+# the sibling failure mode: that one is the tool being absent; this one is the
+# tool running and not being trustworthy.
+_OCR_LOW_CONFIDENCE_MESSAGE = (
+    "The text in this image could not be read clearly enough to check it for "
+    "client details, so this image has NOT been prepared for review and must "
+    "not be opened. This usually happens when the image contains text in a "
+    "script the reader does not recognise. Describe what the image shows in "
+    "a sentence instead, or provide the same information as text or a "
+    "spreadsheet, and use that."
+)
+
+
+def _mean_confidence(words: Sequence[_Word]) -> float:
+    """Mean per-word confidence across every word THIS image's OCR pass
+    recognised, on tesseract's own 0-100 scale. -1.0 when no words were
+    recognised at all — deliberately NOT a low score: a genuinely textless
+    image (a chart, a logo, a photo) must fall through to the ordinary
+    `EmptyExtractionError` path, not be refused as unreadable. See
+    `_MIN_OCR_CONFIDENCE` and the module docstring's calibration table.
+    """
+    if not words:
+        return -1.0
+    return sum(w.confidence for w in words) / len(words)
+
 
 def _ocr_words(pytesseract, image) -> List[_Word]:
     """Every word tesseract read, with its box, in tesseract's own order.
 
-    NO confidence threshold is applied. Dropping a low-confidence word would
-    drop it from the sidecar AND from the redaction pass — the box is only
-    drawn for text the detector saw — so a half-read name would go from
-    "garbled but blanked" to "garbled and visible". Words with conf == -1 are
-    tesseract's structural rows (page/block/paragraph/line), not text, and are
-    the only thing skipped.
+    NO per-word confidence threshold is applied to WHICH words are kept —
+    dropping a low-confidence word would drop it from the sidecar AND from
+    the redaction pass — the box is only drawn for text the detector saw —
+    so a half-read name would go from "garbled but blanked" to "garbled and
+    visible". Words with conf == -1 are tesseract's structural rows
+    (page/block/paragraph/line), not text, and are the only thing skipped.
+
+    Each word's confidence IS kept (`_Word.confidence`), read by
+    `_mean_confidence` to judge the WHOLE image before anything is rendered —
+    a different question from which words to keep.
     """
     from pytesseract import Output  # noqa: PLC0415 - lazy by contract
 
@@ -639,6 +787,7 @@ def _ocr_words(pytesseract, image) -> List[_Word]:
             text,
             int(data["left"][i]), int(data["top"][i]),
             int(data["width"][i]), int(data["height"][i]),
+            confidence,
         ))
     return words
 
@@ -734,18 +883,26 @@ def _render_ocr_rows(rows: Sequence[Sequence[_Word]]) -> str:
     return "\n".join(lines) + ("\n" if lines else "")
 
 
-def _ocr_image(pytesseract, image) -> Tuple[str, List[_Word]]:
-    """One OCR pass -> (rendered text, words carrying their spans and boxes).
+def _ocr_image(pytesseract, image) -> Tuple[str, List[_Word], float]:
+    """One OCR pass -> (rendered text, words carrying their spans and boxes,
+    mean word confidence).
 
     ONE pass, deliberately: the sidecar text and the redaction boxes must
     describe the same reading of the same image. Two independent passes could
     disagree about what the picture says, and the disagreement would show up
     as a name that is in the sidecar's placeholders but still legible in the
     redacted copy (or the reverse).
+
+    The confidence is judged on the WORDS AS TESSERACT READ THEM, before
+    `_ocr_rows`/`_render_ocr_rows` reflow them into visual rows — the reflow
+    changes how text is JOINED, never what was recognised or with what
+    confidence, so judging pre- or post-reflow gives the same number; doing it
+    here means a caller can decide whether to trust the text before rendering
+    or redacting anything from it (see `_MIN_OCR_CONFIDENCE`).
     """
     words = _ocr_words(pytesseract, image)
     rows = _ocr_rows(words)
-    return _render_ocr_rows(rows), words
+    return _render_ocr_rows(rows), words, _mean_confidence(words)
 
 
 def _open_image(Image, data_or_path, path, fmt: str):
@@ -893,16 +1050,26 @@ def _ocr_embedded(blob: bytes, index: int, path: Path, payloads: Optional[List])
     either way (the agent reads the `.anon_` text, never the source deck), so
     refusing would cost the consultant the whole document and protect nothing.
     The seam says so in the text, where a reader can see it.
+
+    Low-confidence OCR (#173) degrades the SAME way and for the same reason —
+    but ALSO withholds the payload, so no redacted copy is written for this
+    picture either. An embedded picture's redacted copy is its own file an
+    agent can open directly (`.anon_<host>.imageN.png`), so it carries the
+    identical leak risk a direct image ingest refuses outright; degrading to
+    the seam marker without a payload gets the same "nothing unredacted is
+    written" outcome without refusing the whole host document.
     """
     try:
         pytesseract, Image = _require_ocr(path, "image")
         image = _open_image(Image, blob, path, "image")
-        text, words = _ocr_image(pytesseract, image)
+        text, words, confidence = _ocr_image(pytesseract, image)
     except IngestError:
         return [IMAGE_SEAM_MARKER, ""]
     except Exception:  # noqa: BLE001 - a picture must never break a document
         return [IMAGE_SEAM_MARKER, ""]
     if not text.strip():
+        return [IMAGE_SEAM_MARKER, ""]
+    if words and confidence < _MIN_OCR_CONFIDENCE:
         return [IMAGE_SEAM_MARKER, ""]
     if payloads is not None:
         payloads.append(_ImagePayload(index, image, words, text))
@@ -911,11 +1078,22 @@ def _ocr_embedded(blob: bytes, index: int, path: Path, payloads: Optional[List])
 
 
 def _extract_image(path: Path, payloads: Optional[List] = None) -> str:
-    """An image -> the OCR text, in the measured shape. Read-only."""
+    """An image -> the OCR text, in the measured shape. Read-only.
+
+    Raises `OCRLowConfidenceError` (#173) when OCR ran but its output is not
+    confident enough to trust — BEFORE the payload is appended, so no sidecar
+    and no redacted copy is ever written for this image (see `ingest_file`:
+    `_extract` runs before any output path is even computed). A genuinely
+    textless image (no words at all) is not affected — `_mean_confidence`
+    returns -1.0 for it, which is never below `_MIN_OCR_CONFIDENCE`, and it
+    falls through to the ordinary `EmptyExtractionError` path instead.
+    """
     fmt = path.suffix.lower().lstrip(".") or "image"
     pytesseract, Image = _require_ocr(path, fmt)
     image = _open_image(Image, path, path, fmt)
-    text, words = _ocr_image(pytesseract, image)
+    text, words, confidence = _ocr_image(pytesseract, image)
+    if words and confidence < _MIN_OCR_CONFIDENCE:
+        raise OCRLowConfidenceError(_OCR_LOW_CONFIDENCE_MESSAGE, path=path, fmt=fmt)
     if payloads is not None:
         payloads.append(_ImagePayload(None, image, words, text))
     return text

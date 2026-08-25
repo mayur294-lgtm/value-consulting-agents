@@ -12,13 +12,16 @@ deterministic and free.
 SEQUENCING (read before adding a check here)
   #161 runs 7th in the v6 build order, deliberately: the gate exists before
   more code lands on top of it. Six checks from the PRD's original 16-check
-  list were NOT authored then because their subject did not exist yet. Two
-  have since landed — `document_formats_converted_and_scrubbed` with #162 and
-  `image_input_produces_sidecar_and_redacted_copy` with #163 — and are checks
-  11 and 12 below. The rest still wait on their ticket:
+  list were NOT authored then because their subject did not exist yet. Three
+  have since landed — `document_formats_converted_and_scrubbed` with #162,
+  `image_input_produces_sidecar_and_redacted_copy` with #163, and
+  `image_unreadable_script_refuses_and_writes_nothing` with #173 (closing the
+  non-Latin-script leak #163 measured and documented but did not fix) — and
+  are checks 11, 12 and 13 below. The rest still wait on their ticket:
 
     document_formats_converted_and_scrubbed   -> #162 — LANDED (check 11)
     image_input_produces_sidecar_and_redacted_copy -> #163 — LANDED (check 12)
+    image_unreadable_script_refuses_and_writes_nothing -> #173 — LANDED (check 13)
     guard_fails_closed_on_inputs_path         -> #164 (guard rewrite)
     xlsx_outputs_deanonymized                 -> #165 (deanonymize_dir xlsx)
     nested_outputs_deanonymized               -> #165 (deanonymize_dir recursive)
@@ -34,9 +37,9 @@ SEQUENCING (read before adding a check here)
   two-line mcp-query-guard fixture pre-711b56c). The clean option, taken
   here, is simply not writing those checks until their ticket lands.
 
-  The 12 checks below all exercise code that exists TODAY: `scripts/pii/
+  The 13 checks below all exercise code that exists TODAY: `scripts/pii/
   engine.py`, `scripts/pii/denylist.py` (via the engine's deny-list
-  recognizer), `scripts/pii/ingest.py` (#162), and
+  recognizer), `scripts/pii/ingest.py` (#162, #163, #173), and
   `scripts/anonymize_transcript.py`'s facade.
 
 WHY THE VENV INTERPRETER
@@ -99,6 +102,14 @@ FIXTURE
   on the redacted copy's PIXELS — per OCR word, and on the BACKGROUND between
   the letters, since black fill over black glyphs is indistinguishable from
   the glyphs — so "a file was written" cannot pass it.
+
+  #173 adds a FIFTH inline fixture: a screenshot carrying only
+  `UNREADABLE_SCRIPT_NAME`, a name in a script the local `eng`-only OCR
+  cannot read (module docstring's own measured Sinhala example), plus a
+  second, genuinely textless screenshot (shapes, no text) to prove the two
+  failure modes — "unreadable" vs "nothing there" — stay distinguishable.
+  Same font-portability rule as #163's screenshot: `_image_font`, not a
+  system font, so it OCRs identically on a laptop and in CI.
 
 KNOWN, DOCUMENTED GAP — the markdown-table PERSON miss
   `evals/goldens/pii_roundtrip_fixture.md`'s Stakeholder Directory table
@@ -1487,6 +1498,162 @@ def _image_input_produces_sidecar_and_redacted_copy(target: str) -> CheckResult:
                         detail=detail, evidence=evidence)
 
 
+# A name in a script the local `eng`-only OCR cannot read at all — the
+# module docstring's own measured Sinhala example ("නිමල් පෙරේරා"). Rendered
+# with `_image_font`, the same Pillow-bundled, OS-independent face every
+# other OCR fixture in this file uses (see `_image_font`'s own docstring for
+# why that matters): the point measured here is that `eng`-only tesseract
+# cannot read this script AT ALL, which holds regardless of font, and using
+# the bundled face keeps this reproducing identically in CI.
+UNREADABLE_SCRIPT_NAME = "නිමල් පෙරේරා"
+
+
+def _build_unreadable_script_screenshot(path: Path) -> None:
+    """A synthetic screenshot whose only content is a name in a script the
+    local OCR cannot read — see `UNREADABLE_SCRIPT_NAME`."""
+    from PIL import Image, ImageDraw  # noqa: PLC0415
+
+    font = _image_font(20)
+    image = Image.new("RGB", (500, 80), "white")
+    draw = ImageDraw.Draw(image)
+    draw.text((20, 20), UNREADABLE_SCRIPT_NAME, font=font, fill="black")
+    image.save(str(path), format="PNG")
+
+
+def _build_textless_screenshot(path: Path) -> None:
+    """A synthetic screenshot with NO text at all — a chart/logo stand-in
+    (shapes only). Used to prove the low-confidence refusal does not
+    misfire on a genuinely empty image: that case must stay an ordinary
+    `EmptyExtractionError`, not `OCRLowConfidenceError` — see the module
+    docstring's own "must stay distinguishable" note."""
+    from PIL import Image, ImageDraw  # noqa: PLC0415
+
+    image = Image.new("RGB", (400, 200), "white")
+    draw = ImageDraw.Draw(image)
+    draw.ellipse([40, 40, 360, 160], outline="black", width=4)
+    draw.rectangle([140, 80, 260, 120], outline="black", width=4)
+    image.save(str(path), format="PNG")
+
+
+def _image_unreadable_script_refuses_and_writes_nothing(target: str) -> CheckResult:  # noqa: ARG001
+    """#173: an image whose text cannot be confidently read is REFUSED, not
+    silently passed through unredacted. Closes the leak #163 measured and
+    documented in ingest.py's module docstring ("NON-LATIN SCRIPT IN
+    IMAGES"): a non-Latin-script name transliterates into noise the detector
+    cannot recognise, so — before this ticket — no box was drawn and the real
+    name stayed fully legible in the redacted copy: an artifact whose
+    `.anon_` prefix asserted a scrub that never happened.
+
+    Five properties, gated at 1.00:
+
+      1. Ingesting the unreadable-script image raises `OCRLowConfidenceError`
+         — a typed `IngestError`, never a bare exception, and never a
+         silent "success".
+      2. NO sidecar (`.anon_...md`) is written for it.
+      3. NO redacted image copy (`.anon_...png`) is written for it — the
+         specific leak this check exists to close.
+      4. The refusal message is plain language, names no tool, and states
+         the image will not be used (ux-design-v6.md Copy Rules).
+      5. The refusal is NOT triggered by a genuinely textless image (a
+         chart/logo stand-in): that case must still reach the ordinary
+         `EmptyExtractionError` path, proving the two failure modes stay
+         distinguishable rather than collapsing into one.
+    """
+    name = "image_unreadable_script_refuses_and_writes_nothing"
+    from pii import ingest  # noqa: PLC0415
+
+    problems: list = []
+    evidence: list = []
+
+    with tempfile.TemporaryDirectory(prefix="pii_eval_unreadable_") as td:
+        root = Path(td)
+        source = root / "shot.png"
+        _build_unreadable_script_screenshot(source)
+        digest_before = hashlib.sha256(source.read_bytes()).hexdigest()
+
+        ingest.reset_engagement_notices()
+        engine = _engine()
+
+        # 1 + 4. the typed refusal, with a plain-language, tool-free message
+        try:
+            ingest.ingest_file(source, session=_new_session(engine),
+                               engagement_dir=root, notice_stream=io.StringIO())
+            problems.append(
+                "an unreadable-script image was NOT refused — ingest_file "
+                "returned normally instead of raising"
+            )
+        except ingest.OCRLowConfidenceError as exc:
+            if not isinstance(exc, ingest.IngestError) or not exc.message:
+                problems.append("refusal carries no message")
+            else:
+                prose = exc.message.lower()
+                for banned in ("presidio", "spacy", "pytesseract", "tesseract",
+                               "pip install", "ocr"):
+                    if banned in prose:
+                        problems.append(
+                            "message names %r — copy rule 1 keeps tool names "
+                            "out of consultant-facing text" % banned
+                        )
+                for required in ("could not be read", "must not be opened"):
+                    if required not in prose:
+                        problems.append("message is missing %r" % required)
+                evidence.append("refusal message: %r" % exc.message)
+        except Exception as exc:  # noqa: BLE001
+            problems.append("wrong error type %s raised (expected "
+                            "OCRLowConfidenceError)" % type(exc).__name__)
+
+        # 2 + 3. no artifacts at all — the directory holds only the source
+        written = sorted(p.name for p in root.iterdir() if p != source)
+        if written:
+            problems.append("artifacts were written despite the refusal: %r" % written)
+        anon_sidecar = ingest.anon_path_for(source)
+        if anon_sidecar.is_file():
+            problems.append("a .anon_ sidecar was produced anyway")
+        anon_image = ingest.redacted_image_path_for(source)
+        if anon_image.is_file():
+            problems.append(
+                "a redacted .anon_ image copy was produced anyway — this is "
+                "the exact #163 leak #173 exists to close"
+            )
+        evidence.append("directory listing after refusal: %r" %
+                        sorted(p.name for p in root.iterdir()))
+
+        if hashlib.sha256(source.read_bytes()).hexdigest() != digest_before:
+            problems.append("SOURCE IMAGE WAS MODIFIED by ingest")
+
+        # 5. a genuinely textless image must NOT take this refusal path
+        textless = root / "chart.png"
+        _build_textless_screenshot(textless)
+        try:
+            ingest.ingest_file(textless, session=_new_session(engine),
+                               engagement_dir=root, notice_stream=io.StringIO())
+            problems.append("a textless image was NOT refused at all — "
+                            "expected EmptyExtractionError")
+        except ingest.OCRLowConfidenceError:
+            problems.append(
+                "a textless image (no words recognised) raised "
+                "OCRLowConfidenceError — it must fall through to "
+                "EmptyExtractionError instead; the two failure modes have "
+                "collapsed into one"
+            )
+        except ingest.EmptyExtractionError:
+            evidence.append("textless image: correctly EmptyExtractionError, "
+                            "not OCRLowConfidenceError")
+        except Exception as exc:  # noqa: BLE001
+            problems.append("textless image raised the wrong error type %s"
+                            % type(exc).__name__)
+
+    ok = not problems
+    detail = ("; ".join(problems) if problems else
+              "unreadable-script image raises OCRLowConfidenceError; no "
+              "sidecar and no redacted copy written; source unmodified; "
+              "message is plain-language, tool-free and states the image is "
+              "blocked; a textless image still takes the ordinary "
+              "EmptyExtractionError path, not this refusal")
+    return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=True,
+                        detail=detail, evidence=evidence)
+
+
 def evaluate(target: str) -> list:
     fixture = _fixture_path(target)
     if not fixture.exists():
@@ -1521,6 +1688,7 @@ def evaluate(target: str) -> list:
         _legacy_flat_mapping_still_restores,
         _document_formats_converted_and_scrubbed,
         _image_input_produces_sidecar_and_redacted_copy,
+        _image_unreadable_script_refuses_and_writes_nothing,
     ]
     results = []
     for fn in checks:
