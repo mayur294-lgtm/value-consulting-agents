@@ -47,7 +47,7 @@ The `require-harness.py` hook blocks direct edits to component paths when no bb-
 
 ## Commands
 
-Python 3.11. Install deps with `pip install -r requirements.txt` (only `openpyxl`; CI also installs `pyyaml`). There is no Makefile and no npm/unit-test suite in the repo root — the engine is `scripts/orchestrate.py` and quality is enforced structurally in CI.
+The system `python3` on most consultant machines is 3.9.6 — that runs the pipeline and hooks fine. The PII protection tooling (Presidio) additionally requires **Python 3.10–3.13**, installed into a separate `.venv` by `bash scripts/setup_pii.sh` (see README "Installation") rather than assumed as the default interpreter. Install base deps with `pip install -r requirements.txt` (only `openpyxl` and the pinned `claude-agent-sdk`; CI also installs `pyyaml`). There is no Makefile and no npm/unit-test suite in the repo root — the engine is `scripts/orchestrate.py` and quality is enforced structurally in CI.
 
 **Run the assessment pipeline** — the core engine for Ignite Assess (Discovery → Block A's 5 parallel agents → Roadmap → Assembly → HTML → Excel → Validation). Run from repo root; `CLAUDECODE=` clears the env var so checkpoints work:
 

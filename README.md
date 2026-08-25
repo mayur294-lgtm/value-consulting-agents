@@ -8,6 +8,24 @@ Roadmap, releases, and team commitments are tracked on the **[Cortex Roadmap pro
 
 Every task, issue, and workstream lives there with a Start Date, Target Date, milestone, and owner. The board is the single forward-looking view of the project; this repo is the source of truth for the work itself.
 
+## Installation
+
+Base requirements:
+
+```bash
+pip install -r requirements.txt
+```
+
+`requirements.txt` also declares Cortex's **PII protection tooling** (Presidio, document text extraction, OCR). Those packages need **Python 3.10–3.13** — the system `python3` on most consultant machines is older than that — so they are not installed by the command above. Instead, run:
+
+```bash
+bash scripts/setup_pii.sh
+```
+
+once, from the repo root. It finds a compatible Python interpreter, creates a virtual environment at `.venv`, installs everything, and downloads the language model PII detection needs (`en_core_web_lg`, ~380 MB — the slow step, give it a few minutes). It's safe to re-run; a second run reuses what's already installed and finishes quickly. It also checks for the `tesseract` OCR binary, needed only for reading screenshots — if it's missing, the script reports the one command to install it and continues; nothing else is blocked.
+
+You don't have to remember any of this yourself: every session start, Claude checks whether PII protection is set up and, if it isn't, tells you exactly what's missing and prints this same command. Until it's set up, client documents in an engagement's `inputs/` folder won't open — that's intentional, so raw client material never reaches Claude unscrubbed. Everything else works normally in the meantime.
+
 ## What is Value Consulting?
 
 Value Consulting is a disciplined practice that connects business outcomes to technology investments through evidence-based analysis. Unlike traditional consulting that focuses on deliverables or vendor solutions, Value Consulting focuses on **measurable business value creation**.
