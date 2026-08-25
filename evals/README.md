@@ -88,8 +88,13 @@ pip install "langfuse>=2.0" "anthropic>=0.40"
 ```
 
 **PII:** datasets are curated golden fixtures — scrub once with
-`scripts/anonymize_transcript.py` and they are safe for Cloud. Only the Loop-3
-monitor touches live outputs (scrub-on-ingest, or keep it off until needed).
+`scripts/anonymize_transcript.py --file <path> --engagement-dir <dir>` and they
+are safe for Cloud. The script is a facade over `scripts/pii/engine.py`
+(Presidio), which needs Python 3.10–3.13 — run it through `.venv/bin/python`
+(`bash scripts/setup_pii.sh` once if `.venv` doesn't exist) or
+`.claude/hooks/_resolve_python.sh scripts/anonymize_transcript.py ...`, not
+plain system `python3`. Only the Loop-3 monitor touches live outputs
+(scrub-on-ingest, or keep it off until needed).
 
 ## Calibration
 
