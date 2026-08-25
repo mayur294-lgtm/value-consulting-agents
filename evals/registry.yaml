@@ -254,7 +254,7 @@ components:
   #   document_formats_converted_and_scrubbed   -> #162 — LANDED, wired below
   #   image_input_produces_sidecar_and_redacted_copy -> #163 — LANDED, wired below
   #   image_unreadable_script_refuses_and_writes_nothing -> #173 — LANDED, wired below
-  #   guard_fails_closed_on_inputs_path         -> #164 (guard rewrite)
+  #   guard_fails_closed_on_inputs_path         -> #164 — LANDED, wired below
   #   xlsx_outputs_deanonymized                 -> #165 (deanonymize_dir xlsx)
   #   nested_outputs_deanonymized               -> #165 (deanonymize_dir recursive)
   #   mcp_query_client_name_blocked             -> already covered by the
@@ -278,7 +278,8 @@ components:
            empty_entity_list_warns, legacy_flat_mapping_still_restores,
            document_formats_converted_and_scrubbed,
            image_input_produces_sidecar_and_redacted_copy,
-           image_unreadable_script_refuses_and_writes_nothing]
+           image_unreadable_script_refuses_and_writes_nothing,
+           guard_fails_closed_on_inputs_path]
 
 # Pipeline (integration) altitude — the most important. When ANY component
 # changes, run orchestrate.py end-to-end on a golden engagement and check the

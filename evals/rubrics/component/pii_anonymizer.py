@@ -12,17 +12,18 @@ deterministic and free.
 SEQUENCING (read before adding a check here)
   #161 runs 7th in the v6 build order, deliberately: the gate exists before
   more code lands on top of it. Six checks from the PRD's original 16-check
-  list were NOT authored then because their subject did not exist yet. Three
+  list were NOT authored then because their subject did not exist yet. Four
   have since landed — `document_formats_converted_and_scrubbed` with #162,
-  `image_input_produces_sidecar_and_redacted_copy` with #163, and
+  `image_input_produces_sidecar_and_redacted_copy` with #163,
   `image_unreadable_script_refuses_and_writes_nothing` with #173 (closing the
-  non-Latin-script leak #163 measured and documented but did not fix) — and
-  are checks 11, 12 and 13 below. The rest still wait on their ticket:
+  non-Latin-script leak #163 measured and documented but did not fix), and
+  `guard_fails_closed_on_inputs_path` with #164 — and are checks 11-14
+  below. The rest still wait on their ticket:
 
     document_formats_converted_and_scrubbed   -> #162 — LANDED (check 11)
     image_input_produces_sidecar_and_redacted_copy -> #163 — LANDED (check 12)
     image_unreadable_script_refuses_and_writes_nothing -> #173 — LANDED (check 13)
-    guard_fails_closed_on_inputs_path         -> #164 (guard rewrite)
+    guard_fails_closed_on_inputs_path         -> #164 — LANDED (check 14)
     xlsx_outputs_deanonymized                 -> #165 (deanonymize_dir xlsx)
     nested_outputs_deanonymized               -> #165 (deanonymize_dir recursive)
     mcp_query_client_name_blocked             -> already covered by the
@@ -37,10 +38,22 @@ SEQUENCING (read before adding a check here)
   two-line mcp-query-guard fixture pre-711b56c). The clean option, taken
   here, is simply not writing those checks until their ticket lands.
 
-  The 13 checks below all exercise code that exists TODAY: `scripts/pii/
+  Check 14, `guard_fails_closed_on_inputs_path`, differs in kind from the
+  other 13: it does not import `scripts/pii/engine.py` at all. By design
+  (.design/solution-design-v6.md D13), `.claude/hooks/anonymize-guard.py`
+  was rewritten to NOT use the Presidio engine — a synchronous PreToolUse
+  hook cannot pay a ~0.7-1.1s spaCy/Presidio cold start on every Read/Bash
+  call. It invokes the real hook SCRIPT as a subprocess with a synthesized
+  PreToolUse payload on stdin, exactly as `mcp_query_guard.py`'s rubric does
+  for its own hook — never imports the hook module and monkeypatches its
+  internals, since that would only prove the Python function behaves, not
+  that the process-level contract (stdout JSON shape, exit code) holds.
+
+  The 14 checks below all exercise code that exists TODAY: `scripts/pii/
   engine.py`, `scripts/pii/denylist.py` (via the engine's deny-list
-  recognizer), `scripts/pii/ingest.py` (#162, #163, #173), and
-  `scripts/anonymize_transcript.py`'s facade.
+  recognizer), `scripts/pii/ingest.py` (#162, #163, #173),
+  `scripts/anonymize_transcript.py`'s facade, and `.claude/hooks/
+  anonymize-guard.py` (#164).
 
 WHY THE VENV INTERPRETER
   `scripts/pii/engine.py` does `import presidio_analyzer` at module level, and
@@ -137,6 +150,7 @@ import json
 import os
 import re
 import stat
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -1654,6 +1668,126 @@ def _image_unreadable_script_refuses_and_writes_nothing(target: str) -> CheckRes
                         detail=detail, evidence=evidence)
 
 
+# --- guard_fails_closed_on_inputs_path (#164) -------------------------------
+#
+# `.claude/hooks/anonymize-guard.py` itself, invoked as a subprocess — see
+# module docstring's "Check 14" note for why this does not go through
+# `_engine()`/`_facade()` like every other check here.
+
+ANONYMIZE_GUARD_HOOK_REL_PATH = Path(".claude") / "hooks" / "anonymize-guard.py"
+
+
+def _anonymize_guard_hook_path() -> Path:
+    return repo_root() / ANONYMIZE_GUARD_HOOK_REL_PATH
+
+
+def _read_tool_payload(file_path: str) -> bytes:
+    return json.dumps({
+        "tool_name": "Read",
+        "tool_input": {"file_path": file_path},
+    }).encode("utf-8")
+
+
+def _run_anonymize_guard(project_dir: Path, stdin_bytes: bytes) -> subprocess.CompletedProcess:
+    """Invoke the real hook script as a subprocess, exactly as Claude Code
+    does: JSON payload on stdin, CLAUDE_PROJECT_DIR pointing at the fixture
+    root, decision read back from stdout/exit code. Mirrors
+    mcp_query_guard.py's `_run_hook`."""
+    env = dict(os.environ)
+    env["CLAUDE_PROJECT_DIR"] = str(project_dir)
+    return subprocess.run(
+        [sys.executable, str(_anonymize_guard_hook_path())],
+        input=stdin_bytes,
+        capture_output=True,
+        timeout=15.0,
+        env=env,
+    )
+
+
+def _guard_is_deny(result: subprocess.CompletedProcess) -> tuple:
+    out = result.stdout.decode("utf-8", errors="replace").strip()
+    if not out:
+        return False, None
+    try:
+        parsed = json.loads(out)
+    except json.JSONDecodeError:
+        return False, None
+    decision = (parsed.get("hookSpecificOutput") or {}).get("permissionDecision")
+    return decision == "deny", parsed
+
+
+def _guard_fails_closed_on_inputs_path(target: str) -> CheckResult:  # noqa: ARG001
+    """The #164 rewrite's central contract (.design/solution-design-v6.md
+    D13): ANY unexpected failure while evaluating a path under
+    engagements/*/inputs/ must DENY; the identical failure for a path
+    OUTSIDE that scope must ALLOW — the guard is fail-closed on raw client
+    material only, never globally (a globally fail-closed guard wedged
+    every session once already, PR #82).
+
+    Fault injection: chmod the `inputs/` directory (and, for the control
+    case, an unrelated directory outside engagements/) to 000 so any
+    stat()/exists() call inside raises a real, unmocked PermissionError —
+    not a simulated fault. Both files exist and are genuinely unscrubbed
+    (no `.anon_` sibling), so absent the fault they would both be denied
+    for the ORDINARY reason (missing sibling); the fault must change the
+    outside-inputs/ outcome to allow while the inputs/ outcome stays deny,
+    proving the fail-closed/fail-open SPLIT, not just that denial happens
+    somewhere.
+
+    Skips (never false-passes or false-fails) when running as root, which
+    bypasses directory permission bits entirely.
+    """
+    name = "guard_fails_closed_on_inputs_path"
+    if hasattr(os, "getuid") and os.getuid() == 0:
+        return CheckResult(name, 1.0, True, skipped=True,
+                            detail="running as root — chmod-based permission fault "
+                                   "injection cannot be exercised (root bypasses "
+                                   "directory perms); skipping rather than reporting "
+                                   "a false pass or fail")
+
+    hook = _anonymize_guard_hook_path()
+    if not hook.exists():
+        return _bool_check(name, False, detail=f"{hook} not found — cannot run the check")
+
+    with tempfile.TemporaryDirectory(prefix="anonymize_guard_eval_") as td:
+        root = Path(td)
+        engagement = root / "engagements" / "zzzplaceholderclient" / "2026-01_test_engagement"
+        inputs_dir = engagement / "inputs"
+        inputs_dir.mkdir(parents=True)
+        raw_inputs_file = inputs_dir / "fault_test.md"
+        raw_inputs_file.write_text("placeholder content, no sibling\n", encoding="utf-8")
+
+        outside_dir = root / "scratch_outside"
+        outside_dir.mkdir(parents=True)
+        outside_file = outside_dir / "fault_test.md"
+        outside_file.write_text("placeholder content, no sibling\n", encoding="utf-8")
+
+        inputs_mode = inputs_dir.stat().st_mode
+        outside_mode = outside_dir.stat().st_mode
+        try:
+            inputs_dir.chmod(0o000)
+            outside_dir.chmod(0o000)
+            result_inputs = _run_anonymize_guard(root, _read_tool_payload(str(raw_inputs_file)))
+            result_outside = _run_anonymize_guard(root, _read_tool_payload(str(outside_file)))
+        finally:
+            # Restore unconditionally so tempdir cleanup can list/remove these.
+            inputs_dir.chmod(inputs_mode | stat.S_IRWXU)
+            outside_dir.chmod(outside_mode | stat.S_IRWXU)
+
+        denied_inputs, parsed_inputs = _guard_is_deny(result_inputs)
+        denied_outside, _ = _guard_is_deny(result_outside)
+
+        ok = (
+            result_inputs.returncode == 0 and denied_inputs
+            and result_outside.returncode == 0 and not denied_outside
+        )
+        return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=True, detail=(
+            f"inputs/ (fault): rc={result_inputs.returncode} denied={denied_inputs} "
+            f"outside inputs/ (fault): rc={result_outside.returncode} denied={denied_outside} "
+            f"reason={((parsed_inputs or {}).get('hookSpecificOutput') or {}).get('permissionDecisionReason', '')[:120]!r}"
+        ))
+
+
 def evaluate(target: str) -> list:
     fixture = _fixture_path(target)
     if not fixture.exists():
@@ -1689,6 +1823,7 @@ def evaluate(target: str) -> list:
         _document_formats_converted_and_scrubbed,
         _image_input_produces_sidecar_and_redacted_copy,
         _image_unreadable_script_refuses_and_writes_nothing,
+        _guard_fails_closed_on_inputs_path,
     ]
     results = []
     for fn in checks:
