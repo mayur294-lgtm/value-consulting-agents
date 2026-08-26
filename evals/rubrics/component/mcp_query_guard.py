@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import stat
 import subprocess
 import tempfile
@@ -574,6 +575,63 @@ def _ignores_unfilled_template_placeholders(root: Path) -> CheckResult:
     ))
 
 
+_MAX_FILES_SCANNED_RE = re.compile(r"^MAX_FILES_SCANNED\s*=\s*(\d+)", re.MULTILINE)
+
+
+def _hook_max_files_scanned() -> int:
+    """Read MAX_FILES_SCANNED straight out of the hook's own source rather
+    than hardcoding a second copy of the constant here that could silently
+    drift out of sync with `.claude/hooks/mcp-query-guard.py` (e.g. someone
+    raises the cap there and this check keeps using a stale, too-small
+    number, quietly stopping proving anything)."""
+    text = _hook_path().read_text(encoding="utf-8")
+    m = _MAX_FILES_SCANNED_RE.search(text)
+    if not m:
+        raise RuntimeError(
+            "MAX_FILES_SCANNED constant not found in mcp-query-guard.py source"
+        )
+    return int(m.group(1))
+
+
+def _scan_limit_hit_fails_closed(root: Path) -> CheckResult:
+    """Backlog :117 — no eval covered whether hitting MAX_FILES_SCANNED
+    actually fails closed. `_read_bounded()` raises `_ScanLimitExceeded`
+    once `_read_count` reaches the cap (commit 711b56c); `main()` must catch
+    that (it's just another exception in the `_resolve_deny_list()` call)
+    and deny via `_deny_gate_broken()`, exactly like an unreadable file or a
+    malformed payload — NOT silently proceed with whatever partial deny-list
+    it collected before the limit hit (the pre-711b56c bug this guards).
+
+    Synthesizes MAX_FILES_SCANNED + 10 separate client directories, each
+    with its own minimal CLIENT_PROFILE.md — the exact artifact
+    `_read_bounded()` counts against, one read per client — so
+    `_resolve_deny_list()` provably crosses the cap for real inside the
+    subprocess, rather than asserting the exception path in the abstract.
+    The +10 margin (not +1) keeps this robust to `os.walk`/`iterdir`
+    ordering and to any incidental extra read the hook adds later, without
+    weakening what's being proven."""
+    name = "scan_limit_hit_fails_closed"
+    limit = _hook_max_files_scanned()
+    engagements_dir = root / "engagements"
+    engagements_dir.mkdir(parents=True)
+    for i in range(limit + 10):
+        client_dir = engagements_dir / f"zzzscanlimit{i:04d}"
+        client_dir.mkdir()
+        (client_dir / "CLIENT_PROFILE.md").write_text(
+            "# Client Profile\n\n- **Client Name:** Placeholder\n",
+            encoding="utf-8",
+        )
+    payload = _payload({"query": "digital onboarding capabilities for a Tier-2 retail bank"})
+    result = _run_hook(root, payload)
+    denied, parsed = _is_deny(result)
+    reason = ((parsed or {}).get("hookSpecificOutput") or {}).get("permissionDecisionReason", "")
+    ok = result.returncode == 0 and denied and "could not verify" in reason.lower()
+    return _bool_check(name, ok, detail=(
+        f"limit={limit} dirs={limit + 10} rc={result.returncode} denied={denied} "
+        f"reason={reason[:200]!r}"
+    ))
+
+
 def _runs_under_registered_interpreter(root: Path) -> CheckResult:
     """#192/backlog :116 — the hook must be invoked under whatever
     interpreter `.claude/settings.json` actually registers for it (bare
@@ -617,5 +675,6 @@ def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained
         _run_in_tmp(_denies_identifier_from_engagement_intake_file),
         _run_in_tmp(_denies_client_name_from_profile_name_label),
         _run_in_tmp(_ignores_unfilled_template_placeholders),
+        _run_in_tmp(_scan_limit_hit_fails_closed),
         _run_in_tmp(_runs_under_registered_interpreter),
     ]

@@ -269,7 +269,8 @@ components:
            denies_bold_markdown_label_client_name, fails_closed_on_unreadable_profile_file,
            matching_is_case_insensitive, denies_identifier_from_engagement_context_file,
            denies_identifier_from_engagement_intake_file, denies_client_name_from_profile_name_label,
-           ignores_unfilled_template_placeholders, runs_under_registered_interpreter]
+           ignores_unfilled_template_placeholders, scan_limit_hit_fails_closed,
+           runs_under_registered_interpreter]
 
   # pii-anonymizer (ticket #161, PRD v6 §5, solution-design-v6.md D9) — the
   # acceptance gate for the whole v6 Presidio PII cycle. Covers
