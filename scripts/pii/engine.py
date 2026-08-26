@@ -69,18 +69,36 @@ MEASURED DETECTION LIMITS (know these before quoting coverage)
       "**Primary Contact:**" label 26/30 · markdown table 25/30
 
   The misses are spaCy's, not this module's: in a markdown table cell
-  `| Aisha Rahman | CFO |` spaCy tags the name as ORG, and in
-  `- Aisha Rahman, Head of ...` it tags nothing. Enabling ORGANIZATION would
-  catch those and simultaneously strip "Backbase", "Temenos" and every other
-  vendor and product name the deliverable depends on, so it is not a fix.
+  `| Aisha Rahman | CFO |` the name is not tagged PERSON, and in
+  `- Aisha Rahman, Head of ...` it is not tagged at all.
 
-  The real fix is to put STAKEHOLDER names on the deny-list the way client
-  names already are — which is what the empty-list warning below already
-  promises ("No client or stakeholder names found ..."). `denylist.py`
-  deliberately mines only client/institution labels today, because it is a
-  faithful port of the MCP gate's reviewed extraction and inventing new
-  heuristics here is how that gate acquired six false-positive classes the
-  first time. Broadening it is a scoped follow-up, not a drive-by.
+  ⚠️ CORRECTION (#209). This note used to say spaCy tags the table-cell name
+  ORG, and that enabling ORGANIZATION would therefore catch it at the cost of
+  stripping "Backbase"/"Temenos" — an unaffordable trade, but a trade. That
+  was repeated verbatim into `:222` below, into the eval rubric and into the
+  backlog, and it was FALSE IN BOTH HALVES. Measured on the eval fixture with
+  `en_core_web_lg`:
+    - spaCy tags "Aisha Rahman" in that table row **EVENT**, not ORG (in the
+      row read in isolation it is even tagged PERSON — the miss comes from
+      whole-document context, which is why single-line probes disagree);
+    - enabling ORGANIZATION does **not** catch the name at all, and DOES
+      strip "Backbase" and "Salesforce".
+  So there was never a trade-off: ORGANIZATION is full cost, zero benefit.
+  It stays out of DEFAULT_ENTITIES, but for that reason — not for a
+  detection benefit it does not have.
+
+  The real fix — the one this note has always named — is STAKEHOLDER names on
+  the deny-list the way client names already are, which is what the
+  empty-list warning below promises ("No client or stakeholder names
+  found ..."). #209 implements it: `denylist.extract_stakeholder_terms`
+  mines them from CLIENT_PROFILE.md / engagement_intake.md /
+  ENGAGEMENT_CONTEXT.md, they arrive here through the same deny-list
+  recogniser at score 1.0, and a deny-list term is model- and
+  shape-independent — so it fires in a table cell, a bullet, prose and a
+  speaker label alike. The extraction is phrase-only (a person contributes
+  their full name, never its individual words) precisely so it cannot
+  reintroduce the false-positive classes the MCP gate acquired the first
+  time; see that function's own rationale.
 
 INTERNAL-DOMAIN EMAILS — WHY THERE ARE TWO EMAIL RECOGNIZERS (#181 leak fix)
   Presidio's built-in `EmailRecognizer` validates the matched domain with
@@ -219,10 +237,15 @@ DEFAULT_SPACY_MODEL = "en_core_web_lg"
 # business content in a value-consulting deliverable and redacting them would
 # destroy the analysis:
 #
-#   ORGANIZATION - would strip "Backbase" and every vendor/product name.
-#                  README standards explicitly KEEP those. And per D3 the
-#                  client's own name comes from the deny-list, so enabling a
-#                  noisy ORG recogniser buys nothing and costs a lot.
+#   ORGANIZATION - MEASURED (#209), not assumed: enabling it strips
+#                  "Backbase" and "Salesforce" — which README standards
+#                  explicitly KEEP — and catches the table-cell person name
+#                  it was long believed to catch NOT AT ALL (spaCy tags that
+#                  name EVENT, not ORG; "Temenos" survives either way). Full
+#                  cost, zero benefit. Per D3 the client's own name comes
+#                  from the deny-list, and per #209 so do stakeholder names,
+#                  so there is nothing left for an ORG recogniser to buy.
+#                  See MEASURED DETECTION LIMITS above for the correction.
 #   DATE_TIME    - dates and periods drive every ROI model.
 #   LOCATION     - "South Asia", "Australia" are the market context; spaCy
 #                  flags every country and city mentioned.

@@ -96,6 +96,37 @@ ACRONYM_STOPLIST = {
     "CX", "UAT", "SOW", "NDA", "CAC", "LTV", "ARR", "ARPU", "COO's",
 }
 
+# Words that mark a captured phrase as a ROLE, a section label or an
+# organisational unit rather than a person's name. Used ONLY by the
+# stakeholder path (_extract_stakeholder_terms), because the columns and
+# label lines that carry stakeholder names carry job titles just as often
+# ("| Name/Role |" literally admits either). Without this, "Head of Digital
+# Banking" in a Name/Role cell becomes a client-identity deny term and every
+# ordinary query containing that phrase is denied.
+#
+# Name PARTICLES ("van", "de", "der", "bin", "al", "da", "von") are
+# deliberately absent — they are parts of real surnames.
+ROLE_WORD_STOPLIST = {
+    "and", "at", "for", "of", "the", "to", "with",
+    "head", "chief", "officer", "officers", "director", "directors",
+    "managing", "manager", "managers", "lead", "leads", "leader", "leaders",
+    "president", "vice", "senior", "junior", "principal", "assistant",
+    "executive", "executives", "sponsor", "sponsors", "stakeholder",
+    "stakeholders", "contact", "contacts", "attendee", "attendees",
+    "participant", "participants", "interviewee", "interviewees",
+    "team", "teams", "department", "division", "unit", "role", "roles",
+    "title", "titles", "name", "names", "unknown", "none", "various",
+    "staff", "client", "customer", "customers", "member", "members",
+    "board", "committee", "council", "office", "desk", "center", "centre",
+    "operations", "technology", "digital", "product", "products",
+    "marketing", "sales", "finance", "risk", "compliance", "audit", "legal",
+    "strategy", "transformation", "innovation", "data", "engineering",
+    "architecture", "security", "channel", "channels", "platform",
+    "program", "programme", "project", "portfolio", "branch", "retail",
+    "commercial", "corporate", "wealth", "payments", "lending", "deposits",
+    "onboarding", "experience", "service", "services", "support",
+}
+
 ENGAGEMENT_DOC_NAMES = ("ENGAGEMENT_CONTEXT.md", "engagement_intake.md")
 CLIENT_PROFILE_NAME = "CLIENT_PROFILE.md"
 SKIP_CLIENT_DIRS = {"inputs", "outputs"}  # shared legacy staging, not clients
@@ -274,6 +305,148 @@ def _extract_terms_from_text(text, terms, label_res=(_LABEL_LINE_RE,)):
         for acr in _PAREN_ACRONYM_RE.findall(heading):
             if acr not in ACRONYM_STOPLIST:
                 _add_term(terms, acr)
+
+    # Stakeholder names — the client's PEOPLE, not just its institution
+    # (#209). Same document, separate shapes; see _extract_stakeholder_terms.
+    _extract_stakeholder_terms(text, terms)
+
+
+# --- stakeholder names (#209) ----------------------------------------------
+#
+# HAND-COPIED PARITY BLOCK. `scripts/pii/denylist.py` carries the identical
+# logic (STAKEHOLDER_LABEL_LINE_RE / ROLE_WORD_STOPLIST /
+# extract_stakeholder_terms) and `scripts/pii/drift_check.py` asserts both
+# copies resolve IDENTICAL deny-lists. Change one, change the other.
+#
+# WHY IT EXISTS: security_protocol.md §5 covers "client/stakeholder
+# identifier", and until #209 only the institution half was ever extracted.
+# On the anonymisation side the same gap let a person's name in a markdown
+# table cell reach the API in cleartext, because Presidio's PERSON recogniser
+# is shape-sensitive (measured: `en_core_web_lg` tags "Aisha Rahman" in a
+# table row as EVENT). A deny-list term is model- and shape-independent.
+#
+# WHY PHRASE-ONLY: a person contributes exactly ONE term, the full multi-word
+# name as written — never its individual words. Surnames collide with
+# ordinary English ("Price", "Cash", "Grant", "Bill", "Long", "Young") far
+# harder than bank tokens do, and a bare single-word deny term derived from a
+# name is the "denylist blocked the word 'all'" failure class returning. So
+# stakeholder names neither bypass GENERIC_STOPLIST nor rely on it — the
+# question is moot by construction.
+
+_STAKEHOLDER_LABEL_LINE_RE = re.compile(
+    r"^\s*[-*#]{0,3}\s*\**\s*"
+    r"(?:(?:primary|key|main|client|executive)\s+contacts?"
+    r"|contacts?"
+    r"|(?:executive|client)\s+sponsors?"
+    r"|sponsors?"
+    r"|stakeholders?(?:\s+interviewed)?"
+    r"|attendees?|interviewees?|participants?)"
+    r"(?:\s*\([^)]*\))?"          # "- **Executive Sponsors (Client-Side):**"
+    r"\s*\**\s*:\s*(.*)$",
+    re.IGNORECASE,
+)
+
+# A markdown table is a person table when its FIRST column header names
+# people. Header-driven, not section-driven, so CLIENT_PROFILE.md's
+# engagement-history table (first column "Date") is never mistaken for one.
+_PERSON_TABLE_HEADER_RE = re.compile(
+    r"^(?:name(?:\s*/\s*role)?|full\s+name|stakeholders?|attendees?"
+    r"|contacts?|participants?|interviewees?)$",
+    re.IGNORECASE,
+)
+_TABLE_SEPARATOR_RE = re.compile(r"^[\s:\-|]+$")
+_SUB_BULLET_RE = re.compile(r"^\s+[-*]\s+(.+)$")
+
+# Splits a captured value at the first separator that introduces a job title
+# or an aside. The dash form requires SURROUNDING SPACE so a hyphenated name
+# ("Jean-Luc Marchand") is not cut in half.
+_NAME_SEGMENT_RE = re.compile(r"[,;|]|\s+[\u2014\u2013-]\s+|\(")
+_PERSON_TOKEN_RE = re.compile(r"^[A-Za-z][A-Za-z'\u2019.\-]*$")
+
+
+def _stakeholder_value(raw):
+    value = (raw or "").strip().strip(" \t*_")
+    value = _BRACKET_SEGMENT_RE.sub(" ", value).strip()
+    if not value:
+        return ""
+    return _NAME_SEGMENT_RE.split(value)[0].strip().strip(" \t*_.")
+
+
+def _person_name_ok(name):
+    if not name or len(name) > 60:
+        return False
+    tokens = name.split()
+    if not 2 <= len(tokens) <= 5:
+        return False
+    if not (tokens[0][:1].isupper() and tokens[-1][:1].isupper()):
+        return False
+    for token in tokens:
+        if not _PERSON_TOKEN_RE.match(token):
+            return False
+        word = token.strip(".'\u2019-").lower()
+        if not word:
+            return False
+        if word in ROLE_WORD_STOPLIST or word in GENERIC_STOPLIST:
+            return False
+        if token.upper() in ACRONYM_STOPLIST:
+            return False
+    return True
+
+
+def _add_person_term(terms, raw):
+    name = _stakeholder_value(raw)
+    if _person_name_ok(name):
+        _add_term(terms, name)
+
+
+def _extract_stakeholder_terms(text, terms):
+    """Three shapes, all produced by this repo's own templates:
+      1. a label line       - **Primary Contact:** Aisha Rahman, CFO
+      2. a person table     | Name/Role | Department |  ->  first column
+      3. sub-bullets under a stakeholder label whose own value is empty
+    Line-based rather than one whole-document regex because shapes 2 and 3
+    are stateful.
+    """
+    in_person_table = False
+    in_sponsor_bullets = False
+
+    for raw_line in text.splitlines():
+        if not raw_line.strip():
+            in_person_table = False
+            in_sponsor_bullets = False
+            continue
+
+        match = _STAKEHOLDER_LABEL_LINE_RE.match(raw_line)
+        if match:
+            in_person_table = False
+            value = _stakeholder_value(match.group(1))
+            if value:
+                _add_person_term(terms, value)
+                in_sponsor_bullets = False
+            else:
+                in_sponsor_bullets = True
+            continue
+
+        stripped = raw_line.strip()
+        if stripped.startswith("|"):
+            in_sponsor_bullets = False
+            if _TABLE_SEPARATOR_RE.match(stripped):
+                continue
+            cells = [c.strip() for c in stripped.strip("|").split("|")]
+            first = cells[0] if cells else ""
+            if not in_person_table:
+                in_person_table = bool(_PERSON_TABLE_HEADER_RE.match(first))
+                continue
+            _add_person_term(terms, first)
+            continue
+
+        in_person_table = False
+        if in_sponsor_bullets:
+            bullet = _SUB_BULLET_RE.match(raw_line)
+            if bullet:
+                _add_person_term(terms, bullet.group(1))
+                continue
+            in_sponsor_bullets = False
 
 
 def _extract_terms_from_slug(slug, terms):

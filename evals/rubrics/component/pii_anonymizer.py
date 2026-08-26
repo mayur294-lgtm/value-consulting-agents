@@ -180,23 +180,59 @@ FIXTURE
   Same font-portability rule as #163's screenshot: `_image_font`, not a
   system font, so it OCRs identically on a laptop and in CI.
 
-KNOWN, DOCUMENTED GAP — the markdown-table PERSON miss
+CLOSED IN #209 — the markdown-table PERSON miss, and the false reason for it
   `evals/goldens/pii_roundtrip_fixture.md`'s Stakeholder Directory table
-  carries "Aisha Rahman" in a table cell specifically because, on the
-  current `en_core_web_lg` model, spaCy tags a name in that shape as
-  ORGANIZATION rather than PERSON (engine.py's own docstring documents this;
-  ORGANIZATION is deliberately not an enabled entity type, because enabling
-  it would strip "Backbase" and every vendor/product name from every
-  deliverable). This is a real, live, unfixed detection gap TODAY — not a
-  hypothetical. `no_raw_pii_in_anonymized_output` therefore does NOT assert
-  "Aisha Rahman" is redacted (that would be weakening the check to dodge a
-  real failure, exactly what this ticket exists to stop). Instead
-  `_person_detection_by_shape` measures and reports per-shape PERSON
-  detection on this fixture as evidence, separate from the gating
-  assertions, so the gap is visible rather than hidden. Closing it is
-  out of scope for #161 — it needs stakeholder names on the deny-list the
-  way client names already are (engine.py's own "real fix" note) or an
-  ORGANIZATION-aware table-cell recognizer; flagged for a follow-up ticket.
+  carries "Aisha Rahman" in a table cell because the PERSON recogniser does
+  not detect it there. Until #209 `MUST_NOT_LEAK` deliberately EXCLUDED that
+  one value, so this component scored 1.000 at threshold 1.00 while its own
+  `detail` line printed `table=MISSED ('Aisha Rahman')` on every run. Visible
+  is better than hidden, but an assertion set trimmed to fit the failure is
+  still a threshold-shaped exclusion, and it is now gone: the value is in
+  `MUST_NOT_LEAK` and the leak is closed.
+
+  ⚠️ The documented reason for tolerating it was measurably FALSE, and the
+  same false sentence had been copied into `engine.py` (twice) and
+  `.prd/backlog.md`. It claimed spaCy tags the table-cell name ORGANIZATION,
+  so catching it would mean enabling ORGANIZATION and stripping
+  Backbase/Temenos. Measured on this fixture with `en_core_web_lg`: spaCy
+  tags it **EVENT**, and enabling ORGANIZATION does not catch it at all while
+  it does strip "Backbase" and "Salesforce" — full cost, zero benefit. There
+  was no trade-off to weigh. ORGANIZATION stays disabled for that reason.
+
+  THE FIX is the one engine.py always called "the real fix": STAKEHOLDER
+  names on the engagement deny-list, where a term is model- and
+  shape-independent and therefore fires in a table cell, a bullet, prose and
+  a speaker label alike. `denylist.extract_stakeholder_terms` mines them from
+  the engagement's own CLIENT_PROFILE.md / engagement_intake.md /
+  ENGAGEMENT_CONTEXT.md.
+
+  HOW THIS RUBRIC PROVES IT RATHER THAN ASSUMING IT — `resolved_deny_terms()`
+  does not hard-code the stakeholder name. It seeds a fixture engagement with
+  ordinary CLIENT_PROFILE.md / engagement_intake.md documents and resolves the
+  deny-list through `denylist.resolve_engagement_deny_list`, the production
+  entry point. Hard-coding "Aisha Rahman" into a list here would close the
+  assertion without closing the leak, and would pass unchanged if the
+  extraction were reverted. Resolving it means reverting the extraction turns
+  `no_raw_pii_in_anonymized_output` red, which is the mutation proof.
+
+  WHY THE SEEDED INTAKE NAMES ONLY THE EXECUTIVE SPONSOR — deliberately, and
+  not to flatter the result. "Marcus Chen" and "Priya Iyer" stay OFF the
+  deny-list so that Presidio's PERSON NER remains independently measured:
+  `distinct_values_distinct_placeholders` asserts >= 2 distinct PERSON values,
+  and `no_raw_pii_in_anonymized_output` reports which detector caught each
+  shape. Seed every name and both of those go vacuous — the rubric would stop
+  measuring NER at all and could not tell a working model from a dead one. It
+  is also the realistic case: intake is filled in before discovery, so it
+  carries the sponsor, and the rest of the attendees surface in the transcript.
+
+  The doc- and image-format checks keep the NARROW, client-only deny list on
+  purpose — it is `_new_session`'s default, and that default is load-bearing:
+  their whole point is that `pii.ingest`'s record-per-row table rendering
+  makes the name detectable by PERSON. Hand them the stakeholder term and
+  they would pass even if that rendering regressed to pipe tables. Only the
+  two checks whose subject IS deny-list coverage
+  (`round_trip_byte_identical`, `no_raw_pii_in_anonymized_output`) pass
+  `deny_terms=resolved_deny_terms()`.
 """
 from __future__ import annotations
 
@@ -231,12 +267,96 @@ FIXTURE_REL_PATH = Path("evals") / "goldens" / "pii_roundtrip_fixture.md"
 # an obviously-synthetic institution name, not a real bank.
 CLIENT_FULL = "Zzzplaceholder Meridian Holdings"
 CLIENT_SHORT = "Meridian"
-DENY_TERMS = [CLIENT_FULL, CLIENT_SHORT]
+
+# The client-identity-ONLY deny list. Still the default for every check whose
+# subject is something other than deny-list coverage — in particular the
+# document- and image-format checks, which have to keep proving that
+# `pii.ingest`'s record-per-row rendering makes a tabular name PERSON-
+# detectable, and would pass vacuously if handed the stakeholder term.
+CLIENT_DENY_TERMS = [CLIENT_FULL, CLIENT_SHORT]
+DENY_TERMS = CLIENT_DENY_TERMS  # back-compat alias for existing call sites
+
+# The fixture engagement's stakeholder, seeded into the deny-list SOURCE
+# documents below (never into a hard-coded term list) — see the module
+# docstring for why only one of the fixture's three people is seeded.
+SEEDED_STAKEHOLDER = "Aisha Rahman"
+SEEDED_CLIENT_DIR = "zzzplaceholderclient"
+
+_RESOLVED_DENY_TERMS: Optional[list] = None
+
+
+def _seed_denylist_source_engagement(root: Path) -> Path:
+    """An ordinary engagement tree — the two documents `denylist.py` reads,
+    in the shapes `templates/client_profile.md` and
+    `templates/inputs/engagement_intake.md` actually produce. Nothing here
+    is special-cased for the engine: it is what a consultant's filled-in
+    intake looks like.
+    """
+    client_dir = root / "engagements" / SEEDED_CLIENT_DIR
+    engagement = client_dir / "2026-08_onboarding_assessment"
+    (engagement / "inputs").mkdir(parents=True)
+
+    (client_dir / "CLIENT_PROFILE.md").write_text(
+        "# Client Profile\n\n"
+        "## Client Identity\n\n"
+        f"- **Name:** {CLIENT_FULL}\n"
+        f"- **Short Name:** {CLIENT_SHORT}\n\n"
+        "## Relationship Context\n\n"
+        "- **Backbase Relationship:** Prospect\n"
+        "- **Executive Sponsors (Client-Side):**\n"
+        f"  - {SEEDED_STAKEHOLDER} — Chief Financial Officer — prefers written briefs\n",
+        encoding="utf-8",
+    )
+    (engagement / "inputs" / "engagement_intake.md").write_text(
+        "# Engagement Intake\n\n"
+        f"- **Client Name:** {CLIENT_FULL}\n\n"
+        "## Stakeholders Interviewed\n\n"
+        "| Name/Role | Department | Perspective |\n"
+        "|-----------|------------|-------------|\n"
+        f"| {SEEDED_STAKEHOLDER} — Chief Financial Officer | Finance | Strategic |\n",
+        encoding="utf-8",
+    )
+    return engagement
+
+
+def resolved_deny_terms() -> list:
+    """The deny-list PRODUCTION would resolve for the fixture engagement.
+
+    Deliberately not a literal list. `denylist.resolve_engagement_deny_list`
+    is the function `orchestrate.py` and `anonymize_transcript.py` call, so
+    running it here is what makes "the stakeholder name is redacted" a
+    statement about the shipped extraction rather than about this file.
+    Raises if the resolved set does not carry both the client's name and the
+    seeded stakeholder — a silently-empty deny-list is the exact way this
+    repo has twice shipped a gate scoring 1.000 while certifying nothing.
+    """
+    global _RESOLVED_DENY_TERMS
+    if _RESOLVED_DENY_TERMS is not None:
+        return _RESOLVED_DENY_TERMS
+
+    from pii import denylist  # noqa: PLC0415 - stdlib only
+
+    with tempfile.TemporaryDirectory(prefix="pii_eval_denylist_") as td:
+        engagement = _seed_denylist_source_engagement(Path(td))
+        terms = sorted(denylist.resolve_engagement_deny_list(engagement))
+
+    missing = [t for t in (CLIENT_FULL, SEEDED_STAKEHOLDER) if t not in terms]
+    if missing:
+        raise AssertionError(
+            "deny-list resolved from the fixture engagement is missing %r "
+            "(resolved: %r) — every assertion built on it would pass or fail "
+            "for the wrong reason" % (missing, terms)
+        )
+    _RESOLVED_DENY_TERMS = terms
+    return terms
+
 
 # Raw values planted in the fixture that MUST NEVER appear in anonymised
-# output. Deliberately excludes "Aisha Rahman" (the documented table-shape
-# PERSON miss — see module docstring) and the CLIENT_ENTITY's own case
-# variants, which are asserted separately by _client_name_redacted_via_denylist.
+# output. "Aisha Rahman" is in this list as of #209: the table-shape PERSON
+# miss is closed by the stakeholder deny-list path, so excluding it would now
+# be excluding a value that does not leak. The CLIENT_ENTITY's own case
+# variants stay out — they are asserted separately by
+# _client_name_redacted_via_denylist.
 MUST_NOT_LEAK = [
     "priya.iyer@zzzplaceholdermeridian.com",
     "marcus.chen@zzzplaceholdermeridian.com",
@@ -248,14 +368,14 @@ MUST_NOT_LEAK = [
     "5521873390",      # account number 2
     "Marcus Chen",
     "Priya Iyer",
+    "Aisha Rahman",    # table shape — closed via the stakeholder deny-list
 ]
 
-# The documented, currently-unfixed PERSON miss (see module docstring).
-KNOWN_TABLE_SHAPE_MISS = "Aisha Rahman"
-
 # Person names planted in the fixture, one per document shape, used by
-# _person_detection_by_shape's evidence-only measurement. "table" is
-# expected to miss today — see module docstring.
+# _no_raw_pii_in_anonymized_output's per-shape reporting. Every shape must
+# now be DETECTED; the report also names WHICH detector caught each one, so
+# "the NER improved" can never be silently confused with "the deny-list
+# covered for it".
 PERSON_BY_SHAPE = {
     "prose": "Priya Iyer",
     "attendee_bullet": "Marcus Chen",
@@ -295,8 +415,17 @@ def _boundary():
 
 
 def _new_session(engine, *, entity_mapping: Optional[dict] = None, deny_terms=None):
+    """Default deny list is CLIENT-ONLY, and that default is load-bearing.
+
+    The document- and image-format checks rely on it: they prove that
+    `pii.ingest`'s record-per-row table rendering makes a tabular person name
+    PERSON-detectable, and a stakeholder deny term would redact that name
+    regardless of the rendering, so those checks would pass a regression.
+    Only the two checks whose subject IS deny-list coverage pass
+    `deny_terms=resolved_deny_terms()`. Do not "unify" this default.
+    """
     return engine.PIISession(
-        deny_terms if deny_terms is not None else DENY_TERMS,
+        deny_terms if deny_terms is not None else CLIENT_DENY_TERMS,
         entity_mapping=entity_mapping,
         warn_on_empty=False,
     )
@@ -314,13 +443,19 @@ def _round_trip_byte_identical(target: str) -> CheckResult:
     maintained copies with "no drift_check for this pair yet" — so this
     check also catches the two silently diverging, not just one of them
     breaking round-trip.
+
+    Runs on the PRODUCTION-resolved deny list (`resolved_deny_terms()`), not
+    the client-only one, so the stakeholder terms #209 added are covered
+    here too: a new deny term that redacted correctly but did not restore
+    byte-identically would be a data-loss bug, and this is the check that
+    would catch it.
     """
     name = "round_trip_byte_identical"
     engine = _engine()
     at = _facade()
     original = _fixture_text(target)
 
-    session = _new_session(engine)
+    session = _new_session(engine, deny_terms=resolved_deny_terms())
     anonymized = session.anonymize(original)
     mapping = session.mapping_file_dict()
 
@@ -408,40 +543,62 @@ def _no_raw_pii_in_anonymized_output(target: str) -> CheckResult:
     analyze(), or the deny-list recognizer) must make this fail — see the
     PR description's gate-bites transcript.
 
-    Gating scope deliberately excludes KNOWN_TABLE_SHAPE_MISS ("Aisha
-    Rahman") — see the module docstring. Asserting it here would either
-    (a) fail today for a reason this ticket doesn't fix, or (b) require
-    quietly dropping it from the fixture, which would hide the exact gap
-    #159/#161 exist to surface. Instead this check's `detail`/`evidence`
-    carry the full per-shape PERSON measurement (PERSON_BY_SHAPE) as
-    non-gating REPORTING — every shape's detection result, table included —
-    so the gap is visible in every run of this rubric, not just in a
-    one-off script.
+    Gating scope now includes the table-shape name ("Aisha Rahman"), which
+    #209 closed via the stakeholder deny-list path. It was excluded before,
+    and that exclusion — not the threshold — was what kept this component at
+    1.000 while its own detail line printed `table=MISSED` every run.
+
+    The session runs on `resolved_deny_terms()`, resolved through
+    `denylist.resolve_engagement_deny_list` from seeded CLIENT_PROFILE.md /
+    engagement_intake.md documents. That is what makes this a mutation-
+    provable gate: revert `extract_stakeholder_terms` and the resolved list
+    loses the name, the name survives into the output, and this check goes
+    red. A hard-coded deny term would have survived that revert untouched.
+
+    `detail`/`evidence` still carry the full per-shape measurement, and now
+    also name the DETECTOR for each shape (PERSON = Presidio NER, CLIENT =
+    the deny-list). Keeping the two distinguishable matters: without it, a
+    future NER regression would be invisible behind deny-list coverage.
     """
     name = "no_raw_pii_in_anonymized_output"
     engine = _engine()
-    session = _new_session(engine)
+    session = _new_session(engine, deny_terms=resolved_deny_terms())
     anonymized = session.anonymize(_fixture_text(target))
 
     leaked = [v for v in MUST_NOT_LEAK if v in anonymized]
 
-    # Per-shape PERSON measurement — reporting only, never gates this check.
-    # A name is "detected for its shape" if it no longer appears raw
-    # anywhere post-anonymization; each PERSON_BY_SHAPE name is unique to
-    # its shape's sentence in the fixture, so this attribution is sound
-    # even though the flat mapping itself doesn't carry shape provenance.
-    per_shape = {shape: (person not in anonymized) for shape, person in PERSON_BY_SHAPE.items()}
+    # Per-shape measurement. A name is "detected for its shape" if it no
+    # longer appears raw anywhere post-anonymization; each PERSON_BY_SHAPE
+    # name is unique to its shape's sentence in the fixture, so this
+    # attribution is sound even though the flat mapping itself doesn't carry
+    # shape provenance. The entity type comes from the mapping, so the report
+    # says which detector actually caught it.
+    def _detector(value: str) -> str:
+        for etype, values in session.entity_mapping.items():
+            if value in values:
+                return etype
+        return "none"
+
+    per_shape = {
+        shape: (person not in anonymized, _detector(person))
+        for shape, person in PERSON_BY_SHAPE.items()
+    }
+    missed = sorted({PERSON_BY_SHAPE[s] for s, (hit, _) in per_shape.items() if not hit})
 
     ok = not leaked
     detail = (
-        f"leaked={leaked!r}; per-shape PERSON detection: " +
-        ", ".join(f"{s}={'DETECTED' if v else 'MISSED'} ({PERSON_BY_SHAPE[s]!r})"
-                   for s, v in per_shape.items()) +
-        " (table is the documented, currently-unfixed gap — see module docstring; "
-        "not gated here)"
+        f"leaked={leaked!r}; per-shape person detection: " +
+        ", ".join(
+            f"{s}={'DETECTED via ' + etype if hit else 'MISSED'} "
+            f"({PERSON_BY_SHAPE[s]!r})"
+            for s, (hit, etype) in per_shape.items()
+        ) +
+        " (CLIENT = engagement deny-list, PERSON = Presidio NER; every shape "
+        "is gated via MUST_NOT_LEAK)"
     )
     return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=True, detail=detail,
-                        evidence=[f"leaked raw value: {v}" for v in leaked])
+                        evidence=[f"leaked raw value: {v}" for v in leaked]
+                                 + [f"undetected in shape: {v}" for v in missed])
 
 
 def _cross_transcript_merge_collision_free(target: str) -> CheckResult:  # noqa: ARG001
