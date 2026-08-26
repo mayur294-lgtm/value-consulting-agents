@@ -177,42 +177,117 @@ def check_mutation_coverage(name: str, spec: dict, errors: list[str],
         del mutation_debt_rows[name]
 
 
-def _check_pipeline_altitude_name_debt(debt: list[str]) -> None:
-    """Grep assertion (#186, supports #188): the eval registry's three-tier
-    restructuring (#188) renames the `pipeline` altitude everywhere it
-    appears — `registry.yaml`'s `pipeline:` row, `run_experiment.py`'s
-    `--altitude pipeline` / `altitude == "pipeline"`, `runtime.py`'s
-    `report["pipeline"]`, and the `--altitude pipeline` invocations in the CI
-    workflows. Until #188 lands this is expected to be non-zero everywhere,
-    so it is reported as DEBT, not a hard error.
+# --- #188: the retired altitude name is now a HARD ERROR ---------------------
+# Sentinels around the one deliberate in-tree use of the retired name (the
+# rename error text in run_experiment.py). Lines between them are not counted.
+_OLD_NAME_SKIP_OPEN = "BEGIN old-altitude error text"
+_OLD_NAME_SKIP_CLOSE = "END old-altitude error text"
 
-    #188 MUST flip this from `debt.append(...)` to `errors.append(...)` once
-    the rename ships — that is the one-line flip this assertion exists to
-    make obvious. Until then this is a loud, counted reminder, not a gate.
+# Files this assertion scans: the registry, the runner, the runtime scorer, both
+# CI workflows, and the human-facing docs that told people to run the flag.
+_OLD_NAME_SCOPE = (
+    "evals/registry.yaml",
+    "evals/run_experiment.py",
+    "evals/runtime.py",
+    "evals/README.md",
+    "evals/rubrics/base.py",
+    ".github/workflows/evals.yml",
+    ".github/workflows/version-release.yml",
+    "CLAUDE.md",
+    ".claude/skills/bb-build/SKILL.md",
+    ".claude/skills/bb-build/prompts/implementer-prompt.md",
+    ".claude/skills/bb-build/formats/pr-format.md",
+    ".claude/skills/bb-tickets/SKILL.md",
+    ".claude/skills/bb-tickets/formats/ticket-format.md",
+    ".claude/skills/bb-refine/SKILL.md",
+    ".claude/skills/bb-prd/SKILL.md",
+    ".claude/skills/bb-prd/formats/prd-format.md",
+)
+
+# THE MATCHING RULE. The bare word "pipeline" is a legitimate, load-bearing term
+# in this repo: `scripts/orchestrate.py` really is a pipeline that really runs
+# agents, `pipeline_engagement/` is a real fixture directory of a real pipeline
+# run's outputs, and `.pipeline_run_report.json` really is a pipeline run report.
+# An over-broad `\bpipeline\b` grep (what this assertion used while it was DEBT)
+# would force those honest names to be renamed too, which is actively harmful.
+# So each pattern below matches the ALTITUDE NAME in a syntactic position where
+# it can only mean the altitude:
+#
+#   1. the CLI flag                       `--altitude pipeline`, `--altitude=pipeline`
+#   2. a field/kwarg assignment           `altitude: pipeline`, `altitude="pipeline"`
+#   3. an equality test                   `altitude == "pipeline"`
+#   4. the prose form                     "the pipeline altitude", "`pipeline`-altitude"
+#   5. the evaluator package              `rubrics.pipeline`, `rubrics/pipeline`
+#   6. the registry section key           a line that is exactly `pipeline:`
+#   7. a registry/report dict key         `["pipeline"]`, `.get("pipeline"`
+#   8. a score/label name                 `name="pipeline"`
+#   9. the check-set label                "pipeline contracts"
+#
+# Deliberately NOT matched: `pipeline_engagement`, `.pipeline_run_report.json`,
+# `pipeline_run_report/eval/v2` (an underscore is a word character, so `\bpipeline\b`
+# does not fire inside them), and any sentence that merely says the altitude does
+# not run the pipeline — that sentence is the point of the rename and must stay
+# writable.
+_OLD_ALTITUDE_NAME_PATTERNS = (
+    (r"--altitude[=\s]+[\"\']?pipeline\b",                  "CLI flag `--altitude pipeline`"),
+    (r"\baltitude\s*[:=]\s*[\"\']?pipeline\b",              "`altitude: pipeline` field/kwarg"),
+    (r"\baltitude\s*==\s*[\"\']pipeline[\"\']",             "`altitude == \"pipeline\"` comparison"),
+    (r"[`\"\']?\bpipeline\b[`\"\']?[-\s]+altitude\b",       "the prose form \"pipeline altitude\""),
+    (r"\brubrics[./]pipeline\b",                            "evaluator package `rubrics.pipeline`"),
+    (r"^\s*pipeline:\s*(#.*)?$",                            "registry section key `pipeline:`"),
+    (r"\[[\"\']pipeline[\"\']\]|\.get\(\s*[\"\']pipeline[\"\']",  "dict key `[\"pipeline\"]`"),
+    (r"\bname\s*=\s*[\"\']pipeline[\"\']",                  "score/label `name=\"pipeline\"`"),
+    (r"\bpipeline contracts\b",                             "check-set label \"pipeline contracts\""),
+)
+
+
+def _check_old_altitude_name(errors: list[str]) -> None:
+    r"""Grep assertion (#186, flipped to a hard error by #188): the retired
+    `pipeline` altitude name must not survive anywhere it could be run or
+    believed.
+
+    #186 introduced this as DEBT with an over-broad `\bpipeline\b` count (32
+    occurrences over 5 files), on the explicit instruction that #188 flip it to
+    a hard error at 0 occurrences once the rename shipped. #188 shipped, so this
+    now appends to `errors`. It also narrows the match: see
+    `_OLD_ALTITUDE_NAME_PATTERNS` above for the rule and for why counting every
+    use of the word "pipeline" would have been the wrong assertion.
+
+    Exactly one occurrence is allowed in-tree: the rename error text in
+    `run_experiment.py`, which must quote the old flag verbatim to be useful.
+    It is fenced by the `_OLD_NAME_SKIP_*` sentinels and skipped here. This file
+    itself is not in scope — it holds the patterns, so it cannot scan for a
+    token it must contain.
     """
-    scope = [
-        HERE / "registry.yaml",
-        HERE / "run_experiment.py",
-        HERE / "runtime.py",
-        ROOT / ".github" / "workflows" / "evals.yml",
-        ROOT / ".github" / "workflows" / "version-release.yml",
-    ]
-    pattern = re.compile(r"\bpipeline\b")
-    hits = 0
-    for f in scope:
+    compiled = [(re.compile(pat), why) for pat, why in _OLD_ALTITUDE_NAME_PATTERNS]
+    for rel in _OLD_NAME_SCOPE:
+        f = ROOT / rel
         if not f.is_file():
             continue
-        for line in f.read_text(encoding="utf-8", errors="replace").splitlines():
-            if pattern.search(line):
-                hits += 1
-    if hits:
-        debt.append(
-            f"grep: {hits} occurrence(s) of the old `pipeline` altitude name across "
-            f"{len(scope)} registry/runner/CI files (supports #188's three-tier registry "
-            f"restructuring, which renames it). Non-fatal DEBT until #188 lands — #188 MUST "
-            f"flip this check from DEBT to a hard error (0 occurrences required) once the "
-            f"rename ships (see this function's docstring in check_registry.py)."
-        )
+        skipping = False
+        for lineno, line in enumerate(
+                f.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
+            if _OLD_NAME_SKIP_OPEN in line:
+                skipping = True
+                continue
+            if _OLD_NAME_SKIP_CLOSE in line:
+                skipping = False
+                continue
+            if skipping:
+                continue
+            for rx, why in compiled:
+                if rx.search(line):
+                    errors.append(
+                        f"{rel}:{lineno}: the retired `pipeline` altitude name survives "
+                        f"({why}). It was renamed to `deliverable-structural` in #188 "
+                        f"because a 5-second fixture scan reading `pipeline` was cited as "
+                        f"integration evidence. Fix: use `deliverable-structural` "
+                        f"(CLI/label) or `deliverable_structural` (registry/report key). "
+                        f"The only permitted occurrence is the rename error text in "
+                        f"run_experiment.py, fenced by the "
+                        f"`{_OLD_NAME_SKIP_OPEN}` / `{_OLD_NAME_SKIP_CLOSE}` sentinels."
+                    )
+                    break
 
 
 def main(argv: list[str]) -> int:
@@ -239,7 +314,7 @@ def main(argv: list[str]) -> int:
     reg = yaml.safe_load((HERE / "registry.yaml").read_text())
 
     errors: list[str] = []   # hard failures — a gate that can't run
-    debt: list[str] = []     # warnings — bare-name engagement goldens, pipeline-altitude grep
+    debt: list[str] = []     # warnings — bare-name engagement goldens
     # Per-row mutation-coverage DEBT (#186 follow-up): name -> {total, missing, messages}.
     # Kept separate from `debt` above so the default report can aggregate it to one
     # line per row instead of one line per check (see check_mutation_coverage's docstring).
@@ -286,13 +361,13 @@ def main(argv: list[str]) -> int:
         # #186: every declared `code:` check needs a mutation proof, or staged DEBT.
         check_mutation_coverage(name, spec, errors, mutation_debt_rows)
 
-    # --- pipeline -------------------------------------------------------------
-    pl = reg.get("pipeline") or {}
-    if pl.get("golden_engagement"):
-        check_engagement(pl["golden_engagement"], "pipeline.golden_engagement")
+    # --- deliverable-structural -----------------------------------------------
+    ds = reg.get("deliverable_structural") or {}
+    if ds.get("golden_engagement"):
+        check_engagement(ds["golden_engagement"], "deliverable_structural.golden_engagement")
 
-    # --- #188 support: old `pipeline` altitude name, DEBT until #188 lands ----
-    _check_pipeline_altitude_name_debt(debt)
+    # --- #188: the retired altitude name is a HARD ERROR (0 occurrences) ------
+    _check_old_altitude_name(errors)
 
     # --- report ---------------------------------------------------------------
     # #186 follow-up (spec review): the mutation-coverage DEBT used to print one
