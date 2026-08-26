@@ -242,7 +242,7 @@ class BackbaseSlidesPresenter:
 
     # Text colors
     TEXT_DARK    = RGBColor(0x04, 0x13, 0x26)
-    TEXT_MUTED   = RGBColor(0x64, 0x74, 0x8B)
+    TEXT_MUTED   = RGBColor(0x6B, 0x77, 0x86)
     TEXT_MUTED_W = RGBColor(0x99, 0x99, 0xAA)  # white bg muted
     TEXT_WHITE   = RGBColor(0xFF, 0xFF, 0xFF)
     LABEL_DARK   = RGBColor(0x04, 0x13, 0x26)

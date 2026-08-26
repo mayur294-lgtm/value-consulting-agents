@@ -79,6 +79,7 @@ _SLIDES_TOKEN_MAP = {
     "NAVY": "navy", "BLUE": "blue", "CYAN": "cyan", "RED": "red",
     "WHITE": "white", "OFF_WHITE": "off_white", "GREEN": "green",
     "BORDER": "border", "BLUE_DARK": "blue_dark", "LIGHT_BLUE": "blue_light",
+    "TEXT_MUTED": "text_muted",
 }
 
 _PRESENTER_TOKEN_MAP = {
