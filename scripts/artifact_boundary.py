@@ -20,9 +20,11 @@ CLI (what skills call):
 """
 
 import json
+import os
 import re
 import subprocess
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -251,6 +253,80 @@ def cap_roi_config(config_path) -> dict:
 
 
 # ─── De-anonymization Gate (moved from orchestrate.py run_pipeline step 6b) ──
+#
+# Ticket #165 (salvaged from the closed PR #129 / issue #125) — the exit
+# gate is the single point where real client names re-enter deliverables,
+# so it must cover EVERYTHING that ships: recursive, not top-level-only, and
+# including generated .xlsx ROI models, not just .md/.html/.json/.txt. See
+# .design/ux-design-v6.md Flow E and .design/solution-design-v6.md.
+
+_TEXT_SUFFIXES = ('.md', '.html', '.json', '.txt')
+
+_RERUN_CMD_TEMPLATE = "python3 scripts/artifact_boundary.py deanon {dir}"
+
+
+def _atomic_write_text(out_file: Path, content: str) -> None:
+    """Write `content` to out_file via a same-directory temp file + os.replace,
+    so a crash mid-write can never leave a truncated/corrupted deliverable —
+    out_file is only ever touched by the final atomic rename."""
+    fd, tmp_name = tempfile.mkstemp(dir=str(out_file.parent), prefix=out_file.name + ".", suffix=".tmp-deanon")
+    os.close(fd)
+    tmp_path = Path(tmp_name)
+    try:
+        tmp_path.write_text(content)
+        os.replace(str(tmp_path), str(out_file))
+    except Exception:
+        try:
+            tmp_path.unlink()
+        except OSError:
+            pass
+        raise
+
+
+def _deanonymize_xlsx(out_file: Path, pii_mapping, deanonymize_text) -> bool:
+    """Restore placeholders in an .xlsx workbook's string cell values
+    (including formula strings) and sheet titles. Saves in place ONLY when
+    something actually changed. Returns True if restored, False if nothing
+    needed restoring. Raises on any failure to open/save — the caller is
+    responsible for turning that into an `unrestored` report entry; this
+    function never silently drops PII placeholders.
+
+    `openpyxl` is imported LAZILY, inside this function, never at module
+    level — this module's own header states it must stay importable by
+    plain python3 with no openpyxl installed, and other callers depend on
+    that contract.
+    """
+    import openpyxl  # noqa: PLC0415 - intentionally lazy, see docstring
+
+    wb = openpyxl.load_workbook(out_file)
+    changed = False
+    for ws in wb.worksheets:
+        restored_title = deanonymize_text(ws.title, pii_mapping)
+        if restored_title != ws.title:
+            ws.title = restored_title
+            changed = True
+        for row in ws.iter_rows():
+            for cell in row:
+                if isinstance(cell.value, str):
+                    restored_val = deanonymize_text(cell.value, pii_mapping)
+                    if restored_val != cell.value:
+                        cell.value = restored_val
+                        changed = True
+    if changed:
+        fd, tmp_name = tempfile.mkstemp(dir=str(out_file.parent), prefix=out_file.name + ".", suffix=".tmp-deanon")
+        os.close(fd)
+        tmp_path = Path(tmp_name)
+        try:
+            wb.save(tmp_path)
+            os.replace(str(tmp_path), str(out_file))
+        except Exception:
+            try:
+                tmp_path.unlink()
+            except OSError:
+                pass
+            raise
+    return changed
+
 
 def deanonymize_dir(outputs_dir, mapping_file=None) -> dict:
     """Restore client names in final outputs using .pii_mapping.json.
@@ -258,6 +334,21 @@ def deanonymize_dir(outputs_dir, mapping_file=None) -> dict:
     Moved from orchestrate.py run_pipeline step 6b. A missing mapping is
     reported LOUDLY as "NOT client-ready" — never silently skipped — and no
     file is modified in that case.
+
+    Walks `outputs_dir` RECURSIVELY (ticket #165) — every nested file under
+    outputs/, not just the top level. Excludes:
+      - any path whose relative path has a dotfile/dot-directory segment
+        (`.anon_*`, `.pii_mapping.json`, any `.anon_mapping_*.json`) — these
+        carry raw PII or are the mapping itself; restoring the mapping file
+        INTO itself would be a disaster.
+      - any file whose name starts with `interim` (pre-existing exclusion).
+
+    `.xlsx` files go through `_deanonymize_xlsx` (lazy `import openpyxl`
+    inside that function — this module must stay importable by plain
+    python3 with no openpyxl installed). If openpyxl is unavailable, or a
+    workbook can't be opened/saved, the file is named in `unrestored` with
+    the re-run command, and `client_ready` is set to False — never silently
+    skipped.
 
     mapping_file defaults to <outputs_dir parent>/.pii_mapping.json (the
     pipeline layout, where outputs_dir = engagement_dir/outputs), falling
@@ -278,6 +369,7 @@ def deanonymize_dir(outputs_dir, mapping_file=None) -> dict:
         "mapping_file": str(mapping_file),
         "client_ready": False,
         "files_restored": 0,
+        "unrestored": [],
         "error": None,
     }
 
@@ -299,20 +391,59 @@ def deanonymize_dir(outputs_dir, mapping_file=None) -> dict:
     try:
         pii_mapping = json.loads(mapping_file.read_text())
         if pii_mapping:
-            deanon_count = 0
-            for out_file in outputs_dir.iterdir():
-                if out_file.suffix in ('.md', '.html', '.json', '.txt') and not out_file.name.startswith('interim'):
-                    content = out_file.read_text()
-                    restored = deanonymize_text(content, pii_mapping)
-                    if restored != content:
-                        out_file.write_text(restored)
-                        deanon_count += 1
-            log(f"  ✓ De-anonymized {deanon_count} output file(s)")
-            report["files_restored"] = deanon_count
-        report["client_ready"] = True
+            # Updated file-by-file (not accumulated and flushed at the end)
+            # so that if something unexpected escapes a per-file try/except
+            # below, the report still reflects every file actually restored
+            # before the failure, instead of silently reporting 0.
+            for out_file in sorted(outputs_dir.rglob('*')):
+                if not out_file.is_file():
+                    continue
+                rel_parts = out_file.relative_to(outputs_dir).parts
+                if any(part.startswith('.') for part in rel_parts):
+                    continue  # .anon_*, .pii_mapping.json, .anon_mapping_*.json — never touched
+                if out_file.name.startswith('interim'):
+                    continue
+
+                if out_file.suffix == '.xlsx':
+                    try:
+                        if _deanonymize_xlsx(out_file, pii_mapping, deanonymize_text):
+                            report["files_restored"] += 1
+                    except ImportError:
+                        log(f"  ✗ openpyxl not installed — cannot restore {out_file.name}. "
+                            f"Run: pip install openpyxl, then re-run "
+                            f"`{_RERUN_CMD_TEMPLATE.format(dir=outputs_dir)}`", C.RED)
+                        report["unrestored"].append(str(out_file))
+                    except Exception as xe:
+                        log(f"  ✗ {out_file}: could not open/save workbook ({type(xe).__name__}) — "
+                            f"NOT restored. Re-run: `{_RERUN_CMD_TEMPLATE.format(dir=outputs_dir)}`", C.RED)
+                        report["unrestored"].append(str(out_file))
+                    continue
+
+                if out_file.suffix in _TEXT_SUFFIXES:
+                    try:
+                        content = out_file.read_text()
+                        restored = deanonymize_text(content, pii_mapping)
+                        if restored != content:
+                            _atomic_write_text(out_file, restored)
+                            report["files_restored"] += 1
+                    except Exception as te:
+                        log(f"  ✗ {out_file}: could not restore ({type(te).__name__}) — "
+                            f"NOT restored. Re-run: `{_RERUN_CMD_TEMPLATE.format(dir=outputs_dir)}`", C.RED)
+                        report["unrestored"].append(str(out_file))
+
+            log(f"  ✓ De-anonymized {report['files_restored']} output file(s)")
+        report["client_ready"] = not report["unrestored"]
+        if report["unrestored"]:
+            log(f"  🛑 Not ready to send to the client — {len(report['unrestored'])} file(s) still "
+                f"have placeholders in them instead of real names:", C.RED)
+            for f in report["unrestored"]:
+                log(f"      {f}", C.RED)
+            log(f"  Fix it and check again:\n      "
+                f"{_RERUN_CMD_TEMPLATE.format(dir=outputs_dir)}", C.RED)
     except Exception as e:
         log(f"  ⚠ De-anonymization failed: {type(e).__name__} — outputs may contain placeholders", C.YELLOW)
         report["error"] = type(e).__name__
+        report["client_ready"] = False
     return report
 
 
