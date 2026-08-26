@@ -55,7 +55,16 @@ from rubrics.base import CheckResult, RubricResult  # noqa: E402
 
 def _load_registry() -> dict:
     import yaml  # PyYAML
-    return yaml.safe_load((HERE / "registry.yaml").read_text())
+    # CORTEX_EVAL_REGISTRY: test-only seam for the run-experiment-runner self-gate
+    # row (evals/rubrics/component/run_experiment_runner.py, #183) so it can point
+    # this runner at a synthetic registry.yaml it built in a tempdir instead of the
+    # repo's real one. Unset (the default for every real caller) -> unchanged
+    # behaviour: HERE / "registry.yaml". It only selects WHICH file is parsed —
+    # it does not skip, weaken, or bypass any assertion below, so it cannot be
+    # used to soften the real gate.
+    override = os.environ.get("CORTEX_EVAL_REGISTRY")
+    path = Path(override) if override else (HERE / "registry.yaml")
+    return yaml.safe_load(path.read_text())
 
 
 def _resolve(path: str) -> Path:

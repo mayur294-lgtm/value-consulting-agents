@@ -320,6 +320,30 @@ components:
            xlsx_outputs_deanonymized,
            workspace_paths_contain_no_client_identifiers]
 
+  # run-experiment-runner (#183, closing PR 1 of the eval-gate-v7 epic) — the
+  # SELF-GATE: this runner grades every other row in this file, so it must
+  # grade itself too. Every check invokes the real evals/run_experiment.py as
+  # a subprocess against a synthetic registry.yaml built fresh in a tempdir
+  # (via CORTEX_EVAL_REGISTRY, added by this ticket) — never the file you are
+  # reading right now, and never an in-process import-and-call.
+  #
+  # threshold: 1.00 — same rationale as mcp-query-guard/pii-anonymizer above:
+  # the thing that decides pass/fail for every other row is pass/fail itself,
+  # not "mostly correct." No `judge:`/`path1_judge:` entries — every check
+  # here is deterministic, $0, and stays green with ANTHROPIC_API_KEY unset
+  # (the "skipped judge" case simulates the no-key path; it never calls one).
+  #
+  # NOT wired here: `path1_refuses_in_ci`. Path-1's CI guard doesn't exist
+  # until #204 — authoring a check for it now would have nothing to exercise
+  # and could only ever render `[SKIP*]` under #181's skip-that-cannot-pass
+  # rendering, which is noise, not signal, and exactly the "absence reads as
+  # success" pattern this epic exists to remove. #204 adds it here.
+  run-experiment-runner:
+    altitude: component
+    threshold: 1.00
+    code: [component_negatives_honoured, missing_target_fails_not_skips,
+           declared_checks_all_executed, skipped_judge_does_not_pass]
+
 # Pipeline (integration) altitude — the most important. When ANY component
 # changes, run orchestrate.py end-to-end on a golden engagement and check the
 # inter-agent contracts + final deliverable still hold.
