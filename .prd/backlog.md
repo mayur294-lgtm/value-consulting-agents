@@ -42,6 +42,9 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 
 ## From the 2026-08-25 Presidio PII cycle (v6, PR 1)
 
+- [ ] **`step_harvest` now reads placeholder-form outputs, not de-anonymised ones.** Unavoidable once its `cwd` is the neutral workspace (#167), and arguably strictly better — the harvester's own contract requires anonymised knowledge, and #169 made it defer to the shared tool. But it is a behaviour change beyond pure path plumbing: the harvester previously saw real client names (post-`deanonymize_dir`) and now sees `<CLIENT_1>`. Its eval row still scores 1.000, but that row tests the synthetic-quarantine gate, not what the harvester does with placeholder input. Worth a targeted case (from #167)
+
+
 - [ ] **Sequencing: #167 must land before or with #168.** The client name reaches the deny-list from `CLIENT_PROFILE.md` *and* the directory slug. #168 removes the slug; #167 restores it via the map's `client_slug`. Verified against live data: `engagements/wsfs/CLIENT_PROFILE.md` still holds the unfilled `- **Name:** [Full legal name]`, so the slug is currently the only thing putting `WSFS` on its deny-list — the other six engagements have filled profiles. #168's migration must refuse or loudly warn on any engagement with no filled client name (from #166)
 
 
