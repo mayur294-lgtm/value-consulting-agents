@@ -72,17 +72,29 @@ class RubricResult:
             verdict = "PASS"
         else:
             verdict = "FAIL"
+        # A check that was skipped AND never passed (e.g. a judge that never
+        # ran — no API key, or it raised) certified nothing. That's distinct
+        # from a plain skip (e.g. an intentionally absent optional check) and
+        # must be visible on the mark and in the header, not silently folded
+        # into the same [SKIP] line a clean skip would render.
+        unverified_count = sum(1 for c in self.checks if c.skipped and not c.passed)
+        verdict_line = f"Verdict:  {verdict}" + ("  [HARD FAIL]" if self.hard_failed else "")
+        if unverified_count:
+            plural = "" if unverified_count == 1 else "s"
+            verdict_line += f"  [{unverified_count} check{plural} skipped — unverified]"
         lines = [
             f"Target:   {self.target}",
             f"Altitude: {self.altitude}",
             f"Score:    {'UNSCORABLE' if self.all_unscorable else f'{self.score:.3f}'}"
             f"  (threshold {threshold:.2f})",
-            f"Verdict:  {verdict}" + ("  [HARD FAIL]" if self.hard_failed else ""),
+            verdict_line,
             "",
         ]
         for c in self.checks:
             if c.unscorable:
                 mark = "UNSCORABLE"
+            elif c.skipped and not c.passed:
+                mark = "SKIP*"
             elif c.skipped:
                 mark = "SKIP"
             elif c.passed:
