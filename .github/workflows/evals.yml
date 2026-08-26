@@ -127,6 +127,32 @@ jobs:
               "evals/run_experiment.py": "run-experiment-runner",
               "evals/mutations.py": "mutation-harness",
               "evals/check_registry.py": "mutation-harness",
+              # tools/proposal_builder.py is the SUBJECT of the `proposal-engine`
+              # row (#150): rubrics/component/proposal_engine.py subprocesses this
+              # exact file, so changing it really can move that score. Mapped here
+              # AHEAD of mariamt/20260819-proposal-builder merging, because
+              # measured against that branch's real 37-file diff this step derived
+              # ZERO rows — every path fell through to the silent `continue` below,
+              # so the whole proposal gate would have arrived covered by nothing
+              # and said so nowhere. The file exists only on that branch, so until
+              # it lands this entry is inert (a path not in the diff is never
+              # looked up); when it lands with its registry row, it resolves.
+              #
+              # DELIBERATELY NOT MAPPED, because a mapping asserts the row can see
+              # the file and these two cannot:
+              #   tools/pricing_model.py       — read by NO rubric in the suite.
+              #     It needs its own row, which is a registry change on that
+              #     branch, not a line here. Pointing it at `proposal-engine`
+              #     would convert a silent skip into a FALSE GREEN — strictly
+              #     worse, and the exact failure the v7 epic exists to close.
+              #   .claude/commands/proposal-builder.md — named in
+              #     proposal_loop.py's docstring as the subject, but that rubric
+              #     reads two committed goldens and never opens the command file,
+              #     so the prompt cannot move the score. Same shape as the eleven
+              #     `rubric_calibration:` rows: a gate named after something it
+              #     cannot see. `proposal-loop` is therefore covered by nothing
+              #     here on purpose — see the eval report, not a mapping.
+              "tools/proposal_builder.py": "proposal-engine",
           }
           EXPLICIT_PREFIXES = {
               "scripts/pii/": "pii-anonymizer",
@@ -217,6 +243,49 @@ jobs:
           CHANGED_COMPONENTS: ${{ steps.changed.outputs.components }}
         run: |
           set -o pipefail
+
+          # Deliverable rows are DERIVED from the registry, never hand-listed.
+          # They used to be four literals, and `proposal` (#150) — authored with
+          # a golden and seven single-defect negatives on its own branch — was
+          # covered by NOTHING here, with no output saying so: not by this list
+          # (its name was never added) and not by the derive step above (which
+          # maps zero rows for that branch's whole diff). That is the same
+          # argument the mutation-row derivation below already makes, applied to
+          # the list it sits next to. Deriving means a new deliverable row is
+          # gated the moment it exists, which is the only version of this that
+          # cannot go quiet.
+          #
+          # `--negatives` is attached PER ROW from the registry rather than
+          # hand-paired: `roi` declares one (roi_config_overcap.json, the #180
+          # threshold-0.90 gate) and the old literal list ran it WITHOUT the
+          # flag, so that negative had never once been exercised in CI.
+          deliverable_cmds=()
+          while IFS= read -r line; do
+            deliverable_cmds+=("$line")
+          done < <(python3 - <<'PY'
+          import yaml
+
+          reg = yaml.safe_load(open("evals/registry.yaml"))
+          for name, spec in (reg.get("deliverables") or {}).items():
+              if not isinstance(spec, dict):
+                  continue
+              cmd = f"--deliverable {name}"
+              if spec.get("negatives"):
+                  cmd += " --negatives"
+              print(cmd)
+          PY
+          )
+
+          # A derivation that yields nothing must not read as "nothing to run".
+          # An empty array here would silently drop EVERY deliverable gate while
+          # the job still went green — precisely the failure this step exists to
+          # close, reintroduced by the fix for it.
+          if [ "${#deliverable_cmds[@]}" -eq 0 ]; then
+            echo "::error::no deliverable rows derived from evals/registry.yaml — refusing to run a suite with zero deliverable coverage"
+            exit 1
+          fi
+          echo "deliverable rows derived from the registry: ${deliverable_cmds[*]}"
+
           {
             echo '## Eval results'
             echo
@@ -225,10 +294,7 @@ jobs:
 
             # Fixed list — every PR in scope runs these regardless of what changed.
             fixed_cmds=(
-              "--deliverable deck --negatives"
-              "--deliverable roi"
-              "--deliverable assessment"
-              "--deliverable report"
+              "${deliverable_cmds[@]}"
               "--component mcp-query-guard"
               "--component pii-anonymizer"
               "--altitude deliverable-structural"
