@@ -2232,7 +2232,7 @@ async def run_pipeline(
             f.write(timing_entry)
 
     # Runtime evals (non-blocking): score this run's agent outputs + deliverables +
-    # pipeline contracts into .pipeline_run_report.json and flag anything below
+    # deliverable-structural contracts into .pipeline_run_report.json and flag anything below
     # threshold. Never breaks the engagement — wrapped so any eval error is swallowed.
     try:
         import sys as _sys
