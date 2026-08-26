@@ -42,6 +42,10 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 
 ## From the 2026-08-25 Presidio PII cycle (v6, PR 1)
 
+- [ ] `.claude/agents/discovery-transcript-interpreter.md:112` — the PII Boundary contract still describes the legacy `[CLIENT]`/`[PERSON-1]`/`[REDACTED-*]` placeholder form, stale since #160 moved the convention to `<ENTITY_N>`. Not one of #169's 11 surfaces so it was left untouched, but it is the canonical agent-facing PII contract and now contradicts the code (from #169)
+- [ ] `scripts/extract_telemetry.py` — the client label is now anonymised (#169), but `journal_path` in the same payload still contains the client's directory name, so telemetry synced to a GitHub Issue still carries the client identity via the path. Closing this is the path-anonymisation work in PRD v6 §2 (#166–#168), not a telemetry fix (from #169)
+
+
 - [done v6] **Internal-domain email addresses leaked in cleartext** — FIXED in `2c8a6a8`. Presidio's built-in `EMAIL_ADDRESS` recognizer validates the domain against real registered TLDs via `tldextract`, so `.internal`, `.corp`, `.local`, `.lan`, `.intranet` — the standard internal domains at essentially every bank — were not recognised as emails at all and passed through untouched, along with RFC 2606 `.test`/`.example`/`.invalid`. Fixed with a shape-based second `EMAIL_ADDRESS` recognizer that reuses the built-in's own regex and accepts on final-label shape rather than TLD registration. **Worth remembering how this was found:** fourteen eval checks at 1.00 and four gate-bites proofs all passed while it leaked, because every fixture used real-looking TLDs. It surfaced only from running the guard's printed command verbatim against a real DOCX and reading the output. **A green gate is evidence about the fixtures, not about reality** — periodically exercise the real path by hand (from #164 verification)
 
 
