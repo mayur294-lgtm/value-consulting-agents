@@ -195,7 +195,8 @@ def _declared_check_names(spec: dict) -> set[str]:
 
 
 def _reachability_canary(mutation: "mutations.Mutation", root: Path, evaluator: str,
-                          target: str, before_score: float) -> tuple[str, str]:
+                          target: str, before_score: float,
+                          row_checks: frozenset[str] | None = None) -> tuple[str, str]:
     """#186: distinguish a genuinely inert check from a mutation that never
     reached the code under test (evals/mutations.py's module docstring,
     "What this harness CANNOT mutate" — this is the wiring that section says
@@ -204,24 +205,44 @@ def _reachability_canary(mutation: "mutations.Mutation", root: Path, evaluator: 
     Delete the shadow copy of the mutation's `file` from a FRESH, otherwise
     unmutated shadow (the canary isolates the resolution PATH, not another
     mutation), rescore, and see whether the named check's state moved from
-    the pristine baseline at all:
+    the pristine baseline at all. There are THREE distinct outcomes — spec
+    review on #186 found the original two-state (REACHABLE/UNREACHABLE)
+    split conflated two very different kinds of "moved":
 
-      moved   -> REACHABLE:   the check's result changed once its subject
-                 file vanished, so the check DOES read the shadow copy.
-                 Whatever became of the original mutation (stale `find`,
-                 or applied-but-inert), the check is wired to the right file.
-      unmoved -> UNREACHABLE: the check's result is byte-identical whether
-                 the shadow's copy of the file exists or not — it never
-                 reads the shadow copy at all (a hardcoded absolute path,
-                 `Path.cwd()` captured at import, ...). This is a HARNESS
-                 LIMITATION, not evidence the check itself is broken: the
-                 fix is "make the rubric resolve through repo_root()", never
-                 "weaken or delete the mutation".
+      reddened -> REACHABLE:            the check's OWN result changed
+                 (score/passed/skipped/unscorable) once its subject file
+                 vanished, so the check DOES read the shadow copy. This is
+                 DIRECT, targeted proof — whatever became of the original
+                 mutation (stale `find`, or applied-but-inert), the check
+                 itself is wired to the right file.
+      vanished -> REACHABLE_INDIRECT:   the check didn't change state — it
+                 disappeared from the evaluator's output entirely. That only
+                 proves the EVALUATOR noticed the file's absence, not that
+                 THIS check specifically reads it: deleting one file can
+                 collapse the whole evaluator (e.g. an early parse failure)
+                 and take unrelated checks down with it. This is INDIRECT,
+                 weaker proof, so it is reported with the collateral ratio —
+                 how many of the row's other declared checks also vanished
+                 in the same rescore. A large simultaneous-vanish fraction
+                 is the collapse signature, not a wiring proof for any one
+                 check.
+      unmoved  -> UNREACHABLE:          the check's result is byte-identical
+                 whether the shadow's copy of the file exists or not — it
+                 never reads the shadow copy at all (a hardcoded absolute
+                 path, `Path.cwd()` captured at import, ...). This is a
+                 HARNESS LIMITATION, not evidence the check itself is
+                 broken: the fix is "make the rubric resolve through
+                 repo_root()", never "weaken or delete the mutation".
 
-    Returns (verdict, detail). verdict is "REACHABLE", "UNREACHABLE", or
-    "INCONCLUSIVE" (the canary itself could not run at all, e.g. the file
-    isn't present in a fresh shadow — reported as-is, never folded into
-    either verdict).
+    `row_checks`, when given, is the full set of check names declared by the
+    row under test — used only to compute the vanished-state collateral
+    ratio (N of M also vanished). Without it, the vanished case still
+    reports REACHABLE_INDIRECT but cannot compute a ratio.
+
+    Returns (verdict, detail). verdict is "REACHABLE", "REACHABLE_INDIRECT",
+    "UNREACHABLE", or "INCONCLUSIVE" (the canary itself could not run at
+    all, e.g. the file isn't present in a fresh shadow — reported as-is,
+    never folded into any of the other three).
     """
     rel = Path(mutation.file)
     try:
@@ -248,9 +269,18 @@ def _reachability_canary(mutation: "mutations.Mutation", root: Path, evaluator: 
 
     after_check = after_map.get(mutation.check)
     if after_check is None:
-        return ("REACHABLE",
-                f"check `{mutation.check}` stopped executing entirely once `{rel}` was deleted "
-                f"(executed: {sorted(after_map)}) — the check's own presence depends on this file")
+        if row_checks:
+            vanished = sorted(c for c in row_checks if c not in after_map)
+            ratio = f"{len(vanished)} of {len(row_checks)} checks in this row also vanished"
+        else:
+            vanished = [mutation.check]
+            ratio = "row's declared check set was not supplied — cannot compute a collateral ratio"
+        return ("REACHABLE_INDIRECT",
+                f"{ratio} (executed after deletion: {sorted(after_map)}) — check "
+                f"`{mutation.check}` stopped executing entirely once `{rel}` was deleted, which "
+                f"proves the EVALUATOR is wired to this file, not that this specific check reads "
+                f"it — see the collateral count above; a high simultaneous-vanish fraction means "
+                f"the evaluator collapsed rather than this check being confirmed")
 
     same_state = (
         bool(after_check["passed"]) and not bool(after_check["skipped"])
@@ -344,13 +374,18 @@ def _run_mutate(reg: dict, row: str, target_override: str | None) -> int:
         real_file = _resolve(r.mutation.file)
         if not real_file.is_file():
             continue
-        verdict, detail = _reachability_canary(r.mutation, ROOT, evaluator, target, r.before)
+        verdict, detail = _reachability_canary(r.mutation, ROOT, evaluator, target, r.before,
+                                                declared)
         if verdict == "UNREACHABLE":
             unreachable += 1
             print(f"  ⚠ [HARNESS ERROR] reachability canary for `{r.check}`: UNREACHABLE — {detail}")
         elif verdict == "REACHABLE":
-            print(f"  · reachability canary for `{r.check}`: REACHABLE (not a harness gap — "
-                  f"the check/mutation itself needs fixing) — {detail}")
+            print(f"  · reachability canary for `{r.check}`: REACHABLE (direct — check "
+                  f"reddened; not a harness gap, the check/mutation itself needs fixing) — "
+                  f"{detail}")
+        elif verdict == "REACHABLE_INDIRECT":
+            print(f"  · reachability canary for `{r.check}`: REACHABLE (indirect — check "
+                  f"vanished; {detail})")
         else:
             print(f"  · reachability canary for `{r.check}`: {verdict} — {detail}")
 

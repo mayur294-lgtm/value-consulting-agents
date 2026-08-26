@@ -35,8 +35,10 @@ never gating — they are allowed to be absent/gitignored and are skipped here.
 
 Usage
 -----
-    python3 evals/check_registry.py           # exit 1 on any hard error
-    python3 evals/check_registry.py --strict   # also fail on DEBT warnings
+    python3 evals/check_registry.py            # exit 1 on any hard error
+    python3 evals/check_registry.py --strict    # also fail on DEBT warnings
+    python3 evals/check_registry.py --verbose   # full per-check DEBT detail (default
+                                                 # rendering aggregates to one line per row)
 """
 from __future__ import annotations
 
@@ -125,12 +127,22 @@ def _row_claims_mutation_proof(name: str, spec: dict) -> bool:
     return isinstance(spec.get("negatives"), dict)
 
 
-def check_mutation_coverage(name: str, spec: dict, errors: list[str], debt: list[str]) -> None:
+def check_mutation_coverage(name: str, spec: dict, errors: list[str],
+                             mutation_debt_rows: dict[str, dict]) -> None:
     """Preflight enforcement of the mutation proof (#186): every check name
     in a row's `code:` list must resolve to a `mutations:`/dict-`negatives:`
     entry that would actually prove it — a check with no mutation entry
     certifies nothing. See the MUTATIONS_ENFORCED_FOR_ALL_ROWS staging note
     above for why an uncovered row is DEBT today rather than a hard error.
+
+    Non-fatal (DEBT) findings are NOT appended to a flat message list —
+    they're grouped into `mutation_debt_rows[name] = {"total": <len(code_names)>,
+    "missing": [check, ...], "messages": [full per-check message, ...]}` so
+    the caller can render one aggregated line per row by default (#186
+    follow-up: a 90-line wall of near-identical per-check DEBT lines is the
+    exact failure mode this preflight exists to prevent trained reviewers
+    from learning to scroll past) while still keeping full per-check detail
+    available behind `--verbose`.
     """
     code_names = list(spec.get("code") or [])
     if not code_names:
@@ -145,6 +157,8 @@ def check_mutation_coverage(name: str, spec: dict, errors: list[str], debt: list
     if not missing:
         return
     hard = _row_claims_mutation_proof(name, spec) or MUTATIONS_ENFORCED_FOR_ALL_ROWS
+    row_debt = mutation_debt_rows.setdefault(
+        name, {"total": len(code_names), "missing": [], "messages": []})
     for check in missing:
         msg = (f"components.{name}.code: check `{check}` has no `mutations:` entry — "
                f"a gate that cannot fail certifies nothing. Fix: add a `mutations:` entry "
@@ -153,9 +167,13 @@ def check_mutation_coverage(name: str, spec: dict, errors: list[str], debt: list
         if hard:
             errors.append(msg)
         else:
-            debt.append(msg + " Non-fatal DEBT until migrated (row declares no `mutations:` "
-                        "key at all yet) — tracked in .prd/backlog.md (eval-gate-v7 epic); "
-                        "flip MUTATIONS_ENFORCED_FOR_ALL_ROWS above once every row is covered.")
+            row_debt["missing"].append(check)
+            row_debt["messages"].append(
+                msg + " Non-fatal DEBT until migrated (row declares no `mutations:` "
+                "key at all yet) — tracked in .prd/backlog.md (eval-gate-v7 epic); "
+                "flip MUTATIONS_ENFORCED_FOR_ALL_ROWS above once every row is covered.")
+    if not row_debt["missing"]:
+        del mutation_debt_rows[name]
 
 
 def _check_pipeline_altitude_name_debt(debt: list[str]) -> None:
@@ -216,10 +234,15 @@ def main(argv: list[str]) -> int:
         return 1
 
     strict = "--strict" in argv
+    verbose = "--verbose" in argv or "-v" in argv
     reg = yaml.safe_load((HERE / "registry.yaml").read_text())
 
     errors: list[str] = []   # hard failures — a gate that can't run
-    debt: list[str] = []     # warnings — bare-name engagement goldens (vacuous in CI)
+    debt: list[str] = []     # warnings — bare-name engagement goldens, pipeline-altitude grep
+    # Per-row mutation-coverage DEBT (#186 follow-up): name -> {total, missing, messages}.
+    # Kept separate from `debt` above so the default report can aggregate it to one
+    # line per row instead of one line per check (see check_mutation_coverage's docstring).
+    mutation_debt_rows: dict[str, dict] = {}
 
     def check_gate(path: str, where: str) -> None:
         rp = _resolve(path)
@@ -260,7 +283,7 @@ def main(argv: list[str]) -> int:
             errors.append(f"components.{name}.code: declared as an empty list — "
                           f"a row must gate on at least one check")
         # #186: every declared `code:` check needs a mutation proof, or staged DEBT.
-        check_mutation_coverage(name, spec, errors, debt)
+        check_mutation_coverage(name, spec, errors, mutation_debt_rows)
 
     # --- pipeline -------------------------------------------------------------
     pl = reg.get("pipeline") or {}
@@ -271,9 +294,30 @@ def main(argv: list[str]) -> int:
     _check_pipeline_altitude_name_debt(debt)
 
     # --- report ---------------------------------------------------------------
+    # #186 follow-up (spec review): the mutation-coverage DEBT used to print one
+    # line per missing check — 90 near-identical lines across 16 rows, exactly
+    # the wall-of-warnings failure mode this preflight exists to stop reviewers
+    # from learning to scroll past. Default rendering now leads with a
+    # PROMINENT TOTAL, then one aggregated line per row; full per-check detail
+    # is still available behind --verbose for whoever is doing the migration.
+    mutation_debt_count = sum(len(r["missing"]) for r in mutation_debt_rows.values())
+    total_debt = len(debt) + mutation_debt_count
+
     print("Registry preflight — evals/registry.yaml")
-    if debt:
-        print(f"\nDEBT ({len(debt)}) — non-gating, vacuous in CI, migrate incrementally:")
+    if total_debt:
+        mutation_summary = (f" ({mutation_debt_count} uncovered check(s) across "
+                             f"{len(mutation_debt_rows)} row(s))" if mutation_debt_rows else "")
+        print(f"\nDEBT: {total_debt} warning(s){mutation_summary} — non-gating, vacuous in CI, "
+              f"migrate incrementally"
+              f"{'' if verbose else ' (pass --verbose for full per-check detail)'}:")
+        if verbose:
+            for row in mutation_debt_rows.values():
+                for msg in row["messages"]:
+                    print(f"  ⚠ {msg}")
+        else:
+            for name, row in mutation_debt_rows.items():
+                print(f"  ⚠ {name}: {len(row['missing'])}/{row['total']} code checks "
+                      f"uncovered — no mutation entries")
         for d in debt:
             print(f"  ⚠ {d}")
     if errors:
@@ -282,11 +326,11 @@ def main(argv: list[str]) -> int:
             print(f"  ✗ {e}")
         print("\nRESULT: FAIL")
         return 1
-    if strict and debt:
+    if strict and total_debt:
         print("\nRESULT: FAIL (--strict: DEBT treated as error)")
         return 1
-    print(f"\nAll gating goldens resolve and are committed."
-          f"{' (' + str(len(debt)) + ' debt warning(s) above)' if debt else ''}")
+    print("\nAll gating goldens resolve and are committed."
+          + (f" (see {total_debt} DEBT warning(s) above)" if total_debt else ""))
     print("RESULT: PASS")
     return 0
 
