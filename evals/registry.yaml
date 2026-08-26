@@ -32,7 +32,20 @@ deliverables:
     evaluator: rubrics.deliverable.roi
     threshold: 0.80
     goldens:
-      - evals/goldens/roi_report_valid.md        # synthetic (Meridian Mutual) — exercises the rubric
+      - evals/goldens/roi_report_valid.md        # synthetic (Meridian Mutual) — exercises the rubric (markdown path)
+      # :41 — the JSON path (_eval_json / value_lever_groups schema) had NO
+      # golden coverage at all before this fix: the parser bug that scored a
+      # correct current-schema roi_config.json 0/0 on Harborlight run 7 could
+      # ship because nothing in this gate ever exercised evaluate() on a
+      # .json target. Reusing the already-committed provenance golden (also
+      # the wired `components.roi-financial-modeler` input) rather than
+      # minting a new fixture.
+      - evals/goldens/roi_config_provenance.json  # synthetic — current value_lever_groups schema (JSON path)
+    negatives:
+      # :41 — value_lever_groups present but the WRONG shape (an array, not
+      # the contract's dict-of-dicts) must FAIL, not render unscorable —
+      # that distinction is the whole point of the fix.
+      - evals/goldens/negatives/roi_config_bad_schema.json
     monitor:
       - engagements/nfis/2026-02_digital_investor_assessment_v2/outputs/roi_report.md
 
