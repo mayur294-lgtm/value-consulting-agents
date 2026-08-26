@@ -43,6 +43,10 @@ tests/engagements/*
 .pii_mapping.json
 .anon_*
 
+# Engagement identity map (#166) — the ONLY place an opaque engagement ID is
+# bound to a real client name. chmod 600, machine-local, never committed.
+.engagement_map.json
+
 # Temporary files
 *.tmp
 /tmp/

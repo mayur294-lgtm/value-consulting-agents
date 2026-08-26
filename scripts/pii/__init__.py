@@ -16,10 +16,10 @@ IMPORT CONTRACT (verified, not aspirational)
   as NON-blocking, i.e. failing open in a control whose job is failing
   closed.
 
-  So: `denylist` is imported eagerly (standard library only, 3.9-clean), and
-  everything from `engine` is resolved lazily through module `__getattr__`
-  (PEP 562) on first attribute access. Nothing heavyweight is touched until
-  a caller actually asks for it.
+  So: `denylist` and `identity` are imported eagerly (standard library only,
+  3.9-clean), and everything from `engine` is resolved lazily through module
+  `__getattr__` (PEP 562) on first attribute access. Nothing heavyweight is
+  touched until a caller actually asks for it.
 
   There is a regression check for this — see `scripts/pii/drift_check.py`
   and the ticket's verification steps: after `import scripts.pii`, neither
@@ -28,9 +28,11 @@ IMPORT CONTRACT (verified, not aspirational)
 import importlib
 
 from . import denylist  # noqa: F401  — stdlib only; see IMPORT CONTRACT above
+from . import identity  # noqa: F401  — stdlib only; see IMPORT CONTRACT above
 
 __all__ = [
     "denylist",
+    "identity",
     # --- lazily resolved from .engine (Presidio + spaCy) ---
     "engine",
     "PIISession",
