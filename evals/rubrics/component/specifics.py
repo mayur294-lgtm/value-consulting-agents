@@ -299,7 +299,13 @@ def _roi_modeler(text: str) -> list[CheckResult]:
     # the same artifact_boundary cap gate the pipeline runs. The wired golden
     # (roi_config_provenance.json) is already capped and must PASS this invariant.
     ok_cap, cap_detail = _capped_invariant(data)
-    out.append(_bool_check("backbase_impact_within_cap", ok_cap, detail=cap_detail))
+    # hard_fail: a cap violation is a boundary invariant, not a quality-mean
+    # contributor — one over-cap value must sink the whole gate regardless of
+    # how many of the other 8 checks pass (see registry.yaml negatives: for
+    # roi-financial-modeler, #180: without hard_fail the known-bad
+    # roi_config_overcap.json fixture scores 8/9 = 0.89, which clears the 0.80
+    # threshold and would make the negative incorrectly PASS).
+    out.append(_bool_check("backbase_impact_within_cap", ok_cap, hard_fail=True, detail=cap_detail))
     out.append(_check_overcap_negative_gated())
     return out
 
