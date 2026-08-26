@@ -166,7 +166,7 @@ Cortex agents form a chain (Discovery → Block-A agents → Roadmap → Assembl
 
 1. **Structural** — `python scripts/test_agent.py` validates the changed agent/knowledge/template against `tests/quality_metrics.yaml` ($0, no LLM).
 2. **Unit experiment** — `python evals/run_experiment.py --component <changed-component> --altitude unit` scores the changed component against its rubric cases in `evals/registry.yaml` via Langfuse. `<changed-component>` is the agent/skill/command/template the ticket modified.
-3. **Pipeline experiment** — `python evals/run_experiment.py --altitude pipeline` runs the end-to-end pipeline on a golden engagement and checks the change didn't break downstream consumers.
+3. **Deliverable-structural experiment** — `python evals/run_experiment.py --altitude deliverable-structural` lints the inter-agent structural contracts across a golden engagement's output **files**. It does NOT run the pipeline, never invokes an agent, and never reads the component you changed (#188 — its old name is what made a green read as integration evidence; the old flag now hard-errors). Treat it as a downstream-shape regression check, not as verification of the change.
 
 `run_experiment.py` exits non-zero when a score falls below its threshold, so a non-zero exit is a FAIL.
 
@@ -181,11 +181,11 @@ Agent tool call:
   prompt: "Run exactly these at the repo root, in order, and stop at the first failure:
     1. python scripts/test_agent.py
     2. python evals/run_experiment.py --component <changed-component> --altitude unit
-    3. python evals/run_experiment.py --altitude pipeline
+    3. python evals/run_experiment.py --altitude deliverable-structural
   On all three passing (exit 0 and at/above threshold), report PASS. On any failure, report FAIL, name which step failed, and paste that command's raw output verbatim — do not summarise, and do not fix anything."
 ```
 
-A ticket is NOT done until **all three** pass: structural passes AND the unit experiment scores at/above its threshold AND the pipeline experiment is green.
+A ticket is NOT done until **all three** pass: structural passes AND the unit experiment scores at/above its threshold AND the deliverable-structural experiment is green.
 
 Handle the result:
 - **PASS** → proceed to Step 7.
@@ -287,7 +287,7 @@ If no build-order issue was used (fallback sequencing), skip this step.
 - **Fresh context per implementer** — each subagent gets a clean context window via the Agent tool. The orchestrator ensures the working tree is clean between tickets.
 - **Prompt enrichment over file reading** — front-load codebase context into the Agent prompt. The subagent should rarely need to explore the codebase itself.
 - **Spec compliance between tickets** — catch missing requirements before the next ticket builds on top. The full quality review happens against the PR.
-- **Verify before closing** — each ticket runs the eval harness (`python scripts/test_agent.py` structural + `python evals/run_experiment.py --component <component> --altitude unit` + `python evals/run_experiment.py --altitude pipeline`) inside a cheap subagent before it's marked done. A ticket whose change fails structural, scores below its unit threshold, or breaks the pipeline isn't done.
+- **Verify before closing** — each ticket runs the eval harness (`python scripts/test_agent.py` structural + `python evals/run_experiment.py --component <component> --altitude unit` + `python evals/run_experiment.py --altitude deliverable-structural`) inside a cheap subagent before it's marked done. A ticket whose change fails structural, scores below its unit threshold, or breaks the downstream output contracts isn't done.
 - **Autonomous between tickets** — don't ask the user between every ticket. Only pause for blockers or PR splits.
 - **Escalate, don't guess** — if an implementer is stuck, escalate rather than proceeding with uncertainty.
 - **Size-aware PRs** — split at ~400 lines for reviewability.

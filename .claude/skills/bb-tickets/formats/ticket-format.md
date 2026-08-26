@@ -23,7 +23,7 @@ Use this template for every ticket created by `/bb-tickets`.
 - Edge case: [scenario] → [expected handling]
 - Run `python scripts/test_agent.py` — structural checks pass
 - Run `python evals/run_experiment.py --component [component] --altitude unit` — scores at/above threshold
-- Run `python evals/run_experiment.py --altitude pipeline` — green (no downstream regression)
+- Run `python evals/run_experiment.py --altitude deliverable-structural` — green (no downstream output-contract regression; it does not run the pipeline)
 
 ## Eval Acceptance Criteria
 - `evals/registry.yaml` cases that define "done": [case ids + thresholds]

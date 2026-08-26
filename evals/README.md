@@ -20,7 +20,8 @@ evals/
   rubrics/
     base.py                     # CheckResult / RubricResult
     deliverable/                # CODE evaluators: decks.py, roi.py, assessment.py
-    pipeline/contracts.py       # integration altitude: inter-agent contracts
+    structural/contracts.py     # deliverable-structural altitude: inter-agent
+                                #   contract lint over output FILES (no agent runs)
     component/                  # unit altitude: per-agent behaviour (see "Component evals")
     judge/                      # LLM-as-judge harness (Opus) + prompts/ + standards_snapshot/
 ```
@@ -45,9 +46,13 @@ the `require-harness` hook — dev-only entry points).
 ## Three altitudes
 
 1. **Component (unit)** — score an agent's direct output on a fixed input. Fast dev signal.
-2. **Pipeline (integration)** — *most important*. Run the chain end-to-end on a golden
-   engagement and check inter-agent contracts + final deliverables. Catches "a local
-   edit to discovery broke the assembler."
+2. **Deliverable-structural** — lint the inter-agent structural contracts across a set
+   of engagement output **files** (expected deliverables present, evidence IDs shared,
+   deliverables clear their hard gates). It reads files that already exist: it does
+   **not** run `orchestrate.py`, never invokes an agent, and never reads the component
+   you changed — so a green here is **not** integration evidence (#188; it was called
+   `pipeline` until then, which is exactly what made a 1.000 read as one). A real
+   end-to-end run is `scripts/orchestrate.py` on a synthetic engagement.
 3. **Deliverable** — score the final artifact (decks / ROI / assessment).
 
 Each altitude mixes **code evaluators** (objective, cheap, run first) and **LLM-judge
@@ -64,8 +69,9 @@ python evals/run_experiment.py --deck path/to/deck.html
 # registry deliverable, with negatives (gate passes only if goldens PASS and negatives FAIL)
 python evals/run_experiment.py --deliverable deck --negatives
 
-# pipeline integration on the golden engagement
-python evals/run_experiment.py --altitude pipeline
+# deliverable-structural contract lint over the golden engagement's output files
+# (fixture files on disk — not an end-to-end run; see altitude 2 above)
+python evals/run_experiment.py --altitude deliverable-structural
 
 # a component's unit eval (used by bb-build verify)
 python evals/run_experiment.py --component roi-financial-modeler

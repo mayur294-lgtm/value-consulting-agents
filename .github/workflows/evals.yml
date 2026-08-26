@@ -79,7 +79,7 @@ jobs:
               "--deliverable assessment" \
               "--component mcp-query-guard" \
               "--component pii-anonymizer" \
-              "--altitude pipeline"; do
+              "--altitude deliverable-structural"; do
               echo "### run_experiment.py $cmd"
               python evals/run_experiment.py $cmd || rc=1
               echo

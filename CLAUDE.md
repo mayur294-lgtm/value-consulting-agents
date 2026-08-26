@@ -36,7 +36,7 @@ This repo's own software — **agents (`.claude/agents/`), skills/commands (`.cl
 `/bb-prd → /bb-design → /bb-tickets → /bb-build → /bb-pr-review → /bb-refine`
 
 - `bb-prd` writes `.prd/prd-v*.md` including an **Eval Acceptance Criteria** section (which `evals/registry.yaml` cases + thresholds define done; a NEW component authors fresh eval cases).
-- `bb-build`'s verify step = **evals**, not a compiler: `python scripts/test_agent.py` (structural) + `python evals/run_experiment.py --component <name>` (unit) + `python evals/run_experiment.py --altitude pipeline` (the change didn't break downstream). A ticket isn't done until these pass.
+- `bb-build`'s verify step = **evals**, not a compiler: `python scripts/test_agent.py` (structural) + `python evals/run_experiment.py --component <name>` (unit) + `python evals/run_experiment.py --altitude deliverable-structural` (the change didn't break downstream output contracts — it lints files, it does not run the pipeline). A ticket isn't done until these pass.
 - `bb-pr-review` opens a **draft PR** that can't merge until the `evals.yml` gate is green; `bb-refine` harvests failing/edge/drift cases into `.prd/backlog.md` to seed the next cycle.
 
 **Deploy = green-merge to `main`** (agents/skills are read at runtime — no build artifact). A `v*` tag cuts a formal release, gated on the full eval suite.

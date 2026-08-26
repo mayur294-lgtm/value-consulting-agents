@@ -36,7 +36,7 @@ For any PRD that changes a cortex component (agent, skill, command, template, ru
 
 - Name the existing registry cases (and thresholds) that must stay green.
 - **For a NEW component:** fresh eval cases MUST be authored as part of this work — list the cases to add and their target thresholds.
-- State whether the change can affect downstream consumers; if so, the pipeline-altitude experiment must stay green.
+- State whether the change can affect downstream consumers; if so, the deliverable-structural-altitude experiment must stay green (it lints output-file contracts; it does not run the pipeline).
 
 ### 6. Out of Scope
 Explicit list of things this PRD does NOT cover. Prevents scope creep during implementation.
