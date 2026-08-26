@@ -148,10 +148,16 @@ def score_engagement(engagement_dir: str | Path) -> dict:
             if _match(name, pat):
                 try:
                     r = _run(evaluator, p, "deliverable")
-                    report["deliverables"][name] = {"score": round(r.score, 3),
-                        "pass": r.passed(thr), "threshold": thr, "altitude": "deliverable"}
-                    if not r.passed(thr):
-                        report["flags"].append(f"deliverable {name} {r.score:.2f}<{thr}")
+                    if r.all_unscorable:
+                        # a parser gap, not a quality finding — never rendered as 0/0,
+                        # and never appended to flags.
+                        report["deliverables"][name] = {"unscorable": True,
+                            "threshold": thr, "altitude": "deliverable"}
+                    else:
+                        report["deliverables"][name] = {"score": round(r.score, 3),
+                            "pass": r.passed(thr), "threshold": thr, "altitude": "deliverable"}
+                        if not r.passed(thr):
+                            report["flags"].append(f"deliverable {name} {r.score:.2f}<{thr}")
                 except Exception as e:
                     report["deliverables"][name] = {"error": str(e)}
                 break
@@ -165,10 +171,16 @@ def score_engagement(engagement_dir: str | Path) -> dict:
             try:
                 checks = specifics.evaluate(agent, str(files[name]))
                 rr = RubricResult(target=name, altitude="component", checks=checks)
-                report["agents"][agent] = {"output": name, "score": round(rr.score, 3),
-                    "pass": rr.passed(0.80), "altitude": "component"}
-                if not rr.passed(0.80):
-                    report["flags"].append(f"agent {agent} ({name}) {rr.score:.2f}<0.80")
+                if rr.all_unscorable:
+                    # a parser gap, not a quality finding — never rendered as 0/0,
+                    # and never appended to flags.
+                    report["agents"][agent] = {"output": name, "unscorable": True,
+                        "altitude": "component"}
+                else:
+                    report["agents"][agent] = {"output": name, "score": round(rr.score, 3),
+                        "pass": rr.passed(0.80), "altitude": "component"}
+                    if not rr.passed(0.80):
+                        report["flags"].append(f"agent {agent} ({name}) {rr.score:.2f}<0.80")
             except Exception as e:
                 report["agents"][agent] = {"error": str(e)}
 
@@ -176,9 +188,14 @@ def score_engagement(engagement_dir: str | Path) -> dict:
     try:
         contracts = importlib.import_module("rubrics.pipeline.contracts")
         rr = RubricResult(target=eng.name, altitude="pipeline", checks=contracts.evaluate(str(outputs)))
-        report["pipeline"] = {"score": round(rr.score, 3), "pass": rr.passed(0.90), "threshold": 0.90}
-        if not rr.passed(0.90):
-            report["flags"].append(f"pipeline contracts {rr.score:.2f}<0.90")
+        if rr.all_unscorable:
+            # a parser gap, not a quality finding — never rendered as 0/0,
+            # and never appended to flags.
+            report["pipeline"] = {"unscorable": True, "threshold": 0.90}
+        else:
+            report["pipeline"] = {"score": round(rr.score, 3), "pass": rr.passed(0.90), "threshold": 0.90}
+            if not rr.passed(0.90):
+                report["flags"].append(f"pipeline contracts {rr.score:.2f}<0.90")
     except Exception as e:
         report["pipeline"] = {"error": str(e)}
 
@@ -211,9 +228,16 @@ def main() -> int:
     path = write_report(eng, rep)
     print(f"Eval run report → {path}")
     d, a = rep["deliverables"], rep["agents"]
-    print(f"  deliverables: {sum(v.get('pass') is True for v in d.values())}/{len(d)} pass")
-    print(f"  agents:       {sum(v.get('pass') is True for v in a.values())}/{len(a)} pass")
-    print(f"  pipeline:     {rep['pipeline'].get('score','?')} ({'pass' if rep['pipeline'].get('pass') else 'FLAG'})")
+    du = sum(v.get("unscorable") is True for v in d.values())
+    au = sum(v.get("unscorable") is True for v in a.values())
+    print(f"  deliverables: {sum(v.get('pass') is True for v in d.values())}/{len(d)} pass"
+          + (f"  ({du} unscorable)" if du else ""))
+    print(f"  agents:       {sum(v.get('pass') is True for v in a.values())}/{len(a)} pass"
+          + (f"  ({au} unscorable)" if au else ""))
+    if rep["pipeline"].get("unscorable"):
+        print("  pipeline:     UNSCORABLE (parser gap, not a quality finding)")
+    else:
+        print(f"  pipeline:     {rep['pipeline'].get('score','?')} ({'pass' if rep['pipeline'].get('pass') else 'FLAG'})")
     if rep["flags"]:
         print("  ⚑ FLAGS (non-blocking):")
         for f in rep["flags"]:
