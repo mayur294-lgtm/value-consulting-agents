@@ -25,6 +25,12 @@ Usage:
 
   # override target / threshold
   python evals/run_experiment.py --deliverable assessment --target some.html --threshold 0.7
+
+  # path-1 regeneration (#204) — LOCAL ONLY, never a gate, refuses under CI.
+  # Actually runs the agent via `claude -p` (your Claude subscription) and
+  # scores the fresh output against the row's real rubric. See evals/path1.py
+  # and .design/ux-design-v7.md Flow 4.
+  python evals/run_experiment.py --component roi-financial-modeler --regenerate
 """
 from __future__ import annotations
 
@@ -442,7 +448,49 @@ def main() -> int:
                     help="prove every check declared by this component/deliverable row goes "
                          "red under its `mutations:` entry; exits non-zero if any check is "
                          "unproven or has no mutation entry")
+    ap.add_argument("--regenerate", action="store_true",
+                    help="LOCAL ONLY (#204): dispatch --component <name> to evals/path1.py and "
+                         "actually run that agent via `claude -p`, scoring the fresh output "
+                         "against the row's real rubric, instead of scoring an existing target. "
+                         "Single run, nondeterministic — NOT a gate. Hard-refuses under CI "
+                         "($CI or $GITHUB_ACTIONS set) before touching anything else.")
     args = ap.parse_args()
+
+    # --- path-1 regeneration dispatch (#204) ------------------------------------
+    # Checked before the registry even loads, and before altitude validation:
+    # this is the SECOND of the two routes into path-1 that must hard-refuse
+    # under CI (the first is evals/path1.py's own main() — see that module).
+    # Delegates the actual CI check to path1.refuse_if_ci() rather than
+    # reimplementing the env-var test and message here, so the two routes
+    # cannot drift out of sync with each other or with
+    # .design/ux-design-v7.md's Error States table.
+    if args.regenerate:
+        import path1  # local import: plain gate runs never pay path1's rubric-module import cost
+        if path1.refuse_if_ci():
+            return 1
+        if not args.component:
+            ap.error("--regenerate requires --component <name> — path-1 regenerates a single "
+                     "agent's output; it has no deliverable-level entry point.")
+        reg = _load_registry()
+        spec = reg["components"][args.component]
+        thr = args.threshold if args.threshold is not None else spec["threshold"]
+        tgt = args.target or spec.get("input", spec.get("golden_engagement", ""))
+        resolved = _resolve(tgt)
+        input_text = resolved.read_text() if resolved.exists() else tgt
+        try:
+            out = path1.run_agent(args.component, input_text)
+            res, judge_names = path1.score(args.component, out, context=input_text, registry=reg)
+        except RuntimeError as exc:
+            print(f"\n[FAIL] path-1 could not run `{args.component}`: {exc}", file=sys.stderr)
+            return 1
+        print(path1.PATH1_BANNER)
+        print(f"checks assembled for `{args.component}`: {[c.name for c in res.checks]}  "
+              f"(path1_judge={judge_names})")
+        print(res.report(thr))
+        # Exit code is a LOCAL dev convenience (did this single run clear the
+        # threshold), never a gate verdict — CI can't reach this branch at all
+        # (the refusal above), and nothing here is wired into evals.yml.
+        return 0 if res.passed(thr) else 1
 
     # --- altitude validation ---------------------------------------------------
     if args.altitude == _RETIRED_ALTITUDE:

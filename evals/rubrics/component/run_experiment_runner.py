@@ -40,11 +40,16 @@ is deterministic, $0, no LLM, and must stay green with ANTHROPIC_API_KEY unset
 (the synthetic "skipped judge" case simulates what a real judge integration
 does on a missing key — it never calls one).
 
-NOT covered here (see registry.yaml comment on this row): `path1_refuses_in_ci`
-is authored by #204, once Path-1's CI guard exists to test. Authoring it now
-would only ever produce `[SKIP*]` — noise, not signal — under #181's
-skip-that-cannot-pass rendering, which is exactly the "absence reads as
-success" pattern this epic is removing.
+`path1_refuses_in_ci` (#204) is the sixth check, added once Path-1's CI guard
+(evals/path1.py's `refuse_if_ci()` / `_in_ci()`) existed to test. It proves
+the CI refusal fires via BOTH routes into path-1 — `evals/path1.py` invoked
+directly, and `evals/run_experiment.py --component <row> --regenerate` — under
+BOTH `$CI` and `$GITHUB_ACTIONS`, independently, as real subprocess calls to
+the actual scripts (never an import-and-monkeypatch). #204 authored this
+check but did NOT add it to registry.yaml's `run-experiment-runner` row (that
+file is #201's concurrent territory on this branch) — it runs here as an
+`[undeclared]` extra until that row's `code:` list and `mutations:` entry are
+wired.
 """
 from __future__ import annotations
 
@@ -451,6 +456,108 @@ def _retired_altitude_flag_hard_errors(root: Path) -> CheckResult:
     ))
 
 
+# --- case 6: path1_refuses_in_ci ---------------------------------------------
+
+PATH1_REL_PATH = Path("evals") / "path1.py"
+
+
+def _path1_path() -> Path:
+    return repo_root() / PATH1_REL_PATH
+
+
+# Fragments of path1.CI_REFUSAL_MESSAGE (#204, ux-design-v7.md Error States
+# table, "Path-1 in CI" row). Fragment-matched, not the whole literal string,
+# for the same reason `_RENAME_ERROR_FRAGMENTS` above is: a trivial rewording
+# of the surrounding sentence shouldn't spuriously break this guard.
+_PATH1_CI_REFUSAL_FRAGMENTS = (
+    "never runs in CI",
+    "CI is $0 by design",
+)
+
+_REGEN_ROW = "unregenerable-row"
+
+
+def _run_path1_direct(env_extra: dict) -> subprocess.CompletedProcess:
+    """Invoke the REAL evals/path1.py as a subprocess — the first of the two
+    routes into path-1 this check proves. `--agent`/`--input` are junk values
+    on purpose: the CI guard must refuse BEFORE ever resolving either (a
+    guard that fired only after reading the input file or the agent's prompt
+    would blow up with an unrelated error here, not the CI refusal)."""
+    env = dict(os.environ)
+    for k in ("ANTHROPIC_API_KEY", "LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY", "LANGFUSE_HOST"):
+        env.pop(k, None)
+    env.update(env_extra)
+    cmd = [sys.executable, str(_path1_path()), "--agent", "does-not-matter",
+           "--input", "does-not-matter-either"]
+    return subprocess.run(cmd, capture_output=True, timeout=SUBPROCESS_TIMEOUT_S,
+                          env=env, cwd=str(repo_root()))
+
+
+def _run_regenerate(registry_path: Path, pythonpath_dir: Path,
+                     env_extra: dict) -> subprocess.CompletedProcess:
+    """Invoke the REAL evals/run_experiment.py --regenerate — the second
+    route. Same synthetic-registry-via-CORTEX_EVAL_REGISTRY plumbing as
+    `_run_runner`, reused rather than duplicated where it's just env/pythonpath
+    setup, but built standalone so each of the four scenarios below gets
+    exactly one env var set and nothing else mutated between them."""
+    env = dict(os.environ)
+    for k in ("ANTHROPIC_API_KEY", "LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY", "LANGFUSE_HOST"):
+        env.pop(k, None)
+    env["CORTEX_EVAL_REGISTRY"] = str(registry_path)
+    existing_pp = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = str(pythonpath_dir) + (os.pathsep + existing_pp if existing_pp else "")
+    env.update(env_extra)
+    cmd = [sys.executable, str(_runner_path()), "--component", _REGEN_ROW, "--regenerate"]
+    return subprocess.run(cmd, capture_output=True, timeout=SUBPROCESS_TIMEOUT_S,
+                          env=env, cwd=str(repo_root()))
+
+
+def _path1_refuses_in_ci(root: Path) -> CheckResult:
+    """Regression guard for #204's hard CI guard: path-1 regeneration must
+    refuse (non-zero exit, the documented message) under BOTH `$CI` and
+    `$GITHUB_ACTIONS`, via BOTH routes into path-1 — `evals/path1.py`
+    invoked directly, and `evals/run_experiment.py --component <row>
+    --regenerate`. Four scenarios total (2 env vars x 2 routes), each its
+    own clean subprocess so setting one var never leaks into another
+    scenario's env.
+
+    None of the four may ever reach a real `claude -p` call: this whole
+    check runs with ANTHROPIC_API_KEY stripped and no network, so a guard
+    that fired only AFTER trying to shell out would hang or surface an
+    unrelated auth/timeout error here instead of cleanly refusing with the
+    documented message — that failure mode is exactly what asserting on the
+    message fragments (not just the exit code) catches.
+
+    The synthetic registry's row points `input:` at a file that is never
+    created and names an evaluator module that is never written — both
+    deliberately, to prove the refusal happens BEFORE the runner touches
+    either (a guard that only fired after resolving the input or importing
+    the evaluator would blow up with an unrelated traceback here instead)."""
+    name = "path1_refuses_in_ci"
+    reg = _write_registry(root, {
+        _REGEN_ROW: {
+            "altitude": "component", "threshold": 0.80,
+            "evaluator": "synth_never_imported_for_regen",
+            "input": str(root / "never_created_input.md"),
+            "code": ["never_reached"],
+        },
+    })
+
+    scenarios: dict[str, subprocess.CompletedProcess] = {}
+    for env_var in ("CI", "GITHUB_ACTIONS"):
+        scenarios[f"path1_direct[{env_var}]"] = _run_path1_direct({env_var: "true"})
+        scenarios[f"run_experiment_regenerate[{env_var}]"] = _run_regenerate(reg, root, {env_var: "true"})
+
+    def _refuses(res: subprocess.CompletedProcess) -> bool:
+        out = _out(res)
+        return res.returncode != 0 and all(frag in out for frag in _PATH1_CI_REFUSAL_FRAGMENTS)
+
+    ok = all(_refuses(r) for r in scenarios.values())
+    detail = "; ".join(f"{k}: rc={r.returncode} refuses={_refuses(r)}" for k, r in scenarios.items())
+    return _bool_check(name, ok, exercised=f"evals/path1.py and evals/run_experiment.py via {sys.executable}",
+                       detail=detail[:600])
+
+
 def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained, ignores target
     runner = _runner_path()
     if not runner.exists():
@@ -466,4 +573,5 @@ def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained
         _run_in_tmp(_declared_checks_all_executed),
         _run_in_tmp(_skipped_judge_does_not_pass),
         _run_in_tmp(_retired_altitude_flag_hard_errors),
+        _run_in_tmp(_path1_refuses_in_ci),
     ]
