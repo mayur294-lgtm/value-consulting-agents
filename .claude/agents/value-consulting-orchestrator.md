@@ -141,6 +141,31 @@ touch {engagement_dir}/.complete
 
 Update engagement journal: `Current Status: Complete`
 
+## Journal Entry & Telemetry Protocol
+
+When you finish Step 4 (Post-Completion) for any engagement type, append a
+journal entry to that engagement's `ENGAGEMENT_JOURNAL.md` (create it from
+`templates/outputs/engagement_journal.md` if it doesn't exist yet) with a
+telemetry block:
+
+```
+<!-- TELEMETRY_START -->
+- Agent: value-consulting-orchestrator
+- Engagement Type: [Assess | Inspire | Hybrid]
+- Session ID: [read from .engagement_session_id in the engagement directory; "unknown" if absent]
+- Start Time: [ISO timestamp] | End Time: [ISO timestamp] | Duration: [seconds]
+- Steps Completed: [Detect Type / Route / Post-Completion — whichever actually ran]
+- Errors Encountered: [none | description]
+<!-- TELEMETRY_END -->
+```
+
+For **Ignite Assess**, `scripts/orchestrate.py` already writes its own per-agent
+telemetry blocks during the pipeline run — this entry is IN ADDITION, covering
+the orchestrator's own routing and post-completion work, not a duplicate of
+the pipeline's. For **Ignite Inspire** and **Hybrid**, this may be the only
+journal entry for the session unless the workshop agents you launched wrote
+their own.
+
 ## Hard Rules
 
 1. **Never invent facts.** Document assumptions with confidence levels.
