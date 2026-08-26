@@ -50,6 +50,9 @@ SEQUENCING (read before adding a check here)
   for its own hook — never imports the hook module and monkeypatches its
   internals, since that would only prove the Python function behaves, not
   that the process-level contract (stdout JSON shape, exit code) holds.
+  Since #196 both rows reach that subprocess through ONE implementation,
+  `rubrics._harness.run_hook_subprocess`, instead of two copies that had
+  already begun to diverge.
 
   The 18 checks below all exercise code that exists TODAY: `scripts/pii/
   engine.py`, `scripts/pii/denylist.py` (via the engine's deny-list
@@ -115,11 +118,15 @@ WHY THE VENV INTERPRETER
   `scripts/pii/engine.py` does `import presidio_analyzer` at module level, and
   Presidio needs Python 3.10-3.13 — the system `python3` here is 3.9.6 and
   cannot import it at all (see engine.py's own module docstring, "THE
-  INTERPRETER SPLIT"). `mcp_query_guard.py` (this directory's sibling
-  rubric) runs its subject as a subprocess via `sys.executable` and does not
-  care which interpreter that is, because the hook it tests
-  (`.claude/hooks/mcp-query-guard.py`) is deliberately stdlib-only. This
-  rubric is different: it IMPORTS `scripts/pii/engine.py` directly, in
+  INTERPRETER SPLIT").
+
+  Two different interpreter questions live in this file; do not conflate
+  them. (a) The HOOK subprocesses (checks 14 and 19) run under whatever
+  `.claude/settings.json` registers — bare `python3` — resolved by
+  `rubrics._harness.registered_interpreter()`, never `sys.executable`
+  (#192/backlog :116). That is deliberate: `anonymize-guard.py` is
+  stdlib-only precisely so it can run under a consultant's 3.9.6.
+  (b) This rubric ITSELF IMPORTS `scripts/pii/engine.py` directly, in
   process, because several checks (distinct-placeholder bijectivity, shared
   entity_mapping identity across two files, mapping-file bytes on disk) need
   to inspect engine internals that a subprocess boundary would hide. That
@@ -239,10 +246,8 @@ from __future__ import annotations
 import hashlib
 import io
 import json
-import os
 import re
 import stat
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -250,9 +255,14 @@ from typing import Optional
 
 from rubrics.base import CheckResult, repo_root
 from rubrics._harness import (
+    HookRun,
+    bool_check,
+    build_fixture_engagement,
     check_runs_under_registered_interpreter,
-    record_hook_invocation,
-    registered_interpreter,
+    fault_injection_skip,
+    inject_fault,
+    pretooluse_payload,
+    run_hook_subprocess,
 )
 
 # Make `scripts/` importable as a package root, exactly as
@@ -285,38 +295,39 @@ SEEDED_CLIENT_DIR = "zzzplaceholderclient"
 _RESOLVED_DENY_TERMS: Optional[list] = None
 
 
-def _seed_denylist_source_engagement(root: Path) -> Path:
+def _seed_denylist_source_engagement(root: Path):
     """An ordinary engagement tree — the two documents `denylist.py` reads,
     in the shapes `templates/client_profile.md` and
     `templates/inputs/engagement_intake.md` actually produce. Nothing here
     is special-cased for the engine: it is what a consultant's filled-in
     intake looks like.
-    """
-    client_dir = root / "engagements" / SEEDED_CLIENT_DIR
-    engagement = client_dir / "2026-08_onboarding_assessment"
-    (engagement / "inputs").mkdir(parents=True)
 
-    (client_dir / "CLIENT_PROFILE.md").write_text(
-        "# Client Profile\n\n"
-        "## Client Identity\n\n"
-        f"- **Name:** {CLIENT_FULL}\n"
-        f"- **Short Name:** {CLIENT_SHORT}\n\n"
-        "## Relationship Context\n\n"
-        "- **Backbase Relationship:** Prospect\n"
-        "- **Executive Sponsors (Client-Side):**\n"
-        f"  - {SEEDED_STAKEHOLDER} — Chief Financial Officer — prefers written briefs\n",
-        encoding="utf-8",
+    CLIENT_PROFILE.md is GENERATED, by `_harness.default_client_profile_text`
+    via the `stakeholder=` argument, and that is the point: this fixture's
+    claim is that the document is ORDINARY, so deriving it from the shared
+    template shape is more honest than a hand-written copy that can drift away
+    from `templates/client_profile.md` without anyone noticing. The intake's
+    stakeholder TABLE is passed verbatim instead — a table row is the document
+    shape #209 turns on, so it is the subject of the check, not scaffolding.
+    """
+    return build_fixture_engagement(
+        root,
+        slug=SEEDED_CLIENT_DIR,
+        client_name=CLIENT_FULL,
+        short_name=CLIENT_SHORT,
+        stakeholder=SEEDED_STAKEHOLDER,
+        engagement="2026-08_onboarding_assessment",
+        documents={
+            "inputs/engagement_intake.md": (
+                "# Engagement Intake\n\n"
+                f"- **Client Name:** {CLIENT_FULL}\n\n"
+                "## Stakeholders Interviewed\n\n"
+                "| Name/Role | Department | Perspective |\n"
+                "|-----------|------------|-------------|\n"
+                f"| {SEEDED_STAKEHOLDER} — Chief Financial Officer | Finance | Strategic |\n"
+            ),
+        },
     )
-    (engagement / "inputs" / "engagement_intake.md").write_text(
-        "# Engagement Intake\n\n"
-        f"- **Client Name:** {CLIENT_FULL}\n\n"
-        "## Stakeholders Interviewed\n\n"
-        "| Name/Role | Department | Perspective |\n"
-        "|-----------|------------|-------------|\n"
-        f"| {SEEDED_STAKEHOLDER} — Chief Financial Officer | Finance | Strategic |\n",
-        encoding="utf-8",
-    )
-    return engagement
 
 
 def resolved_deny_terms() -> list:
@@ -326,29 +337,29 @@ def resolved_deny_terms() -> list:
     is the function `orchestrate.py` and `anonymize_transcript.py` call, so
     running it here is what makes "the stakeholder name is redacted" a
     statement about the shipped extraction rather than about this file.
-    Raises if the resolved set does not carry both the client's name and the
-    seeded stakeholder — a silently-empty deny-list is the exact way this
-    repo has twice shipped a gate scoring 1.000 while certifying nothing.
+
+    `FixtureEngagement.resolved_deny_terms()` runs
+    `_harness.assert_deny_list_non_empty` before it returns, defaulting the
+    required members to the fixture's own client name and stakeholder — so the
+    vacuity guard is now STRUCTURAL (the only supported way to get a resolved
+    deny-list out of a fixture goes through it) rather than a call this
+    function has to remember to make. A silently-empty deny-list is the exact
+    way this repo has twice shipped a gate scoring 1.000 while certifying
+    nothing.
+
+    SCOPE: this is the RESOLVED, stakeholder-inclusive list. Only the two
+    checks whose subject IS deny-list coverage take it — see `_new_session`
+    and the module docstring's closing paragraph for why the document- and
+    image-format checks must keep the narrow, client-only default (#209).
     """
     global _RESOLVED_DENY_TERMS
     if _RESOLVED_DENY_TERMS is not None:
         return _RESOLVED_DENY_TERMS
 
-    from pii import denylist  # noqa: PLC0415 - stdlib only
-
     with tempfile.TemporaryDirectory(prefix="pii_eval_denylist_") as td:
-        engagement = _seed_denylist_source_engagement(Path(td))
-        terms = sorted(denylist.resolve_engagement_deny_list(engagement))
-
-    missing = [t for t in (CLIENT_FULL, SEEDED_STAKEHOLDER) if t not in terms]
-    if missing:
-        raise AssertionError(
-            "deny-list resolved from the fixture engagement is missing %r "
-            "(resolved: %r) — every assertion built on it would pass or fail "
-            "for the wrong reason" % (missing, terms)
-        )
-    _RESOLVED_DENY_TERMS = terms
-    return terms
+        _RESOLVED_DENY_TERMS = _seed_denylist_source_engagement(
+            Path(td)).resolved_deny_terms()
+    return _RESOLVED_DENY_TERMS
 
 
 # Raw values planted in the fixture that MUST NEVER appear in anonymised
@@ -382,10 +393,6 @@ PERSON_BY_SHAPE = {
     "speaker_label": "Priya Iyer",
     "table": "Aisha Rahman",
 }
-
-def _bool_check(name: str, ok: bool, *, detail: str = "", hard_fail: bool = True) -> CheckResult:
-    return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=hard_fail, detail=detail)
-
 
 def _fixture_path(target: str) -> Path:
     if target:
@@ -463,7 +470,7 @@ def _round_trip_byte_identical(target: str) -> CheckResult:
     restored_facade = at.deanonymize_text(anonymized, mapping)
 
     ok = (restored_engine == original) and (restored_facade == original)
-    return _bool_check(name, ok, detail=(
+    return bool_check(name, ok, detail=(
         f"engine round-trip identical={restored_engine == original}; "
         f"facade round-trip identical={restored_facade == original}; "
         f"len(original)={len(original)} len(anonymized)={len(anonymized)}"
@@ -500,7 +507,7 @@ def _distinct_values_distinct_placeholders(target: str) -> CheckResult:
             problems.append(f"{etype}: expected >= {minimum} distinct values, got {got}")
 
     ok = not problems
-    return _bool_check(name, ok, detail=(
+    return bool_check(name, ok, detail=(
         "; ".join(problems) if problems else
         f"all {sum(len(v) for v in mapping.values())} distinct values across "
         f"{len(mapping)} entity types map 1:1 to distinct placeholders"
@@ -528,7 +535,7 @@ def _repeated_value_reuses_placeholder(target: str) -> CheckResult:
         and anonymized.count(placeholder) >= 3
         and repeated_value not in anonymized
     )
-    return _bool_check(name, ok, detail=(
+    return bool_check(name, ok, detail=(
         f"placeholder={placeholder!r} occurrences_in_output="
         f"{anonymized.count(placeholder) if placeholder else 'n/a'} "
         f"(expected >=3, one mapping entry, raw value gone)"
@@ -675,7 +682,7 @@ def _cross_transcript_merge_collision_free(target: str) -> CheckResult:  # noqa:
         )
 
         ok = distinct_ok and same_placeholder_ok and no_collision_ok and restore_ok
-        return _bool_check(name, ok, detail=(
+        return bool_check(name, ok, detail=(
             f"distinct_ok={distinct_ok} same_placeholder_ok={same_placeholder_ok} "
             f"(placeholder={shared_placeholder!r}) no_collision_ok={no_collision_ok} "
             f"restore_ok={restore_ok}"
@@ -751,7 +758,7 @@ def _mapping_files_chmod_600_and_cleaned(target: str) -> CheckResult:  # noqa: A
         )
 
         ok = mode_ok and subset_ok and cleanup_safe_ok
-        return _bool_check(name, ok, detail=(
+        return bool_check(name, ok, detail=(
             f"mode_a={oct(mode_a)} mode_b={oct(mode_b)} mode_ok={mode_ok} "
             f"subset_ok={subset_ok} cleanup_safe_ok={cleanup_safe_ok} — NOTE: "
             f"orchestrate.py does not currently delete per-transcript mapping "
@@ -781,7 +788,7 @@ def _client_name_redacted_via_denylist(target: str) -> CheckResult:
     has_client_entities = len(mapping) >= 2  # full name + at least one short-form case variant
 
     ok = full_name_redacted and domain_redacted and has_client_entities
-    return _bool_check(name, ok, detail=(
+    return bool_check(name, ok, detail=(
         f"full_name_redacted={full_name_redacted} domain_redacted={domain_redacted} "
         f"distinct_CLIENT_values={len(mapping)} (expected >=2)"
     ))
@@ -826,7 +833,7 @@ def _allowlist_prevents_generic_overredaction(target: str) -> CheckResult:
     behavioural_ok = anonymized == generic_text
 
     ok = structural_ok and behavioural_ok
-    return _bool_check(name, ok, detail=(
+    return bool_check(name, ok, detail=(
         f"structural_ok={structural_ok} (allow_list has {len(allow_list)} patterns) "
         f"behavioural_ok={behavioural_ok}"
     ))
@@ -856,7 +863,7 @@ def _empty_entity_list_warns(target: str) -> CheckResult:  # noqa: ARG001
     still_functional = "generic.person@zzzplaceholdermeridian.com" not in anonymized
 
     ok = warned and stayed_quiet and still_functional
-    return _bool_check(name, ok, detail=(
+    return bool_check(name, ok, detail=(
         f"warned_when_empty={warned} silent_when_configured={stayed_quiet} "
         f"still_redacts_generic_pii={still_functional}"
     ))
@@ -908,7 +915,7 @@ def _legacy_flat_mapping_still_restores(target: str) -> CheckResult:  # noqa: AR
             problems.append(f"{label}: engine/facade DIVERGED — {got_engine!r} != {got_facade!r}")
 
     ok = not problems
-    return _bool_check(name, ok, detail="; ".join(problems) if problems else
+    return bool_check(name, ok, detail="; ".join(problems) if problems else
                         "all 3 mapping shapes (v1 legacy, v2 bare, v2 nested) restore "
                         "correctly through both maintained copies")
 
@@ -1018,7 +1025,7 @@ def _nested_outputs_deanonymized(target: str) -> CheckResult:  # noqa: ARG001
             problems.append("file inside a dot-directory was modified — must stay excluded")
 
         ok = not problems
-        return _bool_check(name, ok, detail="; ".join(problems) if problems else (
+        return bool_check(name, ok, detail="; ".join(problems) if problems else (
             f"recursion witness restored, hazard 1 (template token) preserved, "
             f"hazard 2 (longest-match ordering) correct, interim/dotfile/dot-dir "
             f"exclusions held; files_restored={report.get('files_restored')}"
@@ -1112,7 +1119,7 @@ def _xlsx_outputs_deanonymized(target: str) -> CheckResult:  # noqa: ARG001
             problems.append(f"unopenable workbook not named in 'unrestored': {unrestored!r}")
 
         ok = not problems
-        return _bool_check(name, ok, detail="; ".join(problems) if problems else (
+        return bool_check(name, ok, detail="; ".join(problems) if problems else (
             f"sheet title/cell value/formula string restored, unchanged workbook "
             f"not re-saved, unopenable workbook reported in 'unrestored' with "
             f"client_ready=False; files_restored={report.get('files_restored')}"
@@ -2111,59 +2118,25 @@ def _anonymize_guard_hook_path() -> Path:
 
 
 def _read_tool_payload(file_path: str) -> bytes:
-    return json.dumps({
-        "tool_name": "Read",
-        "tool_input": {"file_path": file_path},
-    }).encode("utf-8")
+    return pretooluse_payload("Read", {"file_path": file_path})
 
 
-def _run_anonymize_guard(project_dir: Path, stdin_bytes: bytes) -> subprocess.CompletedProcess:
-    """Invoke the real hook script as a subprocess, exactly as Claude Code
-    does: JSON payload on stdin, CLAUDE_PROJECT_DIR pointing at the fixture
-    root, decision read back from stdout/exit code. Mirrors
-    mcp_query_guard.py's `_run_hook`.
+def _run_anonymize_guard(project_dir: Path, stdin_bytes: bytes) -> HookRun:
+    """This row's ONE subprocess entry point for `anonymize-guard.py` — both
+    the fail-closed check and `runs_under_registered_interpreter` go through
+    it, so the latter observes the argv this row really spawns rather than a
+    re-implementation written for it.
 
-    The interpreter is whatever `.claude/settings.json` actually registers
-    for this hook (`registered_interpreter()`, ticket #192/backlog :116) —
-    NOT `sys.executable`. Settings.json registers `anonymize-guard.py` as
-    bare `python3` (deliberately kept off the Presidio venv per
-    solution-design-v6.md D13 — see that doc's note on this hook staying
-    stdlib-only); a subprocess call built from `sys.executable` would
-    silently certify it under this eval-runner's own interpreter instead,
-    which is exactly the drift #192 exists to close.
-    `registered_interpreter()` raises loudly (never falls back) if the hook
-    isn't registered.
-
-    `record_hook_invocation(argv)` below is load-bearing, not telemetry:
-    it is what lets `runs_under_registered_interpreter` assert against the
-    argv this helper REALLY spawned. Without it that check can only observe
-    the resolver's return value, and reverting this line to
-    `[sys.executable, ...]` scores 1.000 green (spec-review FAIL,
-    2026-08-26). Never spawn the hook here without recording first."""
-    env = dict(os.environ)
-    env["CLAUDE_PROJECT_DIR"] = str(project_dir)
-    hook = _anonymize_guard_hook_path()
-    argv = registered_interpreter(hook) + [str(hook)]
-    record_hook_invocation(argv)
-    return subprocess.run(
-        argv,
-        input=stdin_bytes,
-        capture_output=True,
-        timeout=15.0,
-        env=env,
-    )
-
-
-def _guard_is_deny(result: subprocess.CompletedProcess) -> tuple:
-    out = result.stdout.decode("utf-8", errors="replace").strip()
-    if not out:
-        return False, None
-    try:
-        parsed = json.loads(out)
-    except json.JSONDecodeError:
-        return False, None
-    decision = (parsed.get("hookSpecificOutput") or {}).get("permissionDecision")
-    return decision == "deny", parsed
+    Everything about the invocation (registered interpreter, argv recording,
+    CLAUDE_PROJECT_DIR, timeout, stdout parsing) lives in
+    `rubrics._harness.run_hook_subprocess`; `mcp_query_guard.py`'s `_run_hook`
+    is the identical wrapper over the identical helper, which is what #196
+    extracted. Settings.json registers this hook as bare `python3`,
+    deliberately kept off the Presidio venv per solution-design-v6.md D13 —
+    see the harness docstring for why that must not become `sys.executable`.
+    """
+    return run_hook_subprocess(_anonymize_guard_hook_path(), stdin_bytes,
+                               project_dir=project_dir)
 
 
 def _guard_fails_closed_on_inputs_path(target: str) -> CheckResult:  # noqa: ARG001
@@ -2188,53 +2161,52 @@ def _guard_fails_closed_on_inputs_path(target: str) -> CheckResult:  # noqa: ARG
     bypasses directory permission bits entirely.
     """
     name = "guard_fails_closed_on_inputs_path"
-    if hasattr(os, "getuid") and os.getuid() == 0:
-        return CheckResult(name, 1.0, True, skipped=True,
-                            detail="running as root — chmod-based permission fault "
-                                   "injection cannot be exercised (root bypasses "
-                                   "directory perms); skipping rather than reporting "
-                                   "a false pass or fail")
+    skip = fault_injection_skip(name, perms="directory")
+    if skip is not None:
+        return skip
 
     hook = _anonymize_guard_hook_path()
     if not hook.exists():
-        return _bool_check(name, False, detail=f"{hook} not found — cannot run the check")
+        return bool_check(name, False, detail=f"{hook} not found — cannot run the check")
 
     with tempfile.TemporaryDirectory(prefix="anonymize_guard_eval_") as td:
         root = Path(td)
-        engagement = root / "engagements" / "zzzplaceholderclient" / "2026-01_test_engagement"
-        inputs_dir = engagement / "inputs"
-        inputs_dir.mkdir(parents=True)
+        fixture = build_fixture_engagement(
+            root,
+            slug=SEEDED_CLIENT_DIR,
+            client_name=CLIENT_FULL,
+            short_name=CLIENT_SHORT,
+            engagement="2026-01_test_engagement",
+            # Genuinely unscrubbed: no `.anon_` sibling. Absent the fault BOTH
+            # files would be denied for the ORDINARY reason (missing sibling),
+            # which is what makes the fault the only variable below.
+            documents={"inputs/fault_test.md": "placeholder content, no sibling\n"},
+        )
+        inputs_dir = fixture.inputs_dir
         raw_inputs_file = inputs_dir / "fault_test.md"
-        raw_inputs_file.write_text("placeholder content, no sibling\n", encoding="utf-8")
 
         outside_dir = root / "scratch_outside"
         outside_dir.mkdir(parents=True)
         outside_file = outside_dir / "fault_test.md"
         outside_file.write_text("placeholder content, no sibling\n", encoding="utf-8")
 
-        inputs_mode = inputs_dir.stat().st_mode
-        outside_mode = outside_dir.stat().st_mode
-        try:
-            inputs_dir.chmod(0o000)
-            outside_dir.chmod(0o000)
+        # BOTH directories faulted in ONE block, and that is the check: the
+        # contract is a SPLIT — the identical PermissionError must DENY inside
+        # engagements/*/inputs/ and ALLOW outside it. Faulting only inputs/
+        # would prove nothing more than "denial happens somewhere", and a
+        # globally fail-closed guard wedged every session once already (#82).
+        with inject_fault(inputs_dir, outside_dir):
             result_inputs = _run_anonymize_guard(root, _read_tool_payload(str(raw_inputs_file)))
             result_outside = _run_anonymize_guard(root, _read_tool_payload(str(outside_file)))
-        finally:
-            # Restore unconditionally so tempdir cleanup can list/remove these.
-            inputs_dir.chmod(inputs_mode | stat.S_IRWXU)
-            outside_dir.chmod(outside_mode | stat.S_IRWXU)
-
-        denied_inputs, parsed_inputs = _guard_is_deny(result_inputs)
-        denied_outside, _ = _guard_is_deny(result_outside)
 
         ok = (
-            result_inputs.returncode == 0 and denied_inputs
-            and result_outside.returncode == 0 and not denied_outside
+            result_inputs.returncode == 0 and result_inputs.denied
+            and result_outside.returncode == 0 and not result_outside.denied
         )
         return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=True, detail=(
-            f"inputs/ (fault): rc={result_inputs.returncode} denied={denied_inputs} "
-            f"outside inputs/ (fault): rc={result_outside.returncode} denied={denied_outside} "
-            f"reason={((parsed_inputs or {}).get('hookSpecificOutput') or {}).get('permissionDecisionReason', '')[:120]!r}"
+            f"inputs/ (fault): rc={result_inputs.returncode} denied={result_inputs.denied} "
+            f"outside inputs/ (fault): rc={result_outside.returncode} denied={result_outside.denied} "
+            f"reason={result_inputs.reason[:120]!r}"
         ))
 
 
@@ -2419,46 +2391,47 @@ def _identity():
     return _i
 
 
-def _seed_workspace_engagement(root: Path) -> Path:
+def _seed_workspace_engagement(root: Path):
     """One engagement whose every client-controlled name is a deny-list term:
     the client directory, a raw input file, the `.anon_` artifacts named after
-    it, and an input SUBDIRECTORY."""
-    client_dir = root / "engagements" / WORKSPACE_CLIENT_DIR
-    engagement = client_dir / "2026-08_retail_assessment"
-    inputs_dir = engagement / "inputs"
-    inputs_dir.mkdir(parents=True)
-    (engagement / "outputs").mkdir(parents=True)
+    it, and an input SUBDIRECTORY.
 
-    (client_dir / "CLIENT_PROFILE.md").write_text(
-        "# Client Profile\n\n## Client Identity\n\n- **Name:** %s\n" % WORKSPACE_CLIENT_NAME,
-        encoding="utf-8",
+    `slug=WORKSPACE_CLIENT_DIR` — a CLIENT-NAMED directory, the PRE-migration
+    shape — is deliberate and must not be "modernised" to
+    `build_fixture_engagement(slug=None)`'s opaque id. An opaque id is exactly
+    what `materialise_workspace` is supposed to PRODUCE; handing it one to
+    start with would make this check unable to tell a working neutraliser from
+    a broken one.
+    """
+    return build_fixture_engagement(
+        root,
+        slug=WORKSPACE_CLIENT_DIR,
+        client_name=WORKSPACE_CLIENT_NAME,
+        short_name=None,
+        engagement="2026-08_retail_assessment",
+        subdirs=("outputs",),
+        documents={
+            # A deny-list SOURCE: it exists to hold the client's name, so it
+            # must not enter a directory an agent runs in, scrubbed sibling
+            # or not.
+            "inputs/engagement_intake.md":
+                "# Engagement Intake\n\n- **Client Name:** %s\n" % WORKSPACE_CLIENT_NAME,
+            # Raw, unscrubbed client material + its scrubbed sibling.
+            "inputs/Zzzplaceholder_Meridian_Annual_Report.pdf":
+                WORKSPACE_RAW_MARKER + "\n",
+            "inputs/.anon_Zzzplaceholder_Meridian_Annual_Report.pdf.md":
+                "Annual report for <CLIENT_1>.\n",
+            # A plain-text transcript (facade naming: `.anon_<name>`, no added `.md`).
+            "inputs/.anon_transcript_1.md": "<PERSON_1> said hello.\n",
+            # An image: OCR sidecar + redacted copy. One source, two artifacts.
+            "inputs/.anon_Meridian_Screenshot.png.md":
+                "OCR text mentioning <CLIENT_1>.\n",
+            "inputs/.anon_Meridian_Screenshot.png.png": "redacted-png-bytes\n",
+            # A foldered input — the FOLDER name is client-controlled too.
+            "inputs/Meridian_Board_Pack/.anon_Meridian_Deck.pptx.md":
+                "<CLIENT_1> board deck.\n",
+        },
     )
-    # A deny-list SOURCE: it exists to hold the client's name, so it must not
-    # enter a directory an agent runs in, scrubbed sibling or not.
-    (inputs_dir / "engagement_intake.md").write_text(
-        "# Engagement Intake\n\n- **Client Name:** %s\n" % WORKSPACE_CLIENT_NAME,
-        encoding="utf-8",
-    )
-
-    # Raw, unscrubbed client material + its scrubbed sibling.
-    (inputs_dir / "Zzzplaceholder_Meridian_Annual_Report.pdf").write_text(
-        WORKSPACE_RAW_MARKER + "\n", encoding="utf-8")
-    (inputs_dir / ".anon_Zzzplaceholder_Meridian_Annual_Report.pdf.md").write_text(
-        "Annual report for <CLIENT_1>.\n", encoding="utf-8")
-    # A plain-text transcript (facade naming: `.anon_<name>`, no added `.md`).
-    (inputs_dir / ".anon_transcript_1.md").write_text(
-        "<PERSON_1> said hello.\n", encoding="utf-8")
-    # An image: OCR sidecar + redacted copy. One source, two artifacts.
-    (inputs_dir / ".anon_Meridian_Screenshot.png.md").write_text(
-        "OCR text mentioning <CLIENT_1>.\n", encoding="utf-8")
-    (inputs_dir / ".anon_Meridian_Screenshot.png.png").write_text(
-        "redacted-png-bytes\n", encoding="utf-8")
-    # A foldered input — the FOLDER name is client-controlled too.
-    subdir = inputs_dir / "Meridian_Board_Pack"
-    subdir.mkdir()
-    (subdir / ".anon_Meridian_Deck.pptx.md").write_text(
-        "<CLIENT_1> board deck.\n", encoding="utf-8")
-    return engagement
 
 
 def _workspace_paths_contain_no_client_identifiers(target: str) -> CheckResult:  # noqa: ARG001
@@ -2468,10 +2441,16 @@ def _workspace_paths_contain_no_client_identifiers(target: str) -> CheckResult: 
     Four assertions, one gate:
 
       1. The deny-list resolved for the fixture engagement is NON-EMPTY and
-         contains the client's name. Asserted FIRST and explicitly: with an
-         empty deny-list every other assertion here passes vacuously, which is
-         precisely how this repo has twice shipped a gate scoring 1.000 while
-         certifying nothing.
+         contains the client's name. Asserted FIRST, and now STRUCTURALLY:
+         `FixtureEngagement.resolved_deny_terms()` runs
+         `_harness.assert_deny_list_non_empty` before it hands back a single
+         term, so this check cannot obtain a deny-list that skipped the
+         guard — it is no longer the first `if` in a function someone could
+         reorder. With an empty deny-list every other assertion here passes
+         vacuously, which is precisely how this repo has twice shipped a gate
+         scoring 1.000 while certifying nothing. The AssertionError it raises
+         surfaces as a RED check via `evaluate()`'s wrapper, naming the
+         fixture.
       2. No segment of any path in the workspace — the workspace root
          included, not just the files under it — contains any deny term
          (case-insensitive substring, since `Meridian` hides inside
@@ -2484,27 +2463,18 @@ def _workspace_paths_contain_no_client_identifiers(target: str) -> CheckResult: 
     """
     name = "workspace_paths_contain_no_client_identifiers"
     identity = _identity()
-    from pii import denylist  # noqa: PLC0415 - stdlib only
 
     problems = []
     with tempfile.TemporaryDirectory(prefix="pii_workspace_eval_") as td:
         root = Path(td)
-        engagement = _seed_workspace_engagement(root)
-        terms = sorted(denylist.resolve_engagement_deny_list(engagement))
+        fixture = _seed_workspace_engagement(root)
 
-        # 1 — the deny-list must actually carry the identity, or this is vacuous.
-        if not terms:
-            return _bool_check(name, False, detail=(
-                "deny-list for the fixture engagement is EMPTY — every "
-                "assertion below would pass vacuously; the fixture is broken, "
-                "not the workspace"
-            ))
-        if not any(t.lower() == WORKSPACE_CLIENT_NAME.lower() for t in terms):
-            problems.append(
-                "deny-list %r does not contain the client's full name — fixture broken"
-                % (terms,)
-            )
+        # 1 — the deny-list must actually carry the identity, or this is
+        # vacuous. Raises (-> a RED check naming the fixture) before any term
+        # is returned; see the docstring.
+        terms = fixture.resolved_deny_terms()
 
+        engagement = fixture.engagement_dir
         workspace = identity.materialise_workspace(engagement)
         try:
             paths = [workspace.path] + sorted(workspace.path.rglob("*"))

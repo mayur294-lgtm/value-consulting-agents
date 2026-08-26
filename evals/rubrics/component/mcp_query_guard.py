@@ -17,6 +17,15 @@ importing the module and monkeypatching its internals. This is the only way
 to prove the process-level contract (stdout JSON shape, exit code) actually
 holds, not just that the Python functions behave in-process.
 
+#196 moved the mechanics of all of that — the fixture builder, the subprocess
+invoker, the permission-fault injector, the pass/fail CheckResult helper — into
+`rubrics/_harness.py`, shared with `pii_anonymizer.py` and with the eight rows
+#197-#200 add. What stays HERE is the part that is actually about this hook:
+which documents each fixture carries, and what each check asserts. The
+prose inside those fixtures is passed to the builder verbatim rather than
+generated, because those exact document shapes ARE the subject of four of the
+checks below.
+
 Fixtures are synthesized entirely inside a `tempfile.TemporaryDirectory()` and
 pointed to via the `CLAUDE_PROJECT_DIR` env var the hook reads its
 `engagements/` deny-list root from (see `PROJECT_DIR` in the hook). Nothing is
@@ -46,19 +55,20 @@ here is deterministic and free.
 from __future__ import annotations
 
 import json
-import os
 import re
-import stat
-import subprocess
-import tempfile
 from pathlib import Path
-from typing import Optional
 
 from rubrics.base import CheckResult, repo_root
 from rubrics._harness import (
+    HookRun,
+    bool_check,
+    build_fixture_engagement,
     check_runs_under_registered_interpreter,
-    record_hook_invocation,
-    registered_interpreter,
+    fault_injection_skip,
+    inject_fault,
+    pretooluse_payload,
+    run_hook_subprocess,
+    run_in_tmpdir,
 )
 
 HOOK_REL_PATH = Path(".claude") / "hooks" / "mcp-query-guard.py"
@@ -85,68 +95,27 @@ def _hook_path() -> Path:
 
 
 def _payload(tool_input: dict) -> bytes:
-    return json.dumps({
-        "tool_name": "mcp__backbase-infobank__search",
-        "tool_input": tool_input,
-    }).encode("utf-8")
+    return pretooluse_payload("mcp__backbase-infobank__search", tool_input)
 
 
-def _run_hook(project_dir: Path, stdin_bytes: bytes) -> subprocess.CompletedProcess:
-    """Invoke the real hook script as a subprocess, exactly as Claude Code
-    does: JSON payload on stdin, CLAUDE_PROJECT_DIR pointing at the fixture
-    root, decision read back from stdout/exit code.
+def _run_hook(project_dir: Path, stdin_bytes: bytes) -> HookRun:
+    """This row's ONE subprocess entry point — every check goes through it,
+    including `runs_under_registered_interpreter`, so that check observes the
+    argv this row really spawns rather than a re-implementation written for
+    it.
 
-    The interpreter is whatever `.claude/settings.json` actually registers
-    for this hook (`registered_interpreter()`, ticket #192/backlog :116) —
-    NOT `sys.executable`. Settings.json registers this hook as bare
-    `python3`, the interpreter every consultant session runs it under; a
-    subprocess call built from `sys.executable` would silently certify the
-    hook under CI's/this eval-runner's interpreter instead, which is
-    exactly the drift #192 exists to close. `registered_interpreter()`
-    raises loudly (never falls back) if the hook isn't registered.
-
-    `record_hook_invocation(argv)` below is load-bearing, not telemetry:
-    it is what lets `runs_under_registered_interpreter` assert against the
-    argv this helper REALLY spawned. Without it that check can only observe
-    the resolver's return value, and reverting this line to
-    `[sys.executable, ...]` scores 1.000 green (spec-review FAIL,
-    2026-08-26). Never spawn the hook here without recording first."""
-    env = dict(os.environ)
-    env["CLAUDE_PROJECT_DIR"] = str(project_dir)
-    argv = registered_interpreter(_hook_path()) + [str(_hook_path())]
-    record_hook_invocation(argv)
-    return subprocess.run(
-        argv,
-        input=stdin_bytes,
-        capture_output=True,
-        timeout=SUBPROCESS_TIMEOUT_S,
-        env=env,
-    )
+    Everything about the invocation (registered interpreter, argv recording,
+    CLAUDE_PROJECT_DIR, timeout, stdout parsing) now lives in
+    `rubrics._harness.run_hook_subprocess` — see its docstring for why the
+    interpreter must not be `sys.executable` and why the recording is
+    load-bearing. Keep this wrapper: it pins the hook path and the timeout for
+    the row, so a check never has to name either.
+    """
+    return run_hook_subprocess(_hook_path(), stdin_bytes,
+                               project_dir=project_dir, timeout=SUBPROCESS_TIMEOUT_S)
 
 
-def _parsed_stdout(result: subprocess.CompletedProcess) -> Optional[dict]:
-    out = result.stdout.decode("utf-8", errors="replace").strip()
-    if not out:
-        return None
-    try:
-        return json.loads(out)
-    except json.JSONDecodeError:
-        return None
-
-
-def _is_deny(result: subprocess.CompletedProcess) -> tuple[bool, Optional[dict]]:
-    parsed = _parsed_stdout(result)
-    if parsed is None:
-        return False, None
-    decision = (parsed.get("hookSpecificOutput") or {}).get("permissionDecision")
-    return decision == "deny", parsed
-
-
-def _bool_check(name: str, ok: bool, *, detail: str = "", hard_fail: bool = True) -> CheckResult:
-    return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=hard_fail, detail=detail)
-
-
-def _seed_denylist_project(root: Path) -> Path:
+def _seed_denylist_project(root: Path):
     """A fixture project root with one engagement whose documents resemble a
     real engagement tree, exercising every extraction path
     _resolve_deny_list() depends on:
@@ -167,35 +136,43 @@ def _seed_denylist_project(root: Path) -> Path:
         INTAKE_ONLY_IDENTIFIER) that appears NOWHERE else in this fixture —
         not in the slug, not in CLIENT_PROFILE.md — so a check built on one
         of them can only pass via that document's own scanning loop.
+
+    Every document below is passed to `build_fixture_engagement` VERBATIM
+    rather than generated from it: these exact shapes — ALL-CAPS prose
+    emphasis outside a label line, the paren acronym, the bold-star placement
+    — are the SUBJECT of four checks on this row, not incidental scaffolding.
+    The harness supplies the tree, the writes and the fixture-integrity
+    assertion; it must never supply this prose.
     """
-    client_dir = root / "engagements" / PLACEHOLDER_CLIENT
-    client_dir.mkdir(parents=True)
-    (client_dir / "CLIENT_PROFILE.md").write_text(
-        "# CLIENT_PROFILE\n\n"
-        "## EXECUTIVE SUMMARY\n\n"
-        "**NEVER** share these figures outside the account team. This "
-        "profile covers ALL engagement details for the SME segment at "
-        "MEDIUM sensitivity — internal use only.\n\n"
-        "- **Client Name:** Placeholder Holdings Group (ZPC)\n"
-        "- **Primary Contact:** Jane Placeholder, SVP Digital Banking\n",
-        encoding="utf-8",
+    return build_fixture_engagement(
+        root,
+        slug=PLACEHOLDER_CLIENT,
+        client_name=PLACEHOLDER_CLIENT,   # the identity this fixture carries is the SLUG
+        short_name=None,
+        engagement="2026-01_test_engagement",
+        profile_text=(
+            "# CLIENT_PROFILE\n\n"
+            "## EXECUTIVE SUMMARY\n\n"
+            "**NEVER** share these figures outside the account team. This "
+            "profile covers ALL engagement details for the SME segment at "
+            "MEDIUM sensitivity — internal use only.\n\n"
+            "- **Client Name:** Placeholder Holdings Group (ZPC)\n"
+            "- **Primary Contact:** Jane Placeholder, SVP Digital Banking\n"
+        ),
+        documents={
+            "ENGAGEMENT_CONTEXT.md": (
+                "# ENGAGEMENT_CONTEXT\n\n"
+                f"- **Client Name:** {CONTEXT_ONLY_IDENTIFIER}\n"
+            ),
+            "inputs/engagement_intake.md": (
+                "# Engagement Intake\n\n"
+                f"- **Client Name:** {INTAKE_ONLY_IDENTIFIER}\n"
+            ),
+        },
     )
-    engagement_dir = client_dir / "2026-01_test_engagement"
-    (engagement_dir / "inputs").mkdir(parents=True)
-    (engagement_dir / "ENGAGEMENT_CONTEXT.md").write_text(
-        "# ENGAGEMENT_CONTEXT\n\n"
-        f"- **Client Name:** {CONTEXT_ONLY_IDENTIFIER}\n",
-        encoding="utf-8",
-    )
-    (engagement_dir / "inputs" / "engagement_intake.md").write_text(
-        "# Engagement Intake\n\n"
-        f"- **Client Name:** {INTAKE_ONLY_IDENTIFIER}\n",
-        encoding="utf-8",
-    )
-    return client_dir
 
 
-def _seed_generic_words_label_project(root: Path) -> Path:
+def _seed_generic_words_label_project(root: Path):
     """A separate, minimal fixture (deliberately isolated from
     _seed_denylist_project so its terms can't leak in) for the bold-label
     regression: a "- **Client Name:** ..." value made ENTIRELY of words that
@@ -203,14 +180,17 @@ def _seed_generic_words_label_project(root: Path) -> Path:
     all in it), so the single-word extraction path cannot catch it — only
     the multi-word phrase path can. The slug is unrelated filler so it can't
     accidentally supply the same terms via a different path."""
-    client_dir = root / "engagements" / "zzzboldlabeltest"
-    client_dir.mkdir(parents=True)
-    (client_dir / "CLIENT_PROFILE.md").write_text(
-        "# Engagement Profile\n\n"
-        "- **Client Name:** First National Trust\n",
-        encoding="utf-8",
+    return build_fixture_engagement(
+        root,
+        slug="zzzboldlabeltest",
+        client_name="First National Trust",
+        short_name=None,
+        engagement=None,          # client-level fixture: CLIENT_PROFILE.md alone
+        profile_text=(
+            "# Engagement Profile\n\n"
+            "- **Client Name:** First National Trust\n"
+        ),
     )
-    return client_dir
 
 
 # Regression coverage for finding 6: templates/client_profile.md's "##
@@ -222,54 +202,65 @@ def _seed_generic_words_label_project(root: Path) -> Path:
 PLACEHOLDER_PROFILE_NAME = "Zzzplaceholder Fifth Test Holdings"
 
 
-def _seed_profile_name_label_project(root: Path) -> Path:
+def _seed_profile_name_label_project(root: Path):
     """A fixture isolated from _seed_denylist_project (different client slug,
     no overlapping terms) with a CLIENT_PROFILE.md shaped exactly like
     templates/client_profile.md's real "## Client Identity" section: a
     populated bare "- **Name:**" field. Used by
-    denies_client_name_from_profile_name_label."""
-    client_dir = root / "engagements" / "zzznamelabeltest"
-    client_dir.mkdir(parents=True)
-    (client_dir / "CLIENT_PROFILE.md").write_text(
-        "# Client Profile — Zzzplaceholder\n\n"
-        "## Client Identity\n\n"
-        f"- **Name:** {PLACEHOLDER_PROFILE_NAME}\n"
-        "- **Short Name:** zzznamelabeltest\n",
-        encoding="utf-8",
+    denies_client_name_from_profile_name_label.
+
+    Written out rather than taken from `default_client_profile_text()`: the H1
+    here carries a trailing "— Zzzplaceholder" the generated form does not,
+    and this row's subject is exactly which label lines the hook's extractor
+    sees."""
+    return build_fixture_engagement(
+        root,
+        slug="zzznamelabeltest",
+        client_name=PLACEHOLDER_PROFILE_NAME,
+        short_name="zzznamelabeltest",
+        engagement=None,
+        profile_text=(
+            "# Client Profile — Zzzplaceholder\n\n"
+            "## Client Identity\n\n"
+            f"- **Name:** {PLACEHOLDER_PROFILE_NAME}\n"
+            "- **Short Name:** zzznamelabeltest\n"
+        ),
     )
-    return client_dir
 
 
-def _seed_unfilled_profile_template_project(root: Path) -> Path:
+def _seed_unfilled_profile_template_project(root: Path):
     """A fixture whose CLIENT_PROFILE.md is the literal, unfilled
     templates/client_profile.md — the exact live shape of
     engagements/wsfs/CLIENT_PROFILE.md today: "- **Name:** [Full legal
     name]". Used by ignores_unfilled_template_placeholders (this is the
     trap-1 guard: naively adding "name" to the label alternation would
     harvest "Full"/"legal"/"name" as bare deny-list terms and deny every
-    query containing the ordinary word "name")."""
-    client_dir = root / "engagements" / "zzzunfilledprofiletest"
-    client_dir.mkdir(parents=True)
-    (client_dir / "CLIENT_PROFILE.md").write_text(
-        "# Client Profile — [Client Name]\n\n"
-        "## Client Identity\n\n"
-        "- **Name:** [Full legal name]\n"
-        "- **Short Name:** [slug used in directory names, e.g., `navy_federal`]\n",
-        encoding="utf-8",
+    query containing the ordinary word "name").
+
+    `client_name=None` on purpose, and this is the ONLY fixture in the repo
+    entitled to it: an unfilled template carries no resolvable identity, which
+    is the entire point of the check. It switches off
+    `build_fixture_engagement`'s fixture-integrity assertion, so never copy
+    this argument to silence that assertion elsewhere."""
+    return build_fixture_engagement(
+        root,
+        slug="zzzunfilledprofiletest",
+        client_name=None,
+        short_name=None,
+        engagement=None,
+        profile_text=(
+            "# Client Profile — [Client Name]\n\n"
+            "## Client Identity\n\n"
+            "- **Name:** [Full legal name]\n"
+            "- **Short Name:** [slug used in directory names, e.g., `navy_federal`]\n"
+        ),
     )
-    return client_dir
 
 
 def _run_in_tmp(fn, *args) -> CheckResult:
-    """Run a check body inside a fresh tempdir, converting any unexpected
-    exception (subprocess timeout, missing interpreter, ...) into a failing
-    CheckResult instead of crashing the whole eval run."""
-    try:
-        with tempfile.TemporaryDirectory(prefix="mcp_guard_eval_") as td:
-            return fn(Path(td), *args)
-    except Exception as exc:  # noqa: BLE001 - convert to a reportable failure
-        return _bool_check(fn.__name__.lstrip("_"), False,
-                            detail=f"check raised {type(exc).__name__}: {exc}")
+    """Row-local alias for the shared `run_in_tmpdir`, pinning this row's
+    tempdir prefix so a leaked directory is traceable to this rubric."""
+    return run_in_tmpdir(fn, *args, prefix="mcp_guard_eval_")
 
 
 # --- individual checks ------------------------------------------------------
@@ -279,12 +270,11 @@ def _denies_query_containing_client_identifier(root: Path) -> CheckResult:
     _seed_denylist_project(root)
     payload = _payload({"query": f"capabilities for {PLACEHOLDER_CLIENT} digital onboarding"})
     result = _run_hook(root, payload)
-    denied, parsed = _is_deny(result)
-    ok = result.returncode == 0 and denied
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} "
-        f"stdout={result.stdout.decode(errors='replace')[:200]!r} "
-        f"stderr={result.stderr.decode(errors='replace')[:200]!r}"
+    ok = result.returncode == 0 and result.denied
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} "
+        f"stdout={result.stdout_text[:200]!r} "
+        f"stderr={result.stderr_text[:200]!r}"
     ))
 
 
@@ -293,10 +283,9 @@ def _allows_generic_query(root: Path) -> CheckResult:
     _seed_denylist_project(root)
     payload = _payload({"query": "digital onboarding capabilities for a Tier-2 retail bank"})
     result = _run_hook(root, payload)
-    denied, _ = _is_deny(result)
-    ok = result.returncode == 0 and not denied and not result.stdout.strip()
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ok = result.returncode == 0 and not result.denied and result.silent
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} stdout={result.stdout_text[:200]!r}"
     ))
 
 
@@ -310,10 +299,9 @@ def _detects_identifier_nested_in_dict_or_list(root: Path) -> CheckResult:
         },
     })
     result = _run_hook(root, payload)
-    denied, _ = _is_deny(result)
-    ok = result.returncode == 0 and denied
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ok = result.returncode == 0 and result.denied
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} stdout={result.stdout_text[:200]!r}"
     ))
 
 
@@ -323,30 +311,23 @@ def _fails_closed_on_unresolvable_denylist(root: Path) -> CheckResult:
     real, unmocked exception the hook's try/except must catch and turn into
     a deny — proving the fail-closed contract, not just asserting it."""
     name = "fails_closed_on_unresolvable_denylist"
-    if hasattr(os, "getuid") and os.getuid() == 0:
-        return CheckResult(name, 1.0, True, skipped=True,
-                            detail="running as root — chmod-based permission fault injection "
-                                   "cannot be exercised (root bypasses directory perms); skipping "
-                                   "rather than reporting a false pass or fail")
+    skip = fault_injection_skip(name, perms="directory")
+    if skip is not None:
+        return skip
 
     engagements_dir = root / "engagements"
     engagements_dir.mkdir(parents=True)
     (engagements_dir / "somefile.md").write_text("placeholder", encoding="utf-8")
-    original_mode = engagements_dir.stat().st_mode
-    try:
-        engagements_dir.chmod(0o000)
+    # `inject_fault` restores the mode on the way out no matter what — a 000
+    # directory cannot be listed or removed, so without that the tempdir
+    # cleanup would raise and turn this into a crashing check.
+    with inject_fault(engagements_dir):
         payload = _payload({"query": "digital onboarding capabilities"})
         result = _run_hook(root, payload)
-    finally:
-        # Restore perms unconditionally so tempdir cleanup (which needs to
-        # list/remove engagements_dir) can proceed.
-        engagements_dir.chmod(original_mode | stat.S_IRWXU)
 
-    denied, parsed = _is_deny(result)
-    reason = ((parsed or {}).get("hookSpecificOutput") or {}).get("permissionDecisionReason", "")
-    ok = result.returncode == 0 and denied and "could not verify" in reason.lower()
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} reason={reason[:200]!r}"
+    ok = result.returncode == 0 and result.denied and "could not verify" in result.reason.lower()
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} reason={result.reason[:200]!r}"
     ))
 
 
@@ -354,11 +335,9 @@ def _fails_closed_on_malformed_payload(root: Path) -> CheckResult:
     name = "fails_closed_on_malformed_payload"
     _seed_denylist_project(root)
     result = _run_hook(root, b"this is not json { at all")
-    denied, parsed = _is_deny(result)
-    reason = ((parsed or {}).get("hookSpecificOutput") or {}).get("permissionDecisionReason", "")
-    ok = result.returncode == 0 and denied and "could not verify" in reason.lower()
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} reason={reason[:200]!r}"
+    ok = result.returncode == 0 and result.denied and "could not verify" in result.reason.lower()
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} reason={result.reason[:200]!r}"
     ))
 
 
@@ -370,16 +349,15 @@ def _allows_with_warning_when_no_denylist_configured(root: Path) -> CheckResult:
     name = "allows_with_warning_when_no_denylist_configured"
     payload = _payload({"query": f"capabilities for {PLACEHOLDER_CLIENT} digital onboarding"})
     result = _run_hook(root, payload)
-    denied, _ = _is_deny(result)
-    stderr = result.stderr.decode("utf-8", errors="replace")
+    stderr = result.stderr_text
     ok = (
         result.returncode == 0
-        and not denied
-        and not result.stdout.strip()
+        and not result.denied
+        and result.silent
         and "no client deny-list configured" in stderr.lower()
     )
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} stdout={result.stdout.decode(errors='replace')[:120]!r} "
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} stdout={result.stdout_text[:120]!r} "
         f"stderr={stderr[:200]!r}"
     ))
 
@@ -392,7 +370,7 @@ def _deny_decision_shape_matches_hook_contract(root: Path) -> CheckResult:
     _seed_denylist_project(root)
     payload = _payload({"query": f"info about {PLACEHOLDER_CLIENT}"})
     result = _run_hook(root, payload)
-    parsed = _parsed_stdout(result)
+    parsed = result.stdout_json
     ok = (
         result.returncode == 0
         and parsed is not None
@@ -402,7 +380,7 @@ def _deny_decision_shape_matches_hook_contract(root: Path) -> CheckResult:
         and isinstance(parsed["hookSpecificOutput"].get("permissionDecisionReason"), str)
         and parsed["hookSpecificOutput"]["permissionDecisionReason"] != ""
     )
-    return _bool_check(name, ok, detail=(
+    return bool_check(name, ok, detail=(
         f"rc={result.returncode} parsed={json.dumps(parsed)[:300] if parsed else None}"
     ))
 
@@ -419,11 +397,10 @@ def _allows_query_with_common_emphasis_words(root: Path) -> CheckResult:
     _seed_denylist_project(root)
     payload = _payload({"query": "please list all SME digital onboarding options"})
     result = _run_hook(root, payload)
-    denied, _ = _is_deny(result)
-    ok = result.returncode == 0 and not denied and not result.stdout.strip()
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} "
-        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ok = result.returncode == 0 and not result.denied and result.silent
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} "
+        f"stdout={result.stdout_text[:200]!r}"
     ))
 
 
@@ -438,11 +415,10 @@ def _denies_bold_markdown_label_client_name(root: Path) -> CheckResult:
     _seed_generic_words_label_project(root)
     payload = _payload({"query": "engagement notes for First National Trust digital onboarding"})
     result = _run_hook(root, payload)
-    denied, _ = _is_deny(result)
-    ok = result.returncode == 0 and denied
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} "
-        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ok = result.returncode == 0 and result.denied
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} "
+        f"stdout={result.stdout_text[:200]!r}"
     ))
 
 
@@ -454,30 +430,25 @@ def _fails_closed_on_unreadable_profile_file(root: Path) -> CheckResult:
     fully generic query with no identifier in it, because _read_bounded must
     propagate OSError rather than swallow it into an empty string."""
     name = "fails_closed_on_unreadable_profile_file"
-    if hasattr(os, "getuid") and os.getuid() == 0:
-        return CheckResult(name, 1.0, True, skipped=True,
-                            detail="running as root — chmod-based permission fault injection "
-                                   "cannot be exercised (root bypasses file perms); skipping "
-                                   "rather than reporting a false pass or fail")
+    skip = fault_injection_skip(name, perms="file")
+    if skip is not None:
+        return skip
 
+    # Deliberately NOT `build_fixture_engagement`: the fault must land on a
+    # CLIENT_PROFILE.md whose only content is one line, so the failing read is
+    # unambiguously THIS file's — and the fixture's shape is irrelevant here,
+    # because the file is unreadable before the hook ever opens it.
     client_dir = root / "engagements" / PLACEHOLDER_CLIENT
     client_dir.mkdir(parents=True)
     profile = client_dir / "CLIENT_PROFILE.md"
     profile.write_text(f"Client: {PLACEHOLDER_CLIENT}\n", encoding="utf-8")
-    original_mode = profile.stat().st_mode
-    try:
-        profile.chmod(0o000)
+    with inject_fault(profile):
         payload = _payload({"query": "digital onboarding capabilities for a Tier-2 retail bank"})
         result = _run_hook(root, payload)
-    finally:
-        # Restore perms unconditionally so tempdir cleanup can remove the file.
-        profile.chmod(original_mode | stat.S_IRUSR | stat.S_IWUSR)
 
-    denied, parsed = _is_deny(result)
-    reason = ((parsed or {}).get("hookSpecificOutput") or {}).get("permissionDecisionReason", "")
-    ok = result.returncode == 0 and denied and "could not verify" in reason.lower()
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} reason={reason[:200]!r}"
+    ok = result.returncode == 0 and result.denied and "could not verify" in result.reason.lower()
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} reason={result.reason[:200]!r}"
     ))
 
 
@@ -492,11 +463,10 @@ def _matching_is_case_insensitive(root: Path) -> CheckResult:
     _seed_denylist_project(root)
     payload = _payload({"query": f"capabilities for {PLACEHOLDER_CLIENT.upper()} digital onboarding"})
     result = _run_hook(root, payload)
-    denied, _ = _is_deny(result)
-    ok = result.returncode == 0 and denied
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} "
-        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ok = result.returncode == 0 and result.denied
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} "
+        f"stdout={result.stdout_text[:200]!r}"
     ))
 
 
@@ -510,11 +480,10 @@ def _denies_identifier_from_engagement_context_file(root: Path) -> CheckResult:
     _seed_denylist_project(root)
     payload = _payload({"query": f"capabilities for {CONTEXT_ONLY_IDENTIFIER} digital onboarding"})
     result = _run_hook(root, payload)
-    denied, _ = _is_deny(result)
-    ok = result.returncode == 0 and denied
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} "
-        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ok = result.returncode == 0 and result.denied
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} "
+        f"stdout={result.stdout_text[:200]!r}"
     ))
 
 
@@ -526,11 +495,10 @@ def _denies_identifier_from_engagement_intake_file(root: Path) -> CheckResult:
     _seed_denylist_project(root)
     payload = _payload({"query": f"capabilities for {INTAKE_ONLY_IDENTIFIER} digital onboarding"})
     result = _run_hook(root, payload)
-    denied, _ = _is_deny(result)
-    ok = result.returncode == 0 and denied
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} "
-        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ok = result.returncode == 0 and result.denied
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} "
+        f"stdout={result.stdout_text[:200]!r}"
     ))
 
 
@@ -545,11 +513,10 @@ def _denies_client_name_from_profile_name_label(root: Path) -> CheckResult:
     _seed_profile_name_label_project(root)
     payload = _payload({"query": f"engagement notes for {PLACEHOLDER_PROFILE_NAME}"})
     result = _run_hook(root, payload)
-    denied, _ = _is_deny(result)
-    ok = result.returncode == 0 and denied
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} "
-        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ok = result.returncode == 0 and result.denied
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} "
+        f"stdout={result.stdout_text[:200]!r}"
     ))
 
 
@@ -567,11 +534,10 @@ def _ignores_unfilled_template_placeholders(root: Path) -> CheckResult:
     _seed_unfilled_profile_template_project(root)
     payload = _payload({"query": "what is this customer's account name field used for"})
     result = _run_hook(root, payload)
-    denied, _ = _is_deny(result)
-    ok = result.returncode == 0 and not denied and not result.stdout.strip()
-    return _bool_check(name, ok, detail=(
-        f"rc={result.returncode} denied={denied} "
-        f"stdout={result.stdout.decode(errors='replace')[:200]!r}"
+    ok = result.returncode == 0 and not result.denied and result.silent
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} "
+        f"stdout={result.stdout_text[:200]!r}"
     ))
 
 
@@ -612,23 +578,21 @@ def _scan_limit_hit_fails_closed(root: Path) -> CheckResult:
     weakening what's being proven."""
     name = "scan_limit_hit_fails_closed"
     limit = _hook_max_files_scanned()
-    engagements_dir = root / "engagements"
-    engagements_dir.mkdir(parents=True)
     for i in range(limit + 10):
-        client_dir = engagements_dir / f"zzzscanlimit{i:04d}"
-        client_dir.mkdir()
-        (client_dir / "CLIENT_PROFILE.md").write_text(
-            "# Client Profile\n\n- **Client Name:** Placeholder\n",
-            encoding="utf-8",
+        build_fixture_engagement(
+            root,
+            slug=f"zzzscanlimit{i:04d}",
+            client_name="Placeholder",
+            short_name=None,
+            engagement=None,   # ONE counted read per client — CLIENT_PROFILE.md
+            profile_text="# Client Profile\n\n- **Client Name:** Placeholder\n",
         )
     payload = _payload({"query": "digital onboarding capabilities for a Tier-2 retail bank"})
     result = _run_hook(root, payload)
-    denied, parsed = _is_deny(result)
-    reason = ((parsed or {}).get("hookSpecificOutput") or {}).get("permissionDecisionReason", "")
-    ok = result.returncode == 0 and denied and "could not verify" in reason.lower()
-    return _bool_check(name, ok, detail=(
-        f"limit={limit} dirs={limit + 10} rc={result.returncode} denied={denied} "
-        f"reason={reason[:200]!r}"
+    ok = result.returncode == 0 and result.denied and "could not verify" in result.reason.lower()
+    return bool_check(name, ok, detail=(
+        f"limit={limit} dirs={limit + 10} rc={result.returncode} denied={result.denied} "
+        f"reason={result.reason[:200]!r}"
     ))
 
 
