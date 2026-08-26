@@ -25,8 +25,8 @@ SEQUENCING (read before adding a check here)
     image_unreadable_script_refuses_and_writes_nothing -> #173 — LANDED (check 13)
     guard_fails_closed_on_inputs_path         -> #164 — LANDED (check 14)
     internal_domain_email_redacted_no_over_detection -> #181 — LANDED (check 15)
-    xlsx_outputs_deanonymized                 -> #165 (deanonymize_dir xlsx)
-    nested_outputs_deanonymized               -> #165 (deanonymize_dir recursive)
+    nested_outputs_deanonymized               -> #165 — LANDED (check 16)
+    xlsx_outputs_deanonymized                 -> #165 — LANDED (check 17)
     mcp_query_client_name_blocked             -> already covered by the
                                                   separate `mcp-query-guard`
                                                   registry row (15 checks) —
@@ -50,11 +50,12 @@ SEQUENCING (read before adding a check here)
   internals, since that would only prove the Python function behaves, not
   that the process-level contract (stdout JSON shape, exit code) holds.
 
-  The 15 checks below all exercise code that exists TODAY: `scripts/pii/
+  The 17 checks below all exercise code that exists TODAY: `scripts/pii/
   engine.py`, `scripts/pii/denylist.py` (via the engine's deny-list
   recognizer), `scripts/pii/ingest.py` (#162, #163, #173),
-  `scripts/anonymize_transcript.py`'s facade, and `.claude/hooks/
-  anonymize-guard.py` (#164).
+  `scripts/anonymize_transcript.py`'s facade, `.claude/hooks/
+  anonymize-guard.py` (#164), and `scripts/artifact_boundary.py`'s
+  `deanonymize_dir` exit gate (#165, checks 16-17).
 
   Check 15, `internal_domain_email_redacted_no_over_detection` (#181),
   closes a production leak: Presidio's built-in `EMAIL_ADDRESS` recognizer
@@ -77,6 +78,25 @@ SEQUENCING (read before adding a check here)
   shape-identical to a real internal-domain email and the fix redacts it,
   which is documented as the correct, conservative call in engine.py's
   own "INTERNAL-DOMAIN EMAILS" note, not asserted as a false positive here.
+
+  Checks 16-17, `nested_outputs_deanonymized` and `xlsx_outputs_
+  deanonymized` (#165, salvaged from the closed PR #129 / issue #125),
+  cover `scripts/artifact_boundary.py`'s `deanonymize_dir` — the EXIT gate
+  where real client names re-enter deliverables, previously top-level-only
+  (`outputs_dir.iterdir()`) and blind to generated `.xlsx` ROI models.
+  `nested_outputs_deanonymized` proves the recursive walk (`rglob`) reaches
+  a nested file, that dotfiles/dot-directories (`.anon_*`, `.pii_mapping.
+  json`) and `interim*` stay excluded, AND both hazards #165 calls out by
+  name: a legacy `[CLIENT]` placeholder restores while the UNRELATED
+  `[CLIENT]_Business_Case_Questionnaire.xlsx` filename/prose template token
+  (five other components use it) is left byte-identical, and `[CLIENT-ABBR]`
+  is not corrupted by `[CLIENT]` (longest-placeholder-first, #159's
+  guarantee confirmed on this path too). `xlsx_outputs_deanonymized` proves
+  cell values, formula strings, and sheet titles restore; an unchanged
+  workbook is NOT re-saved; and an unopenable workbook (or a missing
+  `openpyxl`) is reported in `unrestored` with `client_ready: false` —
+  never a silent skip, which is the exact defect (backlog.md) this ticket
+  exists to close.
 
 WHY THE VENV INTERPRETER
   `scripts/pii/engine.py` does `import presidio_analyzer` at module level, and
@@ -249,6 +269,11 @@ def _engine():
 def _facade():
     import anonymize_transcript as _at  # noqa: PLC0415
     return _at
+
+
+def _boundary():
+    import artifact_boundary as _ab  # noqa: PLC0415 - ticket #165 checks only
+    return _ab
 
 
 def _new_session(engine, *, entity_mapping: Optional[dict] = None, deny_terms=None):
@@ -711,6 +736,212 @@ def _legacy_flat_mapping_still_restores(target: str) -> CheckResult:  # noqa: AR
     return _bool_check(name, ok, detail="; ".join(problems) if problems else
                         "all 3 mapping shapes (v1 legacy, v2 bare, v2 nested) restore "
                         "correctly through both maintained copies")
+
+
+# --- #165 artifact_boundary.deanonymize_dir: recursion, xlsx, hazards ------
+
+def _nested_outputs_deanonymized(target: str) -> CheckResult:  # noqa: ARG001
+    """Ticket #165 — `deanonymize_dir` must walk `outputs/` RECURSIVELY
+    (`rglob('*')`, not top-level `iterdir()`), while still excluding
+    dotfiles/dot-directories (`.anon_*`, `.pii_mapping.json`) and
+    `interim*`-named files. GATE-BITES: reverting the recursive walk back to
+    `iterdir()` makes this FAIL, because the nested file is never visited.
+
+    Also folds in the two hazards #165 calls out by name, both exercised
+    through the REAL `deanonymize_dir` (never a hand-rolled replace):
+
+    Hazard 1 — legacy `[CLIENT]` vs. the `[CLIENT]_Business_Case_
+    Questionnaire.xlsx` filename/prose template token used by five other
+    components (roi-financial-modeler, generate-roi-questionnaire,
+    generate-roi-excel, usecase-doc, prototype). A blind substring replace
+    of an old engagement's `[CLIENT]` mapping would corrupt that token; this
+    asserts the legacy placeholder DOES restore elsewhere in the same file
+    while the template token is left byte-identical.
+
+    Hazard 2 — longest-placeholder-first ordering (#159 verified this for
+    the engine's own anonymize path; this confirms the restore path):
+    `[CLIENT-ABBR]` must resolve to its own value, not get corrupted by
+    `[CLIENT]` being processed first/overlapping.
+    """
+    name = "nested_outputs_deanonymized"
+    ab = _boundary()
+
+    with tempfile.TemporaryDirectory(prefix="pii_eval_nested_") as td:
+        root = Path(td)
+        engagement_dir = root / "zzzplaceholder_engagement"
+        outputs_dir = engagement_dir / "outputs"
+        nested_dir = outputs_dir / "subdir" / "deeper"
+        nested_dir.mkdir(parents=True)
+
+        mapping = {
+            "[CLIENT]": "Zzzplaceholder Nested Holdings",
+            "[CLIENT-ABBR]": "ZNH",
+        }
+        mapping_file = engagement_dir / ".pii_mapping.json"
+        mapping_file.write_text(json.dumps(mapping))
+
+        # Top-level file.
+        top_file = outputs_dir / "summary.md"
+        top_file.write_text("Prepared for [CLIENT].\n")
+
+        # Nested file (2 levels deep) — the recursion witness.
+        nested_file = nested_dir / "detail.html"
+        nested_file.write_text("<p>Approved by [CLIENT-ABBR] on behalf of [CLIENT].</p>")
+
+        # Hazard 1: a file with BOTH a genuine legacy placeholder occurrence
+        # AND the unrelated filename/prose template token that starts with
+        # the identical bracket text.
+        hazard_file = outputs_dir / "cover_note.md"
+        hazard_file.write_text(
+            "This is [CLIENT]'s engagement.\n"
+            "See attached: [CLIENT]_Business_Case_Questionnaire.xlsx\n"
+        )
+
+        # Must be excluded: interim* file and dotfile/dot-dir inside outputs/.
+        interim_file = outputs_dir / "interim_draft.md"
+        interim_file.write_text("draft notes: [CLIENT]")
+        dotfile = outputs_dir / ".pii_mapping.json"
+        dotfile.write_text(json.dumps(mapping))
+        dotdir_file = outputs_dir / ".anon_cache" / "raw.md"
+        dotdir_file.parent.mkdir(parents=True)
+        dotdir_file.write_text("[CLIENT]")
+
+        interim_before = interim_file.read_text()
+        dotfile_before = dotfile.read_bytes()
+        dotdir_before = dotdir_file.read_bytes()
+
+        report = ab.deanonymize_dir(outputs_dir, mapping_file)
+
+        problems = []
+        if not report.get("client_ready"):
+            problems.append(f"client_ready False: {report}")
+
+        top_restored = top_file.read_text()
+        if top_restored != "Prepared for Zzzplaceholder Nested Holdings.\n":
+            problems.append(f"top-level file not restored correctly: {top_restored!r}")
+
+        nested_restored = nested_file.read_text()
+        expected_nested = "<p>Approved by ZNH on behalf of Zzzplaceholder Nested Holdings.</p>"
+        if nested_restored != expected_nested:
+            problems.append(f"NESTED FILE NOT RESTORED (recursion witness): {nested_restored!r} "
+                             f"(expected {expected_nested!r})")
+
+        hazard_restored = hazard_file.read_text()
+        expected_hazard = (
+            "This is Zzzplaceholder Nested Holdings's engagement.\n"
+            "See attached: [CLIENT]_Business_Case_Questionnaire.xlsx\n"
+        )
+        if hazard_restored != expected_hazard:
+            problems.append(f"HAZARD 1 (template-token collision) FAILED: {hazard_restored!r} "
+                             f"(expected {expected_hazard!r})")
+
+        if interim_file.read_text() != interim_before:
+            problems.append("interim_* file was modified — must stay excluded")
+        if dotfile.read_bytes() != dotfile_before:
+            problems.append(".pii_mapping.json inside outputs/ was modified — must never be touched")
+        if dotdir_file.read_bytes() != dotdir_before:
+            problems.append("file inside a dot-directory was modified — must stay excluded")
+
+        ok = not problems
+        return _bool_check(name, ok, detail="; ".join(problems) if problems else (
+            f"recursion witness restored, hazard 1 (template token) preserved, "
+            f"hazard 2 (longest-match ordering) correct, interim/dotfile/dot-dir "
+            f"exclusions held; files_restored={report.get('files_restored')}"
+        ))
+
+
+def _xlsx_outputs_deanonymized(target: str) -> CheckResult:  # noqa: ARG001
+    """Ticket #165 — `.xlsx` outputs must be restored: placeholders in
+    string cell values (including formula strings) and sheet titles, saved
+    IN PLACE only when something actually changed. GATE-BITES: reverting the
+    `.xlsx` branch (e.g. skipping xlsx files entirely) makes this FAIL,
+    because the workbook would come back with placeholders still in it.
+
+    Also asserts the unavailable-engine / unopenable-workbook failure mode:
+    `openpyxl` import failure must land the file in `unrestored` with the
+    re-run command named, and `client_ready` must be False — never a silent
+    skip (this module's own header: "must stay importable... Silently
+    skipping xlsx is exactly the audit bug").
+    """
+    name = "xlsx_outputs_deanonymized"
+    ab = _boundary()
+    import openpyxl  # noqa: PLC0415 - this component's env always has it (requirements.txt)
+
+    with tempfile.TemporaryDirectory(prefix="pii_eval_xlsx_") as td:
+        root = Path(td)
+        engagement_dir = root / "zzzplaceholder_engagement"
+        outputs_dir = engagement_dir / "outputs"
+        outputs_dir.mkdir(parents=True)
+
+        mapping = {"version": 2, "entities": {
+            "CLIENT": {"Zzzplaceholder Sheet Holdings": "<CLIENT_1>"},
+        }}
+        mapping_file = engagement_dir / ".pii_mapping.json"
+        mapping_file.write_text(json.dumps(mapping))
+
+        xlsx_path = outputs_dir / "ROI_Model.xlsx"
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "<CLIENT_1> Summary"
+        ws["A1"] = "Prepared for <CLIENT_1>"
+        ws["B2"] = '=CONCATENATE("Client: ", "<CLIENT_1>")'
+        wb.save(xlsx_path)
+        before_bytes = xlsx_path.read_bytes()
+
+        report = ab.deanonymize_dir(outputs_dir, mapping_file)
+
+        problems = []
+        if not report.get("client_ready"):
+            problems.append(f"client_ready False on a clean restore: {report}")
+        if report.get("files_restored", 0) < 1:
+            problems.append(f"files_restored did not count the xlsx: {report}")
+
+        wb2 = openpyxl.load_workbook(xlsx_path)
+        ws2 = wb2.active
+        if ws2.title != "Zzzplaceholder Sheet Holdings Summary":
+            problems.append(f"sheet title not restored: {ws2.title!r}")
+        if ws2["A1"].value != "Prepared for Zzzplaceholder Sheet Holdings":
+            problems.append(f"cell value not restored: {ws2['A1'].value!r}")
+        expected_formula = '=CONCATENATE("Client: ", "Zzzplaceholder Sheet Holdings")'
+        if ws2["B2"].value != expected_formula:
+            problems.append(f"formula string not restored: {ws2['B2'].value!r} "
+                             f"(expected {expected_formula!r})")
+
+        # Re-run with nothing left to restore: the workbook must NOT be
+        # re-saved (openpyxl round-trips are not byte-stable even when no
+        # cell changes, so re-saving unconditionally would be detectable
+        # here and is exactly what "only when something actually changed"
+        # forbids).
+        after_bytes = xlsx_path.read_bytes()
+        report2 = ab.deanonymize_dir(outputs_dir, mapping_file)
+        if report2.get("files_restored", 0) != 0:
+            problems.append(f"second run on an already-restored workbook reported "
+                             f"files_restored={report2.get('files_restored')}, expected 0")
+        if xlsx_path.read_bytes() != after_bytes:
+            problems.append("workbook was re-saved on a no-op second run "
+                             "(checksum changed) — must save only when changed")
+
+        # --- Negative path: openpyxl unavailable / workbook unopenable ----
+        broken_dir = root / "broken_engagement" / "outputs"
+        broken_dir.mkdir(parents=True)
+        broken_mapping_file = root / "broken_engagement" / ".pii_mapping.json"
+        broken_mapping_file.write_text(json.dumps(mapping))
+        broken_xlsx = broken_dir / "Corrupt_Model.xlsx"
+        broken_xlsx.write_bytes(b"not a real zip/xlsx at all")
+
+        broken_report = ab.deanonymize_dir(broken_dir, broken_mapping_file)
+        if broken_report.get("client_ready") is not False:
+            problems.append(f"unopenable workbook did not fail client_ready: {broken_report}")
+        unrestored = broken_report.get("unrestored", [])
+        if not any("Corrupt_Model.xlsx" in u for u in unrestored):
+            problems.append(f"unopenable workbook not named in 'unrestored': {unrestored!r}")
+
+        ok = not problems
+        return _bool_check(name, ok, detail="; ".join(problems) if problems else (
+            f"sheet title/cell value/formula string restored, unchanged workbook "
+            f"not re-saved, unopenable workbook reported in 'unrestored' with "
+            f"client_ready=False; files_restored={report.get('files_restored')}"
+        ))
 
 
 # --- #162 document ingest: fixtures, built programmatically ----------------
@@ -1969,6 +2200,8 @@ def evaluate(target: str) -> list:
         _image_unreadable_script_refuses_and_writes_nothing,
         _guard_fails_closed_on_inputs_path,
         _internal_domain_email_redacted_no_over_detection,
+        _nested_outputs_deanonymized,
+        _xlsx_outputs_deanonymized,
     ]
     results = []
     for fn in checks:
