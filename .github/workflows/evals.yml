@@ -1,10 +1,11 @@
 name: Evals (harness gate)
 
 # Tier-1 component-change gate. Runs the eval suite on any PR that touches a
-# content component (agent / command / skill / template / presentation / pipeline).
-# BLOCKING mode (SHADOW: "false") since 2026-07-24: the job exits non-zero when a
-# gated eval fails. To fully enforce, this check must also be marked "Required" in
-# branch protection on main (repo admin). Set SHADOW: "true" to revert to advisory.
+# content component (agent / command / skill / template / presentation / hook
+# / pipeline). BLOCKING mode (SHADOW: "false") since 2026-07-24: the job exits
+# non-zero when a gated eval fails. To fully enforce, this check must also be
+# marked "Required" in branch protection on main (repo admin). Set SHADOW:
+# "true" to revert to advisory.
 
 on:
   pull_request:
@@ -12,6 +13,8 @@ on:
       - ".claude/agents/**"
       - ".claude/commands/**"
       - ".claude/skills/**"
+      - ".claude/hooks/**"
+      - ".claude/settings.json"       # hook REGISTRATION — changes hook behaviour with no hook file touched (#191)
       - "templates/**"
       - "presentations/**"
       - "scripts/**.py"
