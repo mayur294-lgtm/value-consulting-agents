@@ -47,6 +47,12 @@ tests/engagements/*
 # bound to a real client name. chmod 600, machine-local, never committed.
 .engagement_map.json
 
+# Neutral pipeline workspaces (#167). Throwaway per-run directories holding
+# scrubbed copies of engagement inputs and the outputs agents produce, kept
+# inside the repo only so agents' repo-relative knowledge paths still resolve.
+# Never committed; removed at the end of a successful run.
+/.cortex-workspaces/
+
 # Temporary files
 *.tmp
 /tmp/
