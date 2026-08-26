@@ -286,7 +286,7 @@ Shows what comparable institutions are doing — creates urgency without pressur
 ```
 
 **Rules:**
-- Anonymize real client data unless it's public reference
+- Anonymize real client data unless it's public reference — use the shared tool, never hand-anonymize: `.claude/hooks/_resolve_python.sh scripts/anonymize_transcript.py --file <file> --engagement-dir <engagement_dir>`, then work from the `.anon_<filename>` output it produces.
 - Use benchmark confidence labels (Industry/Proxy/Estimated)
 - Focus on outcomes, not feature adoption
 - Include at least one peer from the same region if possible
