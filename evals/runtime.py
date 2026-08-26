@@ -26,7 +26,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 
 # #188: the inter-agent contract block is the deliverable-structural altitude.
-# It reads output FILES; it does not run orchestrate.py. Renamed from "pipeline"
+# It reads output FILES; it does not run orchestrate.py. Renamed from `pipeline`
 # because that name made a green here read as integration evidence.
 _STRUCTURAL_KEY = "deliverable_structural"        # key in .pipeline_run_report.json
 _STRUCTURAL_ALTITUDE = "deliverable-structural"   # rendered altitude label

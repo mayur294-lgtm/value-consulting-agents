@@ -32,7 +32,7 @@ For any PRD that changes a cortex component (agent, skill, command, template, ru
 
 | Component | `evals/registry.yaml` cases | Threshold | Altitude |
 | --- | --- | --- | --- |
-| ... | ... | ... | unit / pipeline / deliverable |
+| ... | ... | ... | unit / deliverable-structural / deliverable |
 
 - Name the existing registry cases (and thresholds) that must stay green.
 - **For a NEW component:** fresh eval cases MUST be authored as part of this work — list the cases to add and their target thresholds.
