@@ -207,6 +207,27 @@ The extension/naming lists are a hand-copied, self-contained duplicate of `scrip
 
 *Alternative considered:* the ticket's original ask (shared engine, one place for detection logic). *Why not:* the timing above, and the fail-open risk. *Trade-off accepted:* detection logic now genuinely exists in two forms — content-based (`scripts/pii/engine.py`, used by the anonymizer tools themselves) and structural (this guard) — rather than one. This is judged acceptable because the guard was never a reliable content detector even before this rewrite (5 regexes covered 3 of 77 real input files); the structural rule is *stricter*, not weaker: previously a raw file whose PII didn't match a regex passed through unchallenged, and now nothing under `inputs/` passes without a scrubbed sibling to point at, regardless of content.
 
+**D14 — Opaque directories do NOT change where `denylist.py` gets its terms. The map stays out of the deny-list resolver in #166; the client slug reaches the engine through the `client_slug=` parameter that already exists, wired by #167.**
+
+D6 makes engagement directories opaque, and `scripts/pii/denylist.py` mines the directory slug for client terms (`extract_terms_from_slug` — this is how `hdfc` becomes a deny-list term). So the obvious next move is to teach `denylist.py` to read `.engagement_map.json`. That move is wrong, and the reason is `scripts/pii/drift_check.py`: it asserts that `pii.denylist` and the hand-copied implementation inside `.claude/hooks/mcp-query-guard.py` produce **identical** deny-lists. Teach one to read the map and not the other, and they diverge by construction. The hook cannot simply import the shared module — its self-containment is load-bearing (a module-level import failure raises before `main()`'s try/except, and a PreToolUse hook that exits that way is treated as non-blocking, i.e. fail-open in a gate built to fail closed), so parity would require hand-copying a *third* copy of privacy-critical logic into the hook.
+
+*Measured before deciding* (synthetic fixture, `CLIENT_PROFILE.md` holding `- **Name:** Zzzplaceholder Meridian Holdings`):
+
+| directory shape | `resolve_deny_list` terms |
+| --- | --- |
+| today — `engagements/zzzplaceholderclient/` + profile | `Meridian`, `Zzzplaceholder`, `Zzzplaceholder Meridian Holdings`, `zzzplaceholderclient` |
+| post-#168 — `engagements/e7f3a2c1/` + profile | `Meridian`, `Zzzplaceholder`, `Zzzplaceholder Meridian Holdings`, `e7f3a2c1` |
+| post-#168 — `engagements/e7f3a2c1/`, **no** profile | `e7f3a2c1` only |
+| post-#168 — `engagements/e7f3a2c1/`, no profile, `client_slug="hdfc"` passed | `hdfc` |
+
+So going opaque costs the deny-list **one redundant term, not the client's identity**: three of four terms are unchanged, because `CLIENT_PROFILE.md` — which `init_engagement.sh` creates for every client and which stays inside the engagement directory (#166 changes nothing about the directory's internal structure) — is a stronger source than the slug ever was. The slug was a *fallback* for an unfilled profile, and it degrades to a meaningless token rather than disappearing.
+
+*Chosen:* keep #166 to the identity primitives. `denylist.py` and `drift_check.py` are **untouched**, so the drift check still compares two whole-module outputs byte-for-byte with no documented-exception carve-out. The seam for the map already exists and predates this ticket — `resolve_engagement_deny_list(engagement_dir, client_slug=None)`, whose docstring says in as many words "resolved out of `.engagement_map.json` once opaque engagement IDs land". #166 supplies the other half (`identity.client_for_id(...)["slug"]`); #167, which is already repointing every path parameter in `step_discovery`, passes it. Verified above: the seam restores the client term exactly.
+
+*Alternative considered:* wire the map into `denylist.py` now and relax `drift_check.py` to compare only the shared extraction, documenting the map-derived difference as intentional. *Why not:* a drift check that fails, or that partially exempts itself, for a known reason is a drift check nobody reads again — and this repo has already shipped two gates that scored 1.000 while certifying nothing. The alternative also requires editing `.claude/hooks/*`, which #166 is explicitly scoped out of.
+
+*Trade-off accepted:* between #168 (directories go opaque) and #167 (the slug is threaded through), an engagement whose `CLIENT_PROFILE.md` is still an unfilled template has a deny-list of one meaningless token. That combination already produces a near-empty deny-list today, and it is exactly the case D3's mandatory non-blocking "no names configured" warning exists to surface. #167 and #168 must land together or #167 first; a note to that effect belongs in #168's ticket.
+
 ---
 
 ## Build Sequence
