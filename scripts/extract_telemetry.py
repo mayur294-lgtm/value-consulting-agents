@@ -67,7 +67,17 @@ def extract_modification_logs(content: str) -> list:
 
 
 def extract_engagement_metadata(content: str) -> dict:
-    """Extract engagement summary metadata from journal."""
+    """Extract engagement summary metadata from journal.
+
+    `client` is captured here (from the journal's `**Client:**` line) only
+    long enough for `_client_label` below to turn it into the same
+    descriptive, non-identifying label `knowledge-harvester.md` Core Rule 2
+    uses — `[Client-{domain}-{region}-{year}]`. The raw value returned by
+    this function must never itself be written to `.telemetry_cache.jsonl`
+    or a GitHub Issue; see `extract_telemetry()`, which does that
+    replacement before the payload is returned (ticket #169 — this backs
+    sync-telemetry.md's "telemetry is anonymized" claim, which previously
+    had nothing enforcing it)."""
     metadata = {}
 
     patterns = {
@@ -87,6 +97,26 @@ def extract_engagement_metadata(content: str) -> dict:
     return metadata
 
 
+def _client_label(metadata: dict, extracted_at_iso: str) -> str:
+    """Build the descriptive, non-identifying replacement for a raw client
+    name — same convention as `.claude/agents/knowledge-harvester.md` Core
+    Rule 2: `[Client-{domain}-{region}-{year}]`. Telemetry leaves this
+    machine (synced to a shared GitHub issue via `/sync-telemetry` or the
+    `post-commit`/`pre-push` git hooks), so the raw client string must never
+    reach the payload this function's caller writes out.
+
+    `domain`/`region` come from the same journal metadata already extracted
+    (never PII on their own). `year` is parsed from `**Started:**` when
+    present (`YYYY-...`), falling back to the extraction timestamp's year so
+    this never raises on a journal missing that field."""
+    domain = (metadata.get('domain') or 'unknown').strip().lower() or 'unknown'
+    region = (metadata.get('region') or 'unknown').strip().lower() or 'unknown'
+    started = metadata.get('started') or ''
+    year_match = re.match(r'(20\d{2})', started)
+    year = year_match.group(1) if year_match else extracted_at_iso[:4]
+    return f'[Client-{domain}-{region}-{year}]'
+
+
 def extract_session_id(engagement_dir: str) -> str:
     """Read session ID from .engagement_session_id file."""
     session_file = os.path.join(engagement_dir, '.engagement_session_id')
@@ -102,12 +132,21 @@ def extract_telemetry(journal_path: str) -> dict:
         content = f.read()
 
     engagement_dir = os.path.dirname(journal_path)
+    extracted_at = datetime.utcnow().isoformat() + 'Z'
+    engagement_metadata = extract_engagement_metadata(content)
+
+    # Never let the raw client name leave this machine in the telemetry
+    # payload — replace it with the same descriptive label the knowledge
+    # harvester uses. See `_client_label` above and PRD v6 §3.1 /
+    # sync-telemetry.md.
+    if engagement_metadata.get('client'):
+        engagement_metadata['client'] = _client_label(engagement_metadata, extracted_at)
 
     payload = {
-        'extracted_at': datetime.utcnow().isoformat() + 'Z',
+        'extracted_at': extracted_at,
         'journal_path': journal_path,
         'session_id': extract_session_id(engagement_dir),
-        'engagement': extract_engagement_metadata(content),
+        'engagement': engagement_metadata,
         'telemetry_entries': extract_telemetry_blocks(content),
         'modifications': extract_modification_logs(content),
     }
