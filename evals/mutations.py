@@ -87,10 +87,17 @@ What this harness CANNOT mutate — stated plainly, not papered over
   or an env var pointing at the real checkout. Such a rubric reads the REAL
   file, the shadow mutation has no effect on what runs, and the check stays
   green. The harness reports `proven: false` ("the check stayed green"), which
-  is honest but **indistinguishable from a genuinely inert check**. There is no
-  way for this harness to tell those two apart from the outside. If a new
-  rubric is added, resolve its paths through `repo_root()` or it cannot be
-  mutation-proven.
+  is honest but **conflates a genuinely inert check with an unreached
+  mutation** — on its own, `proven: false` does not say which. The two ARE
+  distinguishable, via a reachability canary: delete the shadow copy of the
+  mutation's `file`, rescore, and check whether the named check's state moved
+  at all. A genuinely inert check is unmoved either way (REACHABLE, still
+  green); a check resolving through a path outside `repo_root()` is also
+  unmoved by the deletion, because it never reads the shadow copy at all
+  (UNREACHABLE). Enforcing that distinction — running the canary and reporting
+  UNREACHABLE as a harness error rather than a failed proof — is #186's job,
+  not this module's. If a new rubric is added, resolve its paths through
+  `repo_root()` or it cannot be mutation-proven.
 
 * **Agent-prompt BEHAVIOUR.** `.claude/agents/**` is shadowed, so a mutation to
   a prompt does physically apply — but no path-2 rubric ever *executes* a
@@ -511,7 +518,7 @@ def _apply(target_file: Path, mutation: Mutation) -> tuple[bool, int]:
     return True, matches
 
 
-def _shadow_target(root: Path, shadow: Path, target: str) -> str:
+def shadow_target(root: Path, shadow: Path, target: str) -> str:
     """Map the evaluator's target argument into the shadow where it lives there.
 
     Mirrors run_experiment._run_evaluator: an empty or unresolvable target is
@@ -532,12 +539,18 @@ def _shadow_target(root: Path, shadow: Path, target: str) -> str:
 
 # --- scoring ------------------------------------------------------------------
 
-def _score(shadow: Path, evaluator: str, target: str, *, timeout: float,
-           python: str, extra_pythonpath: Sequence[str]) -> dict[str, dict[str, Any]]:
+def score(shadow: Path, evaluator: str, target: str, *, timeout: float,
+          python: str, extra_pythonpath: Sequence[str]) -> dict[str, dict[str, Any]]:
     """Run `evaluator.evaluate(target)` in a fresh child rooted at the shadow.
 
     Returns {check_name: {score, passed, skipped, unscorable, detail}}.
     Raises MutationHarnessError if the child produced no scoreable payload.
+
+    This module has no `__all__`; `score()` and `shadow_target()` (below) are
+    the supported entry points for #186's reachability canary — delete the
+    shadow copy of a mutation's `file`, call `shadow_target()` to resolve the
+    (now-deleted) path in the shadow, and `score()` again to see whether the
+    named check's state moved.
     """
     shadow_evals = shadow / "evals"
     env = dict(os.environ)
@@ -638,7 +651,7 @@ def prove_all(mutations: Iterable[Mutation], *, evaluator: str, target: str = ""
     try:
         try:
             with shadow_root(src_root) as pristine:
-                baseline = _score(pristine, evaluator, _shadow_target(src_root, pristine, target),
+                baseline = score(pristine, evaluator, shadow_target(src_root, pristine, target),
                                   timeout=timeout, python=py, extra_pythonpath=extra_pythonpath)
         except MutationHarnessError as exc:
             # Nothing can be proven if the unmutated tree does not score.
@@ -717,8 +730,8 @@ def _prove_one(m: Mutation, root: Path, evaluator: str, target: str,
                     f"mutation was INERT: {why}. Nothing was changed, so the unchanged "
                     f"green is meaningless — this is reported as NOT PROVEN, never as a pass.",
                     m)
-            after_map = _score(shadow, evaluator,
-                               _shadow_target(root, shadow,
+            after_map = score(shadow, evaluator,
+                               shadow_target(root, shadow,
                                               target or (str(rel) if m.kind == "fixture" else "")),
                                timeout=timeout, python=python, extra_pythonpath=extra_pythonpath)
     except MutationHarnessError as exc:
