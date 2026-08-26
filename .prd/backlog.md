@@ -42,6 +42,9 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 
 ## From the 2026-08-25 Presidio PII cycle (v6, PR 1)
 
+- [ ] **Sequencing: #167 must land before or with #168.** The client name reaches the deny-list from `CLIENT_PROFILE.md` *and* the directory slug. #168 removes the slug; #167 restores it via the map's `client_slug`. Verified against live data: `engagements/wsfs/CLIENT_PROFILE.md` still holds the unfilled `- **Name:** [Full legal name]`, so the slug is currently the only thing putting `WSFS` on its deny-list — the other six engagements have filled profiles. #168's migration must refuse or loudly warn on any engagement with no filled client name (from #166)
+
+
 - [ ] `.claude/agents/discovery-transcript-interpreter.md:112` — the PII Boundary contract still describes the legacy `[CLIENT]`/`[PERSON-1]`/`[REDACTED-*]` placeholder form, stale since #160 moved the convention to `<ENTITY_N>`. Not one of #169's 11 surfaces so it was left untouched, but it is the canonical agent-facing PII contract and now contradicts the code (from #169)
 - [ ] `scripts/extract_telemetry.py` — the client label is now anonymised (#169), but `journal_path` in the same payload still contains the client's directory name, so telemetry synced to a GitHub Issue still carries the client identity via the path. Closing this is the path-anonymisation work in PRD v6 §2 (#166–#168), not a telemetry fix (from #169)
 
