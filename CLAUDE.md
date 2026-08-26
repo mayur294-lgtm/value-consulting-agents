@@ -76,7 +76,7 @@ python scripts/test_agent.py --branch HEAD --base-branch origin/main --output te
 
 **Telemetry (intake only — feeds the bb-* harness backlog):** one-time `./scripts/setup_telemetry.sh`; extract `python3 scripts/extract_telemetry.py <ENGAGEMENT_JOURNAL.md>`; manual sync via the `/sync-telemetry` skill. Triage aggregates findings and labels the top issue `needs-bb-prd` (queued for `bb-prd` — **nothing auto-implements**; the auto-dev loop was removed 2026-06-24).
 
-**Anonymize a transcript before it reaches MCP/KG:** `python3 scripts/anonymize_transcript.py ...` (the `anonymize-guard.py` hook also blocks unscrubbed reads automatically).
+**Anonymize a transcript (or any file) before it reaches MCP/KG:** `.claude/hooks/_resolve_python.sh scripts/anonymize_transcript.py --file <path> --engagement-dir <engagement_dir>` — plain `python3` cannot run this (Presidio needs 3.10–3.13; see Commands above), so always go through `_resolve_python.sh` or `.venv/bin/python` directly. This is the ONE anonymization tool in Cortex — every other surface that needs to anonymize something (knowledge harvest, `/extract-learnings`, `/scan-engagement`, `upgrade-analysis`) calls this same tool and applies at most a descriptive relabeling on top (`[Client-{domain}-{region}-{year}]`) — see `.claude/agents/knowledge-harvester.md` Core Rule 2 for that convention. The `anonymize-guard.py` hook also blocks unscrubbed reads under `engagements/*/inputs/` automatically (fails closed).
 
 > `tests/` holds **engagement validation runs** (BECU, WSFS, NFIS, Mystate), not unit tests.
 
@@ -103,10 +103,12 @@ The big picture that spans multiple files (see `STRUCTURE.md`, `FLYWHEEL.md`, an
 
 7. **Hooks (`.claude/settings.json` → `.claude/hooks/`) fire automatically** and enforce governance — know them before debugging "why was my action blocked":
    - SessionStart `auto-branch.sh` — never work on `main`; auto-creates a feature branch.
-   - PreToolUse(Read|Bash) `anonymize-guard.py` — blocks unscrubbed PII from reaching MCP/KG.
+   - SessionStart `pii-preflight.sh` — checks whether the Presidio venv is installed and, if not, tells the consultant the one command that fixes it (`bash scripts/setup_pii.sh`). Never blocks.
+   - PreToolUse(Read|Bash) `anonymize-guard.py` — a path/timestamp gate (not a content scanner): blocks any raw read under `engagements/*/inputs/` unless a current `.anon_` sibling exists. Fails closed.
+   - PreToolUse(`mcp__.*`) `mcp-query-guard.py` — blocks or rewrites outbound Backbase Infobank MCP queries that contain a client/stakeholder identifier (enforces `knowledge/standards/security_protocol.md` §5).
    - PreToolUse(Write) `require-checkpoint.py` — enforces consultant checkpoints before writes.
    - Stop `enforce-journal.py` — enforces a journal entry on completion.
-   - Git `.githooks/post-commit` + `pre-push` — telemetry extraction/sync (Flywheel backup layers).
+   - Git `.githooks/post-commit` + `pre-push` — telemetry extraction/sync (Flywheel backup layers); `scripts/extract_telemetry.py` replaces the raw client name with the descriptive `[Client-{domain}-{region}-{year}]` label before anything is written or synced.
 
 8. **Knowledge & ontology:** `knowledge/` holds methodology, `standards/` (the governance protocols + per-domain capability taxonomies), `design-system.md` (visual SSOT), `banking_os.md` (positioning canon), domain benchmarks, and battlecards. `ontology-test/` holds per-client knowledge-graph JSON and the Minimi bridge (`MINIMI_BRIDGE.md`).
 
@@ -224,7 +226,7 @@ ALL agents (current and future) MUST comply with these protocols:
 |----------|------|----------|
 | **Auditability Protocol** | `knowledge/standards/auditability_protocol.md` | Journal entries, telemetry, output provenance, checkpoint logging |
 | **Context Management Protocol** | `knowledge/standards/context_management_protocol.md` | File size checks, chunking, context preservation |
-| **Security Protocol** | `knowledge/standards/security_protocol.md` | Prompt injection defense, untrusted data handling, MCP query anonymization, web source validation, stakeholder intelligence bounds |
+| **Security Protocol** | `knowledge/standards/security_protocol.md` | Prompt injection defense, untrusted data handling, MCP query anonymization (§5 — enforced by the `mcp-query-guard.py` hook, not prose alone), web source validation, stakeholder intelligence bounds |
 | **Unified Design System** | `knowledge/design-system.md` | Visual output standards, brand colors, typography, layout patterns |
 
 **Non-negotiable rules for every agent:**
