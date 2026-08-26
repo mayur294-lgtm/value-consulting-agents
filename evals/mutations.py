@@ -151,10 +151,28 @@ ROOT = HERE.parent                              # cortex repo root
 # module tree" generalised: it must cover not only the package the rubric is
 # imported from (evals/) but every tree a rubric resolves a subject path INTO
 # via repo_root() — hooks and settings.json (.claude/), pipeline and PII code
-# (scripts/), generators (tools/), and output templates (templates/).
+# (scripts/), generators (tools/), and output templates (templates/), and
+# design-system fixtures a row gates on via `input:` (presentations/).
 # knowledge/ (250 MB) and engagements/ (gitignored PII) are deliberately out;
 # see the module docstring's "CANNOT mutate" section.
-SHADOW_SUBTREES: tuple[str, ...] = ("evals", ".claude", "scripts", "tools", "templates")
+#
+# `presentations/` was added by #201 and is NOT optional polish. The
+# `frontline-builders` row gates on `presentations/frontline-2026/design-tokens.json`
+# via `input:`. While that tree was absent from the shadow, `check_registry.py`
+# run INSIDE a shadow hard-errored on the missing golden — which broke
+# `mutation-harness`'s `every_registered_check_has_a_mutation` (it runs the real
+# preflight and requires rc=0) BEFORE its own mutation was even applied, taking
+# `--mutate mutation-harness` from 5/5 to 4/5. The real tree resolved fine, so
+# nothing caught it until the harness tried to prove itself.
+#
+# THE GENERAL RULE, now enforced rather than remembered: any gating `input:` /
+# golden path on a mutation-proof-enforced row MUST live under one of these
+# subtrees, or the gate is silently vacuous inside every shadow. That rule is a
+# preflight ERROR in `check_registry.py` (`_outside_shadow`), which reads this
+# tuple directly — so extending the shadow here is what makes such a fixture
+# legal, and the two can never drift.
+SHADOW_SUBTREES: tuple[str, ...] = ("evals", ".claude", "scripts", "tools",
+                                     "templates", "presentations")
 
 # Small root-level files copied alongside, so a shadow run reads the same
 # config a real run does.

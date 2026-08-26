@@ -445,6 +445,607 @@ components:
         find: "        shadow = Path(td) / \"repo\"\n        shadow.mkdir()"
         replace: "        shadow = src_root / \".mutation_shadow_leak\" / \"repo\"\n        shadow.mkdir(parents=True, exist_ok=True)"
 
+  # --- #197: executable rows for the six ungated `.claude/hooks/*` --------------
+  #
+  # `.claude/settings.json` registers SEVEN Python hooks. Before this block only
+  # `mcp-query-guard` had a row, and `anonymize-guard` was covered by exactly one
+  # check inside the `pii-anonymizer` row (`guard_fails_closed_on_inputs_path`,
+  # #164 — deliberately left where it is, it is that row's own acceptance
+  # criterion). Hooks are the enforcement layer for every governance rule this
+  # repo claims to hold (.design/solution-design-v6.md D7), so an ungated hook is
+  # a rule that exists only in prose.
+  #
+  # All six evaluators live in ONE package, `evals/rubrics/component/hooks/`, so
+  # each row names its module explicitly with `evaluator:` rather than relying on
+  # run_experiment.py's `rubrics.component.<row>` default. No `input:` — every
+  # evaluator is self-contained: it synthesizes fixtures in a tempdir, points
+  # `CLAUDE_PROJECT_DIR` at them, and invokes the real hook SCRIPT as a
+  # subprocess (never imports + monkeypatches it), so there is no static golden
+  # to point at. Same shape as `mcp-query-guard` above.
+  #
+  # threshold 1.00 on all six — the house 0.80 default is wrong for a
+  # privacy/governance control, which is pass/fail, not "mostly correct". No
+  # `judge:`/`path1_judge:` entries: every check is deterministic, offline, and
+  # stays green with ANTHROPIC_API_KEY unset.
+  #
+  # FAIL-CLOSED vs FAIL-OPEN IS PER-HOOK. Only `anonymize-guard` has a
+  # fail-CLOSED contract, and only inside `engagements/*/inputs/` — a globally
+  # fail-closed guard wedged every session once already (PR #82). So
+  # `fails_closed_under_injected_fault` appears on that row alone, and the other
+  # five carry `fails_open_under_injected_fault`, which asserts the contract
+  # those hooks actually document. Each is a SPLIT, never "a decision happens
+  # somewhere": the same fixture decides one way clean and the other way faulted.
+  #
+  # `mutations:` on all six, covering every declared check (66/66 proven red
+  # under mutation and green on restore). Add all six names to
+  # MUTATION_PROOF_REQUIRED_ROWS in evals/check_registry.py in the SAME change,
+  # per that list's own rule — they are hard-enforced from birth either way,
+  # since declaring a `mutations:` key removes the DEBT grace period.
+  #
+  # Several `runs_under_registered_interpreter` mutations target
+  # evals/rubrics/_harness.py's `record_hook_invocation(argv)` call rather than a
+  # hook: deleting it is the one edit that reddens ONLY that check (the harness's
+  # own docstring names this — "a capture that records nothing is itself a hard
+  # failure"). If that line moves, these six `find:` strings go stale and
+  # --mutate reports INERT, which is the intended loud failure.
+  anonymize-guard:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.hooks.anonymize_guard
+    code: [denies_unscrubbed_text_input, allows_scrubbed_anon_artifact,
+           allows_when_sibling_is_current, denies_stale_sibling_by_mtime,
+           denies_document_without_md_sidecar, denies_unsupported_format_outright,
+           allows_paths_outside_inputs_scope, gates_bash_command_reading_raw_input,
+           allows_bash_anonymizer_command_itself, fails_closed_under_injected_fault,
+           degenerate_path_fails_closed_only_inside_inputs, invoked_as_subprocess_not_import,
+           runs_under_registered_interpreter]
+    mutations:
+      denies_unscrubbed_text_input:
+        file: .claude/hooks/anonymize-guard.py
+        find: "            if kind == \"text\":\n                return _msg_unscrubbed_text(p)"
+        replace: "            if kind == \"text\":\n                return None"
+      allows_scrubbed_anon_artifact:
+        file: .claude/hooks/anonymize-guard.py
+        find: "        if p.name.startswith(ANON_PREFIX):"
+        replace: "        if False:"
+      allows_when_sibling_is_current:
+        file: .claude/hooks/anonymize-guard.py
+        find: "        if p.stat().st_mtime > sibling.stat().st_mtime:"
+        replace: "        if True:"
+      denies_stale_sibling_by_mtime:
+        file: .claude/hooks/anonymize-guard.py
+        find: "        if p.stat().st_mtime > sibling.stat().st_mtime:"
+        replace: "        if False:"
+      denies_document_without_md_sidecar:
+        file: .claude/hooks/anonymize-guard.py
+        find: "    if kind == \"text\":\n        return p.with_name(ANON_PREFIX + p.name)\n    return p.with_name(ANON_PREFIX + p.name + \".md\")"
+        replace: "    return p.with_name(ANON_PREFIX + p.name)"
+      denies_unsupported_format_outright:
+        file: .claude/hooks/anonymize-guard.py
+        find: "        if kind is None:\n            return _msg_unsupported(p)"
+        replace: "        if kind is None:\n            return None"
+      allows_paths_outside_inputs_scope:
+        file: .claude/hooks/anonymize-guard.py
+        find: "    parts = [part.lower() for part in p.parts]\n    return \"engagements\" in parts and \"inputs\" in parts"
+        replace: "    parts = [part.lower() for part in p.parts]\n    return \"engagements\" in parts"
+      gates_bash_command_reading_raw_input:
+        file: .claude/hooks/anonymize-guard.py
+        find: "        cands.append(tok)"
+        replace: "        continue"
+      allows_bash_anonymizer_command_itself:
+        file: .claude/hooks/anonymize-guard.py
+        find: "    if any(hint in command for hint in _ANONYMIZER_HINTS):"
+        replace: "    if False:"
+      fails_closed_under_injected_fault:
+        file: .claude/hooks/anonymize-guard.py
+        find: "    except Exception:\n        if in_scope_guess:\n            return _msg_fault(raw)\n        return None"
+        replace: "    except Exception:\n        return None"
+      degenerate_path_fails_closed_only_inside_inputs:
+        file: .claude/hooks/anonymize-guard.py
+        find: "        if in_scope_guess:\n            return _msg_fault(raw)"
+        replace: "        if True:\n            return _msg_fault(raw)"
+      invoked_as_subprocess_not_import:
+        file: .claude/hooks/anonymize-guard.py
+        find: "PROJECT_DIR = Path(os.environ.get(\"CLAUDE_PROJECT_DIR\", Path.cwd()))"
+        replace: "PROJECT_DIR = Path.cwd()"
+      runs_under_registered_interpreter:
+        file: evals/rubrics/_harness.py
+        find: "    record_hook_invocation(argv)\n    completed = subprocess.run("
+        replace: "    completed = subprocess.run("
+
+  require-checkpoint:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.hooks.require_checkpoint
+    code: [denies_deliverable_write_without_checkpoint, allows_when_checkpoint_file_present,
+           allows_when_journal_has_checkpoint_block, allows_checkpoint_file_itself,
+           allows_non_deliverable_extension, ignores_edit_tool,
+           write_outside_engagements_tree_is_not_gated, fails_open_on_malformed_payload,
+           fails_open_under_injected_fault, invoked_as_subprocess_not_import,
+           runs_under_registered_interpreter]
+    mutations:
+      denies_deliverable_write_without_checkpoint:
+        file: .claude/hooks/require-checkpoint.py
+        find: "    if _has_pre_generation_checkpoint(eng_dir):\n        _allow()"
+        replace: "    _allow()"
+      allows_when_checkpoint_file_present:
+        file: .claude/hooks/require-checkpoint.py
+        find: "    if outputs.is_dir() and any(outputs.glob(\"CHECKPOINT_*.md\")):\n        return True"
+        replace: "    if False:\n        return True"
+      allows_when_journal_has_checkpoint_block:
+        file: .claude/hooks/require-checkpoint.py
+        find: "            if \"### Checkpoint:\" in journal.read_text(encoding=\"utf-8\", errors=\"replace\"):\n                return True"
+        replace: "            if False:\n                return True"
+      allows_checkpoint_file_itself:
+        file: .claude/hooks/require-checkpoint.py
+        find: "    if name.startswith((\".\", \"interim_\", \"CHECKPOINT\")):\n        return False"
+        replace: "    if name.startswith((\".\", \"interim_\")):\n        return False"
+      allows_non_deliverable_extension:
+        file: .claude/hooks/require-checkpoint.py
+        find: "DELIVERABLE_EXTS = {\".md\", \".html\", \".xlsx\", \".pptx\", \".pdf\", \".docx\", \".csv\"}"
+        replace: "DELIVERABLE_EXTS = {\".md\", \".html\", \".xlsx\", \".pptx\", \".pdf\", \".docx\", \".csv\", \".json\"}"
+      ignores_edit_tool:
+        file: .claude/hooks/require-checkpoint.py
+        find: "    if payload.get(\"tool_name\") != \"Write\":\n        _allow()"
+        replace: "    if payload.get(\"tool_name\") not in (\"Write\", \"Edit\"):\n        _allow()"
+      write_outside_engagements_tree_is_not_gated:
+        file: .claude/hooks/require-checkpoint.py
+        find: "    return \"engagements\" in parts and \"outputs\" in parts"
+        replace: "    return \"outputs\" in parts"
+      fails_open_on_malformed_payload:
+        file: .claude/hooks/require-checkpoint.py
+        find: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _allow()"
+        replace: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _deny(\"mutated: a malformed payload must not deny\")"
+      fails_open_under_injected_fault:
+        file: .claude/hooks/require-checkpoint.py
+        find: "        except OSError:\n            return True  # can't read — fail open"
+        replace: "        except OSError:\n            return False"
+      invoked_as_subprocess_not_import:
+        file: .claude/hooks/require-checkpoint.py
+        find: "PROJECT_DIR = Path(os.environ.get(\"CLAUDE_PROJECT_DIR\", Path.cwd()))"
+        replace: "PROJECT_DIR = Path.cwd()"
+      runs_under_registered_interpreter:
+        file: evals/rubrics/_harness.py
+        find: "    record_hook_invocation(argv)\n    completed = subprocess.run("
+        replace: "    completed = subprocess.run("
+
+  require-harness:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.hooks.require_harness
+    code: [denies_component_edit_without_active_change, allows_when_prd_artifact_present,
+           allows_when_active_change_marker_present, exempts_harness_infra_paths,
+           gates_pipeline_python_only_by_extension, gates_non_exempt_skill_but_not_bb_skill,
+           gates_root_orchestrate_py, ignores_read_tool, fails_open_on_malformed_payload,
+           fails_open_under_injected_fault, invoked_as_subprocess_not_import,
+           runs_under_registered_interpreter]
+    mutations:
+      denies_component_edit_without_active_change:
+        file: .claude/hooks/require-harness.py
+        find: "    if not _is_protected(rel):\n        _allow()"
+        replace: "    _allow()"
+      allows_when_prd_artifact_present:
+        file: .claude/hooks/require-harness.py
+        find: "    if list((PROJECT_DIR / \".prd\").glob(\"prd-v*.md\")):\n        return True"
+        replace: "    if False:\n        return True"
+      allows_when_active_change_marker_present:
+        file: .claude/hooks/require-harness.py
+        find: "    if (PROJECT_DIR / \".prd\" / \"ACTIVE_CHANGE\").exists():\n        return True"
+        replace: "    if False:\n        return True"
+      exempts_harness_infra_paths:
+        file: .claude/hooks/require-harness.py
+        find: "    \".claude/skills/coding-standards/\","
+        replace: "    \".claude/skills/zzz-no-such-exempt-skill/\","
+      gates_pipeline_python_only_by_extension:
+        file: .claude/hooks/require-harness.py
+        find: "PIPELINE_EXTS = {\".py\"}"
+        replace: "PIPELINE_EXTS = {\".py\", \".sh\"}"
+      gates_non_exempt_skill_but_not_bb_skill:
+        file: .claude/hooks/require-harness.py
+        find: "    \".claude/skills/bb-\",      # the vendored bb-* skills themselves"
+        replace: "    \".claude/skills/zzz-not-a-real-prefix/\","
+      gates_root_orchestrate_py:
+        file: .claude/hooks/require-harness.py
+        find: "    if rel == \"orchestrate.py\" or rel.endswith(\"/orchestrate.py\"):\n        return True"
+        replace: "    if False:\n        return True"
+      ignores_read_tool:
+        file: .claude/hooks/require-harness.py
+        find: "    if payload.get(\"tool_name\") not in (\"Edit\", \"Write\", \"NotebookEdit\"):\n        _allow()"
+        replace: "    if False:\n        _allow()"
+      fails_open_on_malformed_payload:
+        file: .claude/hooks/require-harness.py
+        find: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _allow()"
+        replace: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _deny(\"mutated: a malformed payload must not deny\")"
+      fails_open_under_injected_fault:
+        file: .claude/hooks/require-harness.py
+        find: "def _change_active() -> bool:"
+        replace: "def _change_active() -> bool:\n    return False"
+      invoked_as_subprocess_not_import:
+        file: .claude/hooks/require-harness.py
+        find: "PROJECT_DIR = Path(os.environ.get(\"CLAUDE_PROJECT_DIR\", Path.cwd()))"
+        replace: "PROJECT_DIR = Path.cwd()"
+      runs_under_registered_interpreter:
+        file: evals/rubrics/_harness.py
+        find: "    record_hook_invocation(argv)\n    completed = subprocess.run("
+        replace: "    completed = subprocess.run("
+
+  enforce-journal:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.hooks.enforce_journal
+    code: [blocks_stop_when_journal_is_stale, blocks_stop_when_telemetry_block_missing,
+           blocks_stop_when_fewer_than_two_checkpoints, allows_stop_when_governance_trail_complete,
+           ignores_engagement_outside_recency_window, ignores_engagement_with_no_deliverable,
+           block_decision_shape_matches_stop_contract, fails_open_on_malformed_payload,
+           fails_open_under_injected_fault, invoked_as_subprocess_not_import,
+           runs_under_registered_interpreter]
+    mutations:
+      blocks_stop_when_journal_is_stale:
+        file: .claude/hooks/enforce-journal.py
+        find: "    if newest > journal_mtime + JOURNAL_GRACE_SECONDS:"
+        replace: "    if False:"
+      blocks_stop_when_telemetry_block_missing:
+        file: .claude/hooks/enforce-journal.py
+        find: "    if TELEMETRY_MARKER not in journal_text:"
+        replace: "    if False:"
+      blocks_stop_when_fewer_than_two_checkpoints:
+        file: .claude/hooks/enforce-journal.py
+        find: "    if cp < 2:"
+        replace: "    if cp < 0:"
+      allows_stop_when_governance_trail_complete:
+        file: .claude/hooks/enforce-journal.py
+        find: "JOURNAL_GRACE_SECONDS = 120"
+        replace: "JOURNAL_GRACE_SECONDS = -100000"
+      ignores_engagement_outside_recency_window:
+        file: .claude/hooks/enforce-journal.py
+        find: "    if (time.time() - newest) > RECENCY_WINDOW_SECONDS:\n        return None  # stale engagement, not this session's work"
+        replace: "    if False:\n        return None  # stale engagement, not this session's work"
+      ignores_engagement_with_no_deliverable:
+        file: .claude/hooks/enforce-journal.py
+        find: "    if newest == 0.0:\n        return None  # no final deliverable produced yet — nothing to gate\n"
+        replace: "    if newest == 0.0:\n        newest = time.time()\n"
+      block_decision_shape_matches_stop_contract:
+        file: .claude/hooks/enforce-journal.py
+        find: "    print(json.dumps({\"decision\": \"block\", \"reason\": reason}))"
+        replace: "    print(json.dumps({\"blocked\": True, \"why\": reason}))"
+      fails_open_on_malformed_payload:
+        file: .claude/hooks/enforce-journal.py
+        find: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _allow()"
+        replace: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _block(\"mutated: a malformed payload must not block\")"
+      fails_open_under_injected_fault:
+        file: .claude/hooks/enforce-journal.py
+        find: "    except OSError:\n        return None\n\n    findings = []"
+        replace: "    except OSError:\n        return (str(journal.parent), [\"mutated: an unreadable journal must not block\"])\n\n    findings = []"
+      invoked_as_subprocess_not_import:
+        file: .claude/hooks/enforce-journal.py
+        find: "PROJECT_DIR = Path(os.environ.get(\"CLAUDE_PROJECT_DIR\", Path.cwd()))"
+        replace: "PROJECT_DIR = Path.cwd()"
+      runs_under_registered_interpreter:
+        file: evals/rubrics/_harness.py
+        find: "    record_hook_invocation(argv)\n    completed = subprocess.run("
+        replace: "    completed = subprocess.run("
+
+  synthetic-knowledge-guard:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.hooks.synthetic_knowledge_guard
+    code: [denies_fictional_name_written_under_knowledge,
+           denies_synthetic_tag_under_knowledge_domains, allows_synthetic_tag_outside_domains,
+           allows_markers_outside_knowledge_tree, inspects_edit_new_string_not_write_content,
+           ignores_tools_other_than_write_and_edit, deny_decision_shape_matches_hook_contract,
+           fails_open_on_malformed_payload, fails_open_under_injected_fault,
+           invoked_as_subprocess_not_import, runs_under_registered_interpreter]
+    mutations:
+      denies_fictional_name_written_under_knowledge:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    if FICTIONAL_NAME in content:\n        _deny(_deny_message(rel, FICTIONAL_NAME))"
+        replace: "    if False:\n        _deny(_deny_message(rel, FICTIONAL_NAME))"
+      denies_synthetic_tag_under_knowledge_domains:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    if SYNTHETIC_TAG in content and (rel == \"knowledge/domains\""
+        replace: "    if False and SYNTHETIC_TAG in content and (rel == \"knowledge/domains\""
+      allows_synthetic_tag_outside_domains:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: " and (rel == \"knowledge/domains\" or rel.startswith(\"knowledge/domains/\")):"
+        replace: ":"
+      allows_markers_outside_knowledge_tree:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    if not (rel == \"knowledge\" or rel.startswith(\"knowledge/\")):\n        _allow()"
+        replace: "    if False:\n        _allow()"
+      inspects_edit_new_string_not_write_content:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    else:  # Edit\n        content = tool_input.get(\"new_string\", \"\") or \"\""
+        replace: "    else:  # Edit\n        content = \"\""
+      ignores_tools_other_than_write_and_edit:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    if tool not in (\"Write\", \"Edit\"):\n        _allow()"
+        replace: "    if False:\n        _allow()"
+      deny_decision_shape_matches_hook_contract:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "            \"permissionDecision\": \"deny\","
+        replace: "            \"permissionDecision\": \"block\","
+      fails_open_on_malformed_payload:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _allow()"
+        replace: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _deny(\"mutated: a malformed payload must not deny\")"
+      fails_open_under_injected_fault:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    except Exception:\n        # Never wedge the session on a guard bug — fail OPEN.\n        sys.exit(0)"
+        replace: "    except Exception:\n        _deny(\"mutated: a guard bug must not deny\")"
+      invoked_as_subprocess_not_import:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "PROJECT_DIR = Path(os.environ.get(\"CLAUDE_PROJECT_DIR\", Path.cwd()))"
+        replace: "PROJECT_DIR = Path.cwd()"
+      runs_under_registered_interpreter:
+        file: evals/rubrics/_harness.py
+        find: "    record_hook_invocation(argv)\n    completed = subprocess.run("
+        replace: "    completed = subprocess.run("
+
+  eval-on-stop:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.hooks.eval_on_stop
+    code: [scores_recently_touched_engagement_and_writes_report,
+           ignores_engagement_outside_window, never_blocks_the_stop,
+           fails_open_when_eval_engine_unavailable, fails_open_under_injected_fault,
+           invoked_as_subprocess_not_import, runs_under_registered_interpreter]
+    mutations:
+      scores_recently_touched_engagement_and_writes_report:
+        file: .claude/hooks/eval-on-stop.py
+        find: "            rep = score_engagement(eng)\n            write_report(eng, rep)"
+        replace: "            rep = score_engagement(eng)"
+      ignores_engagement_outside_window:
+        file: .claude/hooks/eval-on-stop.py
+        find: "WINDOW_S = 1800"
+        replace: "WINDOW_S = 10 ** 9"
+      never_blocks_the_stop:
+        file: .claude/hooks/eval-on-stop.py
+        find: "\n    sys.exit(0)\n\n\nif __name__ == \"__main__\":"
+        replace: "\n    print('{\"decision\": \"block\", \"reason\": \"mutated: eval-on-stop must never block\"}')\n    sys.exit(0)\n\n\nif __name__ == \"__main__\":"
+      fails_open_when_eval_engine_unavailable:
+        file: .claude/hooks/eval-on-stop.py
+        find: "    try:\n        from runtime import score_engagement, write_report\n    except Exception:\n        sys.exit(0)  # evals absent / import issue — never block"
+        replace: "    from runtime import score_engagement, write_report"
+      fails_open_under_injected_fault:
+        file: .claude/hooks/eval-on-stop.py
+        find: "        except Exception:\n            pass  # fail-open"
+        replace: "        except Exception:\n            raise"
+      invoked_as_subprocess_not_import:
+        file: .claude/hooks/eval-on-stop.py
+        find: "PROJECT_DIR = Path(os.environ.get(\"CLAUDE_PROJECT_DIR\", Path.cwd()))"
+        replace: "PROJECT_DIR = Path.cwd()"
+      runs_under_registered_interpreter:
+        file: evals/rubrics/_harness.py
+        find: "    record_hook_invocation(argv)\n    completed = subprocess.run("
+        replace: "    completed = subprocess.run("
+
+  # artifact-boundary (ticket #198, backlog :134) — executable coverage for the
+  # three scripts/artifact_boundary.py gates other components depend on:
+  # cap_roi_config, synthetic_policy and the deanonymize_dir exit gate.
+  # Deliberately COMPLEMENTARY, never duplicative:
+  #   * knowledge-harvester's row already scores synthetic_policy against the
+  #     three committed fixtures (quarantine_case/, never_case/,
+  #     bare_tests_case/). This row takes the branches that row cannot reach —
+  #     marker-beats-location, the parent-directory walk, the two fail-safes
+  #     for a missing/unrecognised harvest_policy, the "real" negative control,
+  #     and an unreadable marker under a real chmod fault.
+  #   * pii-anonymizer's nested_outputs_deanonymized / xlsx_outputs_deanonymized
+  #     (#165) cover deanonymize_dir's recursive walk, exclusions and .xlsx
+  #     branch. This row takes the two REFUSAL contracts they do not: a missing
+  #     .pii_mapping.json must block and modify nothing, and a file that could
+  #     not be restored must surface in `unrestored` with client_ready: false —
+  #     never the silent skip that defect was written against.
+  #   * roi-financial-modeler's backbase_impact_within_cap /
+  #     overcap_negative_gate_witness prove the cap can be applied. This row
+  #     adds the gate's own failure contract (missing / unparseable config) and
+  #     asserts the already-capped golden is left byte-identical.
+  # `input:` is the CAPPED golden; the over-cap negative is resolved as its
+  # SIBLING, so the mutation harness's shadow_target() carries both fixtures
+  # into the shadow together. cap_roi_config rewrites in place, so every check
+  # gates a /tmp COPY and asserts the committed bytes are unchanged.
+  # threshold 1.00, no judge: these are governance gates, pass/fail.
+  artifact-boundary:
+    altitude: component
+    threshold: 1.00
+    input: evals/goldens/roi_config_provenance.json
+    code: [cap_roi_config_caps_driver_and_scenario_impacts,
+           cap_roi_config_missing_or_unparseable_never_passes,
+           synthetic_policy_marker_beats_location_and_unknown_policy_fails_safe,
+           synthetic_policy_unreadable_marker_fails_safe_quarantine,
+           deanonymize_dir_missing_mapping_blocks_and_modifies_nothing,
+           deanonymize_dir_unreadable_output_reported_unrestored_not_client_ready]
+    mutations:
+      cap_roi_config_caps_driver_and_scenario_impacts:
+        file: scripts/artifact_boundary.py
+        find: "if isinstance(val, (int, float)) and val > MAX_BACKBASE_IMPACT:"
+        replace: "if False:"
+      cap_roi_config_missing_or_unparseable_never_passes:
+        file: scripts/artifact_boundary.py
+        find: "report[\"parse_error\"] = type(e).__name__"
+        replace: "report[\"parse_error\"] = None"
+      synthetic_policy_marker_beats_location_and_unknown_policy_fails_safe:
+        file: scripts/artifact_boundary.py
+        find: "if value not in _KNOWN_POLICIES:"
+        replace: "if False:"
+      synthetic_policy_unreadable_marker_fails_safe_quarantine:
+        file: scripts/artifact_boundary.py
+        find: "return (\"quarantine\",\n                            f\"marker at {marker} unreadable"
+        replace: "return (\"real\",\n                            f\"marker at {marker} unreadable"
+      deanonymize_dir_missing_mapping_blocks_and_modifies_nothing:
+        file: scripts/artifact_boundary.py
+        find: "report[\"error\"] = \"missing_pii_mapping\""
+        replace: "report[\"client_ready\"] = True"
+      deanonymize_dir_unreadable_output_reported_unrestored_not_client_ready:
+        file: scripts/artifact_boundary.py
+        find: "                        report[\"unrestored\"].append(str(out_file))\n\n            log(f\"  ✓ De-anonymized"
+        replace: "                        pass\n\n            log(f\"  ✓ De-anonymized"
+
+  # pipeline-workspace (ticket #198, backlog :134) — #167's guarantee, made
+  # executable: NO composed prompt and NO cwd names the client. That claim was
+  # verified once by a throwaway harness that stubbed _resilient_query and
+  # walked every call site, and nothing in evals/ re-ran it; the structural
+  # altitude scores fixtures and cannot see a regression here at all.
+  # No `input:` — the evaluator is self-contained: it builds three synthetic
+  # engagements in a tempdir in the PRE-MIGRATION, client-named shape (what
+  # #167 has to neutralise) and drives the real orchestrate.py steps with
+  # _resilient_query stubbed, so nothing leaves the machine. The three
+  # traversals (non-interactive x3 transcripts, interactive x3, non-interactive
+  # x1) between them execute all 26 run_agent call sites in orchestrate.py, and
+  # `traversal_covers_every_agent_call_site` proves that against an AST
+  # enumeration — a call site added later without coverage turns it red.
+  # `denylist_nonempty_asserted_first` is FIRST structurally, not by convention:
+  # evaluate() cannot launch the traversal without its return value, and an
+  # empty deny-list leaves every other check reporting NOT EVALUATED.
+  # REQUIRES the Presidio/SDK interpreter (orchestrate.py imports
+  # claude_agent_sdk at module level; step_discovery runs the real anonymiser).
+  # The rubric resolves it — `.venv/bin/python` locally, CI's sys.executable
+  # after requirements.txt — and fails loudly naming `bash scripts/setup_pii.sh`
+  # rather than skipping. The rubric itself runs fine under plain python3: the
+  # traversal is a subprocess.
+  # threshold 1.00, no judge: a privacy control is pass/fail.
+  pipeline-workspace:
+    altitude: component
+    threshold: 1.00
+    code: [denylist_nonempty_asserted_first,
+           traversal_covers_every_agent_call_site,
+           no_client_identifier_in_composed_prompt,
+           cwd_is_neutral_workspace_for_every_invocation,
+           neutral_invocation_assertion_refuses_client_named_cwd,
+           workspace_root_placement_and_resume_reattaches,
+           log_redaction_backstop_scrubs_client_paths]
+    mutations:
+      denylist_nonempty_asserted_first:
+        file: scripts/pii/denylist.py
+        find: "    engagement_dir = Path(engagement_dir)\n    terms = set()\n    budget = _ScanBudget()"
+        replace: "    engagement_dir = Path(engagement_dir)\n    return set()"
+      traversal_covers_every_agent_call_site:
+        file: scripts/orchestrate.py
+        find: "    if express or non_interactive:\n        result = await run_agent(\"roadmap-prioritization\", cwd=engagement_dir,"
+        replace: "    if True:\n        result = await run_agent(\"roadmap-prioritization\", cwd=engagement_dir,"
+      no_client_identifier_in_composed_prompt:
+        file: scripts/orchestrate.py
+        find: "        \"engagement_dir\": workspace_dir,\n        \"outputs_dir\": outputs_dir,\n        \"engagement_id\": engagement_id,"
+        replace: "        \"engagement_dir\": engagement_dir,\n        \"outputs_dir\": outputs_dir,\n        \"engagement_id\": engagement_id,"
+      cwd_is_neutral_workspace_for_every_invocation:
+        file: scripts/orchestrate.py
+        find: "    result = await run_agent(\n        \"knowledge-harvester\", cwd=workspace_dir,"
+        replace: "    result = await run_agent(\n        \"knowledge-harvester\", cwd=engagement_dir,"
+      neutral_invocation_assertion_refuses_client_named_cwd:
+        file: scripts/orchestrate.py
+        find: "    probe = str(text).replace(str(REPO_ROOT), \"\")\n    return sorted(set(_CLIENT_RE.findall(probe)))"
+        replace: "    return []"
+      workspace_root_placement_and_resume_reattaches:
+        file: scripts/orchestrate.py
+        find: "    ws = _identity.Workspace(path, engagement_dir, {})"
+        replace: "    ws = _materialise_run_workspace(engagement_dir)"
+      log_redaction_backstop_scrubs_client_paths:
+        file: scripts/orchestrate.py
+        find: "    if _REDACT_RE is None:\n        return msg\n    return _REDACT_RE.sub(\"<REDACTED>\", msg)"
+        replace: "    return msg"
+
+  # --- #199: engagement identity + migration ------------------------------------
+  # The opaque-ID scheme (solution-design-v6 D6) is a privacy control: the
+  # ID→client binding lives only in `.engagement_map.json` (chmod 600) and never
+  # in a directory path. Both rows are self-contained — they synthesize
+  # engagements in a tempdir and drive the real scripts — so no `input:`.
+  # threshold 1.00, no judge: pass/fail governance gates. 13/13 mutation-proven;
+  # both names added to MUTATION_PROOF_REQUIRED_ROWS in this same change.
+  engagement-identity:
+    altitude: component
+    threshold: 1.00
+    code: [mints_opaque_hex_id_not_slug_derived, map_entry_written_chmod_600,
+           client_identity_absent_from_directory_path, find_engagement_resolves_partial_match,
+           find_engagement_resolves_case_insensitive_match,
+           duplicate_engagement_refused_not_silently_recreated]
+    mutations:
+      mints_opaque_hex_id_not_slug_derived:
+        file: scripts/pii/identity.py
+        find: "engagement_id = _generate_id(set(data), client, resolved_slug)"
+        replace: "engagement_id = resolved_slug"
+      map_entry_written_chmod_600:
+        file: scripts/pii/identity.py
+        find: "MAP_MODE = 0o600"
+        replace: "MAP_MODE = 0o644"
+      client_identity_absent_from_directory_path:
+        file: scripts/init_engagement_identity.py
+        find: 'holder = root / "engagements" / engagement_id'
+        replace: 'holder = root / "engagements" / slug'
+      find_engagement_resolves_partial_match:
+        file: scripts/pii/identity.py
+        find: "if not any(needle in h for h in haystacks if h):"
+        replace: "if not any(needle == h for h in haystacks if h):"
+      find_engagement_resolves_case_insensitive_match:
+        file: scripts/pii/identity.py
+        find: 'return _ALNUM_RE.sub("", (value or "").strip().lower())'
+        replace: 'return _ALNUM_RE.sub("", (value or "").strip())'
+      duplicate_engagement_refused_not_silently_recreated:
+        file: scripts/init_engagement_identity.py
+        find: 'if (Path(record["path"]) / name).is_dir():'
+        replace: 'if False:'
+
+  engagement-migration:
+    altitude: component
+    threshold: 1.00
+    code: [dry_run_default_writes_nothing, apply_flag_required_to_move_directory,
+           refuses_and_writes_nothing_when_deny_term_would_be_lost,
+           proceeds_when_name_override_supplies_missing_coverage,
+           migration_preserves_concatenated_slug_form,
+           deny_term_coverage_case_insensitive_not_falsely_lost,
+           deny_term_coverage_concatenated_not_falsely_retained]
+    mutations:
+      dry_run_default_writes_nothing:
+        file: scripts/migrate_engagements.py
+        find: "if rc != 0 or not args.apply or not steps:"
+        replace: "if rc != 0 or not steps:"
+      apply_flag_required_to_move_directory:
+        file: scripts/migrate_engagements.py
+        find: "os.rename(str(step.source), str(target))"
+        replace: "pass"
+      refuses_and_writes_nothing_when_deny_term_would_be_lost:
+        file: scripts/migrate_engagements.py
+        find: "if step.lost:"
+        replace: "if False and step.lost:"
+      proceeds_when_name_override_supplies_missing_coverage:
+        file: scripts/migrate_engagements.py
+        find: "if override:"
+        replace: "if False and override:"
+      migration_preserves_concatenated_slug_form:
+        file: scripts/pii/identity.py
+        find: "denylist.extract_terms_from_slug(client_slug, slug_terms)"
+        replace: "pass"
+      deny_term_coverage_case_insensitive_not_falsely_lost:
+        file: scripts/pii/identity.py
+        find: "        re.IGNORECASE,"
+        replace: "        0,"
+      deny_term_coverage_concatenated_not_falsely_retained:
+        file: scripts/pii/identity.py
+        find: 'r"(?<![A-Za-z0-9])" + re.escape(term) + r"(?![A-Za-z0-9])"'
+        replace: 'r"(?<![A-Za-z0-9])" + re.escape(term.replace(" ", "")) + r"(?![A-Za-z0-9])"'
+
+  # --- #200: roi-calibrator + frontline-builders --------------------------------
+  # NO `mutations:` KEY, deliberately and visibly: #200 proved these 10 checks by
+  # hand and did not author registry mutation entries, so both rows sit in the
+  # keyless DEBT list under #186's staged policy — loud, counted, non-gating —
+  # rather than being silently exempted. Their names are therefore NOT on
+  # MUTATION_PROOF_REQUIRED_ROWS (that list's rule is "added in the same change
+  # as the row's first `mutations:` entry"). Until those entries exist, the
+  # proofs behind these two rows are hand-run, not machine-enforced. Tracked in
+  # `.prd/backlog.md` under the eval-gate-v7 epic.
+  roi-calibrator:
+    altitude: component
+    threshold: 0.80
+    input: evals/goldens/roi_config_provenance.json
+    code: [assess_report_well_formed, scenario_curve_shape_valid,
+           cap_parity_with_artifact_boundary, conservative_anchor_invariant]
+
+  frontline-builders:
+    altitude: component
+    threshold: 0.80
+    input: presentations/frontline-2026/design-tokens.json
+    code: [pptx_slides_file_opens_with_expected_slides, pptx_slides_brand_tokens_match,
+           pptx_presenter_file_opens_with_expected_slides, pptx_presenter_brand_tokens_match,
+           html_self_contained_no_cdn, html_brand_tokens_root_match]
+
 # Deliverable-structural altitude (#188 — was `pipeline:`; same checks, honest
 # name). It lints the inter-agent structural contracts across a set of output
 # FILES that already exist on disk. It does NOT run orchestrate.py, does not

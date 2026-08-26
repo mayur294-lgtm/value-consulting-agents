@@ -84,6 +84,24 @@ import mutations  # noqa: E402 - evals/mutations.py; pure metadata reads only (m
 MUTATION_PROOF_REQUIRED_ROWS: frozenset[str] = frozenset({
     "run-experiment-runner",   # #185 — the worked example; first row migrated
     "mutation-harness",        # #187 — the harness proving itself; hard-enforced from birth
+    # #197 — the six previously ungated `.claude/hooks/*` (66/66 proven).
+    "anonymize-guard",
+    "require-checkpoint",
+    "require-harness",
+    "enforce-journal",
+    "synthetic-knowledge-guard",
+    "eval-on-stop",
+    # #198 — artifact_boundary gates + the #167 neutral-workspace guarantee (13/13).
+    "artifact-boundary",
+    "pipeline-workspace",
+    # #199 — opaque engagement IDs and the deny-list-preserving migration (13/13).
+    "engagement-identity",
+    "engagement-migration",
+    # NOT here: roi-calibrator and frontline-builders (#200). They declare no
+    # `mutations:` key — their 10 checks were proven by hand, not by the
+    # harness — so they stay in the counted DEBT list until those entries are
+    # authored (tracked in .prd/backlog.md). Adding them here would assert a
+    # machine proof that does not exist.
 })
 MUTATIONS_ENFORCED_FOR_ALL_ROWS = False
 
@@ -104,6 +122,64 @@ def _gitignored(path: Path) -> bool:
     except OSError:
         # No git available — can't prove it's ignored; don't hard-fail on that.
         return False
+
+
+def _outside_shadow(path: str) -> str | None:
+    """The offending top-level segment if `path` is NOT inside a subtree that
+    `mutations.shadow_root()` copies — else None.
+
+    SOURCE OF TRUTH is `mutations.SHADOW_SUBTREES` / `SHADOW_ROOT_FILES`, read
+    live from the imported module rather than re-declared here, so the preflight
+    and the harness cannot drift apart. `evals/mutations.py` is already imported
+    at module scope for `mutations_from_spec`, so this costs nothing and creates
+    no cycle.
+    """
+    rp = _resolve(path)
+    try:
+        rel = rp.resolve().relative_to(ROOT)
+    except ValueError:
+        return "<outside the repo>"
+    if not rel.parts:
+        return "<repo root>"
+    top = rel.parts[0]
+    if top in mutations.SHADOW_SUBTREES or str(rel) in mutations.SHADOW_ROOT_FILES:
+        return None
+    return top
+
+
+def _shadow_containment_error(path: str, where: str) -> str | None:
+    """#201: EVERY gating fixture must exist inside the mutation shadow.
+
+    `--mutate <row>` scores inside a temp copy of the repo containing only
+    `mutations.SHADOW_SUBTREES`. A golden outside those trees resolves fine in
+    the real working tree — so nothing else in this preflight notices — and is
+    simply ABSENT in every shadow.
+
+    NOT scoped to rows that declare `mutations:`, deliberately, and this is the
+    whole point: `mutation-harness`'s `every_registered_check_has_a_mutation`
+    runs THIS preflight against the WHOLE registry from inside a shadow and
+    requires rc=0. So one unshadowed golden on ANY row hard-errors there and
+    breaks that row's proof from arbitrarily far away. That is exactly how the
+    concrete #201 defect behaved: `frontline-builders` — which carries NO
+    `mutations:` key at all — gated on
+    `presentations/frontline-2026/design-tokens.json` and took
+    `--mutate mutation-harness` from 5/5 to 4/5, while the real tree stayed
+    green throughout. A check scoped to mutation-carrying rows would have missed
+    the very bug it was written for.
+    """
+    top = _outside_shadow(path)
+    if top is None:
+        return None
+    return (
+        f"{where}: golden '{path}' resolves OUTSIDE the mutation shadow "
+        f"(top-level '{top}' is not in mutations.SHADOW_SUBTREES = "
+        f"{', '.join(mutations.SHADOW_SUBTREES)}). `--mutate` copies only those "
+        f"subtrees, so this fixture is absent in every shadow: the gate goes vacuous "
+        f"there, and this preflight — which `mutation-harness` runs from inside a "
+        f"shadow — hard-errors, breaking that row's proof no matter which row owns "
+        f"the fixture. Fix: add '{top}' to SHADOW_SUBTREES in evals/mutations.py, "
+        f"or move the fixture under evals/goldens/."
+    )
 
 
 def _row_claims_mutation_proof(name: str, spec: dict) -> bool:
@@ -433,6 +509,12 @@ def main(argv: list[str]) -> int:
         elif _gitignored(rp):
             errors.append(f"{where}: golden '{path}' is gitignored — absent in CI. "
                           f"Commit a fixture under evals/goldens/ or move it to monitor:")
+        # #201: present and committed is not enough — it must also survive the
+        # mutation shadow. Same slots, same hard-error severity; see
+        # _shadow_containment_error for why this is not scoped to mutation rows.
+        shadow_err = _shadow_containment_error(path, where)
+        if shadow_err:
+            errors.append(shadow_err)
 
     def check_engagement(ge: str, where: str) -> None:
         if "/" in str(ge):                       # an explicit path → must resolve
@@ -450,6 +532,9 @@ def main(argv: list[str]) -> int:
 
     # --- components -----------------------------------------------------------
     for name, spec in (reg.get("components") or {}).items():
+        # Shadow containment (#201) rides along inside check_gate, so it covers
+        # every gating slot uniformly — deliverables, components, and the
+        # deliverable_structural path form alike.
         if spec.get("input"):
             check_gate(spec["input"], f"components.{name}.input")
         if spec.get("golden_engagement"):
