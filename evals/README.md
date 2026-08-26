@@ -34,11 +34,14 @@ evals/
     judge/                      # LLM-as-judge harness (judge.py) + prompts/ + standards_snapshot/
 ```
 
-All 18 rows under `registry.yaml`'s `components:` key are one flat list today —
-5 executable, 12 rubric-calibration, 1 mixed. Re-filing the rubric-calibration
-rows into an explicit `rubric_calibration:` section (with a negative per check)
-is tracked as **#201** and has **not landed**. This README describes the
-registry as it exists right now, not the post-#201 shape.
+The tiers are now separated in the registry itself. **#201 landed:** the eleven
+prose-golden rows moved out of `components:` into their own
+`rubric_calibration:` section, keyed by RUBRIC (`market-context-rubric`, not
+`market-context-researcher`), each with a per-check fixture-mutation negative,
+and each printing a standing "scores the RUBRIC, not the component" banner on
+every run. The eleven agent names they used to be keyed by keep a
+`retired: true` REDIRECT row in `components:` that always hard-fails with the
+mapping — see "Rubric-calibration" below.
 
 ## Developer onboarding (one-time) — developers only
 
@@ -85,15 +88,23 @@ only tier where that is true.
 
 ### 2. Rubric-calibration — a regex over a frozen golden, not the agent
 
-Twelve `components:` rows are thin adapters over `rubrics.component.specifics`
-— pure string/regex matching against a **frozen golden** markdown or text
-fixture:
+Eleven rows under the `rubric_calibration:` key (#201) are thin adapters over
+`rubrics.component.specifics` — pure string/regex matching against a **frozen
+golden** markdown or text fixture. They are keyed by RUBRIC, not by agent:
 
-market-context-researcher, roi-financial-modeler,
-discovery-transcript-interpreter, capability-assessment,
-roadmap-prioritization, narrative-assembler, journey-builder,
-benchmark-librarian, usecase-designer, workshop-preparation,
-ignite-workshop-synthesizer, roi-hypothesis-builder.
+| row (`--component <row>`) | `covers_agent:` (inert documentation) |
+|---|---|
+| `market-context-rubric` | market-context-researcher |
+| `roi-hypothesis-rubric` | roi-hypothesis-builder |
+| `discovery-evidence-rubric` | discovery-transcript-interpreter |
+| `capability-maturity-rubric` | capability-assessment |
+| `roadmap-rubric` | roadmap-prioritization |
+| `narrative-arc-rubric` | narrative-assembler |
+| `journey-map-rubric` | journey-builder |
+| `benchmark-shortlist-rubric` | benchmark-librarian |
+| `usecase-design-rubric` | usecase-designer |
+| `workshop-prep-rubric` | workshop-preparation |
+| `workshop-synthesis-rubric` | ignite-workshop-synthesizer |
 
 None of these checks ever open the agent's `.claude/agents/<name>.md` prompt.
 They score a fixed piece of text that was written once and frozen. **Measured
@@ -101,12 +112,30 @@ directly:** the entire 45 KB `market-context-researcher` prompt was replaced
 with one line of garbage, and its own gate —
 `run_experiment.py --component market-context-researcher` — still returned
 **1.000 PASS** (`.prd/prd-v7.md`). The gate named after an agent cannot see
-that agent.
+that agent. That is why the agent name no longer names the row.
 
 A PASS here proves the frozen golden still parses the way the regex expects.
 It is a calibration check on the rubric — it is **not** evidence that the
 agent prompt behind that name does the right thing, was verified, or was even
-touched.
+touched. Every run prints that sentence as a banner
+(`rubrics/component/_calibration.py`), and every one of the 38 checks across
+these rows carries its own per-check **fixture-mutation** negative under
+`negatives:` (dict form), all bite-proven by `--mutate <row>`.
+
+Why the rows were kept rather than deleted: `evals/runtime.py` — wired at
+`scripts/orchestrate.py:2242` and `.claude/settings.json:74` — routes LIVE
+engagement outputs through the same `specifics.py` check functions on every
+pipeline run and every consultant session. The golden is the calibration
+anchor that keeps those thresholds falsifiable, and the only regression test
+on rubric code.
+
+**`--component <agent-name>` no longer resolves to one of these rows.** Each
+retired agent name keeps a `retired: true` redirect row in `components:`
+pointing at `rubrics.component.moved_to_rubric_calibration`, which always
+HARD-FAILS and prints the agent → rubric mapping. `.github/workflows/evals.yml`
+reads the same flag and skips those rows with a notice instead of running them
+— because running a calibration rubric on a changed prompt would score a fixture
+the prompt cannot affect.
 
 ### 3. Deliverable / deliverable-structural — score the final artifact
 
@@ -126,6 +155,22 @@ touched.
   run is `scripts/orchestrate.py` on a synthetic engagement — that is out of
   scope for the gate.
 
+### Mixed case: `roi-financial-modeler`
+
+`roi-financial-modeler` was counted as a twelfth rubric-calibration row before
+#201 and was deliberately **left in `components:`**. Its subject is a
+machine-readable `roi_config.json`, not prose: the checks assert a schema and
+contract (three scenarios, NPV/payback, per-field `_source`/`_confidence`
+provenance, operating costs as a live formula), and
+`overcap_negative_gate_witness` genuinely **executes**
+`scripts/artifact_boundary.py`'s `cap_roi_config()` against a real overcap
+fixture — the same shared-gate situation as `knowledge-harvester` below. It
+also carries a LIST-form `negatives:` (`roi_config_overcap.json`, the #180
+threshold-0.90 gate), and a row can only have one `negatives:` key: converting
+it to the per-check dict form would have deleted a real cross-fixture gate to
+gain a weaker one. Its per-check mutation coverage stays in the counted DEBT
+list until it is authored in its own change.
+
 ### Mixed case: `knowledge-harvester`
 
 `knowledge-harvester` doesn't fit either bucket cleanly. Three of its four
@@ -137,8 +182,9 @@ does read `.claude/agents/knowledge-harvester.md` (it parses for a
 `### Mode: quarantine` block), but it currently **SKIPs, pending #131** — a
 skip counts as neither pass nor fail evidence. Net result: a green
 `--component knowledge-harvester` is still not evidence the agent's `.md` was
-verified — for a different reason than the twelve rubric-calibration rows
-above (a real-but-unrelated gate, plus one still-skipped prompt check).
+verified — for a different reason than the eleven `rubric_calibration:` rows
+above (a real-but-unrelated gate, plus one still-skipped prompt check). That
+is why #201 left it, like `roi-financial-modeler`, in `components:`.
 
 ### The one question a reader should be able to answer
 
@@ -148,7 +194,7 @@ prompt-adjacent code (`mcp-query-guard`, `pii-anonymizer` gate hook/engine
 code, not a prompt at all) or the row's own harness code
 (`run-experiment-runner`, `mutation-harness`, `roi-excel-generator` gate
 their own module, not an agent). **No row in this suite today verifies an
-agent's `.claude/agents/*.md` prompt.** For the twelve rubric-calibration
+agent's `.claude/agents/*.md` prompt.** For the eleven `rubric_calibration:`
 rows and the one prompt-reading check inside `knowledge-harvester`, the
 answer is no — and the local, unwired alternative is `evals/path1.py` (see
 "Billing" below).
@@ -158,8 +204,9 @@ answer is no — and the local, unwired alternative is `evals/path1.py` (see
 **A check with no mutation proof fails preflight.** This is enforced in
 `evals/check_registry.py`, run first in the eval CI job:
 
-- Any row named in `MUTATION_PROOF_REQUIRED_ROWS` (currently
-  `run-experiment-runner`, `mutation-harness` — the allow-list is durable:
+- Any row named in `MUTATION_PROOF_REQUIRED_ROWS` (the two self-gates, the six
+  `.claude/hooks/*` rows, the four artifact/engagement rows, and — since #201 —
+  the eleven `rubric_calibration:` rows; the allow-list is durable:
   once a row is added it is hard-enforced even if its `mutations:` key is
   later deleted or broken) is checked immediately: every name in its `code:`
   list must resolve to a `mutations:` entry (or dict-form
@@ -170,8 +217,8 @@ answer is no — and the local, unwired alternative is `evals/path1.py` (see
   — no grace period, no allow-list entry required.
 - Every other row with a `code:` list and no mutation declaration at all is
   reported as **DEBT**: loud, counted, non-fatal. Run today
-  (`python3 evals/check_registry.py`), this prints **90 uncovered checks
-  across 16 rows** — a prominent total up front, one aggregated line per row
+  (`python3 evals/check_registry.py`), this prints **65 uncovered checks
+  across 7 rows** (was 103 across 18 before #201 covered the calibration tier) — a prominent total up front, one aggregated line per row
   by default, full per-check detail behind `--verbose`. `--strict` turns DEBT
   into a hard failure for whoever wants that locally.
 - `MUTATIONS_ENFORCED_FOR_ALL_ROWS` (in `check_registry.py`, currently
@@ -321,7 +368,7 @@ stories:
   with a CI guard is **#204**, tracked, **not yet landed**. Until then, the
   only way to exercise path-1 is to run `evals/path1.py` yourself, locally,
   outside the harness.
-- The 12 rubric-calibration `components:` rows each declare a `path1_judge:`
+- The 11 `rubric_calibration:` rows each declare a `path1_judge:`
   list (renamed from `judge:` in #182) — semantic LLM-as-judge checks meant
   to apply only when the component is regenerated via path-1. **This key
   does not gate anything today.** The component gate's thin adapters

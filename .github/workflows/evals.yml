@@ -102,6 +102,18 @@ jobs:
 
           reg = yaml.safe_load(open("evals/registry.yaml"))
           components = set((reg.get("components") or {}).keys())
+          # #201 — `retired: true` rows are REDIRECTS, not gates. The eleven
+          # agent names whose prose-golden rows became `rubric_calibration:`
+          # rows keep a stub in `components:` purely so `--component <agent>`
+          # prints the mapping instead of a bare KeyError; that stub always
+          # hard-fails by design. Read from the registry's own flag (never a
+          # hand-kept path list here, which would drift the moment a row moved),
+          # and reported as a NOTICE, because the honest answer for a changed
+          # agent PROMPT is "path 2 has nothing that verifies this" — running
+          # the calibration rubric would score a frozen fixture the prompt
+          # cannot affect and print a green that means nothing about the diff.
+          retired = {n for n, s in (reg.get("components") or {}).items()
+                     if isinstance(s, dict) and s.get("retired")}
 
           # Explicit path -> component for rows whose subject file does NOT
           # follow the `.claude/agents/<name>.md` == component-name
@@ -172,6 +184,14 @@ jobs:
                   # while a changed agent with no row hard-fails four lines
                   # below. The intended direction is extending fail-loud to
                   # them, not softening the agent rule.
+                  continue
+              if comp in retired:
+                  moved = (reg["components"][comp] or {}).get("moved_to", "?")
+                  print(f"::notice::{p} maps to components.{comp}, which is RETIRED as a gate "
+                        f"(#201). Its rubric now lives at rubric_calibration.{moved} and scores a "
+                        f"frozen golden — it says nothing about this prompt change. Nothing in "
+                        f"path 2 verifies an agent prompt; run evals/path1.py locally if you want "
+                        f"evidence.")
                   continue
               if comp in components:
                   matched.add(comp)

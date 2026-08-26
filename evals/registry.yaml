@@ -68,6 +68,280 @@ deliverables:
     monitor:
       - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_report.md
 
+# =============================================================================
+# rubric_calibration — the CALIBRATION tier (#201, design D3/D7/D10)
+# =============================================================================
+# Eleven rows below score a frozen synthetic prose golden with a deterministic
+# rubric. Until #201 they lived under `components:` KEYED BY AGENT NAME, which
+# reads — in CI output, in a PR body, in a reviewer's head — as "this row gates
+# that agent". It never did:
+#
+#     replacing the ENTIRE 45 KB `market-context-researcher` prompt with one
+#     line of garbage left `--component market-context-researcher` at 1.000 PASS.
+#
+# The rubric does not execute a prompt. It reads a committed `.md` fixture that
+# no agent run produced. What the score genuinely certifies is that the RUBRIC
+# still parses that fixture the way it did when the threshold was set. That is
+# worth keeping and was pressure-tested for deletion and KEPT: `evals/runtime.py`
+# (wired at `scripts/orchestrate.py:2242` and `.claude/settings.json:74`) routes
+# LIVE engagement outputs through the same `specifics.py` check functions on
+# every pipeline run and every consultant session, so the golden is the
+# calibration anchor that keeps that threshold falsifiable — and the only
+# regression test on rubric code, which changed in all six of the last eval PRs.
+# What was wrong was never the file. It was the CLAIM attached to it.
+#
+# THE RULES OF THIS TIER
+# ----------------------
+# 1. Keyed by RUBRIC, never by an agent name (enforced: check_registry.py's
+#    `check_rubric_calibration`). `--component <agent-name>` does not resolve to
+#    a calibration row; the retired agent names keep a REDIRECT row at the end of
+#    `components:` that always hard-fails with the mapping.
+# 2. `covers_agent:` is INERT DOCUMENTATION. No runner, preflight or harness
+#    reads it as a verification claim, and check_registry.py asserts the agent it
+#    names cannot be reached as a gate.
+# 3. Every `code:` check carries its own per-check FIXTURE-MUTATION negative
+#    (design D3) under `negatives:` as a MAPPING — `{check: {strip: <regex>}}`,
+#    or `{check: {find: ..., replace: ...}}` where the fault has to be ADDED
+#    rather than removed. `evals/mutations.py` reads that shape as
+#    `kind: "fixture"` and `--mutate <row>` proves each one makes THAT NAMED
+#    check go red. A whole-artifact negative could not do this: at threshold
+#    0.80 it only has to break a fifth of the checks to drop below the line, so
+#    an individually inert check still hides.
+# 4. GOLDEN BYTES ARE FROZEN (design D7). Editing a golden while adding its
+#    first negative confounds the calibration — a new red could not be
+#    attributed to the better negative rather than the changed fixture. The weak
+#    cross-scoring discrimination (`market-context-researcher` scores 0.833
+#    against the BENCHMARK golden; `benchmark-librarian` 0.889 against the
+#    MARKET-CONTEXT one) is a recorded follow-up, not this ticket.
+# 5. `rubrics/component/specifics.py` is FROZEN this cycle (design D10) —
+#    `runtime.py` scores live client engagements with it. Every negative below is
+#    a fixture mutation for that reason: it changes a shadow copy of the golden,
+#    never the rubric.
+#
+# DISPATCH (read this before "why is this row also under `components:`")
+# ---------------------------------------------------------------------
+# `run_experiment.py` branches on `--component` / `--deliverable` / `--altitude`
+# and reads `reg["components"]` / `reg["deliverables"]` directly; it has no
+# `rubric_calibration` branch yet, and that file is owned by a concurrent
+# ticket (#204), so #201 does not touch it. The rows below are therefore
+# ALIASED into `components:` by YAML anchor — one authored copy, two names for
+# the same object, so they can never drift. When the runner grows a
+# `--calibration` dispatch, delete the alias block in `components:` and nothing
+# else has to move. The alias keys are the RUBRIC names, so nothing about the
+# misreading this ticket exists to kill comes back with them.
+rubric_calibration:
+
+  market-context-rubric: &market_context_rubric
+    tier: rubric_calibration
+    altitude: component          # the runner's dispatch altitude, NOT this row's tier
+    threshold: 0.80
+    evaluator: rubrics.component.market_context_researcher
+    covers_agent: market-context-researcher    # INERT DOCUMENTATION — not a verification claim
+    input: evals/goldens/market_context_golden.md
+    code: [annual_report_attempted, module1_metrics_present, competitor_benchmark_section]
+    path1_judge: [sources_credible_not_hallucinated]
+    negatives:
+      annual_report_attempted:
+        strip: '(?i)annual report|statement of income|10-k|call report|ncua|top-down|revenue bridge|financial metrics'
+      module1_metrics_present:
+        strip: '(?i)module\s*1|bottom-up|correlation'
+      competitor_benchmark_section:
+        strip: '(?i)competitor|benchmark|peer|module\s*3'
+
+  roi-hypothesis-rubric: &roi_hypothesis_rubric
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.roi_hypothesis_builder
+    covers_agent: roi-hypothesis-builder        # INERT DOCUMENTATION
+    input: evals/goldens/roi_hypothesis_golden.md
+    code: [lever_ids_present, four_link_chain_present, problem_statement_present]
+    path1_judge: [levers_grounded_in_evidence]
+    negatives:
+      lever_ids_present:
+        strip: '(?im)\bL\d+\b'
+      four_link_chain_present:
+        strip: '(?i)root driver|operational change|volume|financial impact'
+      problem_statement_present:
+        strip: '(?i)problem\s+statement|problem\s+type'
+
+  discovery-evidence-rubric: &discovery_evidence_rubric
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.discovery_transcript_interpreter
+    covers_agent: discovery-transcript-interpreter    # INERT DOCUMENTATION
+    input: evals/goldens/discovery_evidence_register_golden.md
+    code: [evidence_ids_wellformed, evidence_register_present, lifecycle_tags_present, pain_points_present]
+    path1_judge: [faithful_extraction_no_invention]
+    negatives:
+      evidence_ids_wellformed:
+        strip: '\bE\d+\b'
+      evidence_register_present:
+        strip: '(?im)evidence\s+register|^##\s*evidence'
+      lifecycle_tags_present:
+        strip: '(?i)\b(?:acquire|activate|expand|retain)\b'
+      pain_points_present:
+        strip: '(?im)pain\s*point|^##\s*pain'
+
+  capability-maturity-rubric: &capability_maturity_rubric
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.capability_assessment
+    covers_agent: capability-assessment         # INERT DOCUMENTATION
+    input: evals/goldens/capability_assessment_golden.md
+    code: [maturity_scale_0_4, executive_summary_present, front_middle_back_layers, unconsidered_needs_present, scores_have_evidence_refs]
+    path1_judge: [scores_justified_by_evidence]
+    negatives:
+      # Lookahead so the shared table pipe is not consumed: `| 2 | 3 |` must
+      # lose BOTH cells, not just the first non-overlapping match.
+      maturity_scale_0_4:
+        strip: '\|\s*[0-4]\s*(?=\|)'
+      executive_summary_present:
+        strip: '(?im)^##\s*\d*\.?\s*executive summary.*$'
+      # Drops one of the three layer words: 2/3 scores 0.67 and FAILS the >=3
+      # target — the most surgical mutation that reddens this check alone.
+      front_middle_back_layers:
+        strip: '(?i)\bfront\b'
+      unconsidered_needs_present:
+        strip: '(?i)unconsidered'
+      scores_have_evidence_refs:
+        strip: '(?i)\bCAP-[A-Z0-9-]+\b|\bE\d+\b'
+
+  roadmap-rubric: &roadmap_rubric
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.roadmap_prioritization
+    covers_agent: roadmap-prioritization        # INERT DOCUMENTATION
+    input: evals/goldens/roadmap_golden.md
+    code: [phases_present, initiatives_sequenced, dependencies_present, gates_or_milestones_present]
+    path1_judge: [initiatives_traced_to_gaps_and_levers]
+    negatives:
+      phases_present:
+        strip: '(?i)phase\s*[1-3]|wave\s*[1-3]|now.*next.*later'
+      initiatives_sequenced:
+        strip: '(?i)\bRI-\d+\b|initiative'
+      dependencies_present:
+        strip: '(?i)dependenc'
+      gates_or_milestones_present:
+        strip: '(?i)decision gate|\bDG-\d|milestone|value\s*realization'
+
+  narrative-arc-rubric: &narrative_arc_rubric
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.narrative_assembler
+    covers_agent: narrative-assembler           # INERT DOCUMENTATION
+    input: evals/goldens/narrative_golden.md
+    code: [seven_acts_present, executive_summary_present, transformation_arc_present]
+    path1_judge: [transformation_arc_threaded_7_acts]   # the documented assembler weakness
+    negatives:
+      # One act removed: 6/7 distinct acts scores 0.857 and fails the >=7 bar.
+      seven_acts_present:
+        strip: '(?i)\bact\s*7\b'
+      executive_summary_present:
+        strip: '(?i)executive summary'
+      transformation_arc_present:
+        strip: '(?i)transformation|from\b.*?\bto\b'
+
+  journey-map-rubric: &journey_map_rubric
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.journey_builder
+    covers_agent: journey-builder               # INERT DOCUMENTATION
+    input: evals/goldens/journey_maps_golden.md
+    code: [lifecycle_stages_present, friction_or_leakage_present, as_is_and_future_state]
+    path1_judge: [value_leakage_quantified]
+    negatives:
+      lifecycle_stages_present:
+        strip: '(?i)\b(?:acquire|activate|expand|retain)\b'
+      friction_or_leakage_present:
+        strip: '(?i)friction|value\s*leakage|leakage\s*waterfall'
+      # Removes only the FUTURE half of the As-Is/Future-State conjunction.
+      as_is_and_future_state:
+        strip: '(?i)future[- ]state'
+
+  benchmark-shortlist-rubric: &benchmark_shortlist_rubric
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.benchmark_librarian
+    covers_agent: benchmark-librarian           # INERT DOCUMENTATION
+    input: evals/goldens/benchmark_golden.md
+    code: [confidence_levels_present, source_attribution_present, no_synthetic_citations]
+    path1_judge: [benchmarks_defensible_not_hallucinated]
+    negatives:
+      confidence_levels_present:
+        strip: '(?i)confidence\s*level|(?:high|medium|low)\s*confidence|confidence:\s*(?:high|medium|low)'
+      source_attribution_present:
+        strip: '(?i)source\s*:|\[(?:annual report|investor presentation|regulator|not available|consultant-provided|industry|proxy|estimated)[^\]]*\]'
+      # INVERTED CHECK — it passes on the ABSENCE of stray [Synthetic-Test]
+      # citations, so a `strip:` can never redden it. The fixture mutation has to
+      # ADD the fault: `{find, replace}` under `negatives:` is still read as
+      # kind "fixture" (mutations.Mutation.from_entry), so this stays a
+      # golden-side mutation and specifics.py is untouched (D10).
+      no_synthetic_citations:
+        find: '## Gaps and validation asks'
+        replace: "## Gaps and validation asks\n\n- Contact-centre deflection benchmark carried over from [Synthetic-Test] pipeline data.\n"
+
+  usecase-design-rubric: &usecase_design_rubric
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.usecase_designer
+    covers_agent: usecase-designer              # INERT DOCUMENTATION
+    input: evals/goldens/usecase_golden.md
+    code: [usecase_ids_present, product_directory_mapping, ootb_config_custom_classification, priority_tiers_present]
+    path1_judge: [usecases_grounded_in_product_directory]
+    negatives:
+      usecase_ids_present:
+        strip: '(?i)\bUC-\d{2,}\b'
+      product_directory_mapping:
+        strip: '(?i)product directory|\bRB\.\d|\bWB\.\d'
+      ootb_config_custom_classification:
+        strip: '(?i)OOTB|out-of-the-box|config(?:ure|uration)?|custom'
+      priority_tiers_present:
+        strip: '(?i)tablestakes|differentiating|\bP[123]\b'
+
+  workshop-prep-rubric: &workshop_prep_rubric
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.workshop_preparation
+    covers_agent: workshop-preparation          # INERT DOCUMENTATION
+    input: evals/goldens/workshop_prep_golden.md
+    code: [hypotheses_present, validation_questions_present, checkpoint_present]
+    path1_judge: [hypotheses_specific_and_quantified]
+    negatives:
+      hypotheses_present:
+        strip: '(?i)hypothes[ie]s'
+      validation_questions_present:
+        strip: '(?i)validation question|questions? to validate|validate'
+      checkpoint_present:
+        strip: '(?i)checkpoint'
+
+  workshop-synthesis-rubric: &workshop_synthesis_rubric
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.ignite_workshop_synthesizer
+    covers_agent: ignite-workshop-synthesizer   # INERT DOCUMENTATION
+    input: evals/goldens/ignite_synthesis_golden.md
+    code: [hypothesis_validation_statuses, usecase_candidates_present, usecase_classification_present]
+    path1_judge: [synthesis_faithful_to_workshops]
+    negatives:
+      # "partially confirmed" / "not confirmed" both contain "confirmed", so one
+      # strip takes 3 of the 4 status labels; "needs more data" survives at 1/2.
+      hypothesis_validation_statuses:
+        strip: '(?i)confirmed'
+      usecase_candidates_present:
+        strip: '(?i)use\s*case'
+      usecase_classification_present:
+        strip: '(?i)quick win|foundational|transformational|defer'
+
 # Component (unit) altitude — score an agent's direct output on a fixed input.
 #
 # Two declaration keys, two different contracts (#182, D5 — "declared means
@@ -90,14 +364,6 @@ deliverables:
 # runs on top of the rubrics.component.governance baseline that every agent
 # inherits); `path1_judge` checks are the semantic LLM rubrics in rubrics.judge.
 components:
-  market-context-researcher:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/market_context_golden.md   # scores specifics._market_context via rubrics.component.market_context_researcher
-    code: [annual_report_attempted, module1_metrics_present, competitor_benchmark_section]   # incl. the documented miss
-    path1_judge: [sources_credible_not_hallucinated]
-
   roi-financial-modeler:
     altitude: component
     # threshold raised 0.80 -> 0.90 (#180): backbase_impact_within_cap stays a
@@ -149,78 +415,6 @@ components:
     code: [sources_sheet_present, sources_sheet_absent_when_unset, no_confidence_row_leak,
            explicit_confidence_wins, operating_costs_is_formula, derived_input_formula_renders]
 
-  roi-hypothesis-builder:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/roi_hypothesis_golden.md   # scores specifics._roi_hypothesis via rubrics.component.roi_hypothesis_builder
-    code: [lever_ids_present, four_link_chain_present, problem_statement_present]
-    path1_judge: [levers_grounded_in_evidence]
-
-  discovery-transcript-interpreter:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/discovery_evidence_register_golden.md   # scores specifics._discovery via rubrics.component.discovery_transcript_interpreter
-    code: [evidence_ids_wellformed, evidence_register_present, lifecycle_tags_present, pain_points_present]
-    path1_judge: [faithful_extraction_no_invention]
-
-  capability-assessment:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/capability_assessment_golden.md   # scores specifics._capability via rubrics.component.capability_assessment
-    code: [maturity_scale_0_4, executive_summary_present, front_middle_back_layers, unconsidered_needs_present, scores_have_evidence_refs]
-    path1_judge: [scores_justified_by_evidence]
-
-  roadmap-prioritization:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/roadmap_golden.md   # scores specifics._roadmap via rubrics.component.roadmap_prioritization
-    code: [phases_present, initiatives_sequenced, dependencies_present, gates_or_milestones_present]
-    path1_judge: [initiatives_traced_to_gaps_and_levers]
-
-  narrative-assembler:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/narrative_golden.md   # scores specifics._narrative via rubrics.component.narrative_assembler
-    code: [seven_acts_present, executive_summary_present, transformation_arc_present]
-    path1_judge: [transformation_arc_threaded_7_acts]   # the documented assembler weakness
-
-  journey-builder:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/journey_maps_golden.md   # scores specifics._journey via rubrics.component.journey_builder
-    code: [lifecycle_stages_present, friction_or_leakage_present, as_is_and_future_state]
-    path1_judge: [value_leakage_quantified]
-
-  benchmark-librarian:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/benchmark_golden.md   # scores specifics._benchmark via rubrics.component.benchmark_librarian
-    code: [confidence_levels_present, source_attribution_present, no_synthetic_citations]
-    path1_judge: [benchmarks_defensible_not_hallucinated]
-
-  usecase-designer:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/usecase_golden.md   # scores specifics._usecase via rubrics.component.usecase_designer
-    code: [usecase_ids_present, product_directory_mapping, ootb_config_custom_classification, priority_tiers_present]
-    path1_judge: [usecases_grounded_in_product_directory]
-
-  workshop-preparation:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/workshop_prep_golden.md   # scores specifics._workshop_prep via rubrics.component.workshop_preparation
-    code: [hypotheses_present, validation_questions_present, checkpoint_present]
-    path1_judge: [hypotheses_specific_and_quantified]
-
   # knowledge-harvester (#130) — pins the shared synthetic-engagement gate
   # (scripts.artifact_boundary.synthetic_policy) and the quarantine-mode
   # output contract deterministically. No judge, threshold 1.0 — this is a
@@ -234,14 +428,6 @@ components:
     threshold: 1.0
     input: evals/goldens/synthetic_gate
     code: [quarantine_policy_detected, never_policy_detected, bare_tests_fails_safe, quarantine_mode_outputs_local]
-
-  ignite-workshop-synthesizer:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/ignite_synthesis_golden.md   # scores specifics._ignite_synth via rubrics.component.ignite_workshop_synthesizer
-    code: [hypothesis_validation_statuses, usecase_candidates_present, usecase_classification_present]
-    path1_judge: [synthesis_faithful_to_workshops]
 
   # mcp-query-guard (PR #171 hardening) — regression coverage for the
   # .claude/hooks/mcp-query-guard.py fail-closed outbound-query gate
@@ -1058,6 +1244,116 @@ components:
     code: [pptx_slides_file_opens_with_expected_slides, pptx_slides_brand_tokens_match,
            pptx_presenter_file_opens_with_expected_slides, pptx_presenter_brand_tokens_match,
            html_self_contained_no_cdn, html_brand_tokens_root_match]
+
+  # ===========================================================================
+  # rubric_calibration DISPATCH SHIM (#201) — aliases, not a second definition
+  # ===========================================================================
+  # Each entry below is a YAML ALIAS of the anchor authored in the
+  # `rubric_calibration:` section above: `yaml.safe_load` resolves an alias to
+  # the SAME dict object, so there is exactly one authored copy of every row and
+  # the two names cannot drift.
+  #
+  # Why the shim exists: `run_experiment.py` branches on `--component` /
+  # `--deliverable` / `--altitude` and reads `reg["components"]` directly. It has
+  # no `rubric_calibration` branch, and that file is owned by a concurrent ticket
+  # (#204), so #201 does not touch it. Aliasing here is what makes
+  # `--component <rubric>` and `--mutate <rubric>` (and CI's registry-derived
+  # mutate-row list, .github/workflows/evals.yml) work today.
+  #
+  # The keys are RUBRIC names. Nothing about the misreading this ticket exists to
+  # kill comes back with them: no agent name gates anything, and every run prints
+  # the "scores the RUBRIC, not the component" banner. When the runner grows a
+  # real `--calibration` dispatch, delete this block; nothing else moves.
+  market-context-rubric: *market_context_rubric
+  roi-hypothesis-rubric: *roi_hypothesis_rubric
+  discovery-evidence-rubric: *discovery_evidence_rubric
+  capability-maturity-rubric: *capability_maturity_rubric
+  roadmap-rubric: *roadmap_rubric
+  narrative-arc-rubric: *narrative_arc_rubric
+  journey-map-rubric: *journey_map_rubric
+  benchmark-shortlist-rubric: *benchmark_shortlist_rubric
+  usecase-design-rubric: *usecase_design_rubric
+  workshop-prep-rubric: *workshop_prep_rubric
+  workshop-synthesis-rubric: *workshop_synthesis_rubric
+
+  # ===========================================================================
+  # RETIRED AGENT-NAME ROWS (#201) — REDIRECT ONLY, never a gate
+  # ===========================================================================
+  # These eleven agent names used to key a gating row. They no longer do. Each
+  # keeps a stub here for exactly two reasons:
+  #
+  #   1. `--component market-context-researcher` would otherwise die on a bare
+  #      `KeyError` from `reg["components"][args.component]`, which teaches the
+  #      reader nothing. `rubrics.component.moved_to_rubric_calibration` always
+  #      HARD-FAILS and prints the agent -> calibration-row mapping plus the
+  #      distinction, so the old name can never be green and can never be quoted
+  #      as evidence about anything.
+  #   2. `.github/workflows/evals.yml`'s derive step maps a changed
+  #      `.claude/agents/<name>.md` to `components.<name>` and hard-errors when
+  #      the row is missing. It reads the `retired:` flag below and SKIPS these
+  #      rows with a notice rather than running them — because running a
+  #      calibration rubric on a prompt change would tell the reviewer nothing
+  #      about the prompt they changed, and CI must not imply otherwise.
+  #
+  # SHAPE IS ENFORCED (check_registry.py `check_retired_redirect_rows`): a
+  # `retired: true` row must declare no `code:`, no `input:`, no `negatives:`,
+  # this evaluator, and a `moved_to:` naming a real `rubric_calibration` row. A
+  # redirect stub cannot quietly grow back into a gate.
+  market-context-researcher:
+    retired: true
+    moved_to: market-context-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
+  roi-hypothesis-builder:
+    retired: true
+    moved_to: roi-hypothesis-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
+  discovery-transcript-interpreter:
+    retired: true
+    moved_to: discovery-evidence-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
+  capability-assessment:
+    retired: true
+    moved_to: capability-maturity-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
+  roadmap-prioritization:
+    retired: true
+    moved_to: roadmap-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
+  narrative-assembler:
+    retired: true
+    moved_to: narrative-arc-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
+  journey-builder:
+    retired: true
+    moved_to: journey-map-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
+  benchmark-librarian:
+    retired: true
+    moved_to: benchmark-shortlist-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
+  usecase-designer:
+    retired: true
+    moved_to: usecase-design-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
+  workshop-preparation:
+    retired: true
+    moved_to: workshop-prep-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
+  ignite-workshop-synthesizer:
+    retired: true
+    moved_to: workshop-synthesis-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
 
 # Deliverable-structural altitude (#188 — was `pipeline:`; same checks, honest
 # name). It lints the inter-agent structural contracts across a set of output

@@ -102,7 +102,29 @@ MUTATION_PROOF_REQUIRED_ROWS: frozenset[str] = frozenset({
     # harness — so they stay in the counted DEBT list until those entries are
     # authored (tracked in .prd/backlog.md). Adding them here would assert a
     # machine proof that does not exist.
+    # #201 — the eleven `rubric_calibration:` rows. Each declares a dict-form
+    # `negatives:` (a per-check fixture mutation for EVERY `code:` check, 38 in
+    # total, all bite-proven via `--mutate`), so they are already hard-enforced
+    # by the "claiming right now" branch. They are listed here as well because
+    # that branch is derived from live YAML: deleting a row's `negatives:` key
+    # would silently drop it back to DEBT, which is exactly the dodge this
+    # allow-list exists to close.
+    "market-context-rubric",
+    "roi-hypothesis-rubric",
+    "discovery-evidence-rubric",
+    "capability-maturity-rubric",
+    "roadmap-rubric",
+    "narrative-arc-rubric",
+    "journey-map-rubric",
+    "benchmark-shortlist-rubric",
+    "usecase-design-rubric",
+    "workshop-prep-rubric",
+    "workshop-synthesis-rubric",
 })
+
+# --- #201: the rubric_calibration tier ----------------------------------------
+CALIBRATION_TIER = "rubric_calibration"
+RETIRED_REDIRECT_EVALUATOR = "rubrics.component.moved_to_rubric_calibration"
 MUTATIONS_ENFORCED_FOR_ALL_ROWS = False
 
 
@@ -251,6 +273,139 @@ def check_mutation_coverage(name: str, spec: dict, errors: list[str],
                 "flip MUTATIONS_ENFORCED_FOR_ALL_ROWS above once every row is covered.")
     if not row_debt["missing"]:
         del mutation_debt_rows[name]
+
+
+def _agent_names() -> set[str]:
+    """Every live agent name (`.claude/agents/<name>.md`, excluding deprecated/)."""
+    d = ROOT / ".claude" / "agents"
+    if not d.is_dir():
+        return set()
+    return {p.stem for p in d.glob("*.md")}
+
+
+def _evaluator_module_exists(dotted: str) -> bool:
+    """True if `rubrics.x.y` corresponds to a file under evals/. A file check,
+    not an import — this preflight must stay dependency-free and side-effect-free."""
+    rel = Path(*dotted.split("."))
+    return (HERE / rel).with_suffix(".py").is_file() or (HERE / rel / "__init__.py").is_file()
+
+
+def check_rubric_calibration(reg: dict, errors: list[str]) -> None:
+    """#201 — the claim boundary of the `rubric_calibration:` tier, enforced.
+
+    These rows score a frozen synthetic prose golden with a deterministic
+    rubric. Filed under `components:` keyed by AGENT NAME they read as "this
+    gates that agent", which is false: replacing the whole
+    `market-context-researcher` prompt with one line of garbage left its gate at
+    1.000 PASS. The file was never the problem — the CLAIM attached to it was.
+    So the tier asserts its own boundary rather than relying on a comment:
+
+      * keyed by RUBRIC, never by an agent name;
+      * `tier: rubric_calibration` stated on the row, so a passing run can be
+        read for what it is;
+      * `covers_agent:` names a real agent BUT is INERT — it must not be
+        reachable as a gate (absent from `components:`, or present only as a
+        `retired: true` redirect). Nothing in the runner, the mutation harness or
+        this preflight reads it as a verification claim, and this assertion is
+        what keeps that true as the registry changes;
+      * `negatives:` is a MAPPING of per-check fixture mutations (design D3), not
+        the legacy whole-artifact LIST — a list only has to break a fifth of the
+        checks at threshold 0.80, so an individually inert check still hides;
+      * the row is ALIASED into `components:` under the same key, because that is
+        what makes `--component`/`--mutate` dispatch reach it today (see the
+        dispatch note in registry.yaml). An un-aliased row would be unrunnable —
+        i.e. a gate nobody can run, which reads as "nothing failed".
+    """
+    rows = reg.get(CALIBRATION_TIER) or {}
+    if not rows:
+        return
+    agents = _agent_names()
+    components = reg.get("components") or {}
+    for name, spec in rows.items():
+        where = f"{CALIBRATION_TIER}.{name}"
+        if not isinstance(spec, dict):
+            errors.append(f"{where}: row must be a mapping")
+            continue
+        if name in agents:
+            errors.append(
+                f"{where}: a {CALIBRATION_TIER} row must NOT be keyed by an agent name. "
+                f"`{name}` is a live agent (.claude/agents/{name}.md), and an agent-keyed row "
+                f"is exactly the misreading this tier exists to remove — it scores a frozen "
+                f"golden, not that agent. Key it by the RUBRIC (e.g. `{name}-rubric`).")
+        if spec.get("tier") != CALIBRATION_TIER:
+            errors.append(
+                f"{where}: missing `tier: {CALIBRATION_TIER}`. A passing row has to state its "
+                f"tier or a 1.000 gets read as 'the agent is verified'.")
+        covers = spec.get("covers_agent")
+        if not covers:
+            errors.append(f"{where}: no `covers_agent:` — state which agent's output shape this "
+                          f"rubric was calibrated on (documentation only).")
+        elif agents and covers not in agents:
+            errors.append(f"{where}.covers_agent: `{covers}` is not a live agent "
+                          f"(.claude/agents/{covers}.md does not exist).")
+        elif covers in components and not components[covers].get("retired"):
+            errors.append(
+                f"{where}.covers_agent: `{covers}` also names a LIVE gating row in "
+                f"`components:`. `covers_agent:` is inert documentation, never a verification "
+                f"claim — `--component {covers}` must not resolve to a gate. Retire that row "
+                f"(`retired: true` + `moved_to:`) or rename it.")
+        evaluator = spec.get("evaluator")
+        if not evaluator:
+            errors.append(
+                f"{where}: no `evaluator:`. The runner's default is "
+                f"`rubrics.component.<row name with - as _>`, which does not exist for a "
+                f"rubric-keyed row — declare it explicitly.")
+        elif not _evaluator_module_exists(str(evaluator)):
+            errors.append(f"{where}.evaluator: `{evaluator}` has no module under evals/.")
+        negatives = spec.get("negatives")
+        if negatives is None:
+            errors.append(f"{where}: no `negatives:` — every check in this tier needs a per-check "
+                          f"fixture mutation (design D3).")
+        elif not isinstance(negatives, dict):
+            errors.append(
+                f"{where}.negatives: must be a MAPPING of check -> fixture mutation "
+                f"(`{{check: {{strip: <regex>}}}}`), not the legacy whole-artifact list. A list "
+                f"is ignored by mutations.mutations_from_spec and proves nothing per-check.")
+        if components.get(name) is not spec:
+            errors.append(
+                f"{where}: not aliased into `components:` under the same key, so "
+                f"`--component {name}` / `--mutate {name}` cannot reach it. Add "
+                f"`{name}: *<anchor>` to the dispatch shim block in `components:` (see the "
+                f"DISPATCH note in registry.yaml).")
+
+
+def check_retired_redirect_rows(reg: dict, errors: list[str]) -> None:
+    """#201 — a `retired: true` row is a REDIRECT, and must stay one.
+
+    The eleven agent names that used to key a gating row keep a stub in
+    `components:` so `--component <agent>` prints the mapping and the
+    distinction instead of a bare KeyError, and so evals.yml's changed-file
+    derive step can skip them by flag rather than a hand-kept path list. The
+    stub must never grow back into something that can go green: no `code:`, no
+    `input:`, no `negatives:`, and the redirect evaluator, which always
+    hard-fails.
+    """
+    calibration = reg.get(CALIBRATION_TIER) or {}
+    for name, spec in (reg.get("components") or {}).items():
+        if not isinstance(spec, dict) or not spec.get("retired"):
+            continue
+        where = f"components.{name}"
+        for forbidden in ("code", "input", "negatives", "mutations", "golden_engagement"):
+            if forbidden in spec:
+                errors.append(
+                    f"{where}: a `retired: true` redirect row must not declare `{forbidden}:` — "
+                    f"it is a signpost, not a gate. Anything scoreable here re-creates the "
+                    f"agent-named row #201 removed.")
+        if spec.get("evaluator") != RETIRED_REDIRECT_EVALUATOR:
+            errors.append(f"{where}.evaluator: a retired redirect row must use "
+                          f"`{RETIRED_REDIRECT_EVALUATOR}` (got {spec.get('evaluator')!r}).")
+        moved_to = spec.get("moved_to")
+        if not moved_to:
+            errors.append(f"{where}: no `moved_to:` — a redirect that names no destination is "
+                          f"just a dead end.")
+        elif moved_to not in calibration:
+            errors.append(f"{where}.moved_to: `{moved_to}` is not a row in "
+                          f"`{CALIBRATION_TIER}:`.")
 
 
 # --- #188: the retired altitude name is now a HARD ERROR ---------------------
@@ -550,6 +705,10 @@ def main(argv: list[str]) -> int:
                           f"a row must gate on at least one check")
         # #186: every declared `code:` check needs a mutation proof, or staged DEBT.
         check_mutation_coverage(name, spec, errors, mutation_debt_rows)
+
+    # --- #201: the rubric_calibration tier's own claim boundary ----------------
+    check_rubric_calibration(reg, errors)
+    check_retired_redirect_rows(reg, errors)
 
     # --- deliverable-structural -----------------------------------------------
     ds = reg.get("deliverable_structural") or {}
