@@ -12,6 +12,25 @@ Every check maps to a documented, recurring defect:
 
 The allowed palette is loaded LIVE from presentations/frontline-2026/
 design-tokens.json so it never drifts from the source of truth.
+
+Calibration (reproduced at $0, no LLM/API key involved — this module is pure
+code): `python3 evals/run_experiment.py --deliverable deck --negatives`
+  golden   evals/goldens/deck_valid_min.html            -> 1.000
+  negative evals/goldens/negatives/deck_offpalette.html -> 0.364  HARD-FAIL
+0.364 is this module's 7-check mean on the negative fixture:
+  (0 + 0.90 + 0 + 0 + 0.80 + 0 + 0.85) / 7 = 0.3642857...
+  no_deprecated_hexes=0.00 (HARD-FAIL), palette_conformance=0.90,
+  no_gradient_text=0.00 (HARD-FAIL), self_contained_no_cdn=0.00 (HARD-FAIL),
+  no_border_left_ribbons=0.80, libre_franklin_font=0.00,
+  max_4_points_per_slide=0.85
+These are the only deck-calibration figures that have ever existed in-tree.
+An earlier record (`.prd/backlog.md` :16 / solution-design-v7 :16) attributed
+a golden/negative pair with this same 0.364 to the separate (now-deleted)
+`visual_render.py` vision-judge module and claimed it was unreproducible
+without ANTHROPIC_API_KEY. That was wrong on both counts: 0.364 only ever
+came from the 7-check mean above, which only this code rubric produces (a
+vision judge returns one raw float, not a 7-check mean), and it reproduces
+here for free. See `.prd/backlog.md` :16 for the corrected account.
 """
 from __future__ import annotations
 
