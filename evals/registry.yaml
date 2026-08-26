@@ -56,10 +56,26 @@ deliverables:
       - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_report.md
 
 # Component (unit) altitude — score an agent's direct output on a fixed input.
-# code: objective Python checks. judge: LLM-as-judge rubrics (semantic).
+#
+# Two declaration keys, two different contracts (#182, D5 — "declared means
+# required"):
+#   code:         GATES. Deterministic Python checks that
+#                 `run_experiment.py --component <name>` actually executes on
+#                 every run; `declared_checks_all_executed` asserts every name
+#                 listed here produced a CheckResult, or the run fails naming it.
+#   path1_judge:  Does NOT gate. Semantic LLM-as-judge checks that apply only
+#                 when the component is regenerated via path-1
+#                 (evals/path1.py --agent <name>, #204) — the component gate's
+#                 thin adapters (rubrics/component/<name>.py) call only
+#                 specifics._<fn> and never reach these, by design (a metered
+#                 judge must never sit on a gating path — CI stays key-free).
+# A row may still legitimately declare a gating `judge:` (none do post-migration,
+# but the key remains meaningful) — if it does, that name is asserted executed
+# too, exactly like `code:`.
+#
 # All `code` checks below are implemented in rubrics.component.specifics (which
 # runs on top of the rubrics.component.governance baseline that every agent
-# inherits); `judge` checks are the semantic LLM rubrics in rubrics.judge.
+# inherits); `path1_judge` checks are the semantic LLM rubrics in rubrics.judge.
 components:
   market-context-researcher:
     altitude: component
@@ -67,7 +83,7 @@ components:
     # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
     input: evals/goldens/market_context_golden.md   # scores specifics._market_context via rubrics.component.market_context_researcher
     code: [annual_report_attempted, module1_metrics_present, competitor_benchmark_section]   # incl. the documented miss
-    judge: [sources_credible_not_hallucinated]
+    path1_judge: [sources_credible_not_hallucinated]
 
   roi-financial-modeler:
     altitude: component
@@ -85,7 +101,7 @@ components:
     code: [three_scenarios, npv_payback_present, assumptions_register_present, sensitivity_analysis_present,
            basic_information_has_sources_list, basic_fields_have_source_and_confidence, operating_costs_emitted_as_formula,
            backbase_impact_within_cap, overcap_negative_gate_witness]
-    judge: [conservative_bias, topdown_bottomup_correlation]
+    path1_judge: [conservative_bias, topdown_bottomup_correlation]
     # #104 parity case (standalone /build-roi + /generate-roi-excel now run the
     # same artifact_boundary.py cap_roi_config gate the pipeline runs, #102):
     #   - goldens: roi_config_provenance.json above (the wired `input:`) is
@@ -126,7 +142,7 @@ components:
     # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
     input: evals/goldens/roi_hypothesis_golden.md   # scores specifics._roi_hypothesis via rubrics.component.roi_hypothesis_builder
     code: [lever_ids_present, four_link_chain_present, problem_statement_present]
-    judge: [levers_grounded_in_evidence]
+    path1_judge: [levers_grounded_in_evidence]
 
   discovery-transcript-interpreter:
     altitude: component
@@ -134,7 +150,7 @@ components:
     # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
     input: evals/goldens/discovery_evidence_register_golden.md   # scores specifics._discovery via rubrics.component.discovery_transcript_interpreter
     code: [evidence_ids_wellformed, evidence_register_present, lifecycle_tags_present, pain_points_present]
-    judge: [faithful_extraction_no_invention]
+    path1_judge: [faithful_extraction_no_invention]
 
   capability-assessment:
     altitude: component
@@ -142,7 +158,7 @@ components:
     # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
     input: evals/goldens/capability_assessment_golden.md   # scores specifics._capability via rubrics.component.capability_assessment
     code: [maturity_scale_0_4, executive_summary_present, front_middle_back_layers, unconsidered_needs_present, scores_have_evidence_refs]
-    judge: [scores_justified_by_evidence]
+    path1_judge: [scores_justified_by_evidence]
 
   roadmap-prioritization:
     altitude: component
@@ -150,7 +166,7 @@ components:
     # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
     input: evals/goldens/roadmap_golden.md   # scores specifics._roadmap via rubrics.component.roadmap_prioritization
     code: [phases_present, initiatives_sequenced, dependencies_present, gates_or_milestones_present]
-    judge: [initiatives_traced_to_gaps_and_levers]
+    path1_judge: [initiatives_traced_to_gaps_and_levers]
 
   narrative-assembler:
     altitude: component
@@ -158,7 +174,7 @@ components:
     # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
     input: evals/goldens/narrative_golden.md   # scores specifics._narrative via rubrics.component.narrative_assembler
     code: [seven_acts_present, executive_summary_present, transformation_arc_present]
-    judge: [transformation_arc_threaded_7_acts]   # the documented assembler weakness
+    path1_judge: [transformation_arc_threaded_7_acts]   # the documented assembler weakness
 
   journey-builder:
     altitude: component
@@ -166,7 +182,7 @@ components:
     # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
     input: evals/goldens/journey_maps_golden.md   # scores specifics._journey via rubrics.component.journey_builder
     code: [lifecycle_stages_present, friction_or_leakage_present, as_is_and_future_state]
-    judge: [value_leakage_quantified]
+    path1_judge: [value_leakage_quantified]
 
   benchmark-librarian:
     altitude: component
@@ -174,7 +190,7 @@ components:
     # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
     input: evals/goldens/benchmark_golden.md   # scores specifics._benchmark via rubrics.component.benchmark_librarian
     code: [confidence_levels_present, source_attribution_present, no_synthetic_citations]
-    judge: [benchmarks_defensible_not_hallucinated]
+    path1_judge: [benchmarks_defensible_not_hallucinated]
 
   usecase-designer:
     altitude: component
@@ -182,7 +198,7 @@ components:
     # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
     input: evals/goldens/usecase_golden.md   # scores specifics._usecase via rubrics.component.usecase_designer
     code: [usecase_ids_present, product_directory_mapping, ootb_config_custom_classification, priority_tiers_present]
-    judge: [usecases_grounded_in_product_directory]
+    path1_judge: [usecases_grounded_in_product_directory]
 
   workshop-preparation:
     altitude: component
@@ -190,7 +206,7 @@ components:
     # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
     input: evals/goldens/workshop_prep_golden.md   # scores specifics._workshop_prep via rubrics.component.workshop_preparation
     code: [hypotheses_present, validation_questions_present, checkpoint_present]
-    judge: [hypotheses_specific_and_quantified]
+    path1_judge: [hypotheses_specific_and_quantified]
 
   # knowledge-harvester (#130) — pins the shared synthetic-engagement gate
   # (scripts.artifact_boundary.synthetic_policy) and the quarantine-mode
@@ -212,7 +228,7 @@ components:
     # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
     input: evals/goldens/ignite_synthesis_golden.md   # scores specifics._ignite_synth via rubrics.component.ignite_workshop_synthesizer
     code: [hypothesis_validation_statuses, usecase_candidates_present, usecase_classification_present]
-    judge: [synthesis_faithful_to_workshops]
+    path1_judge: [synthesis_faithful_to_workshops]
 
   # mcp-query-guard (PR #171 hardening) — regression coverage for the
   # .claude/hooks/mcp-query-guard.py fail-closed outbound-query gate

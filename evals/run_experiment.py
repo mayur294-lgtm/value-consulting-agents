@@ -117,8 +117,42 @@ def _maybe_log_langfuse(name: str, result: RubricResult, threshold: float) -> No
         print(f"  (Langfuse logging skipped: {e})")
 
 
+def _assert_declared_checks_executed(name: str, spec: dict, res: RubricResult) -> bool:
+    """Declared means required (#182, D5). The GATING set for a registry row is
+    its `code:` list plus any `judge:` names that remain declared — NOT
+    `path1_judge:`, which is intentionally non-gating (runs only under path-1
+    regeneration, #204; see registry.yaml's `components:` header comment).
+
+    "Executed" means a CheckResult with that exact name is present in the
+    RubricResult, regardless of its pass/skip state: a judge that ran and hit
+    a live error (e.g. a 401) still produced a CheckResult and counts as
+    executed — a check whose adapter never called it produces no CheckResult
+    at all and counts as missing. Judge check names carry the `judge:` prefix
+    the judge harness stamps on them (rubrics/judge/judge.py).
+
+    A check the rubric RETURNS that the registry does not declare is legal
+    (additive checks) and is reported as `[undeclared]`, never failed.
+    """
+    code_names = set(spec.get("code") or [])
+    gating_judge_names = set(spec.get("judge") or [])   # path1_judge: is excluded on purpose
+    declared = code_names | {f"judge:{j}" for j in gating_judge_names}
+    if not declared:
+        return True
+    executed = {c.name for c in res.checks}
+    for extra in sorted(executed - declared):
+        print(f"  [undeclared] {extra}")
+    ok = True
+    for missing in sorted(declared - executed):
+        print(f"\n[FAIL] Row `{name}` declares `{missing}` but it did not execute. "
+              f"Declared means required — a check that silently doesn't run is "
+              f"indistinguishable from one that passes.")
+        ok = False
+    return ok
+
+
 def _evaluate_targets(name: str, evaluator: str, altitude: str, threshold: float,
-                      targets: list[str], expect_pass: bool, check_exists: bool = True) -> bool:
+                      targets: list[str], expect_pass: bool, check_exists: bool = True,
+                      spec: dict | None = None) -> bool:
     ok = True
     for tgt in targets:
         if check_exists and not _resolve(tgt).exists():
@@ -129,6 +163,9 @@ def _evaluate_targets(name: str, evaluator: str, altitude: str, threshold: float
         res = _run_evaluator(evaluator, altitude, tgt)
         print("\n" + res.report(threshold))
         _maybe_log_langfuse(name, res, threshold)
+        if spec is not None and not _assert_declared_checks_executed(name, spec, res):
+            ok = False
+            continue
         passed = res.passed(threshold)
         # For negatives we WANT a fail; success of the gate = it correctly failed.
         ok = ok and (passed if expect_pass else (not passed))
@@ -171,11 +208,12 @@ def main() -> int:
         spec = reg["deliverables"][args.deliverable]
         thr = args.threshold if args.threshold is not None else spec["threshold"]
         targets = [args.target] if args.target else list(spec.get("goldens", []))
-        ok = _evaluate_targets(args.deliverable, spec["evaluator"], "deliverable", thr, targets, expect_pass=True)
+        ok = _evaluate_targets(args.deliverable, spec["evaluator"], "deliverable", thr, targets,
+                               expect_pass=True, spec=spec)
         if args.negatives and not args.target:
             print("\n=== negatives (must FAIL to pass the gate) ===")
             ok = _evaluate_targets(args.deliverable, spec["evaluator"], "deliverable", thr,
-                                   list(spec.get("negatives", [])), expect_pass=False) and ok
+                                   list(spec.get("negatives", [])), expect_pass=False, spec=spec) and ok
         return 0 if ok else 1
 
     # --- component -------------------------------------------------------------
@@ -184,11 +222,11 @@ def main() -> int:
         thr = args.threshold if args.threshold is not None else spec["threshold"]
         evaluator = spec.get("evaluator", f"rubrics.component.{args.component.replace('-', '_')}")
         tgt = args.target or spec.get("input", spec.get("golden_engagement", ""))
-        ok = _evaluate_targets(args.component, evaluator, "unit", thr, [tgt], expect_pass=True)
+        ok = _evaluate_targets(args.component, evaluator, "unit", thr, [tgt], expect_pass=True, spec=spec)
         if args.negatives and not args.target:
             print("\n=== negatives (must FAIL to pass the gate) ===")
             ok = _evaluate_targets(args.component, evaluator, "unit", thr,
-                                   list(spec.get("negatives", [])), expect_pass=False) and ok
+                                   list(spec.get("negatives", [])), expect_pass=False, spec=spec) and ok
         return 0 if ok else 1
 
     ap.print_help()

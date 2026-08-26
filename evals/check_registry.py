@@ -104,6 +104,15 @@ def main(argv: list[str]) -> int:
             check_gate(spec["input"], f"components.{name}.input")
         if spec.get("golden_engagement"):
             check_engagement(spec["golden_engagement"], f"components.{name}.golden_engagement")
+        # #182 D5: `code:` is the GATING declaration — a row that declares the key
+        # but with nothing in it has nothing for declared_checks_all_executed to
+        # require, which is a mis-wired row, not a legitimately empty one. Fail
+        # this at preflight, not scoring (an empty declared set silently no-ops
+        # in run_experiment.py's assertion — this catches the authoring mistake
+        # before that vacuous pass can happen).
+        if "code" in spec and not spec.get("code"):
+            errors.append(f"components.{name}.code: declared as an empty list — "
+                          f"a row must gate on at least one check")
 
     # --- pipeline -------------------------------------------------------------
     pl = reg.get("pipeline") or {}
