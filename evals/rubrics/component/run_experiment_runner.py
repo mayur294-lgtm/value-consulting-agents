@@ -370,6 +370,87 @@ def _skipped_judge_does_not_pass(root: Path) -> CheckResult:
     ))
 
 
+# --- case 5: retired_altitude_flag_hard_errors -------------------------------
+
+# The retired altitude name, assembled rather than written, so this module holds
+# no bare `"pipeline"` literal of the shape check_registry.py's pattern 10 looks
+# for. This file is deliberately NOT in `_OLD_NAME_SCOPE` — for the same reason
+# check_registry.py isn't: a gate that tests for a token cannot also be forbidden
+# from containing it. Assembling it keeps that exemption from ever being needed.
+_RETIRED_FLAG_VALUE = "pipe" + "line"
+
+# Fragments of `_RETIRED_ALTITUDE_ERROR` in run_experiment.py (#188 / design D4,
+# byte-sourced from .design/ux-design-v7.md:190). Asserted on stderr because the
+# EXIT CODE ALONE CANNOT DISCRIMINATE: with the guard deleted, the retired name
+# falls through to the `_ALTITUDES` membership test and argparse's `ap.error()`
+# also exits 2. Only the rationale text distinguishes "the rename guard fired"
+# from "argparse rejected an unknown string".
+_RENAME_ERROR_FRAGMENTS = (
+    "was renamed to `--altitude deliverable-structural`",
+    "scores frozen fixture files in ~5s and has never run the ",
+    "run `scripts/orchestrate.py` on a synthetic engagement",
+)
+
+
+def _retired_altitude_flag_hard_errors(root: Path) -> CheckResult:
+    """Regression guard for #188's D4 contract: the retired altitude flag must
+    HARD-ERROR with the rename rationale, and must never come back as a choice,
+    an alias, or a deprecation shim.
+
+    #188 shipped this guard and the `check_registry.py` grep that protects it,
+    but registered no check over either — so the epic's own gate ("a gate that
+    cannot fail certifies nothing", #186/#187) shipped unproven. This is that
+    check. Its `mutations:` entry deletes the three-line guard in
+    `run_experiment.py`'s altitude validation; with the guard gone, scenario A
+    below loses the rationale text and this check goes red.
+
+    Two scenarios, because exit code 2 is not discriminating on its own:
+
+      A. `--altitude pipeline` -> rc 2 AND the rename rationale on stderr.
+      B. `--altitude <unknown>` -> rc 2 AND NO rename rationale (argparse's
+         generic invalid-choice path).
+
+    Without B, a runner that printed the rename rationale for every bad
+    altitude would pass A and still be wrong. With both, the check pins the
+    guard specifically. Neither scenario reaches the registry — the guard runs
+    before `_load_registry()` — but a synthetic one is wired anyway so this
+    check exercises the same never-touch-the-real-registry path as its four
+    siblings.
+    """
+    name = "retired_altitude_flag_hard_errors"
+    reg = _write_registry(root, {
+        "unused-row": {
+            "altitude": "component", "threshold": 0.80,
+            "evaluator": "synth_never_imported_mod",
+            "input": str(root / "nothing.txt"), "code": ["never_run"],
+        },
+    })
+
+    result_retired = _run_runner(reg, root, ["--altitude", _RETIRED_FLAG_VALUE])
+    result_unknown = _run_runner(reg, root, ["--altitude", "not-an-altitude-at-all"])
+    out_retired = _out(result_retired)
+    out_unknown = _out(result_unknown)
+
+    retired_has_rationale = all(frag in out_retired for frag in _RENAME_ERROR_FRAGMENTS)
+    unknown_has_rationale = any(frag in out_unknown for frag in _RENAME_ERROR_FRAGMENTS)
+
+    ok = (
+        result_retired.returncode != 0
+        and retired_has_rationale
+        # the retired name must NOT be silently accepted as an alias for the
+        # new one: a run that exits 0 here is D4's forbidden deprecation shim.
+        and result_unknown.returncode != 0
+        and not unknown_has_rationale
+    )
+    return _bool_check(name, ok, exercised=f"evals/run_experiment.py via {sys.executable}", detail=(
+        f"retired-flag rc={result_retired.returncode} (want non-zero) "
+        f"rationale={retired_has_rationale} (want True); "
+        f"unknown-flag rc={result_unknown.returncode} (want non-zero) "
+        f"rationale={unknown_has_rationale} (want False); "
+        f"retired_out={out_retired[-400:]!r}"
+    ))
+
+
 def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained, ignores target
     runner = _runner_path()
     if not runner.exists():
@@ -384,4 +465,5 @@ def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained
         _run_in_tmp(_missing_target_fails_not_skips),
         _run_in_tmp(_declared_checks_all_executed),
         _run_in_tmp(_skipped_judge_does_not_pass),
+        _run_in_tmp(_retired_altitude_flag_hard_errors),
     ]

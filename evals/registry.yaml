@@ -342,7 +342,8 @@ components:
     altitude: component
     threshold: 1.00
     code: [component_negatives_honoured, missing_target_fails_not_skips,
-           declared_checks_all_executed, skipped_judge_does_not_pass]
+           declared_checks_all_executed, skipped_judge_does_not_pass,
+           retired_altitude_flag_hard_errors]
     # `mutations:` (#185) — the worked example for the --mutate runner mode.
     # These four were bite-proven by hand in #183 (see that PR's closing
     # comment and the PR #206 body for the transcript this reproduces
@@ -365,6 +366,17 @@ components:
         file: evals/rubrics/base.py
         find: "mark = \"SKIP*\""
         replace: "mark = \"SKIP\""
+      # #188 correction pass. #188 shipped the retired-altitude guard and the
+      # grep that protects it with NO check over either — the epic's own gate,
+      # unproven, in the epic that exists to stop exactly that. This mutation
+      # DELETES the three-line guard in main()'s altitude validation. The
+      # deletion is invisible to exit code (the retired name then falls through
+      # to the `_ALTITUDES` membership test and argparse's ap.error() also exits
+      # 2), which is why the check asserts on the rename rationale text.
+      retired_altitude_flag_hard_errors:
+        file: evals/run_experiment.py
+        find: "    if args.altitude == _RETIRED_ALTITUDE:\n        print(_RETIRED_ALTITUDE_ERROR, file=sys.stderr)\n        return 2\n"
+        replace: ""
 
   # mutation-harness (#187, closing PR 2 of the eval-gate-v7 epic) — the
   # SECOND self-gate: run-experiment-runner (above) proves the runner that
