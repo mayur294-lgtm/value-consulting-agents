@@ -269,7 +269,8 @@ class Mutation:
                     f"does not compile: {exc}") from exc
 
     def describe(self) -> str:
-        return (f"{self.file}: {_clip(self.find)!r} -> {_clip(self.replace)!r}"
+        find_disp, replace_disp, note = _clip_diff_pair(self.find, self.replace)
+        return (f"{self.file}: {find_disp!r} -> {replace_disp!r}{note}"
                 f"{' [regex]' if self.regex else ''} ({self.kind})")
 
     @classmethod
@@ -765,6 +766,55 @@ def _prove_one(m: Mutation, root: Path, evaluator: str, target: str,
         f"resolves its subject outside `repo_root()` reads the REAL file, not the shadow).", m)
 
 
-def _clip(s: str, n: int = 60) -> str:
-    s = s.replace("\n", "\\n")
-    return s if len(s) <= n else s[: n - 1] + "…"
+def _common_prefix_len(a: str, b: str) -> int:
+    n = min(len(a), len(b))
+    i = 0
+    while i < n and a[i] == b[i]:
+        i += 1
+    return i
+
+
+def _common_suffix_len(a: str, b: str, prefix_len: int, limit: int) -> int:
+    """Chars `a` and `b` share at the end, without re-covering the prefix."""
+    i = 0
+    while i < limit and a[len(a) - 1 - i] == b[len(b) - 1 - i]:
+        i += 1
+    return i
+
+
+def _clip_window(s: str, start: int, end: int, n: int = 60) -> str:
+    """Render `s[start:end]` (capped to `n` chars), with `…` where content was elided."""
+    end = min(end, start + n, len(s))
+    start = min(start, end)
+    piece = s[start:end].replace("\n", "\\n")
+    return ("…" if start > 0 else "") + piece + ("…" if end < len(s) else "")
+
+
+def _clip_diff_pair(find: str, replace: str, n: int = 60, context: int = 12) -> tuple[str, str, str]:
+    """Render `find`/`replace` so their divergence is visible, not just their first N chars.
+
+    A naive clip that truncates each string independently from index 0 — when
+    `replace` is `find` plus/minus a suffix, or the two only diverge past
+    index `n`, both clipped strings come out byte-identical and the report
+    reads as "X -> X". This elides the common PREFIX (so both windows open at
+    the point they actually diverge, with a little leading context) and, when
+    cheap, the common SUFFIX too (so a huge shared tail doesn't pad the window
+    with non-information). Returns (find_display, replace_display, note) —
+    `note` is a trailing annotation for the one degenerate case worth calling
+    out explicitly.
+    """
+    if find == replace:
+        shown = _clip_window(find, 0, len(find), n)
+        return shown, shown, " (find and replace are identical — malformed mutation)"
+
+    prefix_len = _common_prefix_len(find, replace)
+    remaining = min(len(find), len(replace)) - prefix_len
+    suffix_len = _common_suffix_len(find, replace, prefix_len, remaining) if remaining > 0 else 0
+
+    start = max(0, prefix_len - context)
+    find_end = min(len(find), len(find) - suffix_len + context)
+    replace_end = min(len(replace), len(replace) - suffix_len + context)
+
+    find_disp = _clip_window(find, start, find_end, n)
+    replace_disp = _clip_window(replace, start, replace_end, n)
+    return find_disp, replace_disp, ""
