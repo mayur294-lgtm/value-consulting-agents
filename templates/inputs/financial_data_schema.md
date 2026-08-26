@@ -205,13 +205,13 @@ Follow this decision tree:
 
 **Acceptable:**
 - Aggregated metrics (total cost, average cost)
-- Anonymized data
+- Anonymized data — anonymized via the shared tool (`scripts/anonymize_transcript.py`), not a bespoke scheme; see `.claude/agents/discovery-transcript-interpreter.md` PII Boundary
 - Public financial data
 - Budget ranges
 
 **Requires Special Handling:**
 - Individual salaries (use aggregated loaded cost)
-- Customer PII (aggregate only)
+- Customer PII (aggregate only — never include individual customer records; if a document under discussion must be referenced at the individual level, anonymize it with the same shared tool first)
 - Proprietary financials (NDA required)
 - Competitive intelligence
 
