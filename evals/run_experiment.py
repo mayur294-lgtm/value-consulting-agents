@@ -122,7 +122,9 @@ def _evaluate_targets(name: str, evaluator: str, altitude: str, threshold: float
     ok = True
     for tgt in targets:
         if check_exists and not _resolve(tgt).exists():
-            print(f"\n[SKIP] {tgt} (not found)")
+            print(f"\n[FAIL] Target `{tgt}` for row `{name}` does not exist. "
+                  f"Failing rather than skipping — a skipped target previously left the verdict at PASS.")
+            ok = False
             continue
         res = _run_evaluator(evaluator, altitude, tgt)
         print("\n" + res.report(threshold))

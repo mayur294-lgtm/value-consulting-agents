@@ -63,7 +63,7 @@ def judge(name: str, target_text: str, *, snapshot: str | None = None,
         return CheckResult(name=f"judge:{name}", score=0.0, passed=False, skipped=True,
                            detail=f"no judge prompt at prompts/{name}.md")
     if not _available():
-        return CheckResult(name=f"judge:{name}", score=0.0, passed=True, skipped=True,
+        return CheckResult(name=f"judge:{name}", score=0.0, passed=False, skipped=True,
                            detail="judge skipped (no ANTHROPIC_API_KEY / SDK) — runs in keyed mode")
 
     import anthropic
@@ -94,7 +94,7 @@ def judge(name: str, target_text: str, *, snapshot: str | None = None,
                            hard_fail=(critical and not passed),
                            detail=str(data.get("reason", ""))[:300])
     except Exception as e:  # never let a judge error crash the gate
-        return CheckResult(name=f"judge:{name}", score=0.0, passed=True, skipped=True,
+        return CheckResult(name=f"judge:{name}", score=0.0, passed=False, skipped=True,
                            detail=f"judge error (skipped): {e}")
 
 
