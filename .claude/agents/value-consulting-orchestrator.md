@@ -123,13 +123,13 @@ Read `engagements/[client]/CLIENT_PROFILE.md` and update:
 
 ### 4b. Knowledge Harvest
 
-Extract anonymized learnings from outputs → write to `knowledge/learnings/`:
+Launch the `knowledge-harvester` agent (Task tool) to extract learnings from outputs → written to `knowledge/learnings/`:
 - Benchmarks → `knowledge/learnings/benchmarks/{domain}_{region}_{YYYY}.md`
 - Pain Points → `knowledge/learnings/pain_points/{domain}_patterns.md`
 - Capability Maturity → `knowledge/learnings/capability_frameworks/{domain}_maturity.md`
 - ROI Patterns → `knowledge/learnings/roi_models/{domain}_{lever_type}.md`
 
-**Anonymization:** Replace client name with `[Client-{domain}-{region}-{YYYY}]`. Strip stakeholder names.
+Anonymization is the harvester's own job, not yours — it runs the shared tool (`scripts/anonymize_transcript.py`) and applies the descriptive `[Client-{domain}-{region}-{YYYY}]` label; see `.claude/agents/knowledge-harvester.md` Core Rule 2 for the mechanism. Do not anonymize here yourself, and do not extract directly from outputs — delegate to the agent.
 
 Check `knowledge/learnings/EXTRACTION_REGISTRY.md` first — skip if already harvested.
 
