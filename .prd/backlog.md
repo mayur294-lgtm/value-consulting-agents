@@ -47,6 +47,28 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 
 - [done v6] ~~**Sequencing: #167 must land before or with #168.**~~ — DONE. #167 landed first and #168 built on it. **But this note's live-data claim was the exact inverse of the truth, and #168 measured it before writing anything.** It said wsfs was the risk and "the other six engagements have filled profiles". Measured on all seven live directories: **only `engagements/wsfs` has a CLIENT_PROFILE.md at all**, and even that one is unfilled (`- **Name:** [Full legal name]` → zero terms). Its WSFS/Wilmington terms come from `inputs/engagement_intake.md`, which travels *inside* the engagement and survives migration — so wsfs is the only one that loses nothing. **The other six have no deny-list source file whatsoever**: no profile, no ENGAGEMENT_CONTEXT.md, no intake. Their entire client deny-list is the directory slug, and a rename-only migration would have zeroed it for six of seven live engagements while reporting success. The fix: `migrate_engagement_ids.sh` resolves the deny-list before and after every move and refuses unless the after-set still *matches* everything the before-set did, with `identity.render_client_profile()` writing the client's identifier forms into a CLIENT_PROFILE.md inside the opaque directory. `denylist.py` is untouched — `drift_check.py` still passes, so D14's hook parity holds (from #166, resolved in #168)
 
+- [ ] **ACTION — run the live engagement migration.** #168 shipped the tooling but the seven live directories are still client-named: `bank_australia`, `bdo-apa`, `bdo-mh`, `hdfc`, `judo`, `peoples_first_bank`, `wsfs`. Until this runs, `compose_prompt` still renders the client's name into every agent invocation, which is the whole leak D6 exists to close. It was deliberately deferred, not forgotten — `engagements/` is gitignored, so there is no git history to fall back on and the consultant wanted to choose the moment.
+
+  It needs each client's REAL legal name, because a slug is not a name: `bdo_apa` yields no prose deny-list terms at all, and migration refuses rather than guessing (title-casing it to "Bdo Apa" would put a wrong term on the deny-list while looking like it had solved the problem). Write them into a names file and rehearse first:
+
+  ```
+  # names.txt — slug=Client Name
+  bank_australia=Bank Australia
+  bdo-apa=<real name>
+  bdo-mh=<real name>
+  hdfc=<real name>
+  judo=<real name>
+  peoples_first_bank=<real name>
+  wsfs=<real name>
+  ```
+
+  ```
+  ./scripts/migrate_engagement_ids.sh --names-file names.txt          # dry run, changes nothing
+  ./scripts/migrate_engagement_ids.sh --names-file names.txt --apply  # prints the plan, then asks
+  ```
+
+  Take a copy of `engagements/` first. Paste the dry-run output into PR 4's description — build order #170 requires it. Afterwards, `./scripts/find_engagement.sh <client>` is how you reach any of them (from #168)
+
 - [ ] **Deny-list coverage is a MATCHING question, not a set-subset one — and the naive version of the check is wrong in both directions.** #168's first cut compared term strings and produced two false results at once: it reported `hdfc` as lost when `HDFC` covers it (the gate matches case-insensitively), and it would have accepted `Bank Australia` as covering `bankaustralia` in a variant where only the joined form mattered — the gate's alphanumeric boundaries mean the spaced form never fires on the concatenated one. `identity.uncovered()` now answers the real question by running the gate's own `_term_pattern` matcher. **Nothing in the eval suite would have caught either error** — the `pii-anonymizer` row scored 1.000 throughout. Worth a case that asserts on coverage rather than set membership (from #168)
 
 - [ ] **The concatenated slug form has no prose equivalent, and this is now load-bearing.** `denylist.extract_terms_from_slug` adds the joined form (`bank_australia` → `bankaustralia`) — the shape that appears in email domains, subdomains and handles — and *nothing* in the text-extraction path can produce it. Once the directory is an opaque ID there is no slug left to mine, so #168 writes those forms into CLIENT_PROFILE.md under `- **Client Name:**` (a label `denylist.LABEL_LINE_RE` actually matches) in an "Identifier Forms (deny-list)" section. It works and is verified, but it is a convention held together by a comment: delete that section and the gate silently weakens. Consider making it a first-class field the resolver looks for by name (from #168)
