@@ -40,6 +40,7 @@ Usage
 """
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -69,6 +70,24 @@ def _gitignored(path: Path) -> bool:
 
 
 def main(argv: list[str]) -> int:
+    # Self-gate escape-hatch guard (#183 follow-up). CORTEX_EVAL_REGISTRY exists
+    # solely so evals/rubrics/component/run_experiment_runner.py's own
+    # subprocess calls can point run_experiment.py at a synthetic registry.yaml
+    # it built in a tempdir — it must never be set on the top-level CI
+    # invocation of THIS preflight, or the registry actually gating CI would be
+    # silently swapped for something else. Checked first, before any other
+    # validation, so a mis-wired CI job fails loud instead of preflighting the
+    # wrong file.
+    if os.environ.get("CORTEX_EVAL_REGISTRY"):
+        print("Registry preflight — evals/registry.yaml")
+        print("\nERRORS (1) — a gate cannot run in CI:")
+        print("  ✗ CORTEX_EVAL_REGISTRY is set in the environment — refusing: "
+              "this override exists only for run_experiment_runner.py's own "
+              "internal subprocess calls and must never be set on the "
+              "top-level CI invocation.")
+        print("\nRESULT: FAIL")
+        return 1
+
     strict = "--strict" in argv
     reg = yaml.safe_load((HERE / "registry.yaml").read_text())
 

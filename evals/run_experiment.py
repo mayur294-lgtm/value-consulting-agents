@@ -61,7 +61,9 @@ def _load_registry() -> dict:
     # repo's real one. Unset (the default for every real caller) -> unchanged
     # behaviour: HERE / "registry.yaml". It only selects WHICH file is parsed —
     # it does not skip, weaken, or bypass any assertion below, so it cannot be
-    # used to soften the real gate.
+    # used to soften the real gate. Guarded on the top-level CI invocation by the
+    # "Registry preflight" step, which refuses if this var is set there — see
+    # evals/check_registry.py's CORTEX_EVAL_REGISTRY check in main().
     override = os.environ.get("CORTEX_EVAL_REGISTRY")
     path = Path(override) if override else (HERE / "registry.yaml")
     return yaml.safe_load(path.read_text())
