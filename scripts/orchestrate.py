@@ -25,6 +25,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -40,6 +41,13 @@ from pathlib import Path
 from anonymize_transcript import anonymize_transcript_file
 from artifact_boundary import cap_roi_config, deanonymize_dir, synthetic_policy, validate_outputs
 from typing import Optional
+
+# pii.identity and pii.denylist are STDLIB-ONLY by contract (see
+# scripts/pii/__init__.py's IMPORT CONTRACT) — importing them here does not
+# pull in Presidio or spaCy. anonymize_transcript.py already put scripts/ on
+# sys.path, so `pii` resolves regardless of how this file was reached.
+from pii import denylist as _denylist
+from pii import identity as _identity
 
 from claude_agent_sdk import (
     query,
@@ -60,6 +68,43 @@ AGENTS_DIR = REPO_ROOT / ".claude" / "agents"
 COMMANDS_DIR = REPO_ROOT / ".claude" / "commands"
 KNOWLEDGE_DIR = REPO_ROOT / "knowledge"
 
+# ─── Neutral workspace (#167 — solution-design-v6.md D6) ─────────────────────
+#
+# WHY EVERY AGENT NOW RUNS SOMEWHERE ELSE
+#   The engagement directory IS the client's identity (`engagements/hdfc/…`).
+#   `compose_prompt` renders `engagement_dir` / `outputs_dir` /
+#   `transcript_path` into the invocation prompt as VALUES (its own docstring
+#   says so), and `run_agent` sets `cwd` to that same client-named directory.
+#   So perfect content anonymisation was defeated by the path envelope on
+#   every single agent invocation. `pii.identity.materialise_workspace()`
+#   builds a directory in which every path segment is generated locally, and
+#   from #167 on that — not the engagement directory — is what agents see.
+#
+# WHY THE WORKSPACE LIVES INSIDE THE REPO, NOT IN /tmp
+#   identity.py defaults to the system temp directory. Every agent prompt
+#   also names REPO-RELATIVE knowledge files (`knowledge/standards/…`,
+#   `knowledge/domains/{domain}/…`) that carry no `{param}`, so they can only
+#   be reached relative to a cwd somewhere inside this repo. Today's cwd
+#   (`engagements/<client>/<engagement>`) is inside it; `/tmp/cortex-ws-XXXX`
+#   is not, and moving there would silently cut every agent off from its own
+#   knowledge pack. `.cortex-workspaces/` keeps the workspace at the same
+#   depth-below-repo-root as an engagement directory while contributing no
+#   client-derived path segment of its own. It is gitignored.
+#
+#   It deliberately does NOT live under `engagements/` — `denylist.py`
+#   treats every child of `engagements/` as a client directory and mines its
+#   name, so a workspace there would pollute the deny-list of every session.
+WORKSPACE_ROOT = REPO_ROOT / ".cortex-workspaces"
+
+# Written inside the REAL engagement directory (gitignored with the rest of
+# engagements/): the absolute path of the workspace this engagement's current
+# run is using, so `--resume-from` reattaches to it. See `_restore_workspace`
+# for why resume reattaches rather than re-materialising.
+WORKSPACE_POINTER = ".pipeline_workspace"
+
+# An opaque engagement ID as `pii.identity` mints it: secrets.token_hex(4).
+_OPAQUE_ID_RE = re.compile(r"^[0-9a-f]{8}$")
+
 # ─── Colors for terminal output ───────────────────────────────────────────────
 
 class C:
@@ -73,15 +118,195 @@ class C:
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
+# ─── Log redaction (#167) ────────────────────────────────────────────────────
+#
+# The pipeline's stdout is NOT a private channel. `orchestrate.py` is normally
+# launched with Bash from inside a Claude Code session, so every line printed
+# here is read back into a model's context; the journal, the telemetry
+# extractor and the consultant's scrollback all see it too. Repointing prompts
+# and `cwd` at a neutral workspace achieves nothing if the very next `log()`
+# call prints `engagements/hdfc/2026-02_retail_assessment`.
+#
+# So every line this module prints goes through `_redact` first. The terms are
+# the engagement's own deny-list (the same resolution the anonymiser uses) plus
+# the engagement/client directory paths themselves. This is a BACKSTOP, not the
+# control: the control is that no client-named path is constructed into a
+# prompt or a cwd in the first place. A backstop that fires means a real leak
+# was caught, so it is deliberately blunt — over-redacting a log line costs
+# nothing.
+# Two patterns, deliberately not one:
+#
+#   _CLIENT_RE — things that ARE the client's identity: the deny-list terms,
+#     plus the directory segment immediately below `engagements/` (which is the
+#     client directory today, and the opaque ID after #168). This is what the
+#     hard invocation assertion and the harvest-id check run against, because a
+#     match there means a real leak.
+#
+#   _REDACT_RE — the above PLUS the engagement's absolute paths and its
+#     remaining path segments (the `YYYY-MM_domain_type` slug). Blunter, and
+#     only ever used to scrub log output, where over-redacting costs nothing.
+#     Keeping the engagement slug OUT of _CLIENT_RE matters: it is not a client
+#     identifier, and folding it in made the harvest-id guard fire on every
+#     engagement and rename the knowledge files for no privacy benefit.
+_CLIENT_RE: Optional[re.Pattern] = None
+_REDACT_RE: Optional[re.Pattern] = None
+_REDACT_TERMS: list = []
+_MIN_REDACT_LEN = 3   # below this, a "term" matches half the alphabet
+
+
+def _compile_terms(terms) -> Optional[re.Pattern]:
+    """Longest-first alternation. Ordering is load-bearing: without it the term
+    `hdfc` consumes the leading segment of `/…/engagements/hdfc/2026-02_x` and
+    leaves the rest of the path exposed."""
+    kept = sorted((t for t in terms if t and len(t) >= _MIN_REDACT_LEN),
+                  key=len, reverse=True)
+    if not kept:
+        return None
+    return re.compile("|".join(re.escape(t) for t in kept), re.IGNORECASE)
+
+
+def _install_log_redactions(engagement_dir: Path, client_slug: Optional[str] = None):
+    """Build both patterns for this run. Call once, before anything that could
+    print an engagement path or compose a prompt.
+
+    Deny-list resolution can raise (denylist.py keeps fail-closed read
+    semantics on purpose). We do NOT let that abort the run here: the caller
+    that actually needs to fail closed is the anonymiser, which resolves its
+    own deny-list and will raise there. What must never happen is losing the
+    PATH redactions because the DOCUMENT scan failed — so those are installed
+    unconditionally and document-derived terms are added on top.
+    """
+    global _CLIENT_RE, _REDACT_RE, _REDACT_TERMS
+    engagement_dir = Path(engagement_dir)
+
+    client_terms = set()
+    candidate = _engagement_id_candidate(engagement_dir)
+    if candidate:
+        client_terms.add(candidate)
+    if client_slug:
+        client_terms.add(client_slug)
+
+    path_terms = {str(engagement_dir), str(engagement_dir.parent)}
+    parts = [q.lower() for q in engagement_dir.parts]
+    if "engagements" in parts:
+        path_terms.update(engagement_dir.parts[parts.index("engagements") + 1:])
+
+    failure = None
+    try:
+        client_terms.update(_denylist.resolve_engagement_deny_list(
+            engagement_dir, client_slug=client_slug))
+    except Exception as exc:   # noqa: BLE001 — see docstring
+        failure = exc
+
+    _CLIENT_RE = _compile_terms(client_terms)
+    all_terms = client_terms | path_terms
+    _REDACT_TERMS = sorted(
+        (t for t in all_terms if len(t) >= _MIN_REDACT_LEN), key=len, reverse=True)
+    _REDACT_RE = _compile_terms(all_terms)
+
+    if failure is not None:
+        # Emitted through the redactions just installed.
+        log(f"  ⚠ deny-list resolution failed ({type(failure).__name__}: "
+            f"{failure}) — identifier checks are running on the directory "
+            f"name alone", C.YELLOW)
+
+
+class ClientIdentifierLeak(RuntimeError):
+    """A composed prompt or a `cwd` still names the client. Fail closed.
+
+    This is the assertion #167 exists to make true, enforced at the ONE place
+    every agent invocation passes through rather than trusted call site by call
+    site. It raises rather than warns: the whole ticket is the claim that no
+    client-identifying string is sent, and a control that merely logs when that
+    claim breaks is the pattern this repo has already shipped twice — a gate
+    scoring green while certifying nothing.
+    """
+
+
+def _leaked_terms(text: str) -> list:
+    """Deny-list terms present in `text`, with the repo's own path discounted.
+
+    `str(REPO_ROOT)` prefixes every workspace path and every knowledge path in
+    a composed prompt. If a client's name happened to share a word with the
+    checkout directory (`…/value-consulting-agents` and a client called "Value
+    Bank"), matching against it would fail every invocation for a reason that
+    has nothing to do with the client. Strip it first, then match.
+    """
+    if _CLIENT_RE is None:
+        return []
+    probe = str(text).replace(str(REPO_ROOT), "")
+    return sorted(set(_CLIENT_RE.findall(probe)))
+
+
+def _assert_neutral_invocation(agent_name: str, cwd, system_prompt: str):
+    """Refuse to launch an agent whose cwd or prompt names the client."""
+    for label, value in (("cwd", str(cwd)), ("composed prompt", system_prompt)):
+        hits = _leaked_terms(value)
+        if hits:
+            raise ClientIdentifierLeak(
+                f"REFUSING to invoke '{agent_name}': its {label} still contains "
+                f"client identifier(s) {hits}. Every path parameter and the cwd "
+                f"must resolve inside the neutral workspace "
+                f"(pii.identity.materialise_workspace) — see solution-design-v6.md "
+                f"D6. Nothing was sent."
+            )
+
+
+def _dump_composed_prompt(agent_name: str, mode: str, cwd, system_prompt: str):
+    """Optional audit trail: write exactly what this invocation would send.
+
+    Off unless `CORTEX_PROMPT_DUMP_DIR` is set. Enabled, it records the cwd and
+    the full composed prompt for every agent invocation, which is how the
+    "no composed prompt and no cwd contains a client identifier" claim is
+    checked against reality instead of against the code that is supposed to
+    make it true. Safe to write: `_assert_neutral_invocation` has already run
+    and refused anything carrying a client identifier.
+    """
+    target = os.environ.get("CORTEX_PROMPT_DUMP_DIR")
+    if not target:
+        return
+    try:
+        out = Path(target)
+        out.mkdir(parents=True, exist_ok=True)
+        n = len(list(out.glob("*.prompt.txt"))) + 1
+        safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", f"{n:03d}_{agent_name}_{mode}")
+        (out / f"{safe}.prompt.txt").write_text(
+            f"AGENT: {agent_name}\nMODE: {mode}\nCWD: {cwd}\n"
+            f"{'-' * 60}\n{system_prompt}\n", encoding="utf-8")
+    except OSError as exc:
+        log(f"  ⚠ prompt dump failed ({type(exc).__name__}: {exc})", C.YELLOW)
+
+
+def _redact(msg: str) -> str:
+    """Replace every known client identifier in `msg` with `<REDACTED>`.
+
+    Longest-first ordering matters: without it, the term `hdfc` would consume
+    the leading segment of the full path `/…/engagements/hdfc/2026-02_x` and
+    leave the engagement slug exposed.
+    """
+    if _REDACT_RE is None:
+        return msg
+    return _REDACT_RE.sub("<REDACTED>", msg)
+
+
 def log(msg: str, color: str = ""):
     ts = datetime.now().strftime("%H:%M:%S")
-    print(f"{C.DIM}{ts}{C.RESET} {color}{msg}{C.RESET}")
+    print(f"{C.DIM}{ts}{C.RESET} {color}{_redact(str(msg))}{C.RESET}")
 
 
 def log_step(step: str, desc: str):
     print(f"\n{C.BOLD}{C.CYAN}{'═' * 60}{C.RESET}")
-    print(f"{C.BOLD}{C.CYAN}  {step}: {desc}{C.RESET}")
+    print(f"{C.BOLD}{C.CYAN}  {step}: {_redact(desc)}{C.RESET}")
     print(f"{C.BOLD}{C.CYAN}{'═' * 60}{C.RESET}\n")
+
+
+def log_print(msg: str = ""):
+    """`print` for pipeline chrome — same redaction guarantee as `log`.
+
+    Used for the header/summary blocks, which print engagement paths and
+    agent-produced content and therefore need the same treatment as `log`.
+    """
+    print(_redact(str(msg)))
 
 
 def read_file(path: Path) -> str:
@@ -99,6 +324,227 @@ def file_exists(path: Path, min_size: int = 0) -> bool:
 
 def glob_files(pattern: str, directory: Path) -> list[Path]:
     return sorted(directory.glob(pattern))
+
+
+# ─── Workspace + engagement identity (#167) ──────────────────────────────────
+
+def _engagement_id_candidate(engagement_dir: Path) -> Optional[str]:
+    """The path segment directly below `engagements/` — the thing #168 turns
+    into an opaque ID, and therefore the key to look up in the map."""
+    parts = engagement_dir.parts
+    lowered = [p.lower() for p in parts]
+    if "engagements" not in lowered:
+        return None
+    idx = lowered.index("engagements")
+    return parts[idx + 1] if idx + 1 < len(parts) else None
+
+
+def _resolve_client_slug(engagement_dir: Path) -> Optional[str]:
+    """Close the D14 seam: resolve the client slug out of `.engagement_map.json`.
+
+    `denylist.resolve_engagement_deny_list` mines the client DIRECTORY NAME for
+    deny-list terms — that is how `hdfc` becomes a term. Once #168 makes those
+    directories opaque IDs, the name degrades to a meaningless token and the
+    client's own name would silently fall off the deny-list. D14 deliberately
+    did NOT teach `denylist.py` to read the map (that would break
+    `drift_check.py`'s byte-for-byte parity with the self-contained copy inside
+    `mcp-query-guard.py`); it left the existing `client_slug=` parameter as the
+    seam and made #167 responsible for threading it. This is that thread.
+
+    Returns None when there is no map yet — pre-#168 the directory name IS the
+    client slug, which is exactly what the deny-list already mines, so None is
+    the CORRECT value and not a degradation.
+
+    Fails loudly, rather than returning None, when the directory name already
+    LOOKS like an opaque ID but the map cannot resolve it. That combination is
+    the dangerous one: an opaque directory with no map entry yields a deny-list
+    of one meaningless token, and carrying on would ship an unscrubbed client
+    name while every log line said the run succeeded. `MapUnreadableError`
+    propagates in every case — a corrupt map is never treated as "no map".
+    """
+    candidate = _engagement_id_candidate(engagement_dir)
+    if candidate is None:
+        return None
+    looks_opaque = bool(_OPAQUE_ID_RE.match(candidate))
+    try:
+        record = _identity.client_for_id(candidate)
+    except (_identity.MapNotFoundError, _identity.UnknownEngagementIdError):
+        if looks_opaque:
+            raise
+        return None
+    return record.get("slug") or record.get("client") or None
+
+
+def _clear_recorded_workspace(engagement_dir: Path):
+    """Drop a previous run's workspace (and its pointer) if one is recorded.
+
+    Called only when a NEW workspace is being materialised, so a re-run never
+    accumulates orphaned copies of scrubbed client material under
+    `.cortex-workspaces/`.
+    """
+    pointer = engagement_dir / WORKSPACE_POINTER
+    if not pointer.exists():
+        return
+    try:
+        stale = Path(pointer.read_text(encoding="utf-8").strip())
+    except OSError:
+        stale = None
+    if stale is not None and stale.name.startswith(_identity.WORKSPACE_PREFIX) \
+            and stale.parent == WORKSPACE_ROOT and stale.is_dir():
+        shutil.rmtree(str(stale), ignore_errors=True)
+    pointer.unlink(missing_ok=True)
+
+
+def _sweep_stray_mappings(engagement_dir: Path):
+    """Get every `.anon_mapping_*.json` out of `inputs/` before the workspace
+    is built. THIS IS A LEAK GATE, not tidying.
+
+    `materialise_workspace` copies every file under `inputs/` whose name starts
+    with `.anon_` — and `.anon_mapping_<name>.json` starts with `.anon_`. But a
+    mapping file is not a scrubbed artifact: it is the OPPOSITE of one. It holds
+    the real values keyed by their placeholders, chmod 600, and copying it into
+    the directory an agent runs in would hand the model the entire
+    de-anonymisation key alongside the scrubbed text.
+
+    The normal path never reaches here with anything to do — this run's mappings
+    are deleted the moment `.pii_mapping.json` exists. What this catches is the
+    residue: a previous run killed between writing a per-transcript mapping and
+    writing the combined one, or an engagement anonymised by hand through the
+    CLI. Two cases, two answers:
+
+      - `.pii_mapping.json` exists -> the strays are superseded by it. Delete.
+      - it does not -> those files are the ONLY record of some earlier run's
+        substitutions, so deleting them would make that run's deliverable
+        permanently unrestorable. Move them somewhere outside `inputs/`
+        (mode preserved) and say so loudly. Never leave them where they would
+        be copied.
+    """
+    inputs_dir = engagement_dir / "inputs"
+    strays = sorted(inputs_dir.glob(".anon_mapping_*.json"))
+    if not strays:
+        return
+    if (engagement_dir / ".pii_mapping.json").exists():
+        for p in strays:
+            p.unlink(missing_ok=True)
+        log(f"  🔒 Removed {len(strays)} superseded per-transcript mapping "
+            f"file(s) from inputs/ before building the workspace", C.DIM)
+        return
+    quarantine = engagement_dir / ".pii_orphan_mappings"
+    quarantine.mkdir(exist_ok=True)
+    quarantine.chmod(0o700)
+    for p in strays:
+        target = quarantine / p.name
+        shutil.move(str(p), str(target))
+        target.chmod(0o600)
+    log(f"  ⚠ {len(strays)} per-transcript PII mapping file(s) were still in "
+        f"inputs/ with no combined .pii_mapping.json — an earlier run was "
+        f"interrupted. They hold real client values, so they have been moved to "
+        f".pii_orphan_mappings/ rather than deleted or copied into the "
+        f"workspace.", C.YELLOW)
+
+
+def _materialise_run_workspace(engagement_dir: Path):
+    """Build THE workspace for this run and record where it is.
+
+    One workspace per RUN, not per step (identity.py's constraint): agents
+    accumulate their output in `<workspace>/outputs/`, and `copy_back()`
+    returns the whole tree to the real engagement at the end.
+    """
+    _sweep_stray_mappings(engagement_dir)
+    _clear_recorded_workspace(engagement_dir)
+    WORKSPACE_ROOT.mkdir(parents=True, exist_ok=True)
+    ws = _identity.materialise_workspace(engagement_dir, workspace_root=WORKSPACE_ROOT)
+
+    # Belt-and-braces on the gate above: prove no mapping file made it in.
+    # `materialise_workspace` renames everything it copies, so the check is on
+    # the SOURCE each workspace file came from, not the neutral name.
+    smuggled = sorted(
+        neutral for neutral, source in ws.input_names.items()
+        if source.name.startswith(".anon_mapping_")
+    )
+    if smuggled:
+        ws.cleanup()
+        raise ClientIdentifierLeak(
+            "REFUSING to run: PII mapping file(s) were copied into the neutral "
+            f"workspace as {smuggled}. A mapping file is the de-anonymisation "
+            "key, not a scrubbed artifact. The workspace has been destroyed and "
+            "nothing was sent."
+        )
+
+    pointer = engagement_dir / WORKSPACE_POINTER
+    pointer.write_text(str(ws.path) + "\n", encoding="utf-8")
+    pointer.chmod(0o600)
+    log(f"  🔒 Neutral workspace ready ({len(ws.input_names)} scrubbed input(s)): {ws.path}",
+        C.CYAN)
+    return ws
+
+
+def _restore_workspace(engagement_dir: Path):
+    """Reattach `--resume-from` to the workspace the interrupted run was using.
+
+    THE DECISION (`--resume-from`): REATTACH to the persisted workspace; do not
+    re-materialise. Recorded here because the two options are not equivalent.
+
+    Re-materialising cannot be made deterministic in the way that matters. The
+    directory NAME could be (mkdtemp's randomness is incidental), but the
+    workspace's `outputs/` cannot: everything the interrupted run produced
+    lives there, and rebuilding it would mean copying the real engagement's
+    `outputs/` back in. Those files may already have been through
+    `deanonymize_dir` on a previous completed run — i.e. they hold the client's
+    REAL name — so seeding from them would re-inject into the workspace exactly
+    the identifiers this ticket exists to keep out of it, on the one code path
+    nobody exercises until something has already gone wrong. Reattaching has no
+    such failure mode: the workspace holds placeholder-form artifacts because
+    that is the only form ever written into it.
+
+    If the workspace is gone (temp reaped, different machine, cleaned up after a
+    successful run), this raises and names the fix rather than silently falling
+    back to a client-named path — identity.py's no-silent-fallbacks rule.
+    """
+    pointer = engagement_dir / WORKSPACE_POINTER
+    hint = ("Re-run with `--resume-from discovery` (or with no --resume-from) to "
+            "rebuild it; the pipeline will re-anonymise the inputs and start a "
+            "fresh workspace.")
+    if not pointer.exists():
+        raise RuntimeError(
+            "--resume-from needs the workspace this engagement's previous run "
+            f"used, but no {WORKSPACE_POINTER} record exists. " + hint
+        )
+    path = Path(pointer.read_text(encoding="utf-8").strip())
+    if not (path / "outputs").is_dir():
+        raise RuntimeError(
+            "--resume-from needs the workspace this engagement's previous run "
+            f"used, but it no longer exists on disk. " + hint
+        )
+    # `input_names` maps neutral workspace filename -> the client-named artifact
+    # it came from. It is in-memory-only by design and is NOT reconstructed here:
+    # its single consumer is discovery's `transcript_path`, and resuming from any
+    # step at or after `parallel_a` never invokes discovery. Resuming discovery
+    # itself re-materialises instead of restoring.
+    ws = _identity.Workspace(path, engagement_dir, {})
+    log(f"  🔒 Reattached to the run's neutral workspace: {ws.path}", C.CYAN)
+    return ws
+
+
+def _publish_workspace_outputs(ws) -> int:
+    """Copy everything the workspace produced back to the real engagement's
+    `outputs/`, preserving relative structure.
+
+    Delegates to `Workspace.copy_back()`, whose atomicity guarantee is stated
+    precisely in identity.py: staging inside the engagement directory (same
+    filesystem) for all the real I/O, then metadata-only `os.replace` renames.
+    Not reimplemented here. Idempotent — safe to call after every step, which is
+    what keeps an interrupted run's work out of the workspace-only limbo.
+    """
+    try:
+        report = ws.copy_back()
+    except _identity.CopyBackInterrupted as exc:
+        log(f"  ✗ COPY-BACK INTERRUPTED — {exc}", C.RED)
+        raise
+    if report["count"]:
+        log(f"  📤 Published {report['count']} file(s) to the engagement's outputs/",
+            C.GREEN)
+    return report["count"]
 
 
 def _split_frontmatter(text: str) -> tuple[str, str]:
@@ -380,6 +826,13 @@ async def run_agent(
         + system_prompt
     )
 
+    # #167 CHOKE POINT — the last thing before anything leaves this machine.
+    # Every agent in the chain passes through here, so this is where the
+    # ticket's guarantee is enforced rather than asserted: if the composed
+    # prompt or the cwd still names the client, nothing is sent.
+    _assert_neutral_invocation(agent_name, cwd, system_prompt)
+    _dump_composed_prompt(agent_name, mode, cwd, system_prompt)
+
     # Map model names to Claude model IDs
     model_map = {
         "sonnet": "claude-sonnet-4-6",
@@ -578,11 +1031,18 @@ def _generate_discovery_checkpoint(outputs_dir: Path, transcripts: list[Path]) -
 
 async def step_discovery(
     engagement_dir: Path,
-    outputs_dir: Path,
     express: bool,
     non_interactive: bool = False,
-) -> dict:
-    """Run Discovery: parallel lean extraction -> Python checkpoint -> finalize from interims."""
+    client_slug: Optional[str] = None,
+) -> tuple:
+    """Run Discovery: anonymise inputs -> materialise the neutral workspace ->
+    parallel lean extraction -> Python checkpoint -> finalize from interims.
+
+    Returns `(timing_dict, workspace)`. Discovery owns workspace creation
+    because the workspace can only be built once the `.anon_` artifacts exist,
+    and this is where they are produced. ONE workspace per run, not per step —
+    every later step receives this same object.
+    """
     start = time.time()
     cost = 0.0
     inputs_dir = engagement_dir / "inputs"
@@ -592,7 +1052,9 @@ async def step_discovery(
 
     if not transcripts:
         log("  ⚠ No transcripts found in inputs/", C.YELLOW)
-        return {"elapsed": 0, "cost": 0}
+        # Still materialise: Block A reads discovery OUTPUTS, not transcripts,
+        # and every downstream step needs somewhere neutral to run.
+        return {"elapsed": 0, "cost": 0}, _materialise_run_workspace(engagement_dir)
 
     log(f"  Found {len(transcripts)} transcript(s)")
 
@@ -618,24 +1080,53 @@ async def step_discovery(
     # sequential; do not parallelize this loop without replacing the operator.
     entity_mapping: dict = {}
     anon_transcripts = []
+    per_transcript_mappings: list = []
     for t in transcripts:
         try:
             # per-transcript mapping_path is written to disk (chmod 0600) but not
             # used here — the combined .pii_mapping.json below is built directly
             # from the shared entity_mapping dict, which is the authoritative state.
-            anon_path, _mapping_path = anonymize_transcript_file(
-                t, engagement_dir, output_dir=inputs_dir, entity_mapping=entity_mapping
+            # #167: it is DELETED once that combined file exists, and only then —
+            # see the cleanup below.
+            anon_path, mapping_path = anonymize_transcript_file(
+                t, engagement_dir, output_dir=inputs_dir,
+                entity_mapping=entity_mapping, client_slug=client_slug,
             )
             anon_transcripts.append(anon_path)
+            per_transcript_mappings.append(mapping_path)
             log(f"    Anonymized: {t.name} → {anon_path.name}")
         except Exception as e:
             # FAIL CLOSED: never send raw PII to the API. Skip this transcript and
             # surface the failure loudly rather than silently leaking the original.
+            # Unchanged by #167 — and structurally reinforced by it: the workspace
+            # below copies ONLY `.anon_` artifacts, so a transcript that failed
+            # here has no scrubbed sibling and therefore cannot reach an agent
+            # even by accident.
             log(f"    ✗ Anonymization FAILED for {t.name} ({type(e).__name__}: {e}) — "
                 f"SKIPPING (raw transcript will NOT be sent to the API).", C.RED)
 
     # Use anonymized transcripts for all downstream processing
     transcripts = anon_transcripts
+
+    # engagement_intake.md is a deny-list SOURCE — it exists to hold the client's
+    # name — so the raw file must never enter a directory an agent runs in
+    # (identity.py's materialise_workspace docstring leaves it no exemption).
+    # Scrub it through the SAME shared mapping instead, so its content reaches
+    # the workspace only in `.anon_` form and any client name it holds gets the
+    # same placeholder it gets everywhere else.
+    intake_file = inputs_dir / "engagement_intake.md"
+    if intake_file.exists():
+        try:
+            anon_intake, intake_mapping = anonymize_transcript_file(
+                intake_file, engagement_dir, output_dir=inputs_dir,
+                entity_mapping=entity_mapping, client_slug=client_slug,
+            )
+            per_transcript_mappings.append(intake_mapping)
+            log(f"    Anonymized: {intake_file.name} → {anon_intake.name}")
+        except Exception as e:
+            log(f"    ✗ Anonymization FAILED for {intake_file.name} "
+                f"({type(e).__name__}: {e}) — SKIPPING (the raw intake will NOT "
+                f"be sent to the API).", C.RED)
 
     # Save combined mapping for de-anonymization of final outputs. `entity_mapping`
     # is already the full accumulated state (every transcript that succeeded above,
@@ -652,6 +1143,37 @@ async def step_discovery(
         substitution_count = sum(len(values) for values in entity_mapping.values())
         log(f"    PII mapping saved ({substitution_count} substitutions)")
 
+        # ONLY NOW: drop the per-transcript mappings. Each is a chmod-600 file
+        # holding real PII, superseded byte-for-byte by the combined file just
+        # written (the shared entity_mapping IS their union). Deleting them any
+        # earlier would open a window where an interrupted run has real values on
+        # disk in neither place and the deliverable can never be restored.
+        # `--resume-from` reads only `.pii_mapping.json`.
+        removed = 0
+        for mp in per_transcript_mappings:
+            try:
+                Path(mp).unlink(missing_ok=True)
+                removed += 1
+            except OSError as e:
+                log(f"    ⚠ could not remove per-transcript mapping {Path(mp).name} "
+                    f"({type(e).__name__}: {e}) — it still holds real PII", C.YELLOW)
+        if removed:
+            log(f"    Per-transcript mappings cleaned up ({removed} file(s))")
+
+    # ── THE NEUTRAL WORKSPACE ────────────────────────────────────────────────
+    # Built here, after anonymisation, because it copies `.anon_` artifacts and
+    # nothing else. Every path parameter and every `cwd` from this point on
+    # resolves inside it; the client-named engagement directory is never named
+    # to an agent again.
+    workspace = _materialise_run_workspace(engagement_dir)
+    outputs_dir = workspace.outputs
+    # Real `.anon_` artifact path -> the neutral name it was copied in under.
+    ws_name_for = {v.resolve(): k for k, v in workspace.input_names.items()}
+    transcripts = [
+        workspace.inputs / ws_name_for[t.resolve()]
+        for t in transcripts if t.resolve() in ws_name_for
+    ]
+
     # discovery-transcript-interpreter is mode-extracted (skill-first contracts):
     # prompts are composed from .claude/agents/discovery-transcript-interpreter.md
     # (## Modes -> pipeline) via compose_prompt — no inline f-strings. Params
@@ -661,7 +1183,7 @@ async def step_discovery(
     # orchestrator-owned (fail-closed, see the loop above), never agent-run.
     def _interim_params(transcript: Path, index: int) -> dict:
         return {
-            "engagement_dir": engagement_dir,
+            "engagement_dir": workspace.path,
             "outputs_dir": outputs_dir,
             "phase": "interim",
             "transcript_path": transcript,
@@ -674,7 +1196,7 @@ async def step_discovery(
         # Single transcript: lean extraction -> Python checkpoint
         result = await run_agent(
             "discovery-transcript-interpreter",
-            cwd=engagement_dir,
+            cwd=workspace.path,
             label="Discovery (1 transcript)",
             max_turns=15,
             mode="pipeline",
@@ -688,7 +1210,7 @@ async def step_discovery(
         for i, transcript in enumerate(transcripts, 1):
             extract_tasks.append(run_agent(
                 "discovery-transcript-interpreter",
-                cwd=engagement_dir,
+                cwd=workspace.path,
                 label=f"Discovery (T{i}/{len(transcripts)})",
                 max_turns=15,
                 mode="pipeline",
@@ -717,12 +1239,12 @@ async def step_discovery(
     # T1 FIX: added max_turns=15
     result = await run_agent(
         "discovery-transcript-interpreter",
-        cwd=engagement_dir,
+        cwd=workspace.path,
         label="Discovery (finalize)",
         max_turns=15,
         mode="pipeline",
         params={
-            "engagement_dir": engagement_dir,
+            "engagement_dir": workspace.path,
             "outputs_dir": outputs_dir,
             "phase": "finalize",
             "transcript_path": "(n/a — finalize phase)",
@@ -738,12 +1260,11 @@ async def step_discovery(
     assert_file_exists(outputs_dir / "pain_points.md", "Discovery")
     assert_file_exists(outputs_dir / "metrics.md", "Discovery")
 
-    return {"elapsed": time.time() - start, "cost": cost}
+    return {"elapsed": time.time() - start, "cost": cost}, workspace
 
 
 async def step_parallel_block_a(
-    engagement_dir: Path,
-    outputs_dir: Path,
+    ws,
     express: bool,
     domain: str,
     non_interactive: bool = False,
@@ -754,6 +1275,14 @@ async def step_parallel_block_a(
     to eliminate the P1 synchronization barrier and context reload overhead.
     Interactive mode preserves the existing P1 -> checkpoint -> P2 flow.
     """
+    # #167: `engagement_dir` here is the NEUTRAL WORKSPACE, not the client-named
+    # engagement directory — that is the whole point of the ticket. It is bound
+    # once, at the top, so that every `cwd=` and every `"engagement_dir"` param
+    # below resolves to the workspace with no per-call-site opportunity to miss
+    # one. The real engagement directory is reachable only as `ws.engagement_dir`
+    # and is deliberately not used in this function.
+    engagement_dir = ws.path
+    outputs_dir = ws.outputs
     start = time.time()
     cost = 0.0
 
@@ -1036,8 +1565,7 @@ async def step_parallel_block_a(
 
 
 async def step_roadmap(
-    engagement_dir: Path,
-    outputs_dir: Path,
+    ws,
     express: bool,
     non_interactive: bool = False,
 ) -> dict:
@@ -1045,6 +1573,8 @@ async def step_roadmap(
 
     S4: Single-pass in both express AND non-interactive mode.
     """
+    engagement_dir = ws.path      # #167: the neutral workspace — see step_parallel_block_a
+    outputs_dir = ws.outputs
     start = time.time()
     cost = 0.0
 
@@ -1081,8 +1611,7 @@ async def step_roadmap(
 
 
 async def step_assembly(
-    engagement_dir: Path,
-    outputs_dir: Path,
+    ws,
     express: bool,
     non_interactive: bool = False,
 ) -> dict:
@@ -1093,6 +1622,8 @@ async def step_assembly(
 
     Interactive mode: preserves existing 3-phase flow with CP2 consultant review.
     """
+    engagement_dir = ws.path      # #167: the neutral workspace — see step_parallel_block_a
+    outputs_dir = ws.outputs
     start = time.time()
     cost = 0.0
 
@@ -1322,11 +1853,10 @@ def _assemble_html_dashboard(template_path: Path, partials_dir: Path, output_pat
     return size > 100_000  # sanity: should be >100KB
 
 
-async def step_generate_html(
-    engagement_dir: Path,
-    outputs_dir: Path,
-) -> dict:
+async def step_generate_html(ws) -> dict:
     """Generate HTML dashboard. V5: Python pre-pack + assembly, 6 macro-partials."""
+    engagement_dir = ws.path      # #167: the neutral workspace — see step_parallel_block_a
+    outputs_dir = ws.outputs
     start = time.time()
     cost = 0.0
 
@@ -1380,11 +1910,10 @@ async def step_generate_html(
     return {"elapsed": time.time() - start, "cost": cost}
 
 
-async def step_generate_excel(
-    engagement_dir: Path,
-    outputs_dir: Path,
-) -> dict:
+async def step_generate_excel(ws) -> dict:
     """Generate ROI Excel model. Extracted for S2 overlapping."""
+    engagement_dir = ws.path      # #167: the neutral workspace — see step_parallel_block_a
+    outputs_dir = ws.outputs
     start = time.time()
     cost = 0.0
 
@@ -1459,7 +1988,16 @@ async def run_pipeline(
     pipeline_start = time.time()
     timings: dict[str, dict] = {}
 
+    # ── #167: identity first, before anything can print or compose a path ──
+    # `client_slug` closes the D14 seam (the map's slug keeps the client's name
+    # on the deny-list once #168 makes directories opaque); the same value seeds
+    # the log-redaction backstop.
+    client_slug = _resolve_client_slug(engagement_dir)
+    _install_log_redactions(engagement_dir, client_slug=client_slug)
+
     # ── Detect domain from intake ─────────────────────────────────────────
+    # Host-side only: this reads the RAW intake in Python and yields one of six
+    # fixed enum values. Neither the file nor its text ever reaches a prompt.
     intake_file = engagement_dir / "inputs" / "engagement_intake.md"
     domain = "retail"  # default
     if intake_file.exists():
@@ -1481,7 +2019,10 @@ async def run_pipeline(
     print(f"\n{C.BOLD}{'═' * 60}{C.RESET}")
     print(f"{C.BOLD}  CORTEX PIPELINE ORCHESTRATOR{C.RESET}")
     print(f"{C.BOLD}{'═' * 60}{C.RESET}")
-    print(f"  Engagement: {engagement_dir}")
+    # `log_print`, not `print`: this line has always rendered the client-named
+    # engagement path, and this process's stdout is read back into a Claude Code
+    # session's context whenever the pipeline is launched from one.
+    log_print(f"  Engagement: {engagement_dir}")
     print(f"  Domain:     {domain}")
     mode = "EXPRESS" if express else ("NON-INTERACTIVE" if non_interactive else "STANDARD")
     print(f"  Mode:       {mode}")
@@ -1514,16 +2055,27 @@ async def run_pipeline(
         steps = steps[steps.index(resume_from):]
 
     # ── Step 1: Discovery ─────────────────────────────────────────────────
+    # Discovery both anonymises the inputs and materialises the ONE workspace
+    # this run uses. Everything after it receives that workspace; `outputs_dir`
+    # is rebound to the workspace's own outputs/ and the client-named engagement
+    # directory is not named to an agent again.
     if "discovery" in steps:
         log_step("1", "DISCOVERY")
-        timings["discovery"] = await step_discovery(engagement_dir, outputs_dir, express, non_interactive)
+        timings["discovery"], ws = await step_discovery(
+            engagement_dir, express, non_interactive, client_slug=client_slug)
+    else:
+        ws = _restore_workspace(engagement_dir)
+    outputs_dir = ws.outputs
+    if "discovery" in steps:
+        _publish_workspace_outputs(ws)
 
     # ── Step 2: Parallel Block A ──────────────────────────────────────────
     if "parallel_a" in steps:
         # log_step is called inside step_parallel_block_a based on mode
         timings["parallel_a"] = await step_parallel_block_a(
-            engagement_dir, outputs_dir, express, domain, non_interactive
+            ws, express, domain, non_interactive
         )
+        _publish_workspace_outputs(ws)
 
     # ── S2: Overlapping stages (non-interactive) ─────────────────────────
     if non_interactive:
@@ -1537,10 +2089,9 @@ async def run_pipeline(
             roadmap_and_excel = []
             if "roadmap" in steps:
                 roadmap_and_excel.append(("roadmap", step_roadmap(
-                    engagement_dir, outputs_dir, express, non_interactive)))
+                    ws, express, non_interactive)))
             if "generate" in steps and file_exists(outputs_dir / "roi_config.json"):
-                roadmap_and_excel.append(("excel", step_generate_excel(
-                    engagement_dir, outputs_dir)))
+                roadmap_and_excel.append(("excel", step_generate_excel(ws)))
 
             if roadmap_and_excel:
                 tasks = [t[1] for t in roadmap_and_excel]
@@ -1551,30 +2102,31 @@ async def run_pipeline(
                         timings[name] = {"elapsed": 0, "cost": 0}
                     else:
                         timings[name] = result
+                _publish_workspace_outputs(ws)
 
         # Assembly (needs roadmap.md from above)
         if "assembly" in steps:
             log_step("4", "ASSEMBLY (parallel shards)")
-            timings["assembly"] = await step_assembly(
-                engagement_dir, outputs_dir, express, non_interactive)
+            timings["assembly"] = await step_assembly(ws, express, non_interactive)
+            _publish_workspace_outputs(ws)
 
         # HTML (needs assessment_report.md from assembly)
         if "generate" in steps:
             log_step("5", "HTML DASHBOARD")
-            timings["html"] = await step_generate_html(engagement_dir, outputs_dir)
+            timings["html"] = await step_generate_html(ws)
 
     else:
         # ── Standard/Interactive flow (sequential) ───────────────────────
 
         if "roadmap" in steps:
             log_step("3", "ROADMAP")
-            timings["roadmap"] = await step_roadmap(
-                engagement_dir, outputs_dir, express, non_interactive)
+            timings["roadmap"] = await step_roadmap(ws, express, non_interactive)
+            _publish_workspace_outputs(ws)
 
         if "assembly" in steps:
             log_step("4", "ASSEMBLY")
-            timings["assembly"] = await step_assembly(
-                engagement_dir, outputs_dir, express, non_interactive)
+            timings["assembly"] = await step_assembly(ws, express, non_interactive)
+            _publish_workspace_outputs(ws)
 
         if "generate" in steps:
             log_step("5", "GENERATE HTML + EXCEL (parallel)")
@@ -1582,10 +2134,10 @@ async def run_pipeline(
             gen_tasks = []
             gen_names = []
             if file_exists(outputs_dir / "assessment_report.md"):
-                gen_tasks.append(step_generate_html(engagement_dir, outputs_dir))
+                gen_tasks.append(step_generate_html(ws))
                 gen_names.append("html")
             if file_exists(outputs_dir / "roi_config.json"):
-                gen_tasks.append(step_generate_excel(engagement_dir, outputs_dir))
+                gen_tasks.append(step_generate_excel(ws))
                 gen_names.append("excel")
             if gen_tasks:
                 results = await asyncio.gather(*gen_tasks, return_exceptions=True)
@@ -1596,34 +2148,65 @@ async def run_pipeline(
                     else:
                         timings[name] = result
 
+    # ── Step 5b: PUBLISH — workspace outputs -> the real engagement ───────
+    # Everything the agents produced lives in the workspace. It has to come home
+    # BEFORE the validation gate (which inspects the engagement's own
+    # deliverables) and before the de-anonymisation gate (which is the single
+    # point where real names re-enter artifacts, and which reads and rewrites
+    # the engagement's outputs/, not the workspace's). Delegated to
+    # Workspace.copy_back() with its stated atomicity guarantee — staged inside
+    # the engagement directory, published by atomic rename. Idempotent, so the
+    # per-step calls above are a durability measure, not a duplicate publish.
+    _publish_workspace_outputs(ws)
+
     # ── Step 6: Validation Gate ───────────────────────────────────────────
+    # Runs against the REAL engagement — these are the consultant's deliverables.
+    real_outputs_dir = engagement_dir / "outputs"
     if "validate" in steps:
         log_step("6", "VALIDATION GATE")
-        passed = await step_validate(engagement_dir, outputs_dir)
+        passed = await step_validate(engagement_dir, real_outputs_dir)
         if not passed:
             log("  Pipeline completed with validation warnings.", C.YELLOW)
 
     # ── Step 6b: De-anonymize final outputs ─────────────────────────────
     # Moved to artifact_boundary.deanonymize_dir — a missing .pii_mapping.json
     # is reported loudly as NOT client-ready, never silently skipped.
-    deanonymize_dir(outputs_dir, engagement_dir / ".pii_mapping.json")
+    # The workspace copy is deliberately NOT restored: it stays placeholder-form
+    # for as long as it exists, so nothing an agent can still reach ever carries
+    # a real client name.
+    deanonymize_dir(real_outputs_dir, engagement_dir / ".pii_mapping.json")
 
-    # Clean up anonymized transcript copies (keep mapping for audit trail)
-    for anon_file in (engagement_dir / "inputs").glob(".anon_transcript_*"):
-        anon_file.unlink(missing_ok=True)
+    # Clean up anonymized transcript copies (keep mapping for audit trail).
+    # `.anon_engagement_intake.md` goes too — it is a scrubbed copy of a
+    # deny-list source and has no life beyond this run.
+    for pattern in (".anon_transcript_*", ".anon_engagement_intake.md"):
+        for anon_file in (engagement_dir / "inputs").glob(pattern):
+            anon_file.unlink(missing_ok=True)
 
     # ── Step 7: Knowledge Harvest (silent, non-blocking) ─────────────────
     log_step("7", "KNOWLEDGE HARVEST")
+    # `engagement_dir.name` is the `YYYY-MM_domain_type` slug by convention, one
+    # level BELOW the client directory — but conventions are not guarantees, and
+    # this value is rendered into the harvester's prompt and into the knowledge
+    # filenames it writes. Check it against the deny-list rather than trusting
+    # the layout.
     engagement_id = engagement_dir.name
-    await step_harvest(engagement_dir, outputs_dir, engagement_id)
+    if _leaked_terms(engagement_id):
+        engagement_id = "engagement-" + hashlib.sha256(
+            engagement_id.encode("utf-8")).hexdigest()[:8]
+        log("  ⚠ engagement id matched a client identifier — using a neutral id "
+            "for harvest instead", C.YELLOW)
+    await step_harvest(ws, engagement_id)
 
     # ── T4: Summary with timing + costs ──────────────────────────────────
     total_time, total_cost = _print_pipeline_summary(timings, pipeline_start)
 
+    # The consultant's deliverables now live in the REAL engagement, not the
+    # workspace — list those.
     print(f"\n  Output files:")
-    for f in sorted(outputs_dir.iterdir()):
+    for f in sorted(real_outputs_dir.iterdir()):
         if not f.name.startswith("CHECKPOINT") and not f.name.startswith("interim"):
-            print(f"    {f.name:40s} {f.stat().st_size:>8,} bytes")
+            log_print(f"    {f.name:40s} {f.stat().st_size:>8,} bytes")
 
     # Write timing to journal
     journal = engagement_dir / "ENGAGEMENT_JOURNAL.md"
@@ -1662,7 +2245,15 @@ async def run_pipeline(
         print(f"  📊 Eval report → {_path.name}"
               + (f"  ⚑ {len(_rep['flags'])} flag(s)" if _rep.get("flags") else "  ✓ clean"))
     except Exception as _e:  # never let evals break a run
-        print(f"  (runtime evals skipped: {_e})")
+        log_print(f"  (runtime evals skipped: {_e})")
+
+    # ── Tear down the workspace ──────────────────────────────────────────
+    # Only here, at the end of a run that reached this line. An earlier
+    # exception leaves it standing on purpose (identity.Workspace.__exit__ takes
+    # the same position): a failed run's agent output may not have been
+    # published yet, and `--resume-from` reattaches to exactly this directory.
+    ws.cleanup()
+    (engagement_dir / WORKSPACE_POINTER).unlink(missing_ok=True)
 
     print()
 
@@ -1777,13 +2368,25 @@ def _open_harvest_pr(branch: str, token: str, engagement_id: str, summary: str) 
         return ""
 
 
-async def step_harvest(engagement_dir: Path, outputs_dir: Path, engagement_id: str):
+async def step_harvest(ws, engagement_id: str):
     """
     Post-pipeline knowledge harvest — runs silently after validation.
     - Always extracts knowledge locally (no setup required)
     - Optionally pushes harvest/* branch + opens PR if CORTEX_HARVEST_TOKEN is set
     - Skips if outputs haven't changed since last harvest
+
+    #167: the harvester is an agent like any other, so its `cwd` and its path
+    params are the neutral workspace. It therefore reads the PLACEHOLDER-form
+    outputs (`<CLIENT_1>`, `<PERSON_2>`) rather than the de-anonymised
+    deliverables — which is the form the harvester's own contract requires it to
+    write into shared knowledge anyway, so this tightens the guarantee instead of
+    relying on the agent to re-anonymise. Host-side state
+    (`.harvest_state`, the synthetic-quarantine policy) stays anchored on the
+    REAL engagement directory, which is where it has always lived.
     """
+    engagement_dir = ws.engagement_dir   # REAL — host-side state only
+    workspace_dir = ws.path              # what the agent is told
+    outputs_dir = ws.outputs
     cortex_dir = REPO_ROOT
 
     # Synthetic-engagement gate — single source of truth (artifact_boundary.
@@ -1813,19 +2416,19 @@ async def step_harvest(engagement_dir: Path, outputs_dir: Path, engagement_id: s
     # prompt is composed from .claude/agents/knowledge-harvester.md
     # (## Modes -> pipeline | quarantine) via compose_prompt — no inline f-string.
     harvest_params = {
-        "engagement_dir": engagement_dir,
+        "engagement_dir": workspace_dir,
         "outputs_dir": outputs_dir,
         "engagement_id": engagement_id,
     }
 
     result = await run_agent(
-        "knowledge-harvester", cwd=engagement_dir,
+        "knowledge-harvester", cwd=workspace_dir,
         label="Harvest", max_turns=25,
         mode=("quarantine" if policy == "quarantine" else "pipeline"), params=harvest_params,
     )
 
-    # Read summary written by agent
-    summary_file = engagement_dir / ".harvest_summary.txt"
+    # Read summary written by agent — into the workspace, per the params above.
+    summary_file = workspace_dir / ".harvest_summary.txt"
     summary = summary_file.read_text().strip() if summary_file.exists() else "Knowledge updated."
 
     # Save hash so next run skips if nothing changes (dedup applies to
