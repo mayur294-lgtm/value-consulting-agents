@@ -30,6 +30,9 @@ class CheckResult:
     skipped: bool = False     # e.g. judge with no API key; excluded from scoring
     detail: str = ""
     evidence: list[str] = field(default_factory=list)
+    exercised: str | None = None  # e.g. "scripts/pii/engine.py via python3 (3.9.6)" — what actually ran
+    unscorable: bool = False      # rubric parser could not read the artifact; excluded from scoring,
+                                   # never rendered as 0/0 — a parser gap is not a quality finding
 
     def __post_init__(self) -> None:
         self.score = max(0.0, min(1.0, float(self.score)))
@@ -43,10 +46,17 @@ class RubricResult:
 
     @property
     def score(self) -> float:
-        scored = [c for c in self.checks if not c.skipped]
+        scored = [c for c in self.checks if not c.skipped and not c.unscorable]
         if not scored:
             return 0.0
         return sum(c.score for c in scored) / len(scored)
+
+    @property
+    def all_unscorable(self) -> bool:
+        """True when every non-skipped check came back unscorable (a parser gap,
+        not a quality finding) — the aggregate must not read as 0.000 in that case."""
+        rated = [c for c in self.checks if not c.skipped]
+        return bool(rated) and all(c.unscorable for c in rated)
 
     @property
     def hard_failed(self) -> bool:
@@ -56,16 +66,24 @@ class RubricResult:
         return (self.score >= threshold) and not self.hard_failed
 
     def report(self, threshold: float) -> str:
+        if self.all_unscorable:
+            verdict = "UNSCORABLE"
+        elif self.passed(threshold):
+            verdict = "PASS"
+        else:
+            verdict = "FAIL"
         lines = [
             f"Target:   {self.target}",
             f"Altitude: {self.altitude}",
-            f"Score:    {self.score:.3f}  (threshold {threshold:.2f})",
-            f"Verdict:  {'PASS' if self.passed(threshold) else 'FAIL'}"
-            + ("  [HARD FAIL]" if self.hard_failed else ""),
+            f"Score:    {'UNSCORABLE' if self.all_unscorable else f'{self.score:.3f}'}"
+            f"  (threshold {threshold:.2f})",
+            f"Verdict:  {verdict}" + ("  [HARD FAIL]" if self.hard_failed else ""),
             "",
         ]
         for c in self.checks:
-            if c.skipped:
+            if c.unscorable:
+                mark = "UNSCORABLE"
+            elif c.skipped:
                 mark = "SKIP"
             elif c.passed:
                 mark = "PASS"
@@ -74,6 +92,8 @@ class RubricResult:
             else:
                 mark = "fail"
             lines.append(f"  [{mark:>9}] {c.name}: {c.score:.2f}  {c.detail}")
+            if c.exercised and not c.skipped:
+                lines.append(f"        exercised: {c.exercised}")
             for ev in c.evidence[:8]:
                 lines.append(f"        - {ev}")
         return "\n".join(lines)
