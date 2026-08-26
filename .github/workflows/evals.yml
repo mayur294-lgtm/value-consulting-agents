@@ -261,8 +261,16 @@ jobs:
 
           reg = yaml.safe_load(open("evals/registry.yaml"))
           rows = []
-          for section in ("components", "deliverables"):
+          # `rubric_calibration` is listed HERE, not left to `components`: those
+          # eleven rows used to be YAML-aliased into `components:` for dispatch
+          # and were picked up for free. The alias is gone (the runner has a real
+          # `--calibration` branch), so a two-section tuple would silently stop
+          # running 38 mutation proofs — coverage vanishing with no output, the
+          # exact failure this derivation exists to prevent.
+          for section in ("components", "deliverables", "rubric_calibration"):
               for name, spec in (reg.get(section) or {}).items():
+                  if not isinstance(spec, dict):
+                      continue
                   if isinstance(spec.get("mutations"), dict) or isinstance(spec.get("negatives"), dict):
                       rows.append(name)
           print(" ".join(sorted(rows)))

@@ -14,7 +14,7 @@ from rubrics.component.specifics import _read, _roadmap
 
 
 # --- rubric_calibration tier (#201) ---------------------------------------
-RUBRIC_ROW = 'roadmap-rubric'          # the registry key; `--component roadmap-rubric`
+RUBRIC_ROW = 'roadmap-rubric'          # the registry key; `--calibration roadmap-rubric`
 COVERS_AGENT = 'roadmap-prioritization'   # INERT DOCUMENTATION — not a verification claim
 GOLDEN = 'evals/goldens/roadmap_golden.md'
 __doc__ = (__doc__ or "") + RUBRIC_ROW_DOC.format(row=RUBRIC_ROW, agent=COVERS_AGENT)

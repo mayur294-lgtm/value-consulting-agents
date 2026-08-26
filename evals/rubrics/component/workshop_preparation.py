@@ -14,7 +14,7 @@ from rubrics.component.specifics import _read, _workshop_prep
 
 
 # --- rubric_calibration tier (#201) ---------------------------------------
-RUBRIC_ROW = 'workshop-prep-rubric'          # the registry key; `--component workshop-prep-rubric`
+RUBRIC_ROW = 'workshop-prep-rubric'          # the registry key; `--calibration workshop-prep-rubric`
 COVERS_AGENT = 'workshop-preparation'   # INERT DOCUMENTATION — not a verification claim
 GOLDEN = 'evals/goldens/workshop_prep_golden.md'
 __doc__ = (__doc__ or "") + RUBRIC_ROW_DOC.format(row=RUBRIC_ROW, agent=COVERS_AGENT)

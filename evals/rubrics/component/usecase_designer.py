@@ -14,7 +14,7 @@ from rubrics.component.specifics import _read, _usecase
 
 
 # --- rubric_calibration tier (#201) ---------------------------------------
-RUBRIC_ROW = 'usecase-design-rubric'          # the registry key; `--component usecase-design-rubric`
+RUBRIC_ROW = 'usecase-design-rubric'          # the registry key; `--calibration usecase-design-rubric`
 COVERS_AGENT = 'usecase-designer'   # INERT DOCUMENTATION — not a verification claim
 GOLDEN = 'evals/goldens/usecase_golden.md'
 __doc__ = (__doc__ or "") + RUBRIC_ROW_DOC.format(row=RUBRIC_ROW, agent=COVERS_AGENT)

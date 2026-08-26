@@ -92,7 +92,7 @@ Eleven rows under the `rubric_calibration:` key (#201) are thin adapters over
 `rubrics.component.specifics` — pure string/regex matching against a **frozen
 golden** markdown or text fixture. They are keyed by RUBRIC, not by agent:
 
-| row (`--component <row>`) | `covers_agent:` (inert documentation) |
+| row (`--calibration <row>`) | `covers_agent:` (inert documentation) |
 |---|---|
 | `market-context-rubric` | market-context-researcher |
 | `roi-hypothesis-rubric` | roi-hypothesis-builder |
@@ -129,10 +129,19 @@ pipeline run and every consultant session. The golden is the calibration
 anchor that keeps those thresholds falsifiable, and the only regression test
 on rubric code.
 
-**`--component <agent-name>` no longer resolves to one of these rows.** Each
-retired agent name keeps a `retired: true` redirect row in `components:`
-pointing at `rubrics.component.moved_to_rubric_calibration`, which always
-HARD-FAILS and prints the agent → rubric mapping. `.github/workflows/evals.yml`
+**Neither an agent name nor a rubric name resolves under `--component`.** The
+rows live in their own `rubric_calibration:` section and are run with their own
+flag, `--calibration <row>` — #201 had to alias them back into `components:` for
+dispatch while `run_experiment.py` was owned by a concurrent ticket (#204), and
+that shim is now gone. A separate flag is the point: a row that answers to
+`--component` reads as a component gate to every reader and every quoted number.
+`--component <rubric>` prints a redirect instead of scoring, and each retired
+agent name keeps a `retired: true` redirect row in `components:` pointing at
+`rubrics.component.moved_to_rubric_calibration`, which always HARD-FAILS and
+prints the agent → rubric mapping. `check_registry.py` asserts both halves: a
+calibration row must not appear in `components:`, and the runner must still carry
+the `--calibration` dispatch (an unrunnable row never fails, which reads as
+"nothing failed"). `.github/workflows/evals.yml`
 reads the same flag and skips those rows with a notice instead of running them
 — because running a calibration rubric on a changed prompt would score a fixture
 the prompt cannot affect.
@@ -232,7 +241,7 @@ the right thing, or might be a tautology that would pass against an empty
 string — nobody has proven which. `--mutate <row>` is how you prove it:
 
 ```bash
-python evals/run_experiment.py --mutate run-experiment-runner   # 5/5 proven
+python evals/run_experiment.py --mutate run-experiment-runner   # 6/6 proven
 python evals/run_experiment.py --mutate mutation-harness        # 5/5 proven
 ```
 
@@ -286,6 +295,10 @@ python evals/run_experiment.py --altitude deliverable-structural
 # a component's unit eval (used by bb-build verify)
 python evals/run_experiment.py --component roi-financial-modeler
 
+# a rubric_calibration row — scores the RUBRIC against a frozen golden,
+# NOT the agent in its covers_agent: (prints that as a banner every run)
+python evals/run_experiment.py --calibration market-context-rubric
+
 # prove every check a row declares actually goes red under mutation
 python evals/run_experiment.py --mutate run-experiment-runner
 
@@ -295,9 +308,10 @@ python3 evals/check_registry.py
 
 Full current flag list (`evals/run_experiment.py`'s argparse — verify against
 the source before trusting any other list, including this one): `--component
-<row>`, `--deliverable <deck|roi|assessment>`, `--altitude
-{unit,deliverable-structural,deliverable}`, `--deck <file>`, `--mutate
-<row>`, `--negatives`, `--target <path>`, `--threshold <float>`. There is
+<row>`, `--calibration <row>`, `--deliverable <deck|roi|assessment>`,
+`--altitude {unit,deliverable-structural,deliverable}`, `--deck <file>`,
+`--mutate <row>`, `--negatives`, `--target <path>`, `--threshold <float>`,
+`--regenerate` (path-1, local only, refuses under CI — see `evals/path1.py`). There is
 **no** standalone `--deliverable-structural` flag — that mode is
 `--altitude deliverable-structural`. Passing the retired altitude name (the
 one this mode was renamed from, #188) as `--altitude` **hard-errors**

@@ -14,7 +14,7 @@ from rubrics.component.specifics import _read, _benchmark
 
 
 # --- rubric_calibration tier (#201) ---------------------------------------
-RUBRIC_ROW = 'benchmark-shortlist-rubric'          # the registry key; `--component benchmark-shortlist-rubric`
+RUBRIC_ROW = 'benchmark-shortlist-rubric'          # the registry key; `--calibration benchmark-shortlist-rubric`
 COVERS_AGENT = 'benchmark-librarian'   # INERT DOCUMENTATION — not a verification claim
 GOLDEN = 'evals/goldens/benchmark_golden.md'
 __doc__ = (__doc__ or "") + RUBRIC_ROW_DOC.format(row=RUBRIC_ROW, agent=COVERS_AGENT)

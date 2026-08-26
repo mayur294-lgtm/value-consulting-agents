@@ -14,7 +14,7 @@ from rubrics.component.specifics import _read, _narrative
 
 
 # --- rubric_calibration tier (#201) ---------------------------------------
-RUBRIC_ROW = 'narrative-arc-rubric'          # the registry key; `--component narrative-arc-rubric`
+RUBRIC_ROW = 'narrative-arc-rubric'          # the registry key; `--calibration narrative-arc-rubric`
 COVERS_AGENT = 'narrative-assembler'   # INERT DOCUMENTATION — not a verification claim
 GOLDEN = 'evals/goldens/narrative_golden.md'
 __doc__ = (__doc__ or "") + RUBRIC_ROW_DOC.format(row=RUBRIC_ROW, agent=COVERS_AGENT)

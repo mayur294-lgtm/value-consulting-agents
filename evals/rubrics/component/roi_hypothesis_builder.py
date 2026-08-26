@@ -14,7 +14,7 @@ from rubrics.component.specifics import _read, _roi_hypothesis
 
 
 # --- rubric_calibration tier (#201) ---------------------------------------
-RUBRIC_ROW = 'roi-hypothesis-rubric'          # the registry key; `--component roi-hypothesis-rubric`
+RUBRIC_ROW = 'roi-hypothesis-rubric'          # the registry key; `--calibration roi-hypothesis-rubric`
 COVERS_AGENT = 'roi-hypothesis-builder'   # INERT DOCUMENTATION — not a verification claim
 GOLDEN = 'evals/goldens/roi_hypothesis_golden.md'
 __doc__ = (__doc__ or "") + RUBRIC_ROW_DOC.format(row=RUBRIC_ROW, agent=COVERS_AGENT)

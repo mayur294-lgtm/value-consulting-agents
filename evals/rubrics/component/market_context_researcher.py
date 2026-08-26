@@ -14,7 +14,7 @@ from rubrics.component.specifics import _read, _market_context
 
 
 # --- rubric_calibration tier (#201) ---------------------------------------
-RUBRIC_ROW = 'market-context-rubric'          # the registry key; `--component market-context-rubric`
+RUBRIC_ROW = 'market-context-rubric'          # the registry key; `--calibration market-context-rubric`
 COVERS_AGENT = 'market-context-researcher'   # INERT DOCUMENTATION — not a verification claim
 GOLDEN = 'evals/goldens/market_context_golden.md'
 __doc__ = (__doc__ or "") + RUBRIC_ROW_DOC.format(row=RUBRIC_ROW, agent=COVERS_AGENT)

@@ -118,20 +118,33 @@ deliverables:
 #    a fixture mutation for that reason: it changes a shadow copy of the golden,
 #    never the rubric.
 #
-# DISPATCH (read this before "why is this row also under `components:`")
+# DISPATCH
 # ---------------------------------------------------------------------
-# `run_experiment.py` branches on `--component` / `--deliverable` / `--altitude`
-# and reads `reg["components"]` / `reg["deliverables"]` directly; it has no
-# `rubric_calibration` branch yet, and that file is owned by a concurrent
-# ticket (#204), so #201 does not touch it. The rows below are therefore
-# ALIASED into `components:` by YAML anchor — one authored copy, two names for
-# the same object, so they can never drift. When the runner grows a
-# `--calibration` dispatch, delete the alias block in `components:` and nothing
-# else has to move. The alias keys are the RUBRIC names, so nothing about the
-# misreading this ticket exists to kill comes back with them.
+#   python evals/run_experiment.py --calibration market-context-rubric
+#   python evals/run_experiment.py --mutate      market-context-rubric
+#
+# A DEDICATED FLAG, not `--component`. #201 shipped these rows YAML-aliased back
+# into `components:` because `run_experiment.py` was owned by a concurrent ticket
+# (#204) and had no branch for this section. #204 landed; the runner now reads
+# this section directly (`_CALIBRATION_KEY`), and the alias block is deleted.
+#
+# The separate flag is the point, not a detail of the migration: a row that
+# answers to `--component` reads as a component gate to every reader and every
+# quoted number, and these rows gate no component — replacing the whole 45 KB
+# `market-context-researcher` prompt with one line of garbage left its old
+# agent-keyed row at 1.000 PASS. `--component <rubric>` now prints that redirect
+# instead of scoring, `--component <agent>` hits the hard-failing `retired:`
+# redirect row, and every run here prints the tier banner.
+#
+# Two preflight assertions hold the shape (check_registry.check_rubric_calibration):
+# a calibration row must NOT appear in `components:` (the shim cannot grow back),
+# and `run_experiment.py` must still carry a `--calibration` dispatch reading this
+# section (an unrunnable row is a gate nobody can run, which reads as "nothing
+# failed"). CI derives its `--mutate` row list from this section too
+# (.github/workflows/evals.yml).
 rubric_calibration:
 
-  market-context-rubric: &market_context_rubric
+  market-context-rubric:
     tier: rubric_calibration
     altitude: component          # the runner's dispatch altitude, NOT this row's tier
     threshold: 0.80
@@ -148,7 +161,7 @@ rubric_calibration:
       competitor_benchmark_section:
         strip: '(?i)competitor|benchmark|peer|module\s*3'
 
-  roi-hypothesis-rubric: &roi_hypothesis_rubric
+  roi-hypothesis-rubric:
     tier: rubric_calibration
     altitude: component
     threshold: 0.80
@@ -165,7 +178,7 @@ rubric_calibration:
       problem_statement_present:
         strip: '(?i)problem\s+statement|problem\s+type'
 
-  discovery-evidence-rubric: &discovery_evidence_rubric
+  discovery-evidence-rubric:
     tier: rubric_calibration
     altitude: component
     threshold: 0.80
@@ -184,7 +197,7 @@ rubric_calibration:
       pain_points_present:
         strip: '(?im)pain\s*point|^##\s*pain'
 
-  capability-maturity-rubric: &capability_maturity_rubric
+  capability-maturity-rubric:
     tier: rubric_calibration
     altitude: component
     threshold: 0.80
@@ -209,7 +222,7 @@ rubric_calibration:
       scores_have_evidence_refs:
         strip: '(?i)\bCAP-[A-Z0-9-]+\b|\bE\d+\b'
 
-  roadmap-rubric: &roadmap_rubric
+  roadmap-rubric:
     tier: rubric_calibration
     altitude: component
     threshold: 0.80
@@ -228,7 +241,7 @@ rubric_calibration:
       gates_or_milestones_present:
         strip: '(?i)decision gate|\bDG-\d|milestone|value\s*realization'
 
-  narrative-arc-rubric: &narrative_arc_rubric
+  narrative-arc-rubric:
     tier: rubric_calibration
     altitude: component
     threshold: 0.80
@@ -246,7 +259,7 @@ rubric_calibration:
       transformation_arc_present:
         strip: '(?i)transformation|from\b.*?\bto\b'
 
-  journey-map-rubric: &journey_map_rubric
+  journey-map-rubric:
     tier: rubric_calibration
     altitude: component
     threshold: 0.80
@@ -264,7 +277,7 @@ rubric_calibration:
       as_is_and_future_state:
         strip: '(?i)future[- ]state'
 
-  benchmark-shortlist-rubric: &benchmark_shortlist_rubric
+  benchmark-shortlist-rubric:
     tier: rubric_calibration
     altitude: component
     threshold: 0.80
@@ -287,7 +300,7 @@ rubric_calibration:
         find: '## Gaps and validation asks'
         replace: "## Gaps and validation asks\n\n- Contact-centre deflection benchmark carried over from [Synthetic-Test] pipeline data.\n"
 
-  usecase-design-rubric: &usecase_design_rubric
+  usecase-design-rubric:
     tier: rubric_calibration
     altitude: component
     threshold: 0.80
@@ -306,7 +319,7 @@ rubric_calibration:
       priority_tiers_present:
         strip: '(?i)tablestakes|differentiating|\bP[123]\b'
 
-  workshop-prep-rubric: &workshop_prep_rubric
+  workshop-prep-rubric:
     tier: rubric_calibration
     altitude: component
     threshold: 0.80
@@ -323,7 +336,7 @@ rubric_calibration:
       checkpoint_present:
         strip: '(?i)checkpoint'
 
-  workshop-synthesis-rubric: &workshop_synthesis_rubric
+  workshop-synthesis-rubric:
     tier: rubric_calibration
     altitude: component
     threshold: 0.80
@@ -553,17 +566,19 @@ components:
   # here is deterministic, $0, and stays green with ANTHROPIC_API_KEY unset
   # (the "skipped judge" case simulates the no-key path; it never calls one).
   #
-  # NOT wired here: `path1_refuses_in_ci`. Path-1's CI guard doesn't exist
-  # until #204 — authoring a check for it now would have nothing to exercise
-  # and could only ever render `[SKIP*]` under #181's skip-that-cannot-pass
-  # rendering, which is noise, not signal, and exactly the "absence reads as
-  # success" pattern this epic exists to remove. #204 adds it here.
+  # `path1_refuses_in_ci` (#204, wired in the epic's closing pass): path-1
+  # regeneration actually runs an agent through `claude -p` on a human's
+  # subscription. It is nondeterministic, metered, and NOT a gate, so both
+  # routes into it (`evals/path1.py` directly, and `run_experiment.py
+  # --regenerate`) hard-refuse under $CI / $GITHUB_ACTIONS. That refusal is
+  # the only thing standing between CI and a nondeterministic agent run, so
+  # it gets a check like everything else in this epic.
   run-experiment-runner:
     altitude: component
     threshold: 1.00
     code: [component_negatives_honoured, missing_target_fails_not_skips,
            declared_checks_all_executed, skipped_judge_does_not_pass,
-           retired_altitude_flag_hard_errors]
+           retired_altitude_flag_hard_errors, path1_refuses_in_ci]
     # `mutations:` (#185) — the worked example for the --mutate runner mode.
     # These four were bite-proven by hand in #183 (see that PR's closing
     # comment and the PR #206 body for the transcript this reproduces
@@ -597,6 +612,16 @@ components:
         file: evals/run_experiment.py
         find: "    if args.altitude == _RETIRED_ALTITUDE:\n        print(_RETIRED_ALTITUDE_ERROR, file=sys.stderr)\n        return 2\n"
         replace: ""
+      # Disables `_in_ci()` at its SINGLE source of truth. Both refusal call
+      # sites — path1.main()'s pre-argparse guard and run_experiment.py
+      # --regenerate's delegation to path1.refuse_if_ci() — go through this one
+      # function, so the mutation reddens the check via both routes at once and
+      # cannot be dodged by a second copy of the env-var test appearing
+      # somewhere else.
+      path1_refuses_in_ci:
+        file: evals/path1.py
+        find: "    return any(os.environ.get(v) for v in _CI_ENV_VARS)"
+        replace: "    return False"
 
   # mutation-harness (#187, closing PR 2 of the eval-gate-v7 epic) — the
   # SECOND self-gate: run-experiment-runner (above) proves the runner that
@@ -1246,35 +1271,24 @@ components:
            html_self_contained_no_cdn, html_brand_tokens_root_match]
 
   # ===========================================================================
-  # rubric_calibration DISPATCH SHIM (#201) — aliases, not a second definition
+  # NO rubric_calibration ROWS HERE (#201, completed in the epic's closing pass)
   # ===========================================================================
-  # Each entry below is a YAML ALIAS of the anchor authored in the
-  # `rubric_calibration:` section above: `yaml.safe_load` resolves an alias to
-  # the SAME dict object, so there is exactly one authored copy of every row and
-  # the two names cannot drift.
+  # #201 shipped a YAML alias block at this spot: the eleven `rubric_calibration:`
+  # rows aliased back into `components:` so `--component <rubric>` / `--mutate
+  # <rubric>` could reach them while `run_experiment.py` was owned by a concurrent
+  # ticket (#204). #204 has landed, the runner now has a real `--calibration`
+  # branch that reads the `rubric_calibration:` section directly, and the shim is
+  # deleted.
   #
-  # Why the shim exists: `run_experiment.py` branches on `--component` /
-  # `--deliverable` / `--altitude` and reads `reg["components"]` directly. It has
-  # no `rubric_calibration` branch, and that file is owned by a concurrent ticket
-  # (#204), so #201 does not touch it. Aliasing here is what makes
-  # `--component <rubric>` and `--mutate <rubric>` (and CI's registry-derived
-  # mutate-row list, .github/workflows/evals.yml) work today.
-  #
-  # The keys are RUBRIC names. Nothing about the misreading this ticket exists to
-  # kill comes back with them: no agent name gates anything, and every run prints
-  # the "scores the RUBRIC, not the component" banner. When the runner grows a
-  # real `--calibration` dispatch, delete this block; nothing else moves.
-  market-context-rubric: *market_context_rubric
-  roi-hypothesis-rubric: *roi_hypothesis_rubric
-  discovery-evidence-rubric: *discovery_evidence_rubric
-  capability-maturity-rubric: *capability_maturity_rubric
-  roadmap-rubric: *roadmap_rubric
-  narrative-arc-rubric: *narrative_arc_rubric
-  journey-map-rubric: *journey_map_rubric
-  benchmark-shortlist-rubric: *benchmark_shortlist_rubric
-  usecase-design-rubric: *usecase_design_rubric
-  workshop-prep-rubric: *workshop_prep_rubric
-  workshop-synthesis-rubric: *workshop_synthesis_rubric
+  # Do not put a calibration row back into this section, under either name. A row
+  # that answers to `--component` is a component gate to every reader and every
+  # quoted number, which is the exact misreading #201 exists to remove. The
+  # boundary is asserted, not just described: `check_registry.py`'s
+  # `check_rubric_calibration` fails preflight if a calibration row appears in
+  # `components:`, and separately fails if the runner has no `--calibration`
+  # dispatch (an unreachable row is a gate nobody can run, which reads as
+  # "nothing failed"). The agent NAMES keep their hard-failing `retired:` redirect
+  # rows below — those are signposts, never gates.
 
   # ===========================================================================
   # RETIRED AGENT-NAME ROWS (#201) — REDIRECT ONLY, never a gate

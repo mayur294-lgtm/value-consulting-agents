@@ -14,7 +14,7 @@ from rubrics.component.specifics import _read, _journey
 
 
 # --- rubric_calibration tier (#201) ---------------------------------------
-RUBRIC_ROW = 'journey-map-rubric'          # the registry key; `--component journey-map-rubric`
+RUBRIC_ROW = 'journey-map-rubric'          # the registry key; `--calibration journey-map-rubric`
 COVERS_AGENT = 'journey-builder'   # INERT DOCUMENTATION — not a verification claim
 GOLDEN = 'evals/goldens/journey_maps_golden.md'
 __doc__ = (__doc__ or "") + RUBRIC_ROW_DOC.format(row=RUBRIC_ROW, agent=COVERS_AGENT)

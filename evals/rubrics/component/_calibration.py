@@ -44,7 +44,7 @@ _RULE = "─" * 78
 # doc-reader carries the same claim boundary the banner prints at runtime.
 RUBRIC_ROW_DOC = """
 TIER: rubric_calibration (#201). This module IS the `{row}` rubric. It is
-invoked as `run_experiment.py --component {row}`; the agent name
+invoked as `run_experiment.py --calibration {row}`; the agent name
 `{agent}` no longer resolves to a gate (it keeps a hard-failing redirect row —
 see rubrics/component/moved_to_rubric_calibration.py).
 
@@ -76,7 +76,7 @@ def banner_text(rubric: str, covers_agent: str, golden: str = "") -> str:
         f"  (evals/path1.py) can say anything about the agent's behaviour.\n"
         f"\n"
         f"  The `Altitude:` line below reads `unit` — that is the runner's dispatch\n"
-        f"  altitude for `--component`, not this row's tier. The tier is {TIER}.\n"
+        f"  altitude for `--calibration`, not this row's tier. The tier is {TIER}.\n"
         f"{_RULE}"
     )
 

@@ -18,6 +18,12 @@ Usage:
   # component altitude (used by bb-build verify)
   python evals/run_experiment.py --component roi-financial-modeler
 
+  # rubric_calibration tier (#201) — scores a frozen synthetic prose golden with
+  # a deterministic rubric. It calibrates the RUBRIC and regression-tests rubric
+  # code; it says NOTHING about the agent in `covers_agent:`. Separate flag on
+  # purpose, so `--component X = 1.000` keeps meaning one thing.
+  python evals/run_experiment.py --calibration market-context-rubric
+
   # deliverable-structural altitude — lints inter-agent contracts across output
   # FILES that already exist. It does not run orchestrate.py and never reads the
   # component you changed; a green here is NOT integration evidence (#188).
@@ -318,7 +324,16 @@ def _run_mutate(reg: dict, row: str, target_override: str | None) -> int:
     entry certifies nothing, so it fails here exactly like an unproven one —
     the same edge case the registry preflight (#186) will later refuse before
     any row even runs."""
-    if row in reg.get("components", {}):
+    if row in _calibration_rows(reg):
+        # rubric_calibration rows are mutation-proven exactly like a component
+        # row — per-check dict-form `negatives:` (design D3). Looked up first
+        # (and by section, never by alias) so `--mutate <rubric>` keeps working
+        # now that the shim is gone; CI derives its mutate-row list from the same
+        # three sections (.github/workflows/evals.yml).
+        spec = _calibration_rows(reg)[row]
+        evaluator = spec.get("evaluator", f"rubrics.component.{row.replace('-', '_')}")
+        default_target = spec.get("input", "")
+    elif row in reg.get("components", {}):
         spec = reg["components"][row]
         evaluator = spec.get("evaluator", f"rubrics.component.{row.replace('-', '_')}")
         default_target = spec.get("input", spec.get("golden_engagement", ""))
@@ -328,7 +343,8 @@ def _run_mutate(reg: dict, row: str, target_override: str | None) -> int:
         goldens = spec.get("goldens") or []
         default_target = goldens[0] if goldens else ""
     else:
-        print(f"\n[FAIL] `{row}` is not a component or deliverable in registry.yaml.")
+        print(f"\n[FAIL] `{row}` is not a component, deliverable or "
+              f"{_CALIBRATION_KEY} row in registry.yaml.")
         return 2
 
     target = target_override if target_override is not None else default_target
@@ -430,12 +446,62 @@ _DELIVERABLE_STRUCTURAL = "deliverable-structural"   # CLI flag + rendered altit
 _DELIVERABLE_STRUCTURAL_KEY = "deliverable_structural"  # registry.yaml section key
 _ALTITUDES = frozenset({"unit", _DELIVERABLE_STRUCTURAL, "deliverable"})
 
+# --- rubric_calibration dispatch (#201, wired in the epic's closing pass) ------
+# #201 re-filed the eleven prose-golden rows out of `components:` into their own
+# `rubric_calibration:` section keyed by RUBRIC, because an agent-keyed row reads
+# as "this gates that agent" and never did. It could not touch this file at the
+# time (concurrent ticket #204 owned it), so it reached dispatch by YAML-aliasing
+# the rows back into `components:`. This branch is the real dispatch that note
+# asked for; the alias block is gone.
+#
+# `--calibration` is a SEPARATE flag on purpose, not a `--component` synonym: the
+# whole point of the tier is that these rows are not component gates, and a flag
+# that says so at the call site is what keeps `--component X = 1.000` meaning one
+# thing. The evaluator still runs at the runner's `unit` dispatch altitude (the
+# banner every calibration evaluator prints says exactly that, and why).
+_CALIBRATION_KEY = "rubric_calibration"
+
+
+def _calibration_rows(reg: dict) -> dict:
+    return reg.get(_CALIBRATION_KEY) or {}
+
+
+def _calibration_misroute(name: str, rows: dict) -> str:
+    """`--component <rubric-row>` no longer resolves (the alias shim is gone).
+    Point at the right flag rather than dying on a bare KeyError — the same
+    courtesy the retired AGENT names get from
+    rubrics/component/moved_to_rubric_calibration.py."""
+    return (
+        f"\n[FAIL] `{name}` is a `{_CALIBRATION_KEY}:` row, not a component gate — "
+        f"nothing was scored.\n"
+        f"  Run instead:  --calibration {name}\n\n"
+        f"  These rows score a frozen synthetic prose golden with a deterministic "
+        f"rubric.\n  They calibrate the RUBRIC; they are not evidence about any agent "
+        f"(see\n  evals/rubrics/component/_calibration.py). Keeping them out of "
+        f"`--component`\n  is what keeps a component 1.000 meaning one thing.\n\n"
+        f"  Calibration rows: {', '.join(sorted(rows))}"
+    )
+
+
+def _unknown_calibration_row(name: str, rows: dict, reg: dict) -> str:
+    if name in (reg.get("components") or {}):
+        return (f"\n[FAIL] `{name}` is a `components:` row, not a {_CALIBRATION_KEY} row — "
+                f"run `--component {name}`.")
+    return (f"\n[FAIL] `{name}` is not a row in `{_CALIBRATION_KEY}:`.\n"
+            f"  Known rows: {', '.join(sorted(rows)) or '(none)'}")
+
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Cortex eval runner")
     ap.add_argument("--deck", help="ad-hoc: run the deck rubric on this HTML file")
     ap.add_argument("--deliverable", help="registry deliverable name (deck|roi|assessment)")
     ap.add_argument("--component", help="registry component name")
+    ap.add_argument("--calibration", metavar="ROW",
+                    help="registry `rubric_calibration:` row name (#201) — scores a frozen "
+                         "synthetic prose golden with a deterministic rubric. It calibrates "
+                         "the RUBRIC and is a regression test on rubric code; it is NOT "
+                         "evidence about the agent named in `covers_agent:`. Every run prints "
+                         "the tier banner saying so.")
     # Not `choices=`: the retired altitude name must reach our own guard below so
     # it gets the rename rationale, not argparse's generic "invalid choice".
     ap.add_argument("--altitude", metavar="{unit,deliverable-structural,deliverable}",
@@ -472,6 +538,11 @@ def main() -> int:
             ap.error("--regenerate requires --component <name> — path-1 regenerates a single "
                      "agent's output; it has no deliverable-level entry point.")
         reg = _load_registry()
+        if args.component in _calibration_rows(reg):
+            print(f"\n[FAIL] `{args.component}` is a {_CALIBRATION_KEY} row — it names a "
+                  f"RUBRIC, not an agent, and path-1 regenerates an agent. Pass the agent "
+                  f"name in that row's `covers_agent:` instead.", file=sys.stderr)
+            return 1
         spec = reg["components"][args.component]
         thr = args.threshold if args.threshold is not None else spec["threshold"]
         tgt = args.target or spec.get("input", spec.get("golden_engagement", ""))
@@ -537,8 +608,40 @@ def main() -> int:
                                    list(spec.get("negatives", [])), expect_pass=False, spec=spec) and ok
         return 0 if ok else 1
 
+    # --- rubric_calibration ----------------------------------------------------
+    # Its own branch, not a `--component` synonym — see the _CALIBRATION_KEY note
+    # above. `--negatives` is refused here on purpose: this tier's `negatives:` is
+    # a MAPPING of per-check fixture mutations (design D3), not the legacy list of
+    # whole-artifact negative FILES that `--negatives` iterates. Feeding the dict
+    # to that loop would iterate its KEYS as if they were paths and report a row
+    # of "correctly failed" on files that never existed — a vacuous green, which
+    # is the whole failure mode this epic exists to close. `--mutate <row>` is
+    # what proves this tier's negatives, and CI runs it on every row.
+    if args.calibration:
+        rows = _calibration_rows(reg)
+        if args.calibration not in rows:
+            print(_unknown_calibration_row(args.calibration, rows, reg), file=sys.stderr)
+            return 2
+        if args.negatives:
+            print("\n[FAIL] `--negatives` does not apply to a rubric_calibration row: its "
+                  "`negatives:` is a per-check fixture-mutation MAPPING, not a list of "
+                  "negative files. Prove it with `--mutate " + args.calibration + "`.",
+                  file=sys.stderr)
+            return 2
+        spec = rows[args.calibration]
+        thr = args.threshold if args.threshold is not None else spec["threshold"]
+        evaluator = spec["evaluator"]   # preflight requires it explicitly on this tier
+        tgt = args.target or spec.get("input", "")
+        cal_ok = _evaluate_targets(args.calibration, evaluator, "unit", thr, [tgt],
+                                   expect_pass=True, spec=spec)
+        return 0 if cal_ok else 1
+
     # --- component -------------------------------------------------------------
     if args.component:
+        if args.component in _calibration_rows(reg):
+            print(_calibration_misroute(args.component, _calibration_rows(reg)),
+                  file=sys.stderr)
+            return 2
         spec = reg["components"][args.component]
         thr = args.threshold if args.threshold is not None else spec["threshold"]
         evaluator = spec.get("evaluator", f"rubrics.component.{args.component.replace('-', '_')}")

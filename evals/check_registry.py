@@ -227,7 +227,8 @@ def _row_claims_mutation_proof(name: str, spec: dict) -> bool:
 
 
 def check_mutation_coverage(name: str, spec: dict, errors: list[str],
-                             mutation_debt_rows: dict[str, dict]) -> None:
+                             mutation_debt_rows: dict[str, dict],
+                             section: str = "components") -> None:
     """Preflight enforcement of the mutation proof (#186): every check name
     in a row's `code:` list must resolve to a `mutations:`/dict-`negatives:`
     entry that would actually prove it — a check with no mutation entry
@@ -249,7 +250,7 @@ def check_mutation_coverage(name: str, spec: dict, errors: list[str],
     try:
         mut_list = mutations.mutations_from_spec(spec)
     except mutations.MutationHarnessError as exc:
-        errors.append(f"components.{name}.mutations: mutation declarations are malformed — {exc}")
+        errors.append(f"{section}.{name}.mutations: mutation declarations are malformed — {exc}")
         return
     covered = {m.check for m in mut_list}
     missing = [c for c in code_names if c not in covered]
@@ -259,7 +260,7 @@ def check_mutation_coverage(name: str, spec: dict, errors: list[str],
     row_debt = mutation_debt_rows.setdefault(
         name, {"total": len(code_names), "missing": [], "messages": []})
     for check in missing:
-        msg = (f"components.{name}.code: check `{check}` has no `mutations:` entry — "
+        msg = (f"{section}.{name}.code: check `{check}` has no `mutations:` entry — "
                f"a gate that cannot fail certifies nothing. Fix: add a `mutations:` entry "
                f"for `{check}` (see components.run-experiment-runner.mutations for the shape) "
                f"or a dict-form `negatives: {{{check}: {{strip: ...}}}}`.")
@@ -290,6 +291,38 @@ def _evaluator_module_exists(dotted: str) -> bool:
     return (HERE / rel).with_suffix(".py").is_file() or (HERE / rel / "__init__.py").is_file()
 
 
+def _check_calibration_dispatch_exists(errors: list[str]) -> None:
+    """The runner must still be able to RUN a `rubric_calibration:` row.
+
+    This replaces the half of #201's alias assertion that still carries weight.
+    The shim guaranteed reachability by putting the rows where dispatch already
+    looked; the real `--calibration` branch guarantees it by reading the section.
+    Either way the failure being prevented is the same and is the worst one this
+    preflight can miss: a declared gate that nothing can invoke never runs, never
+    fails, and reads to a reviewer as "nothing failed".
+
+    A source-text assertion, not an import: this preflight stays dependency-free
+    and side-effect-free (it runs before the suite, in CI, on a possibly broken
+    tree). Same technique as `_check_old_altitude_name` below.
+    """
+    runner = HERE / "run_experiment.py"
+    try:
+        src = runner.read_text(encoding="utf-8")
+    except OSError as exc:
+        errors.append(f"evals/run_experiment.py: cannot be read to verify the "
+                      f"`--calibration` dispatch exists ({exc}).")
+        return
+    missing = [tok for tok in ('"--calibration"', f'_CALIBRATION_KEY = "{CALIBRATION_TIER}"')
+               if tok not in src]
+    if missing:
+        errors.append(
+            f"evals/run_experiment.py: no `--calibration` dispatch for the "
+            f"`{CALIBRATION_TIER}:` section (missing: {', '.join(missing)}). Those rows "
+            f"would be declared but unrunnable — a gate nobody can invoke never fails and "
+            f"reads as 'nothing failed'. Restore the dispatch; do NOT alias the rows back "
+            f"into `components:` (see the DISPATCH note in registry.yaml).")
+
+
 def check_rubric_calibration(reg: dict, errors: list[str]) -> None:
     """#201 — the claim boundary of the `rubric_calibration:` tier, enforced.
 
@@ -311,14 +344,23 @@ def check_rubric_calibration(reg: dict, errors: list[str]) -> None:
       * `negatives:` is a MAPPING of per-check fixture mutations (design D3), not
         the legacy whole-artifact LIST — a list only has to break a fifth of the
         checks at threshold 0.80, so an individually inert check still hides;
-      * the row is ALIASED into `components:` under the same key, because that is
-        what makes `--component`/`--mutate` dispatch reach it today (see the
-        dispatch note in registry.yaml). An un-aliased row would be unrunnable —
-        i.e. a gate nobody can run, which reads as "nothing failed".
+      * the row is NOT in `components:` under any key. #201 had to alias these
+        rows back into `components:` for dispatch while `run_experiment.py` was
+        owned by a concurrent ticket; that shim is gone (#204 landed, the runner
+        has a real `--calibration` branch). The assertion INVERTED with it, and
+        deliberately so: a row that answers to `--component` reads as a component
+        gate to every reader and every quoted number, which is the misreading
+        this tier exists to remove. The shim cannot grow back by accident.
+      * the runner still carries the `--calibration` dispatch that reaches this
+        section. This is the half of the old alias assertion that still matters:
+        an unrunnable row is a gate nobody can run, which reads as "nothing
+        failed". Checked as source text (same technique as the retired-altitude
+        grep below) because this preflight must stay import- and side-effect-free.
     """
     rows = reg.get(CALIBRATION_TIER) or {}
     if not rows:
         return
+    _check_calibration_dispatch_exists(errors)
     agents = _agent_names()
     components = reg.get("components") or {}
     for name, spec in rows.items():
@@ -366,12 +408,13 @@ def check_rubric_calibration(reg: dict, errors: list[str]) -> None:
                 f"{where}.negatives: must be a MAPPING of check -> fixture mutation "
                 f"(`{{check: {{strip: <regex>}}}}`), not the legacy whole-artifact list. A list "
                 f"is ignored by mutations.mutations_from_spec and proves nothing per-check.")
-        if components.get(name) is not spec:
+        if name in components:
             errors.append(
-                f"{where}: not aliased into `components:` under the same key, so "
-                f"`--component {name}` / `--mutate {name}` cannot reach it. Add "
-                f"`{name}: *<anchor>` to the dispatch shim block in `components:` (see the "
-                f"DISPATCH note in registry.yaml).")
+                f"{where}: also present in `components:`. A {CALIBRATION_TIER} row must be "
+                f"reachable ONLY as `--calibration {name}` — a row that answers to "
+                f"`--component` reads as a component gate to every reader and every quoted "
+                f"number, and this tier gates no component. Delete the `components:` entry "
+                f"(the #201 alias shim is retired; see the DISPATCH note in registry.yaml).")
 
 
 def check_retired_redirect_rows(reg: dict, errors: list[str]) -> None:
@@ -685,15 +728,26 @@ def main(argv: list[str]) -> int:
                 check_gate(g, f"deliverables.{name}.{slot}")
         # monitor: intentionally skipped (real engagements, non-gating)
 
-    # --- components -----------------------------------------------------------
-    for name, spec in (reg.get("components") or {}).items():
+    # --- components + rubric_calibration --------------------------------------
+    # Both sections get the SAME treatment. Until the epic's closing pass the
+    # calibration rows were YAML-aliased into `components:`, so this loop reached
+    # them for free; the alias is gone, and iterating only `components:` would
+    # have silently dropped golden resolution, the empty-`code:` guard and the
+    # #186 mutation-coverage enforcement for all eleven of them — coverage
+    # disappearing without a single line of output, which is precisely the
+    # failure mode this preflight exists to make impossible.
+    calibration_rows = (reg.get(CALIBRATION_TIER) or {}).items()
+    for section, name, spec in ([("components", n, s) for n, s in (reg.get("components") or {}).items()]
+                                + [(CALIBRATION_TIER, n, s) for n, s in calibration_rows]):
+        if not isinstance(spec, dict):
+            continue
         # Shadow containment (#201) rides along inside check_gate, so it covers
         # every gating slot uniformly — deliverables, components, and the
         # deliverable_structural path form alike.
         if spec.get("input"):
-            check_gate(spec["input"], f"components.{name}.input")
+            check_gate(spec["input"], f"{section}.{name}.input")
         if spec.get("golden_engagement"):
-            check_engagement(spec["golden_engagement"], f"components.{name}.golden_engagement")
+            check_engagement(spec["golden_engagement"], f"{section}.{name}.golden_engagement")
         # #182 D5: `code:` is the GATING declaration — a row that declares the key
         # but with nothing in it has nothing for declared_checks_all_executed to
         # require, which is a mis-wired row, not a legitimately empty one. Fail
@@ -701,10 +755,10 @@ def main(argv: list[str]) -> int:
         # in run_experiment.py's assertion — this catches the authoring mistake
         # before that vacuous pass can happen).
         if "code" in spec and not spec.get("code"):
-            errors.append(f"components.{name}.code: declared as an empty list — "
+            errors.append(f"{section}.{name}.code: declared as an empty list — "
                           f"a row must gate on at least one check")
         # #186: every declared `code:` check needs a mutation proof, or staged DEBT.
-        check_mutation_coverage(name, spec, errors, mutation_debt_rows)
+        check_mutation_coverage(name, spec, errors, mutation_debt_rows, section=section)
 
     # --- #201: the rubric_calibration tier's own claim boundary ----------------
     check_rubric_calibration(reg, errors)

@@ -75,12 +75,12 @@ def message(asked: str, pairs: list[tuple[str, str]]) -> str:
     row = dict(pairs).get(asked, "")
     head = (
         f"`--component {asked}` is RETIRED — an agent name no longer names a gate.\n"
-        f"  Run instead:  --component {row}      (tier: rubric_calibration)\n"
+        f"  Run instead:  --calibration {row}   (tier: rubric_calibration)\n"
         if asked and row else
         "This component row is RETIRED — an agent name no longer names a gate.\n"
     )
     table = "\n".join(
-        f"    {agent:<34} ->  --component {target_row}"
+        f"    {agent:<34} ->  --calibration {target_row}"
         + ("   <-- you asked for this" if agent == asked else "")
         for agent, target_row in pairs
     )
@@ -114,7 +114,7 @@ def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained
     except Exception:  # noqa: BLE001 - the verdict below is what gates, not the print
         pass
     detail = (
-        f"RETIRED: `{asked}` is an agent name, not a gate — run `--component {row}` "
+        f"RETIRED: `{asked}` is an agent name, not a gate — run `--calibration {row}` "
         f"(tier: rubric_calibration, scores the RUBRIC not the agent). See the block above."
         if asked and row else
         "RETIRED: this agent name no longer names a gate — see the block above for the "

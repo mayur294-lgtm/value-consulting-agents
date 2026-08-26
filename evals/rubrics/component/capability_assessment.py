@@ -14,7 +14,7 @@ from rubrics.component.specifics import _read, _capability
 
 
 # --- rubric_calibration tier (#201) ---------------------------------------
-RUBRIC_ROW = 'capability-maturity-rubric'          # the registry key; `--component capability-maturity-rubric`
+RUBRIC_ROW = 'capability-maturity-rubric'          # the registry key; `--calibration capability-maturity-rubric`
 COVERS_AGENT = 'capability-assessment'   # INERT DOCUMENTATION — not a verification claim
 GOLDEN = 'evals/goldens/capability_assessment_golden.md'
 __doc__ = (__doc__ or "") + RUBRIC_ROW_DOC.format(row=RUBRIC_ROW, agent=COVERS_AGENT)
