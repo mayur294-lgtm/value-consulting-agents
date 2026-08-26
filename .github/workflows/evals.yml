@@ -18,8 +18,15 @@ on:
       - "templates/**"
       - "presentations/**"
       - "scripts/**.py"
+      - "scripts/**.sh"               # setup_pii.sh, init_engagement.sh, _resolve_python.sh's callers — the .py-only filter skipped every shell script under scripts/
       - "tools/**.py"                 # roi_excel_generator.py and friends — was missing from this filter (#193)
       - "evals/**"
+      # THE GATE GATES ITSELF. Without this line a PR that only WEAKENS this
+      # workflow — flipping SHADOW to "true", deleting the derive step,
+      # narrowing the filter above — never runs it, and merges unopposed.
+      # That is #191's own argument (hook REGISTRATION changes behaviour with
+      # no hook file touched) applied to the registration of this gate.
+      - ".github/workflows/evals.yml"
 
 permissions:
   contents: read
@@ -117,11 +124,30 @@ jobs:
           # retired (CLAUDE.md "Flywheel") and were never eval-adopted.
           AGENT_RE = re.compile(r"^\.claude/agents/([^/]+)\.md$")
 
+          # Retired agents that still sit at the LIVE path as a redirect stub
+          # rather than under deprecated/ — touching one would otherwise hard
+          # fail CI demanding an eval row for an agent nobody may invoke.
+          # Deliberately an explicit, greppable path list and NOT a
+          # "description starts with DEPRECATED" frontmatter rule: a
+          # frontmatter rule lets any PR dodge this gate by adding one word to
+          # a description, which is the silent-skip failure mode this whole
+          # epic exists to close. Extending this list requires editing this
+          # workflow — which, per the `paths:` filter above, now runs the gate
+          # on itself. The durable fix is deleting the live-path stub
+          # (.claude/agents/deprecated/roi-business-case-builder.md already
+          # holds the real copy); until then, this one line.
+          RETIRED_IN_PLACE = {
+              ".claude/agents/roi-business-case-builder.md",
+          }
+
           paths = [line.strip() for line in open("/tmp/changed_paths.txt") if line.strip()]
 
           matched: set[str] = set()
           missing: list[tuple[str, str]] = []
           for p in paths:
+              if p in RETIRED_IN_PLACE:
+                  print(f"note: {p} is a retired-in-place agent stub — no eval row expected")
+                  continue
               comp = EXPLICIT.get(p)
               if comp is None:
                   for prefix, name in EXPLICIT_PREFIXES.items():
@@ -133,7 +159,20 @@ jobs:
                   if m and "/deprecated/" not in p:
                       comp = m.group(1)
               if comp is None:
-                  continue  # not a path this mapping treats as a component — covered by the fixed deliverable/altitude evals instead
+                  # Not a path this mapping treats as a component: NOTHING in
+                  # this job re-evaluates it. Do not read this as "covered by
+                  # the fixed deliverable/altitude evals" — for the prompt
+                  # tier that is false. `--deliverable deck|roi|assessment|
+                  # report` and `--altitude deliverable-structural` all score
+                  # COMMITTED GOLDEN FILES; they never re-render from a
+                  # changed command, skill or template, so a change to one
+                  # cannot move them. This is a known, filed inconsistency
+                  # (.prd/backlog.md, "uncovered-path inconsistency"): 17 path
+                  # classes trigger this workflow and then skip silently,
+                  # while a changed agent with no row hard-fails four lines
+                  # below. The intended direction is extending fail-loud to
+                  # them, not softening the agent rule.
+                  continue
               if comp in components:
                   matched.add(comp)
               else:

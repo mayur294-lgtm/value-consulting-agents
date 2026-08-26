@@ -213,7 +213,11 @@ from pathlib import Path
 from typing import Optional
 
 from rubrics.base import CheckResult, repo_root
-from rubrics._harness import check_runs_under_registered_interpreter, registered_interpreter
+from rubrics._harness import (
+    check_runs_under_registered_interpreter,
+    record_hook_invocation,
+    registered_interpreter,
+)
 
 # Make `scripts/` importable as a package root, exactly as
 # scripts/anonymize_transcript.py does for itself.
@@ -1971,11 +1975,19 @@ def _run_anonymize_guard(project_dir: Path, stdin_bytes: bytes) -> subprocess.Co
     silently certify it under this eval-runner's own interpreter instead,
     which is exactly the drift #192 exists to close.
     `registered_interpreter()` raises loudly (never falls back) if the hook
-    isn't registered."""
+    isn't registered.
+
+    `record_hook_invocation(argv)` below is load-bearing, not telemetry:
+    it is what lets `runs_under_registered_interpreter` assert against the
+    argv this helper REALLY spawned. Without it that check can only observe
+    the resolver's return value, and reverting this line to
+    `[sys.executable, ...]` scores 1.000 green (spec-review FAIL,
+    2026-08-26). Never spawn the hook here without recording first."""
     env = dict(os.environ)
     env["CLAUDE_PROJECT_DIR"] = str(project_dir)
     hook = _anonymize_guard_hook_path()
     argv = registered_interpreter(hook) + [str(hook)]
+    record_hook_invocation(argv)
     return subprocess.run(
         argv,
         input=stdin_bytes,
@@ -2072,10 +2084,26 @@ def _guard_fails_closed_on_inputs_path(target: str) -> CheckResult:  # noqa: ARG
 def _runs_under_registered_interpreter(_target: str) -> CheckResult:  # noqa: ARG001
     """#192/backlog :116 — `anonymize-guard.py` must be invoked under
     whatever interpreter `.claude/settings.json` actually registers for it
-    (bare `python3`), never a silent fallback to `sys.executable`. Shared,
-    subject-agnostic check — see rubrics/_harness.py."""
+    (bare `python3`), never a silent fallback to `sys.executable`. Shared
+    check for Python-hook rows — see rubrics/_harness.py.
+
+    `spawn` deliberately goes through this module's own production
+    `_run_anonymize_guard`, the same helper the fail-closed check uses, so
+    the check observes the argv the row REALLY spawns rather than a
+    re-implementation written for it. The probe path sits OUTSIDE
+    engagements/*/inputs/ so the guard simply allows it; the decision is
+    irrelevant here — only the argv matters."""
+    hook = _anonymize_guard_hook_path()
+
+    def _spawn() -> None:
+        with tempfile.TemporaryDirectory(prefix="anonymize_guard_interp_") as td:
+            probe = Path(td) / "scratch_outside" / "probe.md"
+            probe.parent.mkdir(parents=True)
+            probe.write_text("placeholder content\n", encoding="utf-8")
+            _run_anonymize_guard(Path(td), _read_tool_payload(str(probe)))
+
     return check_runs_under_registered_interpreter(
-        _anonymize_guard_hook_path(), hook_label="anonymize-guard.py"
+        hook, hook_label="anonymize-guard.py", spawn=_spawn
     )
 
 

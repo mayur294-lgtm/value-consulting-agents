@@ -52,14 +52,34 @@ entry with no usable "command" string, ...). A rubric that cannot prove
 which interpreter Claude Code actually invokes for a hook must fail loudly,
 not silently certify under a different one — that silent-fallback failure
 mode is exactly what this module exists to close.
+
+record_hook_invocation() / capture_hook_invocations()
+------------------------------------------------------
+Resolving the right interpreter is only half the guarantee. The other half
+is that the rubric's subprocess helper actually USES it — and no property of
+`registered_interpreter()`'s return value can establish that. (Spec-review
+FAIL, 2026-08-26: reverting `mcp_query_guard._run_hook` to
+`[sys.executable, str(_hook_path())]` — the exact original :116 bug — while
+leaving the resolver intact scored 1.000 with the check green, because the
+check only asserted `prefix != [sys.executable]`, a fact about the resolver,
+never about any argv a subprocess ran.)
+
+So every helper in this repo that spawns a hook subprocess calls
+`record_hook_invocation(argv)` immediately before `subprocess.run`, and
+`check_runs_under_registered_interpreter` spawns one real invocation through
+that helper and asserts the RECORDED argv's head equals the registered
+prefix. Recording is a no-op (and costs nothing) outside a capture block.
+Deleting the `record_hook_invocation` call doesn't dodge the check either —
+a capture that records nothing is itself a hard failure.
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import shlex
 import sys
 from pathlib import Path
-from typing import Iterator
+from typing import Callable, Iterator, Sequence
 
 from rubrics.base import CheckResult, repo_root
 
@@ -173,53 +193,150 @@ def registered_interpreter(hook_path: Path) -> list[str]:
     )
 
 
-def check_runs_under_registered_interpreter(
-    hook_path: Path, *, hook_label: str | None = None
-) -> CheckResult:
-    """Shared, subject-agnostic check: `hook_path` must resolve to a real
-    `.claude/settings.json` registration, and the interpreter this rubric
-    resolves for it must be the ACTUAL registered one — never a silent
-    fallback to `sys.executable` (the exact drift #192/backlog :116 exists
-    to kill: the gate ran hooks under 3.11/venv-3.1x while consultants run
-    bare `python3`, 3.9.6 on most machines).
+_CAPTURED: list[list[str]] | None = None
 
-    Reusable across every hook-invoking rubric row: each caller passes its
-    own `hook_path` (e.g. `.claude/hooks/mcp-query-guard.py`,
-    `.claude/hooks/anonymize-guard.py`) — this function's logic is entirely
-    subject-agnostic.
+
+def record_hook_invocation(argv: Sequence[str]) -> None:
+    """Record the argv a hook-spawning helper is about to hand to
+    `subprocess.run`. EVERY such helper in this repo must call this on the
+    line immediately before it spawns — that recording is the only thing
+    that lets `check_runs_under_registered_interpreter` observe the REAL
+    invocation instead of a property of `registered_interpreter()`'s
+    return value (see module docstring).
+
+    A no-op outside `capture_hook_invocations()`, so ordinary check runs
+    pay nothing for it.
+    """
+    if _CAPTURED is not None:
+        _CAPTURED.append([str(a) for a in argv])
+
+
+@contextlib.contextmanager
+def capture_hook_invocations() -> Iterator[list[list[str]]]:
+    """Collect every `record_hook_invocation()` argv spawned inside the
+    block. Restores the previous collector on exit, so nesting is safe."""
+    global _CAPTURED
+    previous = _CAPTURED
+    collected: list[list[str]] = []
+    _CAPTURED = collected
+    try:
+        yield collected
+    finally:
+        _CAPTURED = previous
+
+
+def check_runs_under_registered_interpreter(
+    hook_path: Path, *, spawn: Callable[[], object], hook_label: str | None = None
+) -> CheckResult:
+    """Shared check for any rubric row whose subject is a PYTHON hook
+    invoked as a subprocess: `hook_path` must resolve to a real
+    `.claude/settings.json` registration, and the rubric's own subprocess
+    helper must ACTUALLY SPAWN under that registered interpreter — never a
+    silent fallback to `sys.executable` (the exact drift #192/backlog :116
+    exists to kill: the gate ran hooks under 3.11/venv-3.1x while
+    consultants run bare `python3`, 3.9.6 on most machines).
+
+    Python-hook-specific, not fully subject-agnostic: an empty registered
+    prefix (a shell hook invoked directly via its own shebang, e.g.
+    `auto-branch.sh`) is a legitimate `registered_interpreter()` return
+    value but a hard failure HERE, because a Python hook must be registered
+    with an explicit interpreter. A future shell-hook row needs its own
+    check, not this one. Everything else is caller-supplied: each caller
+    passes its own `hook_path` (e.g. `.claude/hooks/mcp-query-guard.py`,
+    `.claude/hooks/anonymize-guard.py`) and its own `spawn`.
+
+    `spawn` must be a zero-argument callable that performs ONE real
+    invocation of `hook_path` through the rubric's own production
+    subprocess helper (`_run_hook`, `_run_anonymize_guard`, ...) — not a
+    bespoke `subprocess.run` written for this check, which would observe
+    nothing about the code paths every other check on the row uses. Its
+    return value and the hook's decision are ignored; only the argv the
+    helper recorded matters. Give it whatever throwaway fixture root and
+    payload are cheapest.
 
     Fails (hard_fail, red) rather than raising if the hook has no
-    registration — HookNotRegisteredError is caught here and reported as a
-    named check failure, not a rubric-crashing exception; every OTHER
-    caller of `registered_interpreter()` in this codebase (the actual
+    registration, if `spawn` raises, or if `spawn` records no invocation —
+    HookNotRegisteredError is caught here and reported as a named check
+    failure, not a rubric-crashing exception; every OTHER caller of
+    `registered_interpreter()` in this codebase (the actual
     subprocess-invoking helpers) is expected to let it propagate.
     """
     name = "runs_under_registered_interpreter"
     label = hook_label or hook_path.name
+
+    def fail(detail: str) -> CheckResult:
+        return CheckResult(name, 0.0, False, hard_fail=True, detail=f"{label}: {detail}")
+
     try:
         prefix = registered_interpreter(hook_path)
     except HookNotRegisteredError as exc:
-        return CheckResult(name, 0.0, False, hard_fail=True, detail=f"{label}: {exc}")
+        return fail(str(exc))
 
     if not prefix:
-        return CheckResult(
-            name, 0.0, False, hard_fail=True,
-            detail=f"{label}: registered_interpreter() returned an empty interpreter "
-                   f"prefix — a Python hook must be registered with an explicit "
-                   f"interpreter (bare 'python3' or a resolver wrapper), not invoked "
-                   f"directly via its own shebang",
+        return fail(
+            "registered_interpreter() returned an empty interpreter prefix — a "
+            "Python hook must be registered with an explicit interpreter (bare "
+            "'python3' or a resolver wrapper), not invoked directly via its own "
+            "shebang"
         )
 
-    # The regression this whole ticket exists to prevent: a silent fallback
-    # to sys.executable (CI's 3.11 / the local venv interpreter) instead of
+    # Assertion 1 (about the RESOLVER): it must not have fallen back to
+    # sys.executable — CI's 3.11 / the local venv interpreter — instead of
     # the interpreter settings.json actually registers (bare 'python3').
-    # These are essentially never equal in a real checkout — 'python3' is a
-    # bare PATH-resolved word, sys.executable an absolute interpreter path
-    # — so this also functions as the mutation-bite assertion: mutate
-    # registered_interpreter() to return [sys.executable] and this goes red.
-    ok = prefix != [sys.executable]
-    detail = (
+    # These are essentially never equal in a real checkout: 'python3' is a
+    # bare PATH-resolved word, sys.executable an absolute interpreter path.
+    # Bites the mutation `registered_interpreter() -> [sys.executable]`.
+    if prefix == [sys.executable]:
+        return fail(
+            f"registered_interpreter() returned the eval-runner's own "
+            f"sys.executable ({sys.executable!r}) — that is the silent fallback "
+            f"#192 exists to close, not a real settings.json registration"
+        )
+
+    # Assertion 2 (about the REAL INVOCATION): spawn once through the
+    # rubric's own production helper and inspect the argv it actually
+    # handed to subprocess.run. Assertion 1 cannot see this — the
+    # spec-review FAIL reverted the call site to [sys.executable, hook]
+    # with the resolver untouched and this row still scored 1.000. Bites
+    # the mutation `_run_hook argv -> [sys.executable, ...]`.
+    try:
+        with capture_hook_invocations() as recorded:
+            spawn()
+    except Exception as exc:  # noqa: BLE001 - report, never crash the rubric
+        return fail(f"spawn() raised {type(exc).__name__}: {exc}")
+
+    if not recorded:
+        return fail(
+            "spawn() recorded no hook invocation — the rubric's subprocess helper "
+            "must call rubrics._harness.record_hook_invocation(argv) immediately "
+            "before subprocess.run, otherwise nothing observes which interpreter "
+            "the hook is really spawned under"
+        )
+
+    target = (hook_path if hook_path.is_absolute() else (repo_root() / hook_path)).resolve()
+    for argv in recorded:
+        if list(argv[: len(prefix)]) != list(prefix):
+            return fail(
+                f"the helper spawned {argv!r}, whose interpreter prefix is NOT the "
+                f"registered {prefix!r} — the hook is being certified under an "
+                f"interpreter no consultant session invokes it with"
+            )
+        if not any(_resolves_to(tok, target) for tok in argv[len(prefix):]):
+            return fail(
+                f"the helper spawned {argv!r}, which does not name {target} after "
+                f"its interpreter prefix — this check observed an invocation of "
+                f"something other than the hook under test"
+            )
+
+    return CheckResult(name, 1.0, True, hard_fail=True, detail=(
         f"{label}: registered interpreter argv prefix = {prefix!r}; "
-        f"eval-runner's sys.executable = {sys.executable!r}"
-    )
-    return CheckResult(name, 1.0 if ok else 0.0, ok, hard_fail=True, detail=detail)
+        f"eval-runner's sys.executable = {sys.executable!r}; "
+        f"actually spawned by the rubric's own helper = {recorded[0]!r}"
+    ))
+
+
+def _resolves_to(token: str, target: Path) -> bool:
+    try:
+        return Path(token).resolve() == target
+    except OSError:
+        return False

@@ -54,7 +54,11 @@ from pathlib import Path
 from typing import Optional
 
 from rubrics.base import CheckResult, repo_root
-from rubrics._harness import check_runs_under_registered_interpreter, registered_interpreter
+from rubrics._harness import (
+    check_runs_under_registered_interpreter,
+    record_hook_invocation,
+    registered_interpreter,
+)
 
 HOOK_REL_PATH = Path(".claude") / "hooks" / "mcp-query-guard.py"
 
@@ -98,10 +102,18 @@ def _run_hook(project_dir: Path, stdin_bytes: bytes) -> subprocess.CompletedProc
     subprocess call built from `sys.executable` would silently certify the
     hook under CI's/this eval-runner's interpreter instead, which is
     exactly the drift #192 exists to close. `registered_interpreter()`
-    raises loudly (never falls back) if the hook isn't registered."""
+    raises loudly (never falls back) if the hook isn't registered.
+
+    `record_hook_invocation(argv)` below is load-bearing, not telemetry:
+    it is what lets `runs_under_registered_interpreter` assert against the
+    argv this helper REALLY spawned. Without it that check can only observe
+    the resolver's return value, and reverting this line to
+    `[sys.executable, ...]` scores 1.000 green (spec-review FAIL,
+    2026-08-26). Never spawn the hook here without recording first."""
     env = dict(os.environ)
     env["CLAUDE_PROJECT_DIR"] = str(project_dir)
     argv = registered_interpreter(_hook_path()) + [str(_hook_path())]
+    record_hook_invocation(argv)
     return subprocess.run(
         argv,
         input=stdin_bytes,
@@ -562,12 +574,22 @@ def _ignores_unfilled_template_placeholders(root: Path) -> CheckResult:
     ))
 
 
-def _runs_under_registered_interpreter(_root: Path) -> CheckResult:
+def _runs_under_registered_interpreter(root: Path) -> CheckResult:
     """#192/backlog :116 — the hook must be invoked under whatever
     interpreter `.claude/settings.json` actually registers for it (bare
-    `python3`), never a silent fallback to `sys.executable`. Shared,
-    subject-agnostic check — see rubrics/_harness.py."""
-    return check_runs_under_registered_interpreter(_hook_path(), hook_label="mcp-query-guard.py")
+    `python3`), never a silent fallback to `sys.executable`. Shared check
+    for Python-hook rows — see rubrics/_harness.py.
+
+    `spawn` deliberately goes through this module's own production
+    `_run_hook`, the same helper all 15 other checks use, so the check
+    observes the argv the row REALLY spawns rather than a re-implementation
+    written for it. The payload is a throwaway generic query against an
+    empty fixture root; the decision is irrelevant here."""
+    return check_runs_under_registered_interpreter(
+        _hook_path(),
+        hook_label="mcp-query-guard.py",
+        spawn=lambda: _run_hook(root, _payload({"query": "generic platform capabilities"})),
+    )
 
 
 def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained, ignores target
