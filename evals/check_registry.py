@@ -180,8 +180,29 @@ def check_mutation_coverage(name: str, spec: dict, errors: list[str],
 # --- #188: the retired altitude name is now a HARD ERROR ---------------------
 # Sentinels around the one deliberate in-tree use of the retired name (the
 # rename error text in run_experiment.py). Lines between them are not counted.
+#
+# HARDENING (#188 correction pass). As first shipped this skip was a bare
+# substring test applied to every line of every in-scope file, with no pairing
+# and no width bound. The review demonstrated the exploit end-to-end: paste the
+# two magic strings into `registry.yaml` as YAML comments, put a real
+# reintroduction between them (`altitude: pipeline` AND
+# `evaluator: rubrics.pipeline.contracts`), and preflight returned exit 0 PASS.
+# The skip is now:
+#   • anchored   — honoured ONLY in `evals/run_experiment.py`; in every other
+#                  in-scope file the sentinel strings are ordinary text and the
+#                  line is scanned like any other,
+#   • bounded    — at most `_OLD_NAME_SKIP_MAX_LINES` lines after the open; past
+#                  that the region is reported and scanning RESUMES, so a
+#                  widened fence cannot swallow the rest of the file,
+#   • paired     — at most one region per file, an open with no close in the
+#                  same file is an error, and a stray close is an error.
 _OLD_NAME_SKIP_OPEN = "BEGIN old-altitude error text"
 _OLD_NAME_SKIP_CLOSE = "END old-altitude error text"
+# The ONE file whose sentinels are honoured. Anywhere else they are just text.
+_OLD_NAME_SKIP_FILE = "evals/run_experiment.py"
+# The real region is ~15 lines (the comment + `_RETIRED_ALTITUDE` + the error
+# string). The cap leaves headroom for editing the rationale and no more.
+_OLD_NAME_SKIP_MAX_LINES = 25
 
 # Files this assertion scans: the registry, the runner, the runtime scorer, both
 # CI workflows, and the human-facing docs that told people to run the flag.
@@ -202,6 +223,11 @@ _OLD_NAME_SCOPE = (
     ".claude/skills/bb-refine/SKILL.md",
     ".claude/skills/bb-prd/SKILL.md",
     ".claude/skills/bb-prd/formats/prd-format.md",
+    # Live in-tree doc that renders a table of the CURRENT check-sets — not a
+    # historical PRD. It carried `pipeline contracts` past the #188 rename
+    # (review finding 1: acceptance criterion 3 said 0 in-tree occurrences, and
+    # only this list's omission hid the violation).
+    "docs/EVAL_SYSTEM_REVIEW.html",
 )
 
 # THE MATCHING RULE. The bare word "pipeline" is a legitimate, load-bearing term
@@ -222,12 +248,45 @@ _OLD_NAME_SCOPE = (
 #   7. a registry/report dict key         `["pipeline"]`, `.get("pipeline"`
 #   8. a score/label name                 `name="pipeline"`
 #   9. the check-set label                "pipeline contracts"
+#  10. ANY bare quoted literal            `"pipeline"` / `'pipeline'`
+#
+# Pattern 10 is the #188 correction pass, and it is the load-bearing one. The
+# review wrote 35 must-match forms against patterns 1-9 and TWELVE escaped —
+# including a straight revert of #188's own diff:
+#
+#     choices=["unit", "pipeline", "deliverable"]
+#
+# Patterns 1-9 all key off a nearby token (`--altitude`, `altitude`, `rubrics.`,
+# `name=`, a `[`), so renaming the surrounding variable or moving the literal
+# into a collection walked straight through them. The review then proved the
+# consequence: delete the runner's guard, add `"pipeline"` back to `_ALTITUDES`,
+# make dispatch accept both — preflight exit 0 PASS and `--altitude pipeline`
+# green again. A complete alias resurrection, invisible to the gate.
+#
+# Matching the bare quoted literal in ANY position closes `choices=[...]`,
+# `frozenset({...})`, `in ("pipeline", ...)`, an alias dict `{"pipeline": ...}`
+# (the alias design-D4 forbids outright), `default="pipeline"`, `alt = "pipeline"`
+# and `getattr(args,'altitude')=='pipeline'` in one stroke, and it does not care
+# what the variable is called. Patterns 1-9 are kept because they produce a
+# far better error message for the form they name, and because several of them
+# (the CLI flag, the prose form, the `pipeline:` section key, "pipeline
+# contracts") match UNQUOTED text that 10 never sees.
+#
+# The whole set is matched case-insensitively, so `ALTITUDE: PIPELINE` in a
+# workflow or a doc cannot walk past pattern 2.
 #
 # Deliberately NOT matched: `pipeline_engagement`, `.pipeline_run_report.json`,
 # `pipeline_run_report/eval/v2` (an underscore is a word character, so `\bpipeline\b`
 # does not fire inside them), and any sentence that merely says the altitude does
 # not run the pipeline — that sentence is the point of the rename and must stay
-# writable.
+# writable, so prose names the retired flag in BACKTICKS (`pipeline`), which
+# pattern 10 does not match. False-positive containment for 10 is the scope list
+# above: the honest quoted uses in the repo — `tests/fixtures/
+# mode_composer_selftest.py`'s `modes.get("pipeline")`, and everything under
+# `evals/goldens/pipeline_engagement/` — are not in it. The one in-scope
+# collision found when 10 was added was a rationale comment in `evals/runtime.py`
+# that quoted the retired name with straight quotes; it now uses backticks like
+# the rest of the prose.
 _OLD_ALTITUDE_NAME_PATTERNS = (
     (r"--altitude[=\s]+[\"\']?pipeline\b",                  "CLI flag `--altitude pipeline`"),
     (r"\baltitude\s*[:=]\s*[\"\']?pipeline\b",              "`altitude: pipeline` field/kwarg"),
@@ -238,6 +297,10 @@ _OLD_ALTITUDE_NAME_PATTERNS = (
     (r"\[[\"\']pipeline[\"\']\]|\.get\(\s*[\"\']pipeline[\"\']",  "dict key `[\"pipeline\"]`"),
     (r"\bname\s*=\s*[\"\']pipeline[\"\']",                  "score/label `name=\"pipeline\"`"),
     (r"\bpipeline contracts\b",                             "check-set label \"pipeline contracts\""),
+    (r"[\"\']pipeline[\"\']",
+     "a bare quoted literal `\"pipeline\"` — a `choices=`/`frozenset`/`in (...)` "
+     "member, an alias-dict key, a `default=`, or any renamed variable holding "
+     "the retired altitude name"),
 )
 
 
@@ -255,26 +318,61 @@ def _check_old_altitude_name(errors: list[str]) -> None:
 
     Exactly one occurrence is allowed in-tree: the rename error text in
     `run_experiment.py`, which must quote the old flag verbatim to be useful.
-    It is fenced by the `_OLD_NAME_SKIP_*` sentinels and skipped here. This file
-    itself is not in scope — it holds the patterns, so it cannot scan for a
-    token it must contain.
+    It is fenced by the `_OLD_NAME_SKIP_*` sentinels and skipped here — but only
+    in `run_experiment.py` itself, bounded to `_OLD_NAME_SKIP_MAX_LINES`, and at
+    most once per file; see the sentinel constants above for the exploit that
+    hardening closes. This file itself is not in scope — it holds the patterns,
+    so it cannot scan for a token it must contain.
     """
-    compiled = [(re.compile(pat), why) for pat, why in _OLD_ALTITUDE_NAME_PATTERNS]
+    compiled = [(re.compile(pat, re.IGNORECASE), why)
+                for pat, why in _OLD_ALTITUDE_NAME_PATTERNS]
     for rel in _OLD_NAME_SCOPE:
         f = ROOT / rel
         if not f.is_file():
             continue
-        skipping = False
+        # Sentinels are honoured in exactly one file. Everywhere else they are
+        # ordinary text and the lines around them are scanned normally.
+        honour_sentinels = rel == _OLD_NAME_SKIP_FILE
+        skip_open_line = 0      # 0 == no region currently open
+        regions_seen = 0
+        width_reported = False
         for lineno, line in enumerate(
                 f.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
-            if _OLD_NAME_SKIP_OPEN in line:
-                skipping = True
+            if honour_sentinels and _OLD_NAME_SKIP_OPEN in line:
+                if skip_open_line:
+                    errors.append(
+                        f"{rel}:{lineno}: a second `{_OLD_NAME_SKIP_OPEN}` sentinel opened "
+                        f"while the region at line {skip_open_line} was still open. "
+                        f"The skip fences ONE region; nesting it is how a fence gets widened "
+                        f"until it hides a reintroduction.")
+                else:
+                    regions_seen += 1
+                    if regions_seen > 1:
+                        errors.append(
+                            f"{rel}:{lineno}: a second `{_OLD_NAME_SKIP_OPEN}` region in this "
+                            f"file. Exactly one region is permitted — the rename error text.")
+                    skip_open_line = lineno
+                    width_reported = False
                 continue
-            if _OLD_NAME_SKIP_CLOSE in line:
-                skipping = False
+            if honour_sentinels and _OLD_NAME_SKIP_CLOSE in line:
+                if not skip_open_line:
+                    errors.append(
+                        f"{rel}:{lineno}: `{_OLD_NAME_SKIP_CLOSE}` with no matching "
+                        f"`{_OLD_NAME_SKIP_OPEN}` above it.")
+                skip_open_line = 0
                 continue
-            if skipping:
-                continue
+            if skip_open_line:
+                if lineno - skip_open_line <= _OLD_NAME_SKIP_MAX_LINES:
+                    continue
+                # Over the cap: report once, then RESUME scanning. A fence that
+                # is never closed must not silently swallow the rest of the file.
+                if not width_reported:
+                    errors.append(
+                        f"{rel}:{skip_open_line}: the `{_OLD_NAME_SKIP_OPEN}` region runs past "
+                        f"{_OLD_NAME_SKIP_MAX_LINES} lines without a "
+                        f"`{_OLD_NAME_SKIP_CLOSE}`. Scanning resumed at line {lineno} — the "
+                        f"region fences the rename error text only, not an open-ended block.")
+                    width_reported = True
             for rx, why in compiled:
                 if rx.search(line):
                     errors.append(
@@ -285,9 +383,16 @@ def _check_old_altitude_name(errors: list[str]) -> None:
                         f"(CLI/label) or `deliverable_structural` (registry/report key). "
                         f"The only permitted occurrence is the rename error text in "
                         f"run_experiment.py, fenced by the "
-                        f"`{_OLD_NAME_SKIP_OPEN}` / `{_OLD_NAME_SKIP_CLOSE}` sentinels."
+                        f"`{_OLD_NAME_SKIP_OPEN}` / `{_OLD_NAME_SKIP_CLOSE}` sentinels "
+                        f"in {_OLD_NAME_SKIP_FILE} (those sentinels are inert in every "
+                        f"other file)."
                     )
                     break
+        if skip_open_line:
+            errors.append(
+                f"{rel}:{skip_open_line}: `{_OLD_NAME_SKIP_OPEN}` is never closed by a "
+                f"`{_OLD_NAME_SKIP_CLOSE}` in this file. An unclosed fence would exempt "
+                f"everything below it.")
 
 
 def main(argv: list[str]) -> int:
