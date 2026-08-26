@@ -26,6 +26,13 @@ WHAT CHANGED (ticket #160, .prd/prd-v6.md, .design/solution-design-v6.md D1/D2)
   what `orchestrate.py`'s `step_discovery` now does). Nothing else about
   the four signatures, or the CLI, changed.
 
+  UPDATE (ticket #167, D14 seam) — `anonymize_transcript_file` gained one
+  more ADDITIVE keyword-only param, `client_slug=None`. Default `None` is
+  today's behaviour (the deny-list mines the client DIRECTORY NAME). Once
+  #168 makes engagement directories opaque IDs, `orchestrate.py` resolves
+  the real slug out of `.engagement_map.json` and passes it here so the
+  client's own name stays on the deny-list. Signatures otherwise unchanged.
+
   Placeholders are now `<ENTITY_N>` (e.g. `<PERSON_1>`, `<EMAIL_ADDRESS_2>`),
   not `[CLIENT]` / `[PERSON-1]`. `[CLIENT]` was simultaneously a PII
   placeholder AND a filename/prose template token
@@ -270,6 +277,7 @@ def anonymize_transcript_file(
     output_dir: Optional[Path] = None,
     *,
     entity_mapping: Optional[dict] = None,
+    client_slug: Optional[str] = None,
 ) -> tuple:
     """Anonymize a transcript file, writing the anonymized copy and its
     mapping file alongside it (or under `output_dir`).
@@ -298,6 +306,21 @@ def anonymize_transcript_file(
     standalone behaviour exactly (numbering restarts at 1, own dict).
     Sequential use only — see `anonymize_text`'s docstring.
 
+    `client_slug`: optional override for the client slug the deny-list mines
+    (ticket #167, solution-design-v6.md D14). Default `None` preserves
+    today's behaviour exactly — `resolve_engagement_deny_list` falls back to
+    the client/engagement DIRECTORY NAME, which pre-#168 *is* the client's
+    name (`engagements/hdfc/...`). Once #168 makes those directories opaque
+    IDs (`engagements/e7f3a2c1/...`) that fallback degrades to a meaningless
+    token, and the binding from ID to client lives only in
+    `.engagement_map.json`. This parameter is the seam
+    `denylist.resolve_engagement_deny_list(..., client_slug=)` already
+    documented; `orchestrate.py` resolves the slug through
+    `pii.identity.client_for_id()` and passes it here, which is what keeps
+    the client's own name on the deny-list after the directory goes opaque.
+    Nothing else about the signature changed — this is additive and
+    keyword-only, exactly like #161's `entity_mapping`.
+
     Returns (anonymized_transcript_path, mapping_path). The mapping file is
     written in the v2 nested-by-entity-type shape and chmod'd 0600 — it
     contains real client PII (solution-design-v6.md §9). When
@@ -310,7 +333,9 @@ def anonymize_transcript_file(
     transcript_path = Path(transcript_path)
     engagement_dir = Path(engagement_dir)
 
-    session = engine.PIISession.for_engagement(engagement_dir, entity_mapping=entity_mapping)
+    session = engine.PIISession.for_engagement(
+        engagement_dir, client_slug=client_slug, entity_mapping=entity_mapping
+    )
 
     original_text = transcript_path.read_text()
     anonymized_text = session.anonymize(original_text)
