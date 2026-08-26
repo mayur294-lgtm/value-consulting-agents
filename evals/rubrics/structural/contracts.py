@@ -1,14 +1,18 @@
-"""Pipeline (integration) altitude — inter-agent contract checks.
+"""Deliverable-structural altitude — inter-agent contract checks over output FILES.
 
-The most important altitude: when ANY component changes, this verifies the change
-didn't break the chain. Cortex agents pass data to each other (discovery ->
-capability/roi -> assembler), so a local edit can silently break a downstream
-consumer. This checks the contracts hold across a golden engagement's outputs.
+Cortex agents pass data to each other (discovery -> capability/roi -> assembler),
+so a local edit can silently break a downstream consumer. These checks assert the
+structural contracts still hold across a set of engagement outputs: the expected
+deliverables exist, evidence IDs are present and shared, and the deliverables clear
+their own hard gates.
 
-Today (path-2) it inspects an existing engagement's outputs dir. The path-1 upgrade
-(documented in evals/README.md) is to first run `orchestrate.py` end-to-end on the
-golden inputs so the check scores freshly regenerated outputs, catching prompt
-regressions live.
+WHAT THIS IS NOT (#188): it does not run `scripts/orchestrate.py`, does not invoke
+an agent, and does not read the component you just changed. It reads files that
+already exist on disk. Under its old name (`pipeline`) a green result was
+repeatedly cited as integration evidence; it never was. A real end-to-end run is
+`scripts/orchestrate.py` on a synthetic engagement, and is out of scope for the
+gate. The path-1 upgrade (documented in evals/README.md) is to regenerate the
+outputs first, so the checks score freshly produced files.
 """
 from __future__ import annotations
 

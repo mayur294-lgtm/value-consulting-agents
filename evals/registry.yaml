@@ -412,14 +412,18 @@ components:
         find: "        shadow = Path(td) / \"repo\"\n        shadow.mkdir()"
         replace: "        shadow = src_root / \".mutation_shadow_leak\" / \"repo\"\n        shadow.mkdir(parents=True, exist_ok=True)"
 
-# Pipeline (integration) altitude — the most important. When ANY component
-# changes, run orchestrate.py end-to-end on a golden engagement and check the
-# inter-agent contracts + final deliverable still hold.
-pipeline:
-  altitude: pipeline
-  evaluator: rubrics.pipeline.contracts
+# Deliverable-structural altitude (#188 — was `pipeline:`; same checks, honest
+# name). It lints the inter-agent structural contracts across a set of output
+# FILES that already exist on disk. It does NOT run orchestrate.py, does not
+# invoke an agent, and never reads the component under change — a green here is
+# not integration evidence. The old name is what made a 1.000 look like one.
+deliverable_structural:
+  altitude: deliverable_structural
+  evaluator: rubrics.structural.contracts
   threshold: 0.90
   # Committed, anonymized golden engagement outputs (Path-2: score existing).
   # Re-pointed from a never-created `nfis` engagement — see PRD v1.
+  # NOTE: the fixture directory keeps its `pipeline_engagement` name — those are
+  # genuinely the outputs of a past pipeline run, not the altitude's name.
   golden_engagement: evals/goldens/pipeline_engagement/outputs
   orchestrate: orchestrate.py
