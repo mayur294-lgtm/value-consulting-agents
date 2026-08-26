@@ -59,11 +59,23 @@ CLAUDECODE= .venv/bin/python scripts/orchestrate.py --resume-from {step} {engage
 CLAUDECODE= .venv/bin/python scripts/orchestrate.py --dry-run {engagement_dir}        # plan only, no API calls
 ```
 
-**Bootstrap a new engagement** (creates the client→engagement hierarchy, intake + journal templates, session UUID). Run from repo root:
+**Bootstrap a new engagement** (mints an opaque engagement ID, writes the map entry and CLIENT_PROFILE.md, creates intake + journal templates and the session UUID). Signature unchanged — you still pass the client's short name. Run from repo root:
 
 ```bash
 ./scripts/init_engagement.sh <client_short_name> <YYYY-MM_domain_type> [assessment|ignite]
 # e.g. ./scripts/init_engagement.sh navy_federal 2026-02_retail_assessment assessment
+```
+
+**Find an engagement** — you never type an opaque ID; partial and case-insensitive:
+
+```bash
+./scripts/find_engagement.sh navy_federal
+```
+
+**Migrate existing client-named engagement directories to opaque IDs** — one time, consultant-invoked only (never from a hook), **dry run by default**. It refuses to migrate any engagement that would lose a deny-list term:
+
+```bash
+./scripts/migrate_engagement_ids.sh
 ```
 
 **Agent quality checks** — what `test-agents.yml` runs on agent/knowledge/template PRs ($0, no LLM; validates against `tests/quality_metrics.yaml`):
@@ -97,7 +109,7 @@ The big picture that spans multiple files (see `STRUCTURE.md`, `FLYWHEEL.md`, an
 
 4. **Skills are slash commands** in `.claude/commands/` (~28): the `/frontline*` family (deck/doc builders — see catalog below), `/generate-assessment-html`, `/generate-roi-questionnaire`, `/generate-roi-excel`, `/build-roi`, `/build-journey`, `/run-pipeline`, `/publish`, `/reconcile`, `/scan-engagement`, `/extract-learnings`, and the `domain-*` retrievers. (`.claude/skills/` holds only the `coding-standards` plugin skill.)
 
-5. **Engagement hierarchy** (`engagements/[client]/[YYYY-MM_domain_type]/`, detailed in `STRUCTURE.md`): a persistent `CLIENT_PROFILE.md` per client (survives across engagements) plus per-engagement `inputs/`, `outputs/`, `ENGAGEMENT_JOURNAL.md`, and `.engagement_session_id`.
+5. **Engagement hierarchy** (`engagements/[opaque_id]/[YYYY-MM_domain_type]/`, detailed in `STRUCTURE.md`): the top-level directory is a random opaque ID, because `compose_prompt` renders `engagement_dir` into every agent prompt and `cwd` is that path — a client-named directory leaks the client on every call (solution-design-v6 D6). The ID→client binding lives only in `.engagement_map.json` (repo root, chmod 600, gitignored); `./scripts/find_engagement.sh <client>` is the lookup, so no one types an ID. Inside is unchanged: `CLIENT_PROFILE.md` (carried forward to each new engagement for that client, and the file that keeps the client's name on the deny-list now the directory name doesn't), plus per-engagement `inputs/`, `outputs/`, `ENGAGEMENT_JOURNAL.md`, and `.engagement_session_id`.
 
 6. **The Flywheel** (`FLYWHEEL.md`) — ⚠️ **auto-dev loop KILLED (2026-06-24).** The autonomous `dev-agent.yml` (which auto-implemented `ready-for-dev` telemetry issues) is removed — it changed agents **outside** the bb-* harness + eval gate. Telemetry/Triage still run as **intake only** (telemetry → prioritized issue → feeds the next `bb-prd` backlog); **nothing auto-implements.** All component changes go through the **bb-* development harness** (`bb-prd → bb-design → bb-tickets → bb-build (eval verify) → bb-pr-review → bb-refine`) with evals as the gate. Deprecated: `.claude/agents/deprecated/{dev-agent,review-agent,coach-agent}.md`.
 

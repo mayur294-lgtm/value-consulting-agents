@@ -98,6 +98,11 @@ __all__ = [
     "register_engagement",
     "client_for_id",
     "ids_for_client",
+    "search_engagements",
+    "render_client_profile",
+    "uncovered",
+    "IDENTIFIER_SECTION",
+    "PROFILE_TEMPLATE",
     "engagement_root",
     "rebuild_map",
     "materialise_workspace",
@@ -397,6 +402,66 @@ def ids_for_client(client, project_dir=None) -> List[str]:
     return [eid for _created, eid in sorted(matches)]
 
 
+def _match_key(value: str) -> str:
+    """Normalise a name for PARTIAL matching: lowercase, alphanumerics only.
+
+    Deliberately stronger than `_slugify` (which keeps separators as `_`), so
+    "peoples_first_bank", "Peoples First Bank" and "peoplesfirstbank" all
+    reduce to the same key and a consultant's half-remembered spelling still
+    finds their engagement.
+    """
+    return _ALNUM_RE.sub("", (value or "").strip().lower())
+
+
+def search_engagements(query, project_dir=None) -> List[Dict[str, str]]:
+    """Client name or slug (PARTIAL, case-insensitive) -> every matching
+    engagement, oldest first. This is what `find_engagement.sh` calls (#168).
+
+    `ids_for_client` is the exact-match lookup; this is its forgiving sibling.
+    A consultant types what they remember ("peoples", "BDO", "hdfc") and gets
+    every engagement whose client name OR slug CONTAINS it. Exact matches are
+    a subset, so this never returns less than `ids_for_client` would.
+
+    Each result carries the resolved `path` as well as the record, because the
+    caller's whole purpose is to `cd` there — making it look the path up
+    separately would just be a second chance to get it wrong.
+
+    Raises `UnknownClientError` (naming the map) when nothing matches, for the
+    same reason `ids_for_client` does: an empty list is indistinguishable from
+    a typo, and the shell wrapper needs a non-zero exit to report.
+    """
+    needle = _match_key(query)
+    if not needle:
+        raise EngagementIdentityError(
+            "search_engagements: a client name or slug is required"
+        )
+
+    data = load_map(project_dir)
+    base = Path(project_dir) if project_dir is not None else repo_root()
+
+    matches = []
+    for eid, record in data.items():
+        haystacks = (_match_key(record.get("client", "")),
+                     _match_key(record.get("slug", "")))
+        if not any(needle in h for h in haystacks if h):
+            continue
+        matches.append({
+            "id": eid,
+            "client": record.get("client", ""),
+            "slug": record.get("slug", ""),
+            "created": record.get("created", ""),
+            "path": str(base / "engagements" / eid),
+        })
+
+    if not matches:
+        raise UnknownClientError(
+            "no engagement matching %r in %s — check the spelling, or run "
+            "./scripts/init_engagement.sh to create one."
+            % (query, map_path(project_dir))
+        )
+    return sorted(matches, key=lambda m: (m["created"], m["id"]))
+
+
 def engagement_root(engagement_id, project_dir=None) -> Path:
     """`<project_dir>/engagements/<id>` — the opaque directory an ID names.
 
@@ -499,6 +564,146 @@ def rebuild_map(project_dir=None, apply=False) -> Dict[str, object]:
         "map": str(map_path(project_dir)),
     }
 
+
+
+# --- the CLIENT_PROFILE.md an opaque directory must carry -------------------
+#
+# An opaque directory removes the client slug, and the slug is a DENY-LIST
+# SOURCE as well as a leak (`denylist.extract_terms_from_slug`). Whatever
+# creates an opaque directory — `init_engagement.sh` for a new engagement,
+# `migrate_engagement_ids.sh` for an existing one — has to put the client's
+# written identifier forms somewhere the resolvers still read, or the gate
+# quietly stops firing. That place is CLIENT_PROFILE.md, already the second
+# entry in the design's ordered deny-list sources and read by BOTH
+# `resolve_deny_list` (whole repo, what mcp-query-guard.py uses) and
+# `resolve_engagement_deny_list` (one engagement).
+#
+# This does NOT teach the deny-list to read the map — D14 keeps the map out
+# of `denylist.py` so `drift_check.py`'s byte-parity with the copy inside
+# `mcp-query-guard.py` survives. It writes a file the existing resolvers
+# already read.
+
+PROFILE_TEMPLATE = "templates/client_profile.md"
+
+IDENTIFIER_SECTION = "## Identifier Forms (deny-list)"
+
+
+def _term_pattern(term):
+    """Byte-for-byte the matcher `mcp-query-guard.py` uses to decide whether a
+    deny-list term appears in an outbound query. Copied deliberately: the
+    question this module has to answer is "would the gate still block this?",
+    and only the gate's own matcher can answer it.
+    """
+    return re.compile(
+        r"(?<![A-Za-z0-9])" + re.escape(term) + r"(?![A-Za-z0-9])",
+        re.IGNORECASE,
+    )
+
+
+def uncovered(before, after):
+    """Which of `before`'s terms would no longer be blocked, given `after`.
+
+    NOT a string-subset test. A deny-list term is a MATCHER, not a label, so
+    the right question is whether some surviving term still fires on text
+    containing the old one. `hdfc` is fully covered by `HDFC` (the gate
+    matches case-insensitively) and reporting it as lost would be noise.
+    `bankaustralia` is NOT covered by `Bank Australia` — the gate's
+    alphanumeric boundaries mean the spaced form never fires on the
+    concatenated one — and reporting that as fine would be the leak.
+    """
+    patterns = [_term_pattern(t) for t in after if t]
+    return set(
+        term for term in before
+        if term and not any(pat.search(term) for pat in patterns)
+    )
+
+
+def render_client_profile(client_name, client_slug, existing=None, project_dir=None):
+    """The CLIENT_PROFILE.md body to place in the opaque directory.
+
+    An existing profile is PRESERVED and only its `- **Name:**` line is filled
+    if it is still a placeholder — a consultant's accumulated long-term notes
+    about a client are never discarded to satisfy a deny-list rule.
+    """
+    existing = Path(existing) if existing is not None else None
+    if existing is not None and existing.is_file():
+        text = existing.read_text(encoding="utf-8")
+        if _client_name_from_profile(text):
+            return text  # already filled — leave every byte alone
+    else:
+        base = Path(project_dir) if project_dir is not None else repo_root()
+        template = base / PROFILE_TEMPLATE
+        text = (
+            template.read_text(encoding="utf-8")
+            if template.is_file()
+            else "# Client Profile — [Client Name]\n\n## Client Identity\n\n"
+                 "- **Name:** [Full legal name]\n- **Short Name:** [slug]\n"
+        )
+
+    out = []
+    filled_name = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not filled_name and stripped.startswith("- **Name:**"):
+            out.append("- **Name:** %s" % client_name)
+            filled_name = True
+            continue
+        if stripped.startswith("- **Short Name:**"):
+            out.append("- **Short Name:** %s" % client_slug)
+            continue
+        if stripped.startswith("# Client Profile"):
+            out.append("# Client Profile — %s" % client_name)
+            continue
+        out.append(line)
+    if not filled_name:
+        out.insert(0, "- **Name:** %s" % client_name)
+
+    text = "\n".join(out).rstrip("\n") + "\n"
+    return _with_identifier_forms(text, client_name, client_slug)
+
+
+def _with_identifier_forms(text: str, client_name: str, client_slug: str) -> str:
+    """Append (idempotently) the written forms of the client's name that the
+    directory slug used to contribute to the deny-list.
+
+    WHY THIS BLOCK EXISTS, in plain terms: `extract_terms_from_slug` adds the
+    CONCATENATED form of a slug — `bank_australia` yields `bankaustralia` —
+    and nothing in the prose-extraction path can produce that. It is the form
+    that appears in email domains, subdomains and handles. Once the directory
+    is an opaque ID there is no slug left to mine, so unless these forms are
+    written down somewhere the resolver reads, the gate quietly stops firing
+    on them.
+
+    `- **Client Name:**` is the label because that is a label the shared
+    extractor actually matches (`denylist.LABEL_LINE_RE`); a prettier heading
+    that the resolver ignores would look like a fix and be none. Each line is
+    a genuine written form of this client's name, so the file stays truthful.
+    """
+    if IDENTIFIER_SECTION in text:
+        return text  # already written — re-running must not stack duplicates
+
+    slug_terms = set()
+    denylist.extract_terms_from_slug(client_slug, slug_terms)
+    missing = sorted(uncovered(slug_terms, {client_name}))
+    if not missing:
+        return text
+
+    block = [
+        "",
+        IDENTIFIER_SECTION,
+        "",
+        "> Written by Cortex (`init_engagement.sh` / `migrate_engagement_ids.sh`).",
+        "> This engagement's directory is an opaque ID, so the directory name does",
+        "> not supply these forms to the deny-list. They are recorded here instead,",
+        "> under a label",
+        "> `scripts/pii/denylist.py` reads. Do not delete them; add to them if",
+        "> the client is written another way (a domain, a ticker, an acronym).",
+        "",
+    ]
+    for term in missing:
+        block.append("- **Client Name:** %s" % term)
+    block.append("")
+    return text.rstrip("\n") + "\n" + "\n".join(block)
 
 # --- the neutral workspace -------------------------------------------------
 
