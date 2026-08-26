@@ -51,6 +51,7 @@ def _load_dotenv() -> None:
 _load_dotenv()
 
 from rubrics.base import CheckResult, RubricResult  # noqa: E402
+import mutations  # noqa: E402 - evals/mutations.py; the --mutate (#185) harness
 
 
 def _load_registry() -> dict:
@@ -183,6 +184,85 @@ def _evaluate_targets(name: str, evaluator: str, altitude: str, threshold: float
     return ok
 
 
+def _declared_check_names(spec: dict) -> set[str]:
+    """The GATING set for a registry row: `code:` plus `judge:` names, prefixed
+    exactly as `_assert_declared_checks_executed` expects them (`judge:<name>`).
+    `path1_judge:` is excluded on purpose — it never gates (registry.yaml's
+    `components:` header comment)."""
+    code_names = set(spec.get("code") or [])
+    judge_names = set(spec.get("judge") or [])
+    return code_names | {f"judge:{j}" for j in judge_names}
+
+
+def _run_mutate(reg: dict, row: str, target_override: str | None) -> int:
+    """`--mutate <row>` (#185, ux-design-v7 Flow 2): prove every check the row
+    DECLARES actually goes red under a mutation. A check with no mutation
+    entry certifies nothing, so it fails here exactly like an unproven one —
+    the same edge case the registry preflight (#186) will later refuse before
+    any row even runs."""
+    if row in reg.get("components", {}):
+        spec = reg["components"][row]
+        evaluator = spec.get("evaluator", f"rubrics.component.{row.replace('-', '_')}")
+        default_target = spec.get("input", spec.get("golden_engagement", ""))
+    elif row in reg.get("deliverables", {}):
+        spec = reg["deliverables"][row]
+        evaluator = spec["evaluator"]
+        goldens = spec.get("goldens") or []
+        default_target = goldens[0] if goldens else ""
+    else:
+        print(f"\n[FAIL] `{row}` is not a component or deliverable in registry.yaml.")
+        return 2
+
+    target = target_override if target_override is not None else default_target
+    declared = _declared_check_names(spec)
+
+    try:
+        muts = mutations.mutations_from_spec(spec)
+    except mutations.MutationHarnessError as exc:
+        print(f"\n[FAIL] Row `{row}`'s mutation declarations are malformed: {exc}")
+        return 1
+
+    if not muts:
+        print(
+            f"\n[FAIL] Row `{row}` has no mutation proof — no `mutations:` entry (a `negatives:` "
+            f"LIST, if present, is the legacy separate-negative-file form and does not count as "
+            f"one). A gate that cannot fail certifies nothing — add a `mutations:` entry (or "
+            f"dict-form `negatives: {{check: {{strip: ...}}}}`) showing what makes each declared "
+            f"check go red."
+        )
+        return 1
+
+    mutation_by_check = {m.check: m for m in muts}
+    missing = sorted(declared - mutation_by_check.keys())
+    for name in missing:
+        print(
+            f"\n[FAIL] Check `{name}` on row `{row}` has no mutation proof. A gate that cannot "
+            f"fail certifies nothing — add a `mutations:` entry showing what makes it go red."
+        )
+
+    print(f"\n=== --mutate {row} ({len(muts)} mutation{'' if len(muts) == 1 else 's'} declared) ===")
+    try:
+        results = mutations.prove_all(muts, evaluator=evaluator, target=target)
+    except mutations.WorkingTreeMutated as exc:
+        print(f"\n[FAIL] {exc}")
+        return 1
+    except mutations.MutationHarnessError as exc:
+        print(f"\n[FAIL] mutation harness could not run for row `{row}`: {exc}")
+        return 1
+
+    proven = 0
+    for r in results:
+        print(r.message())
+        if r.proven:
+            proven += 1
+
+    total = len(results)
+    ok = (proven == total) and not missing
+    tail = f", {len(missing)} declared check(s) with no mutation entry" if missing else ""
+    print(f"\nmutations: {proven}/{total} proven{tail}")
+    return 0 if ok else 1
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Cortex eval runner")
     ap.add_argument("--deck", help="ad-hoc: run the deck rubric on this HTML file")
@@ -193,6 +273,10 @@ def main() -> int:
     ap.add_argument("--threshold", type=float, help="override the registry threshold")
     ap.add_argument("--negatives", action="store_true",
                     help="also run negatives; the gate passes only if they correctly FAIL")
+    ap.add_argument("--mutate", metavar="ROW",
+                    help="prove every check declared by this component/deliverable row goes "
+                         "red under its `mutations:` entry; exits non-zero if any check is "
+                         "unproven or has no mutation entry")
     args = ap.parse_args()
 
     # --- ad-hoc deck mode (no registry needed) ---------------------------------
@@ -204,6 +288,10 @@ def main() -> int:
         return 0 if res.passed(thr) else 1
 
     reg = _load_registry()
+
+    # --- mutation proof (#185) --------------------------------------------------
+    if args.mutate:
+        return _run_mutate(reg, args.mutate, args.target)
 
     # --- pipeline altitude -----------------------------------------------------
     if args.altitude == "pipeline":

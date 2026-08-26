@@ -343,6 +343,28 @@ components:
     threshold: 1.00
     code: [component_negatives_honoured, missing_target_fails_not_skips,
            declared_checks_all_executed, skipped_judge_does_not_pass]
+    # `mutations:` (#185) — the worked example for the --mutate runner mode.
+    # These four were bite-proven by hand in #183 (see that PR's closing
+    # comment and the PR #206 body for the transcript this reproduces
+    # mechanically): each `find` targets the exact line the matching check
+    # exercises, so mutating it makes ONLY that check go red.
+    mutations:
+      component_negatives_honoured:
+        file: evals/run_experiment.py
+        find: "passed if expect_pass else (not passed)"
+        replace: "passed"
+      missing_target_fails_not_skips:
+        file: evals/run_experiment.py
+        find: "f\"Failing rather than skipping — a skipped target previously left the verdict at PASS.\")\n            ok = False"
+        replace: "f\"Failing rather than skipping — a skipped target previously left the verdict at PASS.\")"
+      declared_checks_all_executed:
+        file: evals/run_experiment.py
+        find: "declared = code_names | {f\"judge:{j}\" for j in gating_judge_names}\n    if not declared:"
+        replace: "declared = code_names | {f\"judge:{j}\" for j in gating_judge_names}\n    return True\n    if not declared:"
+      skipped_judge_does_not_pass:
+        file: evals/rubrics/base.py
+        find: "mark = \"SKIP*\""
+        replace: "mark = \"SKIP\""
 
 # Pipeline (integration) altitude — the most important. When ANY component
 # changes, run orchestrate.py end-to-end on a golden engagement and check the
