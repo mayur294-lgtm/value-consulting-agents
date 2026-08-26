@@ -18,6 +18,7 @@ on:
       - "templates/**"
       - "presentations/**"
       - "scripts/**.py"
+      - "tools/**.py"                 # roi_excel_generator.py and friends — was missing from this filter (#193)
       - "evals/**"
 
 permissions:
@@ -67,8 +68,94 @@ jobs:
         # non-fatal DEBT. Runs before the suite so a mis-wired registry is a
         # precise error, not a green-that-verified-nothing.
         run: python evals/check_registry.py
+      - name: Derive changed components
+        # #193: a component-scoped change (an agent, a hook with its own
+        # row, a generator script) must run ITS row, and a changed file that
+        # maps to a component with no row must fail loudly — a silent skip
+        # here is exactly the failure mode this epic exists to close. The
+        # path->row table below is intentionally the ONLY place this mapping
+        # lives (not duplicated into a helper script) so there is exactly one
+        # file to keep in sync when a component's subject file moves; every
+        # entry mirrors a path evals/registry.yaml's own comments already
+        # name for that row. It reads registry.yaml fresh every run, so it
+        # can never drift on the "does this row still exist" half of the
+        # question — only the "which path maps to which row" half is
+        # hand-maintained, and that half fails CLOSED (hard error), not open.
+        id: changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr diff "${{ github.event.pull_request.number }}" --name-only > /tmp/changed_paths.txt
+          python3 - <<'PY'
+          import os
+          import re
+          import sys
+
+          import yaml
+
+          reg = yaml.safe_load(open("evals/registry.yaml"))
+          components = set((reg.get("components") or {}).keys())
+
+          # Explicit path -> component for rows whose subject file does NOT
+          # follow the `.claude/agents/<name>.md` == component-name
+          # convention handled below. Keep in sync by hand; every target here
+          # is named in the matching row's comment in evals/registry.yaml.
+          EXPLICIT = {
+              "tools/roi_excel_generator.py": "roi-excel-generator",
+              ".claude/hooks/mcp-query-guard.py": "mcp-query-guard",
+              ".claude/hooks/anonymize-guard.py": "pii-anonymizer",
+              "scripts/anonymize_transcript.py": "pii-anonymizer",
+              "evals/run_experiment.py": "run-experiment-runner",
+              "evals/mutations.py": "mutation-harness",
+              "evals/check_registry.py": "mutation-harness",
+          }
+          EXPLICIT_PREFIXES = {
+              "scripts/pii/": "pii-anonymizer",
+          }
+          # Convention: an agent's own row is named after its file stem.
+          # Excludes .claude/agents/deprecated/** — those are explicitly
+          # retired (CLAUDE.md "Flywheel") and were never eval-adopted.
+          AGENT_RE = re.compile(r"^\.claude/agents/([^/]+)\.md$")
+
+          paths = [line.strip() for line in open("/tmp/changed_paths.txt") if line.strip()]
+
+          matched: set[str] = set()
+          missing: list[tuple[str, str]] = []
+          for p in paths:
+              comp = EXPLICIT.get(p)
+              if comp is None:
+                  for prefix, name in EXPLICIT_PREFIXES.items():
+                      if p.startswith(prefix):
+                          comp = name
+                          break
+              if comp is None:
+                  m = AGENT_RE.match(p)
+                  if m and "/deprecated/" not in p:
+                      comp = m.group(1)
+              if comp is None:
+                  continue  # not a path this mapping treats as a component — covered by the fixed deliverable/altitude evals instead
+              if comp in components:
+                  matched.add(comp)
+              else:
+                  missing.append((p, comp))
+
+          if missing:
+              print("::error::changed file(s) map to a component with NO row in evals/registry.yaml — "
+                    "add one (see CLAUDE.md's bb-* harness: a new/changed component needs eval "
+                    "coverage) rather than let this skip silently:")
+              for p, comp in missing:
+                  print(f"::error::  {p}  ->  expected components.{comp} in evals/registry.yaml, but it is not there")
+              sys.exit(1)
+
+          names = sorted(matched)
+          print("changed component rows to run:", names or "(none)")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("components=" + " ".join(names) + "\n")
+          PY
       - name: Run eval suite
         id: run
+        env:
+          CHANGED_COMPONENTS: ${{ steps.changed.outputs.components }}
         run: |
           set -o pipefail
           {
@@ -76,17 +163,58 @@ jobs:
             echo
             echo '```'
             rc=0
-            for cmd in \
-              "--deliverable deck --negatives" \
-              "--deliverable roi" \
-              "--deliverable assessment" \
-              "--component mcp-query-guard" \
-              "--component pii-anonymizer" \
-              "--altitude deliverable-structural"; do
+
+            # Fixed list — every PR in scope runs these regardless of what changed.
+            fixed_cmds=(
+              "--deliverable deck --negatives"
+              "--deliverable roi"
+              "--deliverable assessment"
+              "--deliverable report"
+              "--component mcp-query-guard"
+              "--component pii-anonymizer"
+              "--altitude deliverable-structural"
+            )
+            for cmd in "${fixed_cmds[@]}"; do
               echo "### run_experiment.py $cmd"
               python evals/run_experiment.py $cmd || rc=1
               echo
             done
+
+            # Changed-component rows (#193) — anything the diff maps to that
+            # isn't already covered by the fixed list above.
+            declare -A already=( [mcp-query-guard]=1 [pii-anonymizer]=1 )
+            for name in $CHANGED_COMPONENTS; do
+              if [ -z "${already[$name]:-}" ]; then
+                already[$name]=1
+                echo "### run_experiment.py --component $name  (changed-component row, #193)"
+                python evals/run_experiment.py --component "$name" || rc=1
+                echo
+              fi
+            done
+
+            # Mutation proofs (#193) — every row that DECLARES a mutations
+            # entry gets its proof re-run in CI, not just locally. Derived
+            # fresh from the registry every run (never a hardcoded row list,
+            # which would silently stop covering a row the moment a new one
+            # is added, or keep "covering" one that dropped its mutations:).
+            mutate_rows=$(python3 - <<'PY'
+          import yaml
+
+          reg = yaml.safe_load(open("evals/registry.yaml"))
+          rows = []
+          for section in ("components", "deliverables"):
+              for name, spec in (reg.get(section) or {}).items():
+                  if isinstance(spec.get("mutations"), dict) or isinstance(spec.get("negatives"), dict):
+                      rows.append(name)
+          print(" ".join(sorted(rows)))
+          PY
+          )
+            for row in $mutate_rows; do
+              echo "### run_experiment.py --mutate $row  (mutation proof, #193)"
+              python evals/run_experiment.py --mutate "$row" || rc=1
+              echo
+            done
+
             echo '```'
             echo
             if [ "$rc" -ne 0 ]; then
