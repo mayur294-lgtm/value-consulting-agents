@@ -366,6 +366,52 @@ components:
         find: "mark = \"SKIP*\""
         replace: "mark = \"SKIP\""
 
+  # mutation-harness (#187, closing PR 2 of the eval-gate-v7 epic) — the
+  # SECOND self-gate: run-experiment-runner (above) proves the runner that
+  # grades every row; this row proves the MUTATION machinery every row's
+  # `mutations:` proof depends on — evals/mutations.py, run_experiment.py's
+  # `--mutate` mode, and check_registry.py's mutation-coverage preflight.
+  # Every check drives those REAL modules as subprocesses against synthetic
+  # fixtures (never an import-and-call) — see
+  # evals/rubrics/component/mutation_harness.py's module docstring for the
+  # two subprocess strategies (CORTEX_EVAL_REGISTRY for run_experiment.py,
+  # a copied-check_registry.py tempdir for check_registry.py, which refuses
+  # that env var on itself) and for why every mutation below is safe to
+  # apply even though several of them target isolation/enforcement code.
+  #
+  # threshold: 1.00 — same rationale as run-experiment-runner above: this
+  # row certifies the proof mechanism itself, not "mostly correct."
+  #
+  # Added to MUTATION_PROOF_REQUIRED_ROWS in check_registry.py by this same
+  # ticket — hard-enforced from birth, no grace period.
+  mutation-harness:
+    altitude: component
+    threshold: 1.00
+    code: [every_registered_check_has_a_mutation, mutation_makes_named_check_red,
+           restore_makes_it_green, check_without_mutation_fails_preflight,
+           working_tree_unchanged_after_run]
+    mutations:
+      every_registered_check_has_a_mutation:
+        file: evals/check_registry.py
+        find: "    if name in MUTATION_PROOF_REQUIRED_ROWS:\n        return True"
+        replace: "    if False:\n        return True"
+      mutation_makes_named_check_red:
+        file: evals/mutations.py
+        find: "    return not check[\"passed\"] and not check[\"skipped\"] and not check[\"unscorable\"]"
+        replace: "    return False"
+      restore_makes_it_green:
+        file: evals/run_experiment.py
+        find: "ok = _evaluate_targets(args.component, evaluator, \"unit\", thr, [tgt], expect_pass=True, spec=spec)"
+        replace: "ok = _evaluate_targets(args.component, evaluator, \"unit\", thr, [tgt], expect_pass=True, spec=spec)\n        ok = False"
+      check_without_mutation_fails_preflight:
+        file: evals/check_registry.py
+        find: "        if hard:\n            errors.append(msg)"
+        replace: "        if False:\n            errors.append(msg)"
+      working_tree_unchanged_after_run:
+        file: evals/mutations.py
+        find: "        shadow = Path(td) / \"repo\"\n        shadow.mkdir()"
+        replace: "        shadow = src_root / \".mutation_shadow_leak\" / \"repo\"\n        shadow.mkdir(parents=True, exist_ok=True)"
+
 # Pipeline (integration) altitude — the most important. When ANY component
 # changes, run orchestrate.py end-to-end on a golden engagement and check the
 # inter-agent contracts + final deliverable still hold.

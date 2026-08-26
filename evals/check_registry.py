@@ -83,6 +83,7 @@ import mutations  # noqa: E402 - evals/mutations.py; pure metadata reads only (m
 # change required.
 MUTATION_PROOF_REQUIRED_ROWS: frozenset[str] = frozenset({
     "run-experiment-runner",   # #185 — the worked example; first row migrated
+    "mutation-harness",        # #187 — the harness proving itself; hard-enforced from birth
 })
 MUTATIONS_ENFORCED_FOR_ALL_ROWS = False
 
