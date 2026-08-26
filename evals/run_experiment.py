@@ -194,6 +194,84 @@ def _declared_check_names(spec: dict) -> set[str]:
     return code_names | {f"judge:{j}" for j in judge_names}
 
 
+def _reachability_canary(mutation: "mutations.Mutation", root: Path, evaluator: str,
+                          target: str, before_score: float) -> tuple[str, str]:
+    """#186: distinguish a genuinely inert check from a mutation that never
+    reached the code under test (evals/mutations.py's module docstring,
+    "What this harness CANNOT mutate" — this is the wiring that section says
+    is #186's job).
+
+    Delete the shadow copy of the mutation's `file` from a FRESH, otherwise
+    unmutated shadow (the canary isolates the resolution PATH, not another
+    mutation), rescore, and see whether the named check's state moved from
+    the pristine baseline at all:
+
+      moved   -> REACHABLE:   the check's result changed once its subject
+                 file vanished, so the check DOES read the shadow copy.
+                 Whatever became of the original mutation (stale `find`,
+                 or applied-but-inert), the check is wired to the right file.
+      unmoved -> UNREACHABLE: the check's result is byte-identical whether
+                 the shadow's copy of the file exists or not — it never
+                 reads the shadow copy at all (a hardcoded absolute path,
+                 `Path.cwd()` captured at import, ...). This is a HARNESS
+                 LIMITATION, not evidence the check itself is broken: the
+                 fix is "make the rubric resolve through repo_root()", never
+                 "weaken or delete the mutation".
+
+    Returns (verdict, detail). verdict is "REACHABLE", "UNREACHABLE", or
+    "INCONCLUSIVE" (the canary itself could not run at all, e.g. the file
+    isn't present in a fresh shadow — reported as-is, never folded into
+    either verdict).
+    """
+    rel = Path(mutation.file)
+    try:
+        with mutations.shadow_root(root) as shadow:
+            shadow_file = shadow / rel
+            if not shadow_file.is_file():
+                return ("INCONCLUSIVE",
+                        f"`{rel}` is not present in a fresh shadow — cannot run the canary")
+            shadow_file.unlink()
+            after_map = mutations.score(
+                shadow, evaluator,
+                mutations.shadow_target(root, shadow,
+                                         target or (str(rel) if mutation.kind == "fixture" else "")),
+                timeout=mutations.DEFAULT_SCORE_TIMEOUT_S, python=sys.executable,
+                extra_pythonpath=(),
+            )
+    except mutations.MutationHarnessError as exc:
+        # Deleting the file broke the rubric's own execution outright — that
+        # is unambiguous evidence the check DOES resolve into the shadow (it
+        # could not even run without the file there), so this is a REACHABLE
+        # signal, not an inconclusive one.
+        return ("REACHABLE",
+                f"deleting `{rel}` broke the rubric's own execution ({exc}) — it reads this file")
+
+    after_check = after_map.get(mutation.check)
+    if after_check is None:
+        return ("REACHABLE",
+                f"check `{mutation.check}` stopped executing entirely once `{rel}` was deleted "
+                f"(executed: {sorted(after_map)}) — the check's own presence depends on this file")
+
+    same_state = (
+        bool(after_check["passed"]) and not bool(after_check["skipped"])
+        and not bool(after_check["unscorable"])
+        and abs(float(after_check["score"]) - before_score) < 1e-9
+    )
+    if not same_state:
+        return ("REACHABLE",
+                f"deleting `{rel}` changed check `{mutation.check}`'s state "
+                f"(score {before_score:.2f} -> {float(after_check['score']):.2f}, "
+                f"detail: {after_check.get('detail', '')[:160]!r}) — the check does read the "
+                f"shadow copy")
+    return ("UNREACHABLE",
+            f"deleting `{rel}` had NO effect on check `{mutation.check}` (still score "
+            f"{before_score:.2f}, unchanged) — the check never reads the shadow copy of this "
+            f"file at all; it resolves its subject through a path outside repo_root(). This is "
+            f"a HARNESS LIMITATION (see evals/mutations.py, 'What this harness CANNOT mutate'), "
+            f"not evidence the check is broken — fix the rubric to resolve via repo_root(), "
+            f"never the mutation.")
+
+
 def _run_mutate(reg: dict, row: str, target_override: str | None) -> int:
     """`--mutate <row>` (#185, ux-design-v7 Flow 2): prove every check the row
     DECLARES actually goes red under a mutation. A check with no mutation
@@ -251,14 +329,37 @@ def _run_mutate(reg: dict, row: str, target_override: str | None) -> int:
         return 1
 
     proven = 0
+    unreachable = 0
     for r in results:
         print(r.message())
         if r.proven:
             proven += 1
+            continue
+        # #186 reachability canary — only meaningful once there IS a baseline
+        # to compare against (`before` passed) and a real file to delete;
+        # detail text naming those states is produced before the mutation's
+        # own file/shadow resolution ever runs, so skip the canary there too.
+        if r.mutation is None or "BEFORE the mutation" in r.detail:
+            continue
+        real_file = _resolve(r.mutation.file)
+        if not real_file.is_file():
+            continue
+        verdict, detail = _reachability_canary(r.mutation, ROOT, evaluator, target, r.before)
+        if verdict == "UNREACHABLE":
+            unreachable += 1
+            print(f"  ⚠ [HARNESS ERROR] reachability canary for `{r.check}`: UNREACHABLE — {detail}")
+        elif verdict == "REACHABLE":
+            print(f"  · reachability canary for `{r.check}`: REACHABLE (not a harness gap — "
+                  f"the check/mutation itself needs fixing) — {detail}")
+        else:
+            print(f"  · reachability canary for `{r.check}`: {verdict} — {detail}")
 
     total = len(results)
     ok = (proven == total) and not missing
     tail = f", {len(missing)} declared check(s) with no mutation entry" if missing else ""
+    if unreachable:
+        tail += (f", {unreachable} UNREACHABLE (harness limitation per the canary above — "
+                 f"fix the rubric's path resolution, not the mutation)")
     print(f"\nmutations: {proven}/{total} proven{tail}")
     return 0 if ok else 1
 
