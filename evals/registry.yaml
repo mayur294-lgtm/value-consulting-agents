@@ -249,6 +249,16 @@ components:
   # gap; each was proven to fail against the specific mutation it targets
   # before being accepted (see the rubric module's evaluate() and the PR
   # description for the mutation-testing transcript).
+  # #192/backlog :116: the rubric used to invoke the hook via
+  # `[sys.executable, ...]` — CI's/this venv's interpreter — instead of the
+  # bare `python3` .claude/settings.json actually registers for it (what
+  # every consultant session runs under). Migrated to
+  # rubrics/_harness.py's `registered_interpreter()`, which parses
+  # settings.json and fails loudly if the hook isn't registered rather than
+  # falling back. `runs_under_registered_interpreter` (below) is the new
+  # check proving that resolution. No `mutations:` key added: adding one
+  # requires covering every declared check on the row (#186), which is out
+  # of scope here — this row stays in the keyless DEBT list.
   mcp-query-guard:
     altitude: component
     threshold: 1.00
@@ -259,7 +269,7 @@ components:
            denies_bold_markdown_label_client_name, fails_closed_on_unreadable_profile_file,
            matching_is_case_insensitive, denies_identifier_from_engagement_context_file,
            denies_identifier_from_engagement_intake_file, denies_client_name_from_profile_name_label,
-           ignores_unfilled_template_placeholders]
+           ignores_unfilled_template_placeholders, runs_under_registered_interpreter]
 
   # pii-anonymizer (ticket #161, PRD v6 §5, solution-design-v6.md D9) — the
   # acceptance gate for the whole v6 Presidio PII cycle. Covers
@@ -301,7 +311,16 @@ components:
   # via `.venv/bin/python evals/run_experiment.py --component pii-anonymizer`
   # locally. In CI, requirements.txt (Presidio + spaCy model) is installed
   # under actions/setup-python's 3.11 before the suite runs, so
-  # `sys.executable` there is already Presidio-capable.
+  # `sys.executable` there is already Presidio-capable. Note this is about
+  # the interpreter running run_experiment.py ITSELF (needs Presidio
+  # importable in-process) — separate from check 14's own subprocess call
+  # to `.claude/hooks/anonymize-guard.py`, which #192/backlog :116 migrated
+  # to rubrics/_harness.py's `registered_interpreter()` (bare `python3`,
+  # what settings.json actually registers and every consultant session
+  # runs it under) instead of `sys.executable`. Check 19,
+  # `runs_under_registered_interpreter` below, proves that resolution. No
+  # `mutations:` key added — covering every declared check on this
+  # 19-check row is out of scope here; it stays in the keyless DEBT list.
   pii-anonymizer:
     altitude: component
     threshold: 1.00
@@ -318,7 +337,8 @@ components:
            internal_domain_email_redacted_no_over_detection,
            nested_outputs_deanonymized,
            xlsx_outputs_deanonymized,
-           workspace_paths_contain_no_client_identifiers]
+           workspace_paths_contain_no_client_identifiers,
+           runs_under_registered_interpreter]
 
   # run-experiment-runner (#183, closing PR 1 of the eval-gate-v7 epic) — the
   # SELF-GATE: this runner grades every other row in this file, so it must

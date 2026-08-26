@@ -49,12 +49,12 @@ import json
 import os
 import stat
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 from typing import Optional
 
 from rubrics.base import CheckResult, repo_root
+from rubrics._harness import check_runs_under_registered_interpreter, registered_interpreter
 
 HOOK_REL_PATH = Path(".claude") / "hooks" / "mcp-query-guard.py"
 
@@ -89,11 +89,21 @@ def _payload(tool_input: dict) -> bytes:
 def _run_hook(project_dir: Path, stdin_bytes: bytes) -> subprocess.CompletedProcess:
     """Invoke the real hook script as a subprocess, exactly as Claude Code
     does: JSON payload on stdin, CLAUDE_PROJECT_DIR pointing at the fixture
-    root, decision read back from stdout/exit code."""
+    root, decision read back from stdout/exit code.
+
+    The interpreter is whatever `.claude/settings.json` actually registers
+    for this hook (`registered_interpreter()`, ticket #192/backlog :116) —
+    NOT `sys.executable`. Settings.json registers this hook as bare
+    `python3`, the interpreter every consultant session runs it under; a
+    subprocess call built from `sys.executable` would silently certify the
+    hook under CI's/this eval-runner's interpreter instead, which is
+    exactly the drift #192 exists to close. `registered_interpreter()`
+    raises loudly (never falls back) if the hook isn't registered."""
     env = dict(os.environ)
     env["CLAUDE_PROJECT_DIR"] = str(project_dir)
+    argv = registered_interpreter(_hook_path()) + [str(_hook_path())]
     return subprocess.run(
-        [sys.executable, str(_hook_path())],
+        argv,
         input=stdin_bytes,
         capture_output=True,
         timeout=SUBPROCESS_TIMEOUT_S,
@@ -552,6 +562,14 @@ def _ignores_unfilled_template_placeholders(root: Path) -> CheckResult:
     ))
 
 
+def _runs_under_registered_interpreter(_root: Path) -> CheckResult:
+    """#192/backlog :116 — the hook must be invoked under whatever
+    interpreter `.claude/settings.json` actually registers for it (bare
+    `python3`), never a silent fallback to `sys.executable`. Shared,
+    subject-agnostic check — see rubrics/_harness.py."""
+    return check_runs_under_registered_interpreter(_hook_path(), hook_label="mcp-query-guard.py")
+
+
 def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained, ignores target
     hook = _hook_path()
     if not hook.exists():
@@ -577,4 +595,5 @@ def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained
         _run_in_tmp(_denies_identifier_from_engagement_intake_file),
         _run_in_tmp(_denies_client_name_from_profile_name_label),
         _run_in_tmp(_ignores_unfilled_template_placeholders),
+        _run_in_tmp(_runs_under_registered_interpreter),
     ]

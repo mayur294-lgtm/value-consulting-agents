@@ -213,6 +213,7 @@ from pathlib import Path
 from typing import Optional
 
 from rubrics.base import CheckResult, repo_root
+from rubrics._harness import check_runs_under_registered_interpreter, registered_interpreter
 
 # Make `scripts/` importable as a package root, exactly as
 # scripts/anonymize_transcript.py does for itself.
@@ -1959,11 +1960,24 @@ def _run_anonymize_guard(project_dir: Path, stdin_bytes: bytes) -> subprocess.Co
     """Invoke the real hook script as a subprocess, exactly as Claude Code
     does: JSON payload on stdin, CLAUDE_PROJECT_DIR pointing at the fixture
     root, decision read back from stdout/exit code. Mirrors
-    mcp_query_guard.py's `_run_hook`."""
+    mcp_query_guard.py's `_run_hook`.
+
+    The interpreter is whatever `.claude/settings.json` actually registers
+    for this hook (`registered_interpreter()`, ticket #192/backlog :116) —
+    NOT `sys.executable`. Settings.json registers `anonymize-guard.py` as
+    bare `python3` (deliberately kept off the Presidio venv per
+    solution-design-v6.md D13 — see that doc's note on this hook staying
+    stdlib-only); a subprocess call built from `sys.executable` would
+    silently certify it under this eval-runner's own interpreter instead,
+    which is exactly the drift #192 exists to close.
+    `registered_interpreter()` raises loudly (never falls back) if the hook
+    isn't registered."""
     env = dict(os.environ)
     env["CLAUDE_PROJECT_DIR"] = str(project_dir)
+    hook = _anonymize_guard_hook_path()
+    argv = registered_interpreter(hook) + [str(hook)]
     return subprocess.run(
-        [sys.executable, str(_anonymize_guard_hook_path())],
+        argv,
         input=stdin_bytes,
         capture_output=True,
         timeout=15.0,
@@ -2053,6 +2067,16 @@ def _guard_fails_closed_on_inputs_path(target: str) -> CheckResult:  # noqa: ARG
             f"outside inputs/ (fault): rc={result_outside.returncode} denied={denied_outside} "
             f"reason={((parsed_inputs or {}).get('hookSpecificOutput') or {}).get('permissionDecisionReason', '')[:120]!r}"
         ))
+
+
+def _runs_under_registered_interpreter(_target: str) -> CheckResult:  # noqa: ARG001
+    """#192/backlog :116 — `anonymize-guard.py` must be invoked under
+    whatever interpreter `.claude/settings.json` actually registers for it
+    (bare `python3`), never a silent fallback to `sys.executable`. Shared,
+    subject-agnostic check — see rubrics/_harness.py."""
+    return check_runs_under_registered_interpreter(
+        _anonymize_guard_hook_path(), hook_label="anonymize-guard.py"
+    )
 
 
 # --- #181 internal-domain email shape recognizer ---------------------------
@@ -2399,6 +2423,7 @@ def evaluate(target: str) -> list:
         _nested_outputs_deanonymized,
         _xlsx_outputs_deanonymized,
         _workspace_paths_contain_no_client_identifiers,
+        _runs_under_registered_interpreter,
     ]
     results = []
     for fn in checks:
