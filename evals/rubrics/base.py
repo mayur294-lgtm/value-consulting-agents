@@ -41,7 +41,7 @@ class CheckResult:
 @dataclass
 class RubricResult:
     target: str
-    altitude: str          # unit | pipeline | deliverable
+    altitude: str          # unit | deliverable-structural | deliverable
     checks: list[CheckResult] = field(default_factory=list)
 
     @property

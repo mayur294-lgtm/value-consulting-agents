@@ -15,9 +15,13 @@ Usage:
   python evals/run_experiment.py --deliverable deck
   python evals/run_experiment.py --deliverable deck --negatives
 
-  # component / pipeline altitude (used by bb-build verify)
+  # component altitude (used by bb-build verify)
   python evals/run_experiment.py --component roi-financial-modeler
-  python evals/run_experiment.py --altitude pipeline
+
+  # deliverable-structural altitude — lints inter-agent contracts across output
+  # FILES that already exist. It does not run orchestrate.py and never reads the
+  # component you changed; a green here is NOT integration evidence (#188).
+  python evals/run_experiment.py --altitude deliverable-structural
 
   # override target / threshold
   python evals/run_experiment.py --deliverable assessment --target some.html --threshold 0.7
@@ -88,8 +92,8 @@ def _run_evaluator(module_name: str, altitude: str, target: str) -> RubricResult
         return RubricResult(target=target, altitude=altitude, checks=[
             CheckResult(name=f"{module_name}:no_evaluate", score=0.0, passed=False,
                         detail="module has no evaluate() (stub)")])
-    # File-path evaluators get the resolved path; key-based evaluators (pipeline)
-    # get the raw key to resolve themselves.
+    # File-path evaluators get the resolved path; key-based evaluators
+    # (deliverable-structural) get the raw key to resolve themselves.
     resolved = _resolve(target)
     arg = str(resolved) if resolved.exists() else target
     checks = mod.evaluate(arg)
@@ -399,12 +403,37 @@ def _run_mutate(reg: dict, row: str, target_override: str | None) -> int:
     return 0 if ok else 1
 
 
+# --- BEGIN old-altitude error text (#188 / design D4) -------------------------
+# The ONLY place in the runner, registry, runtime or CI where the retired
+# altitude name may appear. `check_registry.py`'s grep assertion skips exactly
+# this sentinel-delimited region; every other occurrence anywhere in scope is a
+# hard error. Keep the literal inside these sentinels — never re-introduce it
+# as a `choices=` entry, an alias, or a deprecation shim (D4: an alias preserves
+# the misreading perfectly, and warnings get scrolled past).
+_RETIRED_ALTITUDE = "pipeline"
+_RETIRED_ALTITUDE_ERROR = (
+    "`--altitude pipeline` was renamed to `--altitude deliverable-structural`. "
+    "It scores frozen fixture files in ~5s and has never run the pipeline; the "
+    "old name is what made a 1.000 look like integration evidence. If you want a "
+    "real end-to-end run, that is out of scope for the gate — run "
+    "`scripts/orchestrate.py` on a synthetic engagement."
+)
+# --- END old-altitude error text ---------------------------------------------
+
+_DELIVERABLE_STRUCTURAL = "deliverable-structural"   # CLI flag + rendered altitude label
+_DELIVERABLE_STRUCTURAL_KEY = "deliverable_structural"  # registry.yaml section key
+_ALTITUDES = frozenset({"unit", _DELIVERABLE_STRUCTURAL, "deliverable"})
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Cortex eval runner")
     ap.add_argument("--deck", help="ad-hoc: run the deck rubric on this HTML file")
     ap.add_argument("--deliverable", help="registry deliverable name (deck|roi|assessment)")
     ap.add_argument("--component", help="registry component name")
-    ap.add_argument("--altitude", choices=["unit", "pipeline", "deliverable"])
+    # Not `choices=`: the retired altitude name must reach our own guard below so
+    # it gets the rename rationale, not argparse's generic "invalid choice".
+    ap.add_argument("--altitude", metavar="{unit,deliverable-structural,deliverable}",
+                    help="unit | deliverable-structural | deliverable")
     ap.add_argument("--target", help="override the target file")
     ap.add_argument("--threshold", type=float, help="override the registry threshold")
     ap.add_argument("--negatives", action="store_true",
@@ -414,6 +443,14 @@ def main() -> int:
                          "red under its `mutations:` entry; exits non-zero if any check is "
                          "unproven or has no mutation entry")
     args = ap.parse_args()
+
+    # --- altitude validation ---------------------------------------------------
+    if args.altitude == _RETIRED_ALTITUDE:
+        print(_RETIRED_ALTITUDE_ERROR, file=sys.stderr)
+        return 2
+    if args.altitude is not None and args.altitude not in _ALTITUDES:
+        ap.error(f"argument --altitude: invalid choice: {args.altitude!r} "
+                 f"(choose from {', '.join(sorted(_ALTITUDES))})")
 
     # --- ad-hoc deck mode (no registry needed) ---------------------------------
     if args.deck:
@@ -429,12 +466,13 @@ def main() -> int:
     if args.mutate:
         return _run_mutate(reg, args.mutate, args.target)
 
-    # --- pipeline altitude -----------------------------------------------------
-    if args.altitude == "pipeline":
-        spec = reg["pipeline"]
+    # --- deliverable-structural altitude ---------------------------------------
+    if args.altitude == _DELIVERABLE_STRUCTURAL:
+        spec = reg[_DELIVERABLE_STRUCTURAL_KEY]
         thr = args.threshold if args.threshold is not None else spec["threshold"]
         tgt = args.target or spec.get("golden_engagement", "")
-        ok = _evaluate_targets("pipeline", spec["evaluator"], "pipeline", thr, [tgt],
+        ok = _evaluate_targets(_DELIVERABLE_STRUCTURAL, spec["evaluator"],
+                               _DELIVERABLE_STRUCTURAL, thr, [tgt],
                                expect_pass=True, check_exists=False)
         return 0 if ok else 1
 
