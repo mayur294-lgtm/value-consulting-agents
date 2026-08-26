@@ -68,6 +68,7 @@ THE INTERPRETER SPLIT (read this before "simplifying" the imports)
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Optional
@@ -175,6 +176,22 @@ def deanonymize_text(text: str, mapping: dict) -> str:
     (`[CLIENT]` is a prefix of `[CLIENT-ABBR]`; `<ENTITY_N>`'s trailing `>`
     already makes v2 placeholders unambiguous, but legacy ones are not).
 
+    Ticket #165 — legacy bracket placeholder vs. template-token collision.
+    `[CLIENT]` is simultaneously a legacy v1 PII placeholder AND a filename/
+    prose template token used elsewhere in this repo
+    (`[CLIENT]_Business_Case_Questionnaire.xlsx` in five components — see
+    module docstring). A plain `str.replace` finds `[CLIENT]` as a literal
+    substring at the START of that filename token too (it closes with `]`
+    right before the `_`), so restoring an old engagement's `[CLIENT]`
+    mapping would corrupt any output that also contains that unfilled
+    template token. Legacy bracket-style placeholders (`[...]`) are
+    therefore restored only where the match is NOT immediately adjacent to
+    another word character on either side — `[CLIENT].` / `[CLIENT] ` /
+    `[CLIENT]'s` still restore, but `[CLIENT]_Business_Case_Questionnaire.
+    xlsx` does not get touched. `<ENTITY_N>` placeholders need no such
+    guard (already unambiguous, see above) and keep the plain substring
+    replace.
+
     Pure stdlib — see module docstring. Must not import scripts/pii/engine.
     """
     if not text or not mapping:
@@ -182,7 +199,12 @@ def deanonymize_text(text: str, mapping: dict) -> str:
     flat = _flatten_mapping(mapping)
     result = text
     for placeholder in sorted(flat.keys(), key=len, reverse=True):
-        result = result.replace(placeholder, flat[placeholder])
+        value = flat[placeholder]
+        if placeholder.startswith('[') and placeholder.endswith(']'):
+            pattern = r'(?<!\w)' + re.escape(placeholder) + r'(?!\w)'
+            result = re.sub(pattern, lambda _m, _v=value: _v, result)
+        else:
+            result = result.replace(placeholder, value)
     return result
 
 
