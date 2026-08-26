@@ -71,7 +71,12 @@ components:
 
   roi-financial-modeler:
     altitude: component
-    threshold: 0.80
+    # threshold raised 0.80 -> 0.90 (#180): backbase_impact_within_cap stays a
+    # plain mean-contributor (no hard_fail — see D10, specifics.py frozen this
+    # cycle). At 0.90 the overcap negative (scores 0.889, 8/9 checks) correctly
+    # FAILS via ordinary mean scoring, while the positive golden (1.000) still
+    # clears it comfortably. Per D3, a per-check hard_fail fix is deferred to #201.
+    threshold: 0.90
     # Fixture: the committed anonymized provenance golden (the basis the provenance
     # fix was built on). Re-pointed from a never-created `nfis` golden — see PRD v1.
     input: evals/goldens/roi_config_provenance.json
