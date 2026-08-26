@@ -183,6 +183,10 @@ def main() -> int:
         evaluator = spec.get("evaluator", f"rubrics.component.{args.component.replace('-', '_')}")
         tgt = args.target or spec.get("input", spec.get("golden_engagement", ""))
         ok = _evaluate_targets(args.component, evaluator, "unit", thr, [tgt], expect_pass=True)
+        if args.negatives and not args.target:
+            print("\n=== negatives (must FAIL to pass the gate) ===")
+            ok = _evaluate_targets(args.component, evaluator, "unit", thr,
+                                   list(spec.get("negatives", [])), expect_pass=False) and ok
         return 0 if ok else 1
 
     ap.print_help()
