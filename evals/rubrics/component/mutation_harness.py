@@ -60,7 +60,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
@@ -102,8 +102,10 @@ def _run_in_tmp(fn):
         with tempfile.TemporaryDirectory(prefix="mutation_harness_eval_") as td:
             return fn(Path(td))
     except Exception as exc:  # noqa: BLE001 - convert to a reportable failure
-        return _bool_check(fn.__name__.lstrip("_"), False,
-                            detail=f"check raised {type(exc).__name__}: {exc}")
+        name = fn.__name__.lstrip("_")
+        return _bool_check(name, False,
+                            detail=f"check raised {type(exc).__name__}: {exc}",
+                            exercised=f"nothing ran: {name} raised {type(exc).__name__} before completing")
 
 
 def _sha256_of(path: Path) -> str:
@@ -268,14 +270,26 @@ def _check_without_mutation_fails_preflight(root: Path) -> CheckResult:
 
 @dataclass
 class _ProbeResult:
-    result: subprocess.CompletedProcess | None
-    hash_before: str | None
-    hash_after: str | None
-    git_before: set[str] | None
-    git_after: set[str] | None
-    recheck: subprocess.CompletedProcess | None
+    """Holds the outcome of each of the six shared-probe steps INDEPENDENTLY.
+
+    Each step is captured on its own: a failure in one step (recorded in
+    `step_errors`, keyed by step name) never discards values already
+    collected by earlier or later steps. Consumers (cases 2, 3, 5) each read
+    only the fields they actually need and report a specific "which step
+    failed" message when their own required data is missing, rather than a
+    single all-or-nothing probe error. `error` is reserved for the rare case
+    where the shared probe's own SETUP (building the synthetic registry, not
+    one of the six steps) blows up before any step runs at all.
+    """
     red_check: str
     inert_check: str
+    result: subprocess.CompletedProcess | None = None
+    hash_before: str | None = None
+    hash_after: str | None = None
+    git_before: set[str] | None = None
+    git_after: set[str] | None = None
+    recheck: subprocess.CompletedProcess | None = None
+    step_errors: dict[str, str] = field(default_factory=dict)
     error: str | None = None
 
 
@@ -314,21 +328,35 @@ def _run_shared_probe(tmp: Path) -> _ProbeResult:
 
     root = repo_root()
     real_hook = root / HOOK_REL_PATH
-    try:
-        hash_before = _sha256_of(real_hook)
-        git_before = _git_status_lines(root)
-        result = _run_mutate_subprocess(reg_path, row, cwd=root)
-        hash_after = _sha256_of(real_hook)
-        git_after = _git_status_lines(root)
-        recheck = subprocess.run(
-            [sys.executable, str(root / RUN_EXPERIMENT_REL_PATH), "--component", "mcp-query-guard"],
-            cwd=str(root), capture_output=True, timeout=COMPONENT_RECHECK_TIMEOUT_S,
-        )
-    except Exception as exc:  # noqa: BLE001 - report, never crash the whole run
-        return _ProbeResult(None, None, None, None, None, None, red_check, inert_check,
-                             error=f"{type(exc).__name__}: {exc}")
-    return _ProbeResult(result, hash_before, hash_after, git_before, git_after, recheck,
-                         red_check, inert_check)
+    probe = _ProbeResult(red_check, inert_check)
+
+    def _step(step_name: str, fn):
+        """Run one probe step in isolation: a raised exception is recorded
+        against THIS step only (`step_errors[step_name]`) and every other
+        step still runs. This is the failure-isolation fix for #187 review:
+        previously all six steps shared one try/except, so a single flaky
+        step (e.g. `recheck` timing out) discarded every value already
+        collected, producing false reds on cases that never needed the
+        failed step's data."""
+        try:
+            return fn()
+        except Exception as exc:  # noqa: BLE001 - isolate to this one step
+            probe.step_errors[step_name] = f"{type(exc).__name__}: {exc}"
+            return None
+
+    # Order matches the original: before-snapshot, the mutate run itself,
+    # after-snapshot, then the plain re-score. Each step's own failure can
+    # never prevent a later step from being attempted.
+    probe.hash_before = _step("hash_before", lambda: _sha256_of(real_hook))
+    probe.git_before = _step("git_before", lambda: _git_status_lines(root))
+    probe.result = _step("result", lambda: _run_mutate_subprocess(reg_path, row, cwd=root))
+    probe.hash_after = _step("hash_after", lambda: _sha256_of(real_hook))
+    probe.git_after = _step("git_after", lambda: _git_status_lines(root))
+    probe.recheck = _step("recheck", lambda: subprocess.run(
+        [sys.executable, str(root / RUN_EXPERIMENT_REL_PATH), "--component", "mcp-query-guard"],
+        cwd=str(root), capture_output=True, timeout=COMPONENT_RECHECK_TIMEOUT_S,
+    ))
+    return probe
 
 
 # --- case 2: mutation_makes_named_check_red ------------------------------------
@@ -343,8 +371,16 @@ def _mutation_makes_named_check_red(probe: _ProbeResult) -> CheckResult:
     Both assertions read the SAME subprocess's combined output, so a runner
     that always prints "proven" regardless of outcome would fail this too."""
     name = "mutation_makes_named_check_red"
-    if probe.error or probe.result is None:
-        return _bool_check(name, False, detail=f"shared probe did not run: {probe.error}")
+    if probe.error is not None:
+        return _bool_check(name, False, detail=f"shared probe setup failed: {probe.error}",
+                            exercised=f"nothing ran: probe setup raised ({probe.error})")
+    if probe.result is None:
+        err = probe.step_errors.get("result", "no error recorded")
+        return _bool_check(
+            name, False,
+            detail=f"the `result` step (evals/run_experiment.py --mutate) did not complete: {err}",
+            exercised=f"nothing ran: `result` step raised ({err})",
+        )
     out = _out(probe.result)
     proven_red = (
         f"proven: check `{probe.red_check}` went red" in out
@@ -377,9 +413,18 @@ def _restore_makes_it_green(probe: _ProbeResult) -> CheckResult:
     checked first in `main()`), so this mutation cannot cross-contaminate
     case 2's or case 5's use of the same probe."""
     name = "restore_makes_it_green"
-    if probe.error or probe.result is None or probe.recheck is None:
-        return _bool_check(name, False, detail=f"shared probe did not run: {probe.error}")
-    hashes_match = probe.hash_before is not None and probe.hash_before == probe.hash_after
+    if probe.error is not None:
+        return _bool_check(name, False, detail=f"shared probe setup failed: {probe.error}",
+                            exercised=f"nothing ran: probe setup raised ({probe.error})")
+    missing = [s for s in ("hash_before", "hash_after", "recheck") if getattr(probe, s) is None]
+    if missing:
+        errs = "; ".join(f"{s}: {probe.step_errors.get(s, 'no error recorded')}" for s in missing)
+        return _bool_check(
+            name, False,
+            detail=f"required probe data missing ({', '.join(missing)}): {errs}",
+            exercised=f"nothing ran: {', '.join(missing)} step(s) failed ({errs})",
+        )
+    hashes_match = probe.hash_before == probe.hash_after
     recheck_ok = probe.recheck.returncode == 0
     ok = hashes_match and recheck_ok
     return _bool_check(
@@ -407,10 +452,19 @@ def _working_tree_unchanged_after_run(probe: _ProbeResult) -> CheckResult:
     appear identically in BOTH snapshots and cancel out of the delta; only
     lines that appear in one snapshot and not the other are a real finding."""
     name = "working_tree_unchanged_after_run"
-    if probe.error or probe.result is None:
-        return _bool_check(name, False, detail=f"shared probe did not run: {probe.error}")
-    if probe.git_before is None or probe.git_after is None:
-        return _bool_check(name, False, detail="could not read `git status --porcelain` around the probe run")
+    if probe.error is not None:
+        return _bool_check(name, False, detail=f"shared probe setup failed: {probe.error}",
+                            exercised=f"nothing ran: probe setup raised ({probe.error})")
+    missing = [s for s in ("git_before", "git_after") if getattr(probe, s) is None]
+    if missing:
+        errs = "; ".join(
+            f"{s}: {probe.step_errors.get(s, 'could not read git status --porcelain')}" for s in missing
+        )
+        return _bool_check(
+            name, False,
+            detail=f"could not read `git status --porcelain` around the probe run ({', '.join(missing)}): {errs}",
+            exercised=f"nothing ran: {', '.join(missing)} step(s) failed ({errs})",
+        )
     created = sorted(probe.git_after - probe.git_before)
     removed = sorted(probe.git_before - probe.git_after)
     ok = not created and not removed
@@ -432,9 +486,10 @@ def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained
         with tempfile.TemporaryDirectory(prefix="mutation_harness_eval_probe_") as td:
             probe = _run_shared_probe(Path(td))
     except Exception as exc:  # noqa: BLE001 - never let a probe crash sink the whole run
-        probe = _ProbeResult(None, None, None, None, None, None,
-                              "denies_query_containing_client_identifier", "allows_generic_query",
-                              error=f"{type(exc).__name__}: {exc}")
+        probe = _ProbeResult(
+            "denies_query_containing_client_identifier", "allows_generic_query",
+            error=f"{type(exc).__name__}: {exc}",
+        )
 
     checks.append(_mutation_makes_named_check_red(probe))
     checks.append(_restore_makes_it_green(probe))
