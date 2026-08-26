@@ -41,7 +41,7 @@ evals/
       specifics.py               UNCHANGED shared by runtime.py — behaviour frozen except the roi parser fix
     deliverable/
       roi.py                     MODIFIED  parse current value_lever_groups schema (:41); unscorable ≠ 0/0
-      visual_render.py           MODIFIED  wired to a registry row, or deleted (:16)
+      visual_render.py           DELETED   unreproducible without a metered key + no non-gating deliverable-judge slot exists (:16)
     structural/                  RENAMED   was rubrics/pipeline/ — contracts.py moves, import path follows the altitude
 .github/workflows/evals.yml      MODIFIED  paths += .claude/hooks/** (:114); adds changed-component runs +
                                            `report` deliverable (:15); adds the mutation-proof job
@@ -220,7 +220,7 @@ Five PRs, each independently reviewable, each green on its own.
 
 ## Open Items for Build
 
-1. **`visual_render.py` — wire or delete (:16).** Decide on evidence: if the deck calibration figures (golden 1.000 / negative 0.364) can be reproduced, wire it to a row; if not, delete it rather than carry dead code.
+1. **`visual_render.py` — wire or delete (:16). RESOLVED: deleted.** Reproduction was not possible without `ANTHROPIC_API_KEY` (unset in the build environment), and the module called the raw `anthropic` SDK directly rather than `rubrics/judge/judge.py`'s CLI-auth path. Wiring was ruled out independent of reproduction: D9 forbids a blocking CI row needing a key, and `deliverables:` has no non-gating judge slot — `path1_judge:` is the only such mechanism and it is `components:`-only (tied to `path1.py --agent` regeneration, not to scoring an already-rendered file). Inventing a `deliverable`-altitude non-gating judge is new registry machinery, out of scope here. Deleted the module and its now-orphaned `judge/prompts/visual_render.md`.
 2. **Mutation regex fragility.** A `find:` string that stops matching after a refactor must fail loudly (mutation changed nothing → not proven), never silently pass. Verify this behaviour explicitly in PR 2.
 3. **`frontline_builders` scope.** Three builders (`pptx`, `2026_html`, `presenter`) — confirm during build whether one shared row covers them or each needs its own.
 4. **Runtime re-scoring corpus.** Pick the specific past engagements used as the false-red regression check (Harborlight run 7 is the known :41 case); they must be committed and anonymised.
