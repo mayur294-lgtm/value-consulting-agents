@@ -1,6 +1,6 @@
 ---
 version: 7
-status: built
+status: archived
 date: 2026-08-26
 author: Mariam Titus George
 previous: prd-v6.md
