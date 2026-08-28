@@ -672,6 +672,8 @@ class ROIModelGenerator:
         ws.cell(row=row, column=3, value=self.config.get('analysis_years', 5))
         row += 1
         yoy = self.config.get('backbase_loading', {}).get('yoy_growth', [0.08]*5)
+        if isinstance(yoy, (int, float)):
+            yoy = [yoy] * 5
         ws.cell(row=row, column=2, value="YoY Growth Rate")
         ws.cell(row=row, column=3, value=yoy[0] if yoy else 0.08)
         ws.cell(row=row, column=3).number_format = '0.0%'
@@ -693,7 +695,7 @@ class ROIModelGenerator:
             row += 1
 
             # Revenue drivers
-            for drv_key, driver in group.get('revenue_drivers', {}).items():
+            for drv_key, driver in (group.get('revenue_drivers') or {}).items():
                 ws[f'B{row}'] = f"  {driver.get('name', drv_key)}"
                 ws[f'B{row}'].font = Font(bold=True, size=10)
                 row += 1
@@ -766,7 +768,7 @@ class ROIModelGenerator:
                 row += 1  # space between drivers
 
             # Cost drivers
-            for drv_key, driver in group.get('cost_drivers', {}).items():
+            for drv_key, driver in (group.get('cost_drivers') or {}).items():
                 ws[f'B{row}'] = f"  {driver.get('name', drv_key)}"
                 ws[f'B{row}'].font = Font(bold=True, size=10)
                 row += 1
@@ -987,12 +989,12 @@ class ROIModelGenerator:
 
         # 2. Already-built Model Inputs cell (populated if section order is changed in future)
         for imp_key, imp_val in mod_impacts.items():
-            if abs(imp_val - val) < 0.001 and imp_key in mi_impacts:
+            if isinstance(imp_val, (int, float)) and abs(imp_val - val) < 0.001 and imp_key in mi_impacts:
                 return mi_impacts[imp_key]
 
         # 3. Build INDEX formula directly over Scenario Data (always available)
         for imp_key, imp_val in mod_impacts.items():
-            if abs(imp_val - val) < 0.001 and imp_key in sd_impacts:
+            if isinstance(imp_val, (int, float)) and abs(imp_val - val) < 0.001 and imp_key in sd_impacts:
                 sd_row = sd_impacts[imp_key]
                 return f"INDEX('Scenario Data'!$C${sd_row}:$E${sd_row},1,{self.sc_cell})"
 

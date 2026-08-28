@@ -171,8 +171,17 @@ ROOT = HERE.parent                              # cortex repo root
 # preflight ERROR in `check_registry.py` (`_outside_shadow`), which reads this
 # tuple directly — so extending the shadow here is what makes such a fixture
 # legal, and the two can never drift.
+#
+# `.prd/` was added for the same reason, one rule later: `require-harness`'s
+# `repo_prd_state_matches_gate` is a DEPLOYMENT check — it runs the hook over the
+# repo's real `.prd/prd-v*.md` front matter, because every other check in that row
+# builds a tidy synthetic root and so stayed green while the shipped repo state
+# defeated the gate entirely (measured 2026-08-28). A deployment check is only
+# honest if the shadow carries the same tree the real run reads; without this the
+# check hard-failed inside every shadow with "no .prd/prd-v*.md in the repo".
+# It is planning markdown — small, and no bigger risk in a temp dir than on disk.
 SHADOW_SUBTREES: tuple[str, ...] = ("evals", ".claude", "scripts", "tools",
-                                     "templates", "presentations")
+                                     "templates", "presentations", ".prd")
 
 # Small root-level files copied alongside, so a shadow run reads the same
 # config a real run does.

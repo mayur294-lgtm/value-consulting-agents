@@ -124,7 +124,7 @@ The big picture that spans multiple files (see `STRUCTURE.md`, `FLYWHEEL.md`, an
 
 8. **Knowledge & ontology:** `knowledge/` holds methodology, `standards/` (the governance protocols + per-domain capability taxonomies), `design-system.md` (visual SSOT), `banking_os.md` (positioning canon), domain benchmarks, and battlecards. `ontology-test/` holds per-client knowledge-graph JSON and the Minimi bridge (`MINIMI_BRIDGE.md`).
 
-9. **CI contribution gates:** `enforce-contribution-scope.yml` blocks Consultant-tier PRs from touching agents/skills/tools/CLAUDE.md (Architect-only); `test-agents.yml` guards agent/knowledge/template PRs. See **Contribution Tiers** below.
+9. **CI contribution gates:** `enforce-contribution-scope.yml` blocks Consultant-tier PRs from touching agents/skills/tools/CLAUDE.md (Architect-only); `test-agents.yml` guards agent/knowledge/template PRs; `catalog-drift.yml` fails any PR that adds, renames or retires a skill/agent without updating `docs/rollout/catalog.yaml` and regenerating the cheat sheet (`python3 tools/build_cheatsheet.py`) — the consultant-facing capability list is generated from that catalog, so this is what stops it going stale. See **Contribution Tiers** below.
 
 ---
 

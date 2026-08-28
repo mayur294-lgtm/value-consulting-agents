@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set up PII protection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════
+   FRONTLINE 2026 LONG-FORM DESIGN SYSTEM
+   Sidebar-navigated, multi-section solutioning document.
+   Lineage: Sparekassen Danmark DSD (Micha Kroes, Apr 2026).
+   Tokens align to Master Template Theme 1 — see
+   knowledge/design-system/frontline-tokens.json (2026-04-29).
+   ══════════════════════════════════════════════════════════ */
+
+/* ─── DESIGN TOKENS — canonical Frontline 2026 (Master Template Theme 1) ─── */
+:root {
+  --navy:#041326;--blue:#3367FF;--blue-l:#E5EBFF;--blue-m:#C5D1FF;
+  --white:#FFFFFF;--off:#F3F6F9;--border:#CED2D7;
+  --text:#041326;--muted:#6B7786;--faint:#9CA3AF;
+  --red:#FF503C;--red-l:#FAE0DE;--red-b:#FBBFBF;
+  --amber:#B45309;--amb-l:#FFFBEB;--amb-b:#FCD34D;
+  --green:#2ECC71;--grn-l:#ECFDF5;--grn-b:#6EE7B7;
+  --purple:#6A1B9A;--purple-l:#F3E5F5;
+  --sp-1:0.25rem;--sp-2:0.5rem;--sp-3:1rem;--sp-4:1.5rem;
+  --sp-5:2rem;--sp-6:3rem;--sp-7:4rem;--sp-8:6rem;
+  --sidebar-w:272px;--nav-h:65px;
+}
+
+/* ─── RESET & BASE ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Libre Franklin','Trebuchet MS',sans-serif;font-weight:300;font-size:1rem;line-height:1.65;color:var(--text);background:var(--white);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+img{max-width:100%;height:auto}
+h1,h2,h3,h4{font-weight:300}
+h1{line-height:1.08;letter-spacing:-0.5px}
+h2{line-height:1.12;letter-spacing:-0.3px}
+h3{font-size:1.25rem;font-weight:500;margin-bottom:var(--sp-3)}
+h4{font-size:1.0625rem;font-weight:500}
+p{margin-bottom:var(--sp-3)}
+strong{font-weight:600}
+
+/* ─── LAYOUT ─── */
+.outer{max-width:1080px;margin:0 auto;padding:0 40px}
+.outer--rel{position:relative}
+section{padding:var(--sp-7) 0;border-bottom:1px solid var(--border)}
+.section--off{background:var(--off)}
+
+/* ─── TOP NAV ─── */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;gap:16px;height:var(--nav-h);padding:0 24px;background:var(--navy);color:#fff;font-size:13px}
+.top-nav__logo{height:18px;width:auto}
+.top-nav__sep{color:#fff;font-size:18px}
+.top-nav__logo-client{height:16px;width:auto}
+.top-nav__title{flex:1;color:#fff;font-size:13px;font-weight:300;letter-spacing:0.13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-nav__badge{background:var(--blue);color:#fff;padding:4px 12px;font-size:11px;font-weight:600;letter-spacing:0.88px;text-transform:uppercase;white-space:nowrap}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:fixed;top:var(--nav-h);left:0;width:var(--sidebar-w);height:calc(100vh - var(--nav-h));overflow-y:auto;padding:24px 20px;border-right:1px solid var(--border);background:var(--white);z-index:90;font-size:13px}
+.sidebar a{display:block;padding:5px 20px;color:var(--muted);font-weight:300;border-left:2px solid transparent}
+.sidebar a:hover{background:var(--off);color:var(--text);border-left-color:var(--blue);text-decoration:none}
+.sidebar a.active{background:var(--off);color:var(--blue);font-weight:500;border-left-color:var(--blue)}
+.sidebar__group-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--faint);padding:20px 12px 6px}
+
+/* ─── MAIN ─── */
+.main{margin-left:var(--sidebar-w);margin-top:var(--nav-h)}
+
+/* ─── SECTION HEADER ─── */
+.sh{margin-bottom:var(--sp-6)}
+.sh-eyebrow{font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:var(--sp-2)}
+.sh-eyebrow::before{content:'+ ';color:var(--blue)}
+.sh h2{font-size:clamp(26px,3.5vw,38px);margin-bottom:var(--sp-3)}
+.lead{font-size:1rem;color:var(--muted)}
+
+/* ─── HERO ─── */
+.hero{background:var(--navy);color:#fff;padding:var(--sp-7) 0;margin-top:var(--nav-h)}
+.hero__draft{display:inline-block;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;background:var(--blue);color:#fff;margin-bottom:var(--sp-4)}
+.hero h1{font-size:clamp(38px,5.5vw,58px);margin-bottom:var(--sp-3)}
+.hero__subtitle{color:#fff;font-size:1rem;margin-bottom:var(--sp-6)}
+.hero__stats{display:flex;gap:12px;margin-bottom:32px}
+.hero__stat{flex:0 1 auto;padding:10px 20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)}
+.hero__stat-label{display:block;font-size:11px;font-weight:500;letter-spacing:0.88px;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+.hero__stat-value{font-size:15px;font-weight:500}
+.hero__footer{color:#fff;font-size:13px;margin-top:24px}
+
+/* ─── GEO BLOCK ─── */
+.geo-block{width:16px;height:16px;display:block;flex-shrink:0;transform:rotate(90deg)}
+
+/* ─── CARDS ─── */
+.card{background:var(--white);border:1px solid var(--border);padding:24px}
+.card-hdr-flex{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.card--compact{padding:14px 18px}
+.card--compact .card-hdr-flex{margin-bottom:6px}
+.card--compact h4{font-size:14px;flex:1;min-width:0}
+.card--compact__desc{font-size:12px;color:var(--muted);margin:0;line-height:1.5}
+
+/* ─── BADGES ─── */
+.bb-badge{display:inline-block;padding:3px 10px;font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase}
+.bb-badge.red{background:var(--red-l);color:var(--red)}
+.bb-badge.amber{background:var(--amb-l);color:var(--amber)}
+.bb-badge.green{background:var(--grn-l);color:var(--green)}
+.bb-badge.blue{background:var(--blue-l);color:var(--blue)}
+.bb-badge.purple{background:var(--purple-l);color:var(--purple)}
+
+/* ─── CALLOUTS ─── */
+.callout{padding:16px 20px;margin-bottom:var(--sp-5);border-left:3px solid transparent}
+.callout.red{background:var(--red-l);border-color:var(--red);color:var(--red)}
+.callout.amber{background:var(--amb-l);border-color:var(--amb-b);color:var(--amber)}
+.callout.blue{background:var(--blue-l);border-color:var(--blue);color:var(--blue)}
+.callout.green{background:var(--grn-l);border-color:var(--grn-b);color:var(--green)}
+.callout p{margin:0}
+
+/* ─── TABLES ─── */
+.table-wrap{overflow-x:auto}
+.dt{width:100%;border-collapse:collapse;font-size:13px}
+.dt thead{background:var(--navy);color:#fff}
+.dt th{text-align:left;padding:10px 16px;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase}
+.dt td{padding:12px 16px;border-bottom:1px solid var(--border);font-weight:300}
+
+/* ─── GRIDS ─── */
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+
+/* ─── STAKEHOLDER CARDS ─── */
+.sr-org-header{display:flex;align-items:center;padding:10px 0;margin-bottom:8px;border-bottom:1px solid var(--border);font-size:14px;font-weight:500}
+.sr-org-header__logo{height:20px;width:auto;margin-right:8px}
+.sr-org-header__count{margin-left:auto;font-size:12px;color:var(--muted);font-weight:400}
+.sr-card{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.sr-card__info{flex:1;min-width:0}
+.sr-card__li{flex-shrink:0;width:20px;height:20px;color:var(--blue);opacity:0.7}
+.sr-card__li:hover{opacity:1}
+.sr-initials{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;font-size:13px;font-weight:600;color:#fff;flex-shrink:0}
+.sr-initials.bb{background:var(--navy)}
+.sr-initials.client{background:var(--blue)}
+.sr-photo{width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.sr-name{font-weight:500;font-size:14px}
+.sr-name a{color:var(--text);text-decoration:none}
+.sr-name a:hover{color:var(--blue)}
+.sr-meta{font-size:12px;color:var(--muted)}
+.sr-meta span+span::before{content:' \00B7 ';color:var(--faint)}
+
+/* ─── INTEGRATION CARDS ─── */
+.integration-map{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:var(--sp-5)}
+.integration-card{padding:20px;border:1px solid var(--border)}
+.integration-card__header{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:4px}
+.integration-card__logos{display:flex;align-items:center;gap:8px}
+.integration-card__logo{height:20px;width:auto;max-width:100px;object-fit:contain}
+.integration-card__logo--icon{height:22px;width:22px}
+.integration-card__system{font-weight:500;font-size:15px}
+.integration-card__detail{font-size:13px;color:var(--muted);margin:8px 0 12px}
+.integration-card__status{margin-bottom:8px}
+.pm-attr{font-size:0.78rem;color:var(--muted);margin-top:8px}
+
+/* ─── GANTT TIMELINE ─── */
+.gantt-timeline{margin:var(--sp-5) 0}
+.gantt-timeline-row{display:flex;align-items:center;margin-bottom:8px}
+.gantt-timeline-label{width:160px;font-size:13px;font-weight:500;flex-shrink:0}
+.gantt-timeline-track{flex:1;height:28px;background:var(--off);position:relative}
+.gantt-timeline-bar{position:absolute;top:0;height:100%;display:flex;align-items:center;padding:0 10px;font-size:10px;font-weight:600;color:#fff;letter-spacing:0.5px;text-transform:uppercase}
+.gantt-timeline-bar.blue{background:var(--blue)}
+.gantt-timeline-bar.green{background:var(--green)}
+.gantt-timeline-bar.amber{background:var(--amber)}
+.gantt-timeline-bar.navy{background:var(--navy)}
+.gantt-timeline-bar.purple{background:var(--purple)}
+.gantt-timeline-milestone{white-space:nowrap}
+
+/* ─── YEAR CARDS ─── */
+.year-card{border:1px solid var(--border);padding:24px}
+.year-card--highlight{background:var(--navy);color:#fff;border-color:var(--navy)}
+.year-card__year{font-size:1.25rem;font-weight:300;margin-bottom:16px}
+.year-card__metric{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.year-card--highlight .year-card__metric{border-color:rgba(255,255,255,0.15)}
+.year-card__metric-label{color:var(--muted);font-weight:300}
+.year-card--highlight .year-card__metric-label{color:#fff}
+.year-card__metric-value{font-weight:500}
+
+/* ─── ALERT CARDS ─── */
+.alert-card{border:1px solid var(--border);margin-bottom:16px}
+.alert-card__header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.alert-card__severity{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:3px 10px}
+.alert-card__severity--red{background:var(--red-l);color:var(--red)}
+.alert-card__severity--amber{background:var(--amb-l);color:var(--amber)}
+.alert-card__severity--green{background:var(--grn-l);color:var(--green)}
+.alert-card__title{font-weight:500;font-size:14px}
+.alert-card__body{padding:12px 16px;font-size:13px;color:var(--muted)}
+
+/* ─── KPI CARDS ─── */
+.kpi-card{text-align:center;padding:20px;background:var(--white);border:1px solid var(--border)}
+.kpi-card__label{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.kpi-card__value{font-size:1.5rem;font-weight:600}
+.kpi-card__sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ─── NORTH STAR CARDS ─── */
+.ns-card{padding:24px;border:1px solid var(--border);background:var(--white)}
+.ns-card__icon{font-size:1.5rem;margin-bottom:12px}
+.ns-card__title{font-weight:500;font-size:15px;margin-bottom:8px}
+.ns-card__desc{font-size:13px;color:var(--muted);margin:0}
+
+/* ─── JOURNEY STEPS ─── */
+.journey-flow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--sp-5)}
+.journey-step{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--blue-l);border:1px solid var(--blue-m);font-size:12px;font-weight:500;color:var(--blue)}
+.journey-step--arrow::after{content:'\2192';margin-left:8px;color:var(--faint)}
+.journey-step--green{background:var(--grn-l);border-color:var(--grn-b);color:var(--green)}
+.journey-step--amber{background:var(--amb-l);border-color:var(--amb-b);color:var(--amber)}
+
+/* ─── PROTOTYPE CARDS ─── */
+.proto-card{border:1px solid var(--border);overflow:hidden}
+.proto-card__header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.proto-card__title{font-weight:500;font-size:15px}
+.proto-card__link{font-size:13px;color:var(--blue);font-weight:500}
+.proto-card__body{padding:24px;text-align:center;background:var(--off)}
+.proto-card__screenshot{width:100%;height:auto;display:block;border-bottom:1px solid var(--border)}
+.proto-card__body p{font-size:13px;color:var(--muted);margin:0}
+
+/* ─── TIMELINE TABLE ─── */
+.timeline-entry{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
+.timeline-date{width:120px;flex-shrink:0;font-size:13px;font-weight:500;color:var(--blue)}
+.timeline-event{font-size:13px;color:var(--muted)}
+
+/* ─── PLATFORM ARCHITECTURE ─── */
+.arch{border-radius:8px;overflow:hidden;margin-bottom:var(--sp-5);border:1px solid var(--border)}
+.arch__layer{padding:20px 24px}
+.arch__layer-label{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.arch__layer-sub{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+.arch__items{display:flex;flex-wrap:wrap;gap:8px}
+.arch__item{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--white);border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:500;white-space:nowrap}
+.arch__item img{height:14px;width:auto}
+.arch__item--green{border-color:var(--green);color:var(--green)}
+.arch__item--purple{border-color:var(--purple);color:var(--purple)}
+.arch__item--amber{border-color:var(--amber)}
+.arch__item--blue{border-color:var(--blue)}
+.arch__item .arch__slot{font-size:10px;font-weight:600;color:var(--muted);margin-left:4px}
+.arch__channels{background:var(--blue-l);border-bottom:3px solid var(--blue)}
+.arch__channels .arch__layer-label{color:var(--blue)}
+.arch__products{background:var(--white)}
+.arch__products .arch__layer-label{color:var(--navy)}
+.arch__gc{background:var(--white);border-top:1px solid var(--border)}
+.arch__gc .arch__layer-label{color:var(--navy)}
+.arch__hosting{background:var(--navy);border-top:none}
+.arch__hosting .arch__layer-label{color:#fff}
+.arch__hosting .arch__item{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:#fff}
+
+/* ─── COLLAPSIBLE BLOCKS ─── */
+details.collapse{border:1px solid var(--border);border-radius:6px;margin-bottom:var(--sp-4);background:var(--white)}
+details.collapse>summary{padding:14px 20px;font-size:14px;font-weight:600;cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;color:var(--navy);user-select:none}
+details.collapse>summary::-webkit-details-marker{display:none}
+details.collapse>summary::before{content:'';display:inline-block;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .2s;flex-shrink:0}
+details.collapse[open]>summary::before{transform:rotate(45deg)}
+details.collapse>summary .collapse__count{font-size:11px;font-weight:500;color:var(--muted);background:var(--off);padding:2px 8px;border-radius:10px}
+details.collapse .collapse__body{padding:0 20px 20px}
+
+/* ─── VISUAL TIMELINE ─── */
+.vtl{position:relative;padding-left:0}
+.vtl__year{display:flex;align-items:center;gap:16px;margin-bottom:8px;margin-top:32px}
+.vtl__year:first-child{margin-top:0}
+.vtl__year-label{font-size:28px;font-weight:300;letter-spacing:-0.5px;color:var(--navy);line-height:1}
+.vtl__year-line{flex:1;height:1px;background:var(--border)}
+.vtl__track{position:relative;padding-left:32px;margin-left:12px;border-left:2px solid var(--border)}
+.vtl__item{position:relative;padding:10px 0 10px 16px;display:grid;grid-template-columns:100px 1fr;gap:8px 16px;align-items:start}
+.vtl__item::before{content:'';position:absolute;left:-39px;top:16px;width:12px;height:12px;border-radius:50%;background:var(--white);border:2px solid var(--blue);z-index:1}
+.vtl__item--key::before{background:var(--blue);border-color:var(--blue);box-shadow:0 0 0 4px var(--blue-l)}
+.vtl__item--disruption::before{background:var(--amber);border-color:var(--amber);box-shadow:0 0 0 4px var(--amb-l)}
+.vtl__item--target::before{background:var(--green);border-color:var(--green);box-shadow:0 0 0 4px var(--grn-l)}
+.vtl__date{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.3px;padding-top:1px}
+.vtl__content{min-width:0}
+.vtl__title{font-size:14px;font-weight:500;color:var(--text);line-height:1.35}
+.vtl__desc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45}
+.vtl__month{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin:12px 0 4px 8px;opacity:0.7}
+.vtl__month:first-child{margin-top:0}
+.vtl__track:last-child{border-left-color:transparent}
+
+/* ─── METRIC CARDS (dark, for hero-style stats in sections) ─── */
+.metric-card{background:var(--navy);border-radius:9px;padding:20px 14px;text-align:center;position:relative;overflow:hidden}
+.metric-card::before{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;background:radial-gradient(circle,rgba(51,103,255,.2),transparent 70%);pointer-events:none}
+.metric-card .val{font-size:1.45rem;font-weight:700;letter-spacing:-1px;margin-bottom:4px;line-height:1;color:#fff}
+.metric-card .lbl{color:rgba(255,255,255,.42);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;line-height:1.4}
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+
+/* ─── SCENARIO CARDS ─── */
+.scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.scenario-card{border-radius:9px;padding:22px 18px;text-align:center;border:1px solid var(--border);background:var(--white);position:relative;overflow:hidden}
+.scenario-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--faint)}
+.scenario-card.conservative::before{background:var(--green)}
+.scenario-card.base::before{background:var(--blue)}
+.scenario-card.upside::before{background:var(--purple)}
+.scenario-card h4{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;color:var(--muted)}
+.scenario-card .big{font-size:2.2rem;font-weight:700;letter-spacing:-2px;margin-bottom:6px;line-height:1}
+.scenario-card .detail{font-size:10px;color:var(--muted);line-height:1.6}
+
+/* ─── LEVER CARDS ─── */
+.lever-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0 18px}
+.lever-card{background:var(--white);border:1px solid var(--border);border-radius:9px;padding:16px;position:relative;overflow:hidden}
+.lever-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--green)}
+.lever-card.blue::before{background:var(--blue)}
+.lever-card.amber::before{background:var(--amber)}
+.lever-card.purple::before{background:var(--purple)}
+.lever-tag{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:4px}
+.lever-tag.blue{color:var(--blue)}.lever-tag.amber{color:var(--amber)}
+.lever-card h4{font-size:12px;font-weight:700;margin-bottom:4px;color:var(--navy)}
+.lever-desc{font-size:10px;color:var(--muted);margin-bottom:7px;line-height:1.5}
+.lever-formula{font-family:'SFMono-Regular',Consolas,monospace;font-size:9px;background:var(--blue-l);border-radius:5px;padding:5px 9px;color:var(--blue);margin:7px 0;border-left:2px solid var(--blue)}
+.lever-total{margin-top:9px;padding:7px 11px;background:var(--grn-l);border-radius:6px;font-weight:700;font-size:11px;color:var(--green);display:flex;justify-content:space-between;align-items:center}
+.lever-total.blue{background:var(--blue-l);color:var(--blue)}
+
+/* ─── DARK CTA / FOOTER ─── */
+.dark-cta{background:var(--navy);padding:28px 40px;position:relative;overflow:hidden}
+.dark-cta::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+.dark-cta-inner{position:relative;z-index:1;max-width:1080px;margin:0 auto}
+.dark-cta h3{color:#fff;font-size:15px;font-weight:700;margin-bottom:5px}
+.dark-cta p{color:rgba(255,255,255,.45);font-size:11px;line-height:1.6}
+
+/* ─── PAGE BREAK (for print) ─── */
+.page-break{page-break-before:always;break-before:page}
+
+/* ─── TABULAR FIGURES ─── */
+.kpi-card__value,.metric-card .val,.scenario-card .big,.lever-total{font-variant-numeric:tabular-nums}
+
+/* ─── PRINT ─── */
+@media print{
+  .top-nav,.sidebar{display:none}
+  .main{margin-left:0;margin-top:0}
+  .hero{margin-top:0}
+  section{background:var(--white)!important;border-bottom:none;padding-bottom:8px}
+  .hero,.metric-card,.dark-cta,.arch__hosting{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}
+  .integration-map{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+  .integration-map{grid-template-columns:1fr}
+  .hero__stats{flex-wrap:wrap}
+  .metrics-row{grid-template-columns:repeat(2,1fr)}
+  .scenario-grid,.lever-grid{grid-template-columns:1fr}
+}
+
+/* ─── REDUCED MOTION ─── */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
+<style>
+.cs-cmd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;font-weight:600;color:var(--blue);white-space:nowrap}
+.cs-vid{display:flex;align-items:center;gap:12px;border-left:3px solid var(--blue);background:var(--blue-l);padding:14px 18px;margin:var(--sp-4) 0 0}
+.cs-vid__play{width:26px;height:26px;flex:0 0 26px;border-radius:50%;background:var(--blue);position:relative}
+.cs-vid__play::after{content:'';position:absolute;top:8px;left:10px;border-left:8px solid #fff;border-top:5px solid transparent;border-bottom:5px solid transparent}
+.cs-vid__txt{font-size:14px;line-height:1.45}
+.cs-vid__txt strong{display:block;font-size:14px}
+.cs-vid__txt span{color:var(--muted);font-size:13px}
+.cs-step{display:flex;gap:20px;align-items:flex-start;padding:22px 0;border-bottom:1px solid var(--border)}
+.cs-step:last-child{border-bottom:none}
+.cs-step__n{flex:0 0 40px;height:40px;background:var(--navy);color:#fff;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.cs-step__body{flex:1;min-width:0}
+.cs-step__body h3{margin:0 0 8px}
+.cs-run{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14.5px;font-weight:600;color:#fff;background:var(--navy);padding:13px 18px;margin:12px 0 10px;overflow-x:auto;white-space:pre}
+.cs-once{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#fff;background:var(--blue);padding:3px 9px;margin-bottom:14px}
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <svg class="top-nav__logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 166 29" fill="#fff" fill-rule="evenodd" clip-rule="evenodd"><path d="M148.861 18.013c0-6.325 2.46-10.408 8.57-10.408 6.109 0 8.569 3.763 8.569 10.008v2.241h-13.092c.317 2.802 1.428 5.044 6.03 5.044s3.175 0 5.714-.721v3.522c-3.096.801-4.206.801-5.714.801-8.966 0-10.077-6.485-10.077-10.407v-.08Zm-18.488 7.845v-4.002c3.651 2.241 5.476 3.042 8.412 3.042 2.935 0 3.49-1.121 3.49-2.402 0-1.282-1.031-2.162-4.681-2.962-5.713-1.281-7.221-3.122-7.221-6.325 0-3.202 2.857-5.604 7.062-5.604 4.206 0 5.316.721 7.221 2.082v3.602c-2.936-1.441-5.475-2.081-7.617-2.081-2.143 0-2.698.881-2.698 1.841 0 .961.476 1.922 3.888 2.802 5.872 1.601 8.014 2.882 8.014 6.564 0 3.684-2.856 6.005-7.458 6.005-4.603 0-5.556-.64-8.412-2.562Zm-84.349-7.845c0-6.325 3.094-10.408 8.887-10.408 5.793 0 8.253 3.283 8.253 8.006h-3.968c-.159-2.481-.952-4.403-4.127-4.403-3.173 0-5.157 1.601-5.157 6.805 0 5.203 1.428 6.804 5.157 6.804 3.73 0 3.968-1.921 4.127-4.402h3.968c0 4.803-3.095 8.005-8.253 8.005-5.158 0-8.887-4.163-8.887-10.407Zm59.829 0c0 5.924-2.301 10.407-8.729 10.407-6.427 0-4.761-1.041-5.951-2.802v2.402h-3.967V0h3.967v10.407c1.19-1.76 3.174-2.802 5.951-2.802 6.428 0 8.729 4.564 8.729 10.408Zm-80.619 3.322c.018-3.43 2.32-7.005 7.142-7.005 4.84 0 4.364.8 5.554 2.401v-5.203H27.615V7.926h14.283v16.011h2.38v4.002H37.93v-2c-1.19 1.6-2.777 2.4-5.554 2.4-4.822 0-7.124-3.495-7.142-7.004Zm83.238 0c.017-3.43 2.319-7.005 7.141-7.005 4.84 0 4.364.8 5.554 2.401v-5.203h-10.315V7.926h14.283v16.011h2.381v4.002h-6.349v-2c-1.19 1.6-2.777 2.4-5.554 2.4-4.822 0-7.124-3.495-7.141-7.004ZM70.86 16.251h3.095l5.554-8.246h4.84l-6.823 10.088 6.823 10.006h-4.84l-5.554-8.165H70.86v8.086h-3.968V0h3.968v16.251ZM16.505 13.85v-.72c3.968-.561 4.999-2.963 4.999-5.605 0-2.642-2.301-6.804-7.935-6.804h-3.174v3.602h3.174c3.015 0 3.967.961 3.967 3.523 0 2.561-.952 3.922-3.967 3.922H3.651V28.02h9.918c6.506 0 8.728-3.763 8.728-7.605 0-3.843-1.189-6.005-5.792-6.565Zm21.345 7.525c0-2.002-1.428-3.362-4.364-3.362s-4.363 1.441-4.363 3.362c0 1.922 1.427 3.442 4.363 3.442 2.936 0 4.364-1.441 4.364-3.442Zm83.238 0c0-2.002-1.428-3.362-4.365-3.362-2.935 0-4.364 1.441-4.364 3.362 0 1.922 1.429 3.442 4.364 3.442 2.937 0 4.365-1.441 4.365-3.442Zm-19.203-3.362c0-4.804-1.428-6.805-5.316-6.805s-5.316 2.001-5.316 6.805c0 4.803 1.428 6.804 5.316 6.804s5.316-2.001 5.316-6.804Zm-88.236 6.404H7.697v-9.046h5.952c3.57 0 4.761.96 4.761 4.723 0 3.762-1.191 4.323-4.761 4.323Zm11.585-3.082v.04-.08.04Zm83.238 0-.001.04v-.08l.001.04Zm53.561-5.084c-.079-3.522-1.428-4.963-4.602-4.963-3.175 0-4.444 1.761-4.602 4.963h9.204ZM0 .801v3.763h3.729v4.002h3.889V.801H0Z"/></svg>
+  <span class="top-nav__sep">&times;</span>
+  <span class="top-nav__logo-client" style="font-weight:500;font-size:14px;">Cortex</span>
+  <div class="top-nav__title">How-to &mdash; Set up PII protection</div>
+  <div><span class="top-nav__badge">One-time setup</span></div>
+</nav>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar__group-label">Do this once</div>
+  <a href="#section-1" class="active">1. What this is</a>
+  <a href="#section-2">2. The three steps</a>
+  <a href="#section-3">3. If it stops with an error</a>
+
+  <div class="sidebar__group-label">Afterwards</div>
+  <a href="#section-4">4. What changes day to day</a>
+  <a href="#section-5">5. What it does not do</a>
+</aside>
+
+<main class="main" id="main-content">
+
+<section class="hero" style="border-bottom:none;">
+  <div class="outer outer--rel">
+    <svg class="geo-block" viewBox="0 0 16 16" style="position:absolute;top:0;left:-1px;color:var(--blue);"><path d="M16 0V16H8V8H0V0H16Z" fill="currentColor"/></svg>
+    <div class="sh-eyebrow" style="color:#fff;letter-spacing:2px;">One-time setup</div>
+    <h1>Set up PII protection</h1>
+    <p class="hero__subtitle">About ten minutes, once. After that you never think about it again &mdash; and client documents stop reaching Claude with the client's real details still in them.</p>
+    <div class="hero__stats">
+      <div class="hero__stat"><span class="hero__stat-label">Commands to run</span><span class="hero__stat-value">1</span></div>
+      <div class="hero__stat"><span class="hero__stat-label">Roughly</span><span class="hero__stat-value">10 min</span></div>
+      <div class="hero__stat"><span class="hero__stat-label">How often</span><span class="hero__stat-value">Once</span></div>
+      <div class="hero__stat"><span class="hero__stat-label">Files now covered</span><span class="hero__stat-value">All</span></div>
+    </div>
+    <p class="hero__footer">Backbase internal &middot; do this before your next engagement</p>
+  </div>
+</section>
+
+<section id="section-1">
+  <div class="outer outer--rel">
+    <div class="sh">
+      <div class="sh-eyebrow">Section 01</div>
+      <h2>What this is</h2>
+      <p class="lead">Cortex now strips client names, stakeholder names, emails and account numbers out of client documents before they reach Claude &mdash; and puts the real names back when a deliverable is produced.</p>
+    </div>
+
+    <p>The detection engine needs a specific version of Python and a language model that has to be downloaded. That is the entire reason there is a setup step at all.</p>
+
+    <div class="grid-2" style="margin-top:var(--sp-4);">
+      <div class="card">
+        <h3>What it used to cover</h3>
+        <p>Three markdown files. When we measured the old gate against what is actually in engagement input folders, it reached <strong>3 of 77 files</strong>. The annual reports, RFPs, client decks and pricing spreadsheets &mdash; almost everything we really work from &mdash; went through unscrubbed.</p>
+      </div>
+      <div class="card">
+        <h3>What it covers now</h3>
+        <p>Every text-bearing document in an engagement's <span class="cs-cmd">inputs/</span>: PDF, Word, PowerPoint, Excel, CSV. Each is converted to text and scrubbed before anything reaches the model. Names are found by a real named-entity engine rather than five hand-written patterns.</p>
+      </div>
+    </div>
+
+    <div class="callout red" style="margin-top:var(--sp-4);">
+      <p><strong>Until you run the setup, files in an engagement's <span class="cs-cmd">inputs/</span> will not open.</strong> That is deliberate &mdash; opening one before the scrubber exists would send the client's real details through unchanged. Everything else in Cortex keeps working in the meantime.</p>
+    </div>
+
+    <div class="cs-vid">
+      <div class="cs-vid__play"></div>
+      <div class="cs-vid__txt"><strong>Video &mdash; Setting up PII protection</strong><span>Link to follow</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="section-2" class="section--off">
+  <div class="outer outer--rel">
+    <div class="sh">
+      <div class="sh-eyebrow">Section 02</div>
+      <h2>The three steps</h2>
+      <p class="lead">Run these from the top of your Cortex folder, not from inside a subfolder.</p>
+    </div>
+
+    <span class="cs-once">Do this once</span>
+
+    <div class="cs-step">
+      <div class="cs-step__n">1</div>
+      <div class="cs-step__body">
+        <h3>Get the latest Cortex</h3>
+        <span class="cs-run">git checkout main &amp;&amp; git pull</span>
+        <p>Everything below assumes you are on an up-to-date <span class="cs-cmd">main</span>.</p>
+      </div>
+    </div>
+
+    <div class="cs-step">
+      <div class="cs-step__n">2</div>
+      <div class="cs-step__body">
+        <h3>Run the setup</h3>
+        <span class="cs-run">bash scripts/setup_pii.sh</span>
+        <p>It downloads a language model of about 380&nbsp;MB, so give it a few minutes. It is safe to run again at any time &mdash; a second run skips whatever is already done.</p>
+      </div>
+    </div>
+
+    <div class="cs-step">
+      <div class="cs-step__n">3</div>
+      <div class="cs-step__body">
+        <h3>Check it worked</h3>
+        <p>The last thing it prints is:</p>
+        <span class="cs-run">=== Setup complete ===</span>
+        <p>If you saw that, you are finished. Close the terminal and carry on.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="section-3">
+  <div class="outer outer--rel">
+    <div class="sh">
+      <div class="sh-eyebrow">Section 03</div>
+      <h2>If it stops with an error</h2>
+      <p class="lead">Two of these are common. The third is the catch-all.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table class="dt">
+        <thead><tr><th style="width:26%">What it says</th><th style="width:32%">What it means</th><th>What to do</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>No compatible Python found</strong></td>
+            <td>The Python that ships with macOS is 3.9, and this needs 3.10 or newer. The script deliberately does not install one for you &mdash; that is a change to your machine it should not make on its own.</td>
+            <td><span class="cs-cmd">brew install python@3.11</span><br>then run step 2 again. Everything after that is automatic.</td>
+          </tr>
+          <tr>
+            <td><strong>tesseract not found</strong></td>
+            <td>A note, not a failure. Tesseract reads text out of screenshots. Documents &mdash; PDF, Word, Excel, PowerPoint &mdash; are all protected and readable without it.</td>
+            <td>Only if you work from screenshots:<br><span class="cs-cmd">brew install tesseract</span></td>
+          </tr>
+          <tr>
+            <td><strong>Anything else</strong></td>
+            <td>Rare, and usually specific to one machine.</td>
+            <td>Ask Claude directly: <em>&ldquo;help me set up PII protection&rdquo;</em>. It can read the error and tell you what it means.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="section-4" class="section--off">
+  <div class="outer outer--rel">
+    <div class="sh">
+      <div class="sh-eyebrow">Section 04</div>
+      <h2>What changes day to day</h2>
+      <p class="lead">Three things you will actually notice. None of them need any action.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="card card--compact">
+        <div class="card-hdr-flex"><h4>Engagement folders look odd</h4></div>
+        <p class="card--compact__desc">They are random IDs now, not client names. The folder name is sent to Claude on every single call, so a folder named after the client identified them however well the documents inside were cleaned.</p>
+      </div>
+      <div class="card card--compact">
+        <div class="card-hdr-flex"><h4>First read of a file is slower</h4></div>
+        <p class="card--compact__desc">A PDF or spreadsheet gets converted and scrubbed the first time it is opened. A few seconds. After that it is cached.</p>
+      </div>
+      <div class="card card--compact">
+        <div class="card-hdr-flex"><h4>Claude tells you if it is missing</h4></div>
+        <p class="card--compact__desc">Every session start checks. Set up correctly, you see nothing at all. Not set up, you get the one command that fixes it. It never blocks you.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:var(--sp-5);">Finding an engagement now the folders are IDs</h3>
+    <p>You never need to know or type an ID.</p>
+    <span class="cs-run">./scripts/find_engagement.sh navy_federal</span>
+    <p>Partial and case-insensitive, so half-remembered spellings work. The ID is linked to the client only in a file on your own machine, which is never committed and never sent anywhere.</p>
+
+    <h3 style="margin-top:var(--sp-5);">If you have folders from before this change</h3>
+    <p>Convert them once:</p>
+    <span class="cs-run">./scripts/migrate_engagement_ids.sh</span>
+    <div class="callout amber">
+      <p><strong>That command only shows you the plan &mdash; it moves nothing.</strong> When the plan looks right, run it again with <span class="cs-cmd">--apply</span> on the end, and it will ask you to confirm before touching anything.</p>
+    </div>
+  </div>
+</section>
+
+<section id="section-5">
+  <div class="outer outer--rel">
+    <div class="sh">
+      <div class="sh-eyebrow">Section 05</div>
+      <h2>What it does not do</h2>
+      <p class="lead">Worth being clear about the edges, so you know where your own judgement still has to do the work.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <h3>It is not a substitute for judgement</h3>
+        <p>It catches names, contact details, identifiers and financial account numbers. It does not know that a particular sentence describes a confidential restructuring.</p>
+      </div>
+      <div class="card">
+        <h3>It works in English</h3>
+        <p>Non-English documents get pattern-based protection &mdash; emails, numbers, the client's own name &mdash; but not full name detection. Flag it if you are working in another language.</p>
+      </div>
+      <div class="card">
+        <h3>It does not cover pasted text</h3>
+        <p>The gate sits on files in <span class="cs-cmd">inputs/</span>. If you paste a transcript into a message it goes through as typed. Put client material in <span class="cs-cmd">inputs/</span> and point Claude at it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="dark-cta">
+  <div class="dark-cta-inner">
+    <h2 style="color:#fff;">Done? Then the rest of Cortex is worth a look</h2>
+    <p style="color:#fff;opacity:.85;max-width:640px;margin:var(--sp-3) auto 0;">The cheat sheet lists every pipeline, skill and agent, organised by the job you are trying to finish. Unlike this page, it changes with every release &mdash; so bookmark it rather than saving a copy.</p>
+  </div>
+</section>
+
+<section style="background:var(--navy);padding:var(--sp-4) 0;">
+  <div class="outer" style="text-align:center;">
+    <p style="color:#fff;font-size:13px;margin:0;">Cortex &mdash; PII protection setup &middot; One-time &middot; Backbase internal</p>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function() {
+  'use strict';
+  var sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+  var links = sidebar.querySelectorAll('a[href^="#"]');
+  var sections = [];
+  links.forEach(function(link) {
+    var el = document.getElementById(link.getAttribute('href').slice(1));
+    if (el) sections.push({ id: el.id, el: el });
+  });
+  function setActive(id) {
+    links.forEach(function(l) { l.classList.remove('active'); });
+    var m = sidebar.querySelector('a[href="#' + id + '"]');
+    if (m) m.classList.add('active');
+  }
+  if ('IntersectionObserver' in window && sections.length) {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) setActive(e.target.id); });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach(function(s) { obs.observe(s.el); });
+  }
+  links.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var t = document.getElementById(this.getAttribute('href').slice(1));
+      if (t) {
+        var navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 65;
+        window.scrollTo({ top: t.getBoundingClientRect().top + window.pageYOffset - navH - 20, behavior: 'smooth' });
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

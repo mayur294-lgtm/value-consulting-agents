@@ -1,0 +1,111 @@
+name: "Cheat sheet: catalog drift"
+
+# The Cortex cheat sheet is a LIVING document — it changes every time a skill or
+# an agent is added, renamed or retired. Two ways it can silently go stale, and
+# this workflow closes both:
+#
+#   1. A skill lands in .claude/commands/ and nobody adds it to catalog.yaml.
+#      -> `--check` fails: the catalog and the repo disagree.
+#   2. catalog.yaml is edited and nobody reruns the generator, so the HTML the
+#      team actually reads is behind the catalog.
+#      -> regenerate and diff: an out-of-date HTML fails.
+#
+# $0, no LLM, seconds to run. Entries marked `status: pending` in the catalog are
+# documented ahead of their PR landing and are reported without failing.
+
+on:
+  pull_request:
+    paths:
+      - '.claude/commands/**'
+      - '.claude/agents/**'
+      - 'docs/rollout/catalog.yaml'
+      - 'docs/rollout/cortex-cheat-sheet.html'
+      - 'tools/build_cheatsheet.py'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      # 1. Does the catalog match what is actually in the repo?
+      - name: Catalog matches the repo
+        id: check
+        run: |
+          python3 tools/build_cheatsheet.py --check 2>&1 | tee drift.log
+
+      # 2. Is the published HTML regenerated from the current catalog?
+      #    Compare checksums rather than `git diff` — git diff only sees TRACKED
+      #    files, so a newly added cheat sheet would pass silently.
+      - name: Cheat sheet is regenerated
+        if: success()
+        run: |
+          SHEET=docs/rollout/cortex-cheat-sheet.html
+          BEFORE=$(sha256sum "$SHEET" | cut -d' ' -f1)
+          python3 tools/build_cheatsheet.py >/dev/null
+          AFTER=$(sha256sum "$SHEET" | cut -d' ' -f1)
+          if [ "$BEFORE" != "$AFTER" ]; then
+            echo "::error::$SHEET is out of date."
+            echo ""
+            echo "The catalog changed but the sheet was not regenerated, so the page"
+            echo "the team reads is behind the catalog. Run this and commit the result:"
+            echo ""
+            echo "    python3 tools/build_cheatsheet.py"
+            echo ""
+            echo "committed: $BEFORE"
+            echo "generated: $AFTER"
+            exit 1
+          fi
+          echo "Cheat sheet is up to date with the catalog."
+
+      - name: Explain the failure on the PR
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let log = '';
+            try { log = fs.readFileSync('drift.log', 'utf8'); } catch (e) {}
+
+            let body = '## :x: Cheat sheet is out of sync\n\n';
+            body += 'The Cortex cheat sheet is generated from `docs/rollout/catalog.yaml`, ';
+            body += 'so it stays accurate only if the catalog is updated in the same PR ';
+            body += 'as the skill or agent it describes.\n\n';
+            if (log.trim()) {
+              body += '```\n' + log.trim().slice(0, 4000) + '\n```\n\n';
+            }
+            body += '**To fix:** add or remove the entry in `docs/rollout/catalog.yaml`, then run\n\n';
+            body += '```bash\npython3 tools/build_cheatsheet.py\n```\n\n';
+            body += 'and commit both files. If the code is not merged yet, mark the entry ';
+            body += '`status: pending` with a `pending_ref` and it will be reported without failing.\n';
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const prev = comments.find(c => c.body.includes('Cheat sheet is out of sync'));
+            if (prev) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                comment_id: prev.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: context.issue.number, body,
+              });
+            }

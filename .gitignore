@@ -47,6 +47,17 @@ tests/engagements/*
 # bound to a real client name. chmod 600, machine-local, never committed.
 .engagement_map.json
 
+# Harness gate override — machine-local acknowledgement that work is being done
+# outside a bb-* cycle (see .claude/hooks/require-harness.py). It was committed
+# once and, because the hook only tests for its existence, silently disabled the
+# gate on every clone. It is a per-developer marker, never a repo state.
+.prd/ACTIVE_CHANGE
+
+# Video production workspace for the rollout enablement clips — source scripts
+# are tracked, rendered frames/captures/renders are not.
+docs/rollout/videos/build/
+docs/rollout/videos/*.mp4
+
 # Neutral pipeline workspaces (#167). Throwaway per-run directories holding
 # scrubbed copies of engagement inputs and the outputs agents produce, kept
 # inside the repo only so agents' repo-relative knowledge paths still resolve.

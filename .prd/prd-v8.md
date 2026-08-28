@@ -1,6 +1,6 @@
 ---
 version: 8
-status: built
+status: archived
 date: 2026-08-27
 author: Mariam
 previous: prd-v7.md

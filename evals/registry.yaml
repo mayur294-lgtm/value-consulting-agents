@@ -838,6 +838,8 @@ components:
     threshold: 1.00
     evaluator: rubrics.component.hooks.require_harness
     code: [denies_component_edit_without_active_change, allows_when_prd_artifact_present,
+           denies_when_every_prd_is_closed, allows_when_prd_in_flight,
+           repo_prd_state_matches_gate,
            allows_when_active_change_marker_present, exempts_harness_infra_paths,
            gates_pipeline_python_only_by_extension, gates_non_exempt_skill_but_not_bb_skill,
            gates_root_orchestrate_py, ignores_read_tool, fails_open_on_malformed_payload,
@@ -850,8 +852,30 @@ components:
         replace: "    _allow()"
       allows_when_prd_artifact_present:
         file: .claude/hooks/require-harness.py
-        find: "    if list((PROJECT_DIR / \".prd\").glob(\"prd-v*.md\")):\n        return True"
+        find: "    if any(_prd_is_in_flight(p) for p in (PROJECT_DIR / \".prd\").glob(\"prd-v*.md\")):\n        return True"
         replace: "    if False:\n        return True"
+      # The status rule, proved from both sides. Emptying the closed set makes a
+      # shipped PRD read as in-flight (the old, broken behaviour) and must redden
+      # the deny-side check; inverting the comparison makes every PRD read as
+      # shipped and must redden the allow-side one.
+      denies_when_every_prd_is_closed:
+        file: .claude/hooks/require-harness.py
+        find: "    \"archived\", \"built\", \"superseded\", \"shipped\", \"done\", \"abandoned\", \"merged\","
+        replace: ""
+      # NOT `not in` -> `in`: that reads a SHIPPED prd as in-flight, so the
+      # fixture (archived + draft) still allows and the check stays green —
+      # caught by --mutate on first run. Collapsing the in-flight verdict to
+      # False is what actually starves this check of its signal.
+      allows_when_prd_in_flight:
+        file: .claude/hooks/require-harness.py
+        find: "                    return status not in _CLOSED_PRD_STATUSES"
+        replace: "                    return False"
+      # Stop reading `status:` at all and every PRD looks in-flight, which is
+      # exactly the shipped-repo bug this check exists to catch.
+      repo_prd_state_matches_gate:
+        file: .claude/hooks/require-harness.py
+        find: "                if line.startswith(\"status:\"):"
+        replace: "                if False:"
       allows_when_active_change_marker_present:
         file: .claude/hooks/require-harness.py
         find: "    if (PROJECT_DIR / \".prd\" / \"ACTIVE_CHANGE\").exists():\n        return True"

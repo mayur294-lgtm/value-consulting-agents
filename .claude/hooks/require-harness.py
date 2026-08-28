@@ -15,8 +15,13 @@ and maintained without self-deadlock, and EXEMPTS engagement deliverables (those
 are gated by require-checkpoint.py instead).
 
 Active-change signal (any one):
-  - a PRD exists:    .prd/prd-v*.md   or   .sprint/sprint-v*.md
-  - an explicit marker: .prd/ACTIVE_CHANGE
+  - a PRD is IN FLIGHT: some .prd/prd-v*.md whose front-matter `status:` is not
+    a closing one (archived / built / superseded / ...). A PRD that has shipped
+    is a permanent record, not a running change, and must not hold the gate
+    open — see _CLOSED_PRD_STATUSES and _prd_is_in_flight().
+  - an explicit marker: .prd/ACTIVE_CHANGE (gitignored — it acknowledges work
+    deliberately done outside a cycle on ONE machine; committing it would
+    disable the gate for everyone who clones).
 
 Fail-OPEN on any error — never wedge a session on a hook bug.
 
@@ -41,6 +46,17 @@ PROTECTED_PREFIXES = (
 # Pipeline code (the orchestration engine and its scripts).
 PROTECTED_PIPELINE_DIR = "scripts/"
 PIPELINE_EXTS = {".py"}
+
+# PRD front-matter `status:` values meaning the change cycle is CLOSED. A PRD
+# carrying one of these is a record of finished work and must NOT hold the
+# harness gate open; anything else (including a PRD with no `status:` at all)
+# counts as a change still in flight. See _prd_is_in_flight().
+_CLOSED_PRD_STATUSES = frozenset({
+    "archived", "built", "superseded", "shipped", "done", "abandoned", "merged",
+})
+# Front matter is a handful of keys; cap the scan so a pathological file can
+# never turn a per-edit hook into a full read.
+_FRONT_MATTER_MAX_LINES = 40
 
 # Harness infra + planning dirs + deliverables — always allowed past THIS hook.
 EXEMPT_PREFIXES = (
@@ -91,13 +107,44 @@ def _is_protected(rel: str) -> bool:
     return False
 
 
+def _prd_is_in_flight(path: Path) -> bool:
+    """True when this PRD's front matter does NOT carry a closing `status:`.
+
+    Deliberately a line scan of the front-matter block, not a YAML parse: this
+    runs in a PreToolUse hook on every Edit/Write, so it must stay stdlib-only
+    and cheap. A PRD whose front matter cannot be read is treated as IN FLIGHT,
+    so a parse problem opens the gate rather than wedging the session — the
+    fail-OPEN promise in this module's docstring.
+    """
+    try:
+        with path.open("r", encoding="utf-8", errors="replace") as fh:
+            if fh.readline().strip() != "---":
+                return True                      # no front matter -> not closed
+            for _ in range(_FRONT_MATTER_MAX_LINES):
+                line = fh.readline()
+                if not line or line.strip() == "---":
+                    return True                  # block ended, no status: key
+                if line.startswith("status:"):
+                    status = line.split(":", 1)[1].strip().strip("\"'").lower()
+                    return status not in _CLOSED_PRD_STATUSES
+    except OSError:
+        return True
+    return True
+
+
 def _change_active() -> bool:
     # bb-* uses .prd/ as the planning dir. (The legacy .sprint/ from the prior
     # development-advanced experiment is intentionally NOT a signal — it would
     # leave the gate permanently open; it is retired in the cleanup step.)
     if (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists():
         return True
-    if list((PROJECT_DIR / ".prd").glob("prd-v*.md")):
+    # Only a PRD still IN FLIGHT signals an active change. `any(prd-v*.md)` was
+    # the original test and was wrong in a way that got worse over time: a PRD is
+    # the permanent record of a change, not evidence one is running, so once the
+    # first PRD was committed the gate was unconditionally open on every clone,
+    # forever. Measured 2026-08-28 on the v7 branch: 6 shipped PRDs present, the
+    # gate had not been able to deny for anyone since the first of them landed.
+    if any(_prd_is_in_flight(p) for p in (PROJECT_DIR / ".prd").glob("prd-v*.md")):
         return True
     return False
 
