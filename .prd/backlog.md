@@ -292,3 +292,33 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
 - [ ] **`#223` itself is still unbuilt.** All eleven v8 tickets (#212-#224) remain
   OPEN; "PRD v8 built" recorded that the tickets were created, not implemented.
   Everything above is cleanup, which is the half that does not prevent recurrence.
+
+### Blocked on eval coverage — three agents keep their client names for now
+
+- [ ] **`capability-gap-analyzer`, `upgrade-analysis` and `value-consulting-orchestrator`
+  carry client names that were NOT scrubbed, because scrubbing them fails the
+  eval gate.** All three are edited-then-reverted in the 2026-08-30 scrub. The
+  gate is right and was not softened: `evals.yml`'s changed-component derivation
+  hard-fails when a changed `.claude/agents/<name>.md` has no `components.<name>`
+  row, and these three have **neither a registry row nor a rubric module** — they
+  are simply ungated agents, which the privacy edit surfaced by touching them.
+
+  What they still contain: two client short names used as document-FORMAT labels
+  ("<Client>-style Ignite Day presentation", "<Client>-style narrative use case
+  documents") in `capability-gap-analyzer`, a real bank as the worked example in
+  `upgrade-analysis`'s description, and a client acronym in
+  `value-consulting-orchestrator`'s usage example. Low volume — 7 hits — and all
+  in illustrative prose rather than data.
+
+  **Why this was not just pushed through:** the workflow's own comment states the
+  intended direction is "extending fail-loud to [uncovered paths], not softening
+  the agent rule", so adding these to a skip list would be the wrong fix. And
+  authoring three genuine rubrics — with `mutations:` proof per check, which the
+  registry requires — is a real piece of work that belongs in its own ticket, not
+  smuggled into a prose scrub where the mutation proofs would get no scrutiny.
+
+  **The work:** author `evals/rubrics/component/{capability_gap_analyzer,
+  upgrade_analysis,value_consulting_orchestrator}.py` plus their registry rows and
+  mutation entries, add the three names to the coverage expectations, THEN apply
+  the same `[Client-…]` scrub. Ordering matters: rows first, scrub second, because
+  the scrub is what trips the gate.
