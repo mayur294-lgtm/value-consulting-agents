@@ -2,6 +2,37 @@
 
 Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at the start of each cycle. Mark `[done vN]` when folded into a PRD.
 
+---
+
+## STATE AS OF 2026-08-30 — read before offering anything from this file
+
+A long privacy/merge session closed a lot of this file. **Do not re-offer the
+following; it is done and living in `mariamt/20260826-eval-gate-v7-pr6`** (PR #211,
+all checks green, awaiting a code-owner approval to reach `main`):
+
+- **Repo-wide client-name scrub.** 1,584 hits across tracked files -> 138. The
+  138 are code examples (deliberate exception, recorded below) and
+  Backbase-published reference customers (deliberate keep).
+- **Raw client material deleted** from `knowledge/` and `tests/` — three
+  assessment reports, four discovery-call transcript PDFs, an evidence register
+  naming six identifiable individuals, and 32 files of engagement validation runs.
+- **All 132 client-named FILENAMES renamed** across the whole `engagements/`
+  tree (46 in the seven engagements + 86 in the shared staging trees), reversibly.
+- **Build-script output paths fixed** — no script recreates a client-named file.
+- **The engagement migration is unblocked** — all 7 pass their dry run. It has
+  NOT been run; that is a deliberate consultant step.
+- **D1 label discriminator built** (`identity.client_label`), mutation-proven.
+- **Eval rows authored** for three previously ungated agents, 11/11
+  mutation-proven, and those agents then scrubbed.
+- **CTP (#97) merged into the stack**, which forced a real fix to
+  `SHADOW_SUBTREES` (nested subtrees now supported).
+
+**Still genuinely open and worth the next cycle:** #223 (widened — see the
+blind-spot entries below), the retraction decision, the ~12 client deliverable
+binaries in `knowledge/`, and archive/binary CONTENT which no filename work touched.
+
+---
+
 ## From the 2026-07-28 post-extraction full-system audit (47-item history verification + live tests)
 
 ### High severity — client-facing correctness
@@ -49,7 +80,7 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 
 - [done v6] ~~**Sequencing: #167 must land before or with #168.**~~ — DONE. #167 landed first and #168 built on it. **But this note's live-data claim was the exact inverse of the truth, and #168 measured it before writing anything.** It said one specific engagement was the risk and "the other six engagements have filled profiles". Measured on all seven live directories: **only ONE of the seven has a CLIENT_PROFILE.md at all**, and even that one is unfilled (`- **Name:** [Full legal name]` → zero terms). Its identifier terms come from `inputs/engagement_intake.md`, which travels *inside* the engagement and survives migration — so that one is the only one that loses nothing. **The other six have no deny-list source file whatsoever**: no profile, no ENGAGEMENT_CONTEXT.md, no intake. Their entire client deny-list is the directory slug, and a rename-only migration would have zeroed it for six of seven live engagements while reporting success. The fix: `migrate_engagement_ids.sh` resolves the deny-list before and after every move and refuses unless the after-set still *matches* everything the before-set did, with `identity.render_client_profile()` writing the client's identifier forms into a CLIENT_PROFILE.md inside the opaque directory. `denylist.py` is untouched — `drift_check.py` still passes, so D14's hook parity holds (from #166, resolved in #168)
 
-- [ ] **ACTION — run the live engagement migration.** #168 shipped the tooling but all seven live directories are still client-named (two of them two engagements for the same client). Until this runs, `compose_prompt` still renders the client's name into every agent invocation, which is the whole leak D6 exists to close. It was deliberately deferred, not forgotten — `engagements/` is gitignored, so there is no git history to fall back on and the consultant wanted to choose the moment.
+- [ ] **ACTION — run the live engagement migration. UNBLOCKED 2026-08-30 — it now passes its own dry run; it just has not been RUN.** Was 6-of-7 refused for want of client names; each engagement now carries a CLIENT_PROFILE.md supplying them, and all 7 pass the deny-list superset check with zero filename warnings. The remaining step is a consultant running `--apply`, deliberately: it moves live working directories and `engagements/` is gitignored, so there is no git history to fall back on. Take a copy first. Original note follows — #168 shipped the tooling but all seven live directories are still client-named (two of them two engagements for the same client). Until this runs, `compose_prompt` still renders the client's name into every agent invocation, which is the whole leak D6 exists to close. It was deliberately deferred, not forgotten — `engagements/` is gitignored, so there is no git history to fall back on and the consultant wanted to choose the moment.
 
   It needs each client's REAL legal name, because a slug is not a name: `bdo_apa` yields no prose deny-list terms at all, and migration refuses rather than guessing (title-casing it to "Bdo Apa" would put a wrong term on the deny-list while looking like it had solved the problem). Write them into a names file and rehearse first:
 
@@ -194,7 +225,11 @@ same change.
 
 ### High severity — the PII tooling has never been pointed at this repo's own documents
 
-- [ ] **ACTION — scrub the public repo's planning documents with the PII tooling we built for engagements.** Every gate built in v6/v7/v8 protects `engagements/` and `knowledge/`. **None of it has ever run over `.prd/`, `.design/`, or GitHub issue bodies** — and those are the files that carry the most identifying prose in the repo. Deliberately deferred at the end of the v8 cycle (2026-08-27) rather than fixed in flight, because the remedy is a rewrite of published history and that is a decision with a blast radius, not a ticket.
+- [~] **PARTLY DONE 2026-08-30 — the SCRUB is done, the RETRACTION is not. Do not redo the scrub.** Measured across all tracked text files: **1,584 client-name hits -> 138**, the remainder being code examples (a documented deliberate exception) and Backbase-published reference customers. `.prd/`, `.design/`, `docs/rollout/`, `knowledge/**`, the benchmark master CSV, the `web/` ontology graphs and the agents/commands/templates surface are all scrubbed; raw client deliverables, four discovery-call transcript PDFs and an evidence register naming six identifiable individuals were DELETED from `knowledge/` and `tests/`.
+
+  **What remains under this heading is the RETRACTION question only** — deleting from HEAD does not remove any of it from git history or from `refs/pull/N/head`. That is a GitHub Support purge plus four fork owners, and it is a decision, not a build. The transcripts and the named-individuals register make that case materially stronger than the client roster the entry was originally weighing. Original note follows.
+
+- [ ] ACTION — scrub the public repo's planning documents with the PII tooling we built for engagements. Every gate built in v6/v7/v8 protects `engagements/` and `knowledge/`. **None of it has ever run over `.prd/`, `.design/`, or GitHub issue bodies** — and those are the files that carry the most identifying prose in the repo. Deliberately deferred at the end of the v8 cycle (2026-08-27) rather than fixed in flight, because the remedy is a rewrite of published history and that is a decision with a blast radius, not a ticket.
 
   **What is exposed, measured 2026-08-27** (deliberately not enumerated here — this file is itself published; resolve the terms with `scripts/pii/denylist.py`, do not paste them into a public document):
   - `.prd/backlog.md` on pushed branches carries close to the full client roster in prose.
@@ -383,7 +418,9 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
 
 ### Medium — the migration is blocked on names nobody has supplied
 
-- [ ] **6 of 7 live engagements REFUSE to migrate**, correctly: for each, the
+- [x] **[done 2026-08-30] UNBLOCKED — all 7 now pass the deny-list superset check.** Each engagement gained a CLIENT_PROFILE.md carrying an "Identifier Forms (deny-list)" section recording the terms it already resolves to, so they survive the slug being replaced by an opaque ID. Profiles are under gitignored `engagements/`, so this is true of ONE machine — any other needs its own before its dry run passes. Original note follows.
+
+- [x] 6 of 7 live engagements REFUSE to migrate, correctly: for each, the
   directory slug is the ONLY thing putting that client on its deny-list, and an
   opaque directory would remove it — silently disarming the outbound gate for that
   client. The tool refuses the whole run rather than migrating the safe ones, which
@@ -452,7 +489,7 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
   moves live working directories, `engagements/` is gitignored, and there is no
   git history to fall back on.
 
-- [ ] **The filename leak is 46 files, not the 3 first reported.** The first dry
+- [x] **[done 2026-08-30] The filename leak is 46 files, not the 3 first reported.** ALL 46 RENAMED; residual 0 across the seven engagements. `scripts/rename_engagement_files.py`, dry-run default, reversible via `.filename_map.json`. Original note follows. The first dry
   run only reached the filename check for the single engagement that was not
   refused. With all seven passing, the real count is **46 files across the seven**
   carrying a client's name in the FILENAME — proposals, transcripts,
@@ -497,7 +534,7 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
   rewrites deliverables that may already have been sent, so it is a separate
   decision.
 
-- [ ] **Two build scripts were renamed, but not their OUTPUT paths.** They still
+- [x] **[done 2026-08-30] Build-script OUTPUT paths fixed — zero client-named output literals remain in any build script.** Five scripts existed, not two; three were already corrected by the rename pass's reference rewrite, two were not. Both now derive paths from `__file__`, which also fixes a hardcoded client-named absolute path that would have BROKEN after the engagement migration. Original note follows. They still
   write client-named `.pptx` files, so the next run recreates exactly what this
   scrub removed. A rename that undoes itself on next use is not a fix; the output
   paths in those scripts need editing, and they live inside an engagement rather
@@ -541,7 +578,9 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
 
 ### CORRECTION — "46 renamed, residual 0" was scoped, and I did not say so
 
-- [ ] **86 further files under `engagements/inputs/` and `engagements/outputs/`
+- [x] **[done 2026-08-30] ALL 86 RENAMED; residual 0 across the WHOLE `engagements/` tree** (134 renames recorded, 0 missing targets). The tool now covers the staging trees, with needles from each subdirectory's CLIENT_PROFILE.md rather than its slug. Original note follows.
+
+- [x] 86 further files under `engagements/inputs/` and `engagements/outputs/`
   carry a client or stakeholder name in the FILENAME, and nothing has touched
   them.** The residual-0 result reported for the filename scrub is true of the
   SEVEN client engagements only. Both `migrate_engagements._client_named_files`
