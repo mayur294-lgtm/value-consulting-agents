@@ -296,9 +296,11 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
 
 ### Blocked on eval coverage — three agents keep their client names for now
 
-- [ ] **`capability-gap-analyzer`, `upgrade-analysis` and `value-consulting-orchestrator`
+- [x] **CLOSED 2026-08-30 — rows authored, then scrubbed, in that order.** `capability-gap-analyzer`, `upgrade-analysis` and `value-consulting-orchestrator` now have mutation-proven rows (`rubrics/component/agent_prompt_contract.py`, 11 checks, 11/11 proven) and their client names are scrubbed. Retargeting the stack PR to `main` forced the issue: against `main` these three are changed by the v6 stack regardless of the scrub, so the gate demanded rows either way and there was nothing left to defer. Original entry follows.
+
+- [ ] ~~`capability-gap-analyzer`, `upgrade-analysis` and `value-consulting-orchestrator`
   carry client names that were NOT scrubbed, because scrubbing them fails the
-  eval gate.** All three are edited-then-reverted in the 2026-08-30 scrub. The
+  eval gate.~~ All three are edited-then-reverted in the 2026-08-30 scrub. The
   gate is right and was not softened: `evals.yml`'s changed-component derivation
   hard-fails when a changed `.claude/agents/<name>.md` has no `components.<name>`
   row, and these three have **neither a registry row nor a rubric module** — they

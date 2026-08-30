@@ -1461,6 +1461,84 @@ components:
            claude_md_core_section_heading, claude_md_governance_table_row,
            claude_md_zero_challenge_framing, claude_md_v1_limits_in_core]
 
+  # Three agents that had NO row and NO rubric, so `evals.yml`'s changed-component
+  # derivation hard-failed on any edit to them — blocking rather than verifying.
+  # These score the PROMPT FILE, not agent output: the honest claim is "the
+  # contracts the system depends on are still in the prompt", not "the agent
+  # behaves". rubrics/component/specifics.py (output, frozen by D10) and
+  # governance.py (output baseline) cannot serve, there being no output here.
+  capability-gap-analyzer:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.agent_prompt_contract
+    input: .claude/agents/capability-gap-analyzer.md
+    code: [frontmatter_declares_name_and_description, telemetry_block_marker_present,
+           mcp_anonymization_constraint_present]
+    mutations:
+      frontmatter_declares_name_and_description:
+        file: .claude/agents/capability-gap-analyzer.md
+        find: "description:"
+        replace: "descriptionx:"
+      telemetry_block_marker_present:
+        file: .claude/agents/capability-gap-analyzer.md
+        find: "TELEMETRY_START"
+        replace: "TELEMETRY_DISABLED"
+      mcp_anonymization_constraint_present:
+        file: .claude/agents/capability-gap-analyzer.md
+        find: "Anonymize every MCP query"
+        replace: "Query Infobank freely"
+
+  upgrade-analysis:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.agent_prompt_contract
+    input: .claude/agents/upgrade-analysis.md
+    code: [frontmatter_declares_name_and_description, telemetry_block_marker_present,
+           mcp_anonymization_constraint_present]
+    mutations:
+      frontmatter_declares_name_and_description:
+        file: .claude/agents/upgrade-analysis.md
+        find: "description:"
+        replace: "descriptionx:"
+      telemetry_block_marker_present:
+        file: .claude/agents/upgrade-analysis.md
+        find: "TELEMETRY_START"
+        replace: "TELEMETRY_DISABLED"
+      mcp_anonymization_constraint_present:
+        file: .claude/agents/upgrade-analysis.md
+        find: "Anonymize every MCP query"
+        replace: "Query Infobank freely"
+
+  value-consulting-orchestrator:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.agent_prompt_contract
+    input: .claude/agents/value-consulting-orchestrator.md
+    code: [frontmatter_declares_name_and_description, telemetry_block_marker_present,
+           journal_and_telemetry_protocol_section, routes_all_three_engagement_modes,
+           delegates_block_a_to_the_script]
+    mutations:
+      frontmatter_declares_name_and_description:
+        file: .claude/agents/value-consulting-orchestrator.md
+        find: "description:"
+        replace: "descriptionx:"
+      telemetry_block_marker_present:
+        file: .claude/agents/value-consulting-orchestrator.md
+        find: "TELEMETRY_START"
+        replace: "TELEMETRY_DISABLED"
+      journal_and_telemetry_protocol_section:
+        file: .claude/agents/value-consulting-orchestrator.md
+        find: "Journal Entry & Telemetry Protocol"
+        replace: "Journal Notes"
+      routes_all_three_engagement_modes:
+        file: .claude/agents/value-consulting-orchestrator.md
+        find: "Hybrid"
+        replace: "Combined"
+      delegates_block_a_to_the_script:
+        file: .claude/agents/value-consulting-orchestrator.md
+        find: "orchestrate.py"
+        replace: "the-pipeline"
+
 # Deliverable-structural altitude (#188 — was `pipeline:`; same checks, honest
 # name). It lints the inter-agent structural contracts across a set of output
 # FILES that already exist on disk. It does NOT run orchestrate.py, does not
