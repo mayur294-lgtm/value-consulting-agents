@@ -56,7 +56,7 @@ This registry tracks all knowledge extracted from past engagements into the agen
 | [Client-retail-LATAM-2021] | LATAM | Lending | roi_logic, lending_model | 2026-02-05 | digital_lending_roi.md |
 | [Client-wealth-APAC-2025] | APAC | Wealth | full_assessment, journey, roi, persona | 2026-02-05 | Updated wealth/benchmarks.md, wealth/journey_maps.md |
 | [Client-retail-ANZ-2025] | APAC | Retail | journey_assessment, business_case, process_flows | 2026-02-05 | Updated retail/benchmarks.md |
-| [Client-commercial-NAM-2026] | NAM | Commercial/Treasury | discovery_transcript, pain_points, security, integration | 2026-02-05 | Updated commercial/benchmarks.md |
+| [Client-commercial-NAM-2026-a] | NAM | Commercial/Treasury | discovery_transcript, pain_points, security, integration | 2026-02-05 | Updated commercial/benchmarks.md |
 | [Client-creditunion-NAM-2025] | NAM | Credit Union/Retail | client_questionnaire, business_case, digital_metrics, call_center | 2026-02-05 | Updated retail/benchmarks.md |
 | [Client-retail-NAM-2025] | NAM | Regional/Consumer+Business | client_questionnaire, digital_metrics, pain_points, business_banking | 2026-02-05 | Updated retail/benchmarks.md |
 | [Client-wealth-NAM-2024] | NAM (Canada) | Wealth | roi_model, business_case, advisor_productivity | 2026-02-05 | Updated wealth/benchmarks.md |
@@ -83,7 +83,7 @@ This registry tracks all knowledge extracted from past engagements into the agen
 | Retail | `knowledge/domains/retail/benchmarks.md` | EMEA Retail Benchmarks (Albania) - Digital adoption 7%, Churn 13.5% | [Client-retail-EMEA-2025] Bank |
 | Retail | `knowledge/domains/retail/benchmarks.md` | Africa Retail Benchmarks (East Africa) - Multi-country rollout, RM efficiency | [Client-retail-AFRICA-2025] |
 | Commercial | `knowledge/domains/commercial/benchmarks.md` | Commercial Onboarding Benchmarks, Value Levers | Seacoast Bank |
-| Commercial | `knowledge/domains/commercial/benchmarks.md` | Treasury Discovery Pain Points, Integration Patterns | [Client-commercial-NAM-2026] |
+| Commercial | `knowledge/domains/commercial/benchmarks.md` | Treasury Discovery Pain Points, Integration Patterns | [Client-commercial-NAM-2026-a] |
 
 **Note:** Benchmarks are integrated directly into domain-specific files rather than stored separately. This ensures agents and users find relevant benchmarks in context.
 

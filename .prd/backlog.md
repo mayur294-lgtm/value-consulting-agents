@@ -322,3 +322,35 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
   mutation entries, add the three names to the coverage expectations, THEN apply
   the same `[Client-…]` scrub. Ordering matters: rows first, scrub second, because
   the scrub is what trips the gate.
+
+### Blocked on the engagement migration — historical knowledge labels stay undiscriminated
+
+- [ ] **The ~200 labels already committed in `knowledge/**` cannot be given a D1
+  discriminator yet, because there is nothing to derive one FROM.** Measured
+  2026-08-30: **zero** engagements have an opaque ID — all seven live directories
+  are still client-named and `.engagement_map.json` does not exist on any machine
+  that has been checked. `identity.engagement_id_for_path()` therefore returns
+  `None` for every engagement in the repo.
+
+  The prerequisite is the already-open **"ACTION — run the live engagement
+  migration"** item above. Until it runs, D1 protects NEW harvests only; the
+  existing corpus keeps two label shapes and the older ones stay ambiguous.
+
+  **Deliberately not worked around.** Minting arbitrary discriminators now would
+  look complete and be worse: re-harvesting the same engagement after the real
+  migration would produce a DIFFERENT label from its historical one, splitting one
+  client's knowledge across two labels. A wrong binding is more expensive than a
+  missing one.
+
+  **The tool is written and tested** — `scripts/migrate_knowledge_labels.py`,
+  dry-run by default. It takes an explicit `{label: engagement-id}` binding file
+  and REFUSES to guess: matching on domain/region/year is precisely what collides,
+  so a guess would silently bind two engagements to one ID and cement the defect.
+  Both sides of the binding file are shape-validated, so a client name cannot be
+  passed in either position. Unresolved labels are reported and left untouched.
+
+  **When the engagement migration lands, the remaining work is:** produce the
+  binding file on a machine holding `.engagement_map.json` (labels and IDs only —
+  never client names), run the script dry, then `--apply`. The two hand-assigned
+  stopgap pairs (`-a`/`-b`, from the two genuine collisions the scrub found) are
+  replaced by real discriminators in the same pass.
