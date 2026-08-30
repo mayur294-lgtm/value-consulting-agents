@@ -19,6 +19,7 @@ on:
       - '.claude/commands/**'
       - '.claude/agents/**'
       - 'docs/rollout/catalog.yaml'
+      - 'docs/rollout/assets/**'
       - 'docs/rollout/cortex-cheat-sheet.html'
       - 'tools/build_cheatsheet.py'
 
