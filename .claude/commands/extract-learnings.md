@@ -10,7 +10,7 @@ Extract structured knowledge from a scanned engagement folder into the knowledge
 
 Or with partial path:
 ```
-/extract-learnings 2025/38. Fifth Third --type roi_logic --priority HIGH
+/extract-learnings 2025/38. [Client-commercial-NAM-2026-b] --type roi_logic --priority HIGH
 ```
 
 ## Prerequisites
@@ -237,7 +237,7 @@ Maintain a registry at `knowledge/learnings/EXTRACTION_REGISTRY.md`:
 
 | Engagement | Region | Domain | Types Extracted | Date |
 |------------|--------|--------|-----------------|------|
-| Fifth Third | NAM | Commercial | journey, competitor | 2025-02-05 |
+| [Client-commercial-NAM-2026-b] | NAM | Commercial | journey, competitor | 2025-02-05 |
 | I&M Kenya | Africa | Retail | roi_logic, journey | 2025-02-05 |
 
 ## Knowledge Inventory
@@ -275,7 +275,7 @@ Maintain a registry at `knowledge/learnings/EXTRACTION_REGISTRY.md`:
 ## Example Usage
 
 ```
-/extract-learnings 2025/38. Fifth Third --type competitor --priority HIGH
+/extract-learnings 2025/38. [Client-commercial-NAM-2026-b] --type competitor --priority HIGH
 ```
 
 This would:

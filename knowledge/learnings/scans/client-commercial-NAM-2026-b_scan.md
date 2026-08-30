@@ -1,4 +1,4 @@
-# Engagement Scan: Fifth Third Bank
+# Engagement Scan: [Client-commercial-NAM-2026-b]
 
 ## Metadata
 - **Region:** NAM (United States)
@@ -21,7 +21,7 @@
 | `5 3 Commercial onboarding analysis 8Aug25.gslides` | Analysis | **HIGH** | journey, capability | ANONYMIZE | Onboarding analysis findings |
 | `5 3 Commercial onboarding workshop - Onsite Jul 28-29.gslides` | Workshop | MEDIUM | pattern | SAFE | Workshop template |
 | `5 3 Engagement Plan.gsheet` | Engagement Plan | LOW | pattern | SAFE | Planning template |
-| `Fifth Third Bank - Engagement Plan Jun25 V2-V4.gslides` | Engagement Plan | LOW | pattern | SAFE | Version iterations |
+| `[Client-commercial-NAM-2026-b] - Engagement Plan Jun25 V2-V4.gslides` | Engagement Plan | LOW | pattern | SAFE | Version iterations |
 | `Meetings and Notes.gdoc` | Discovery | MEDIUM | journey | REDACT | Meeting notes |
 | `Shobhit 5 3 rough.gslides` | Working Draft | LOW | - | - | Skip - working draft |
 | `CLO Pricing China Bank.gsheet` | Unrelated | LOW | - | - | Skip - different client |
@@ -30,7 +30,7 @@
 
 | File | Type | Priority | Extraction Type | Sensitivity | Notes |
 |------|------|----------|-----------------|-------------|-------|
-| `Fifth Third Build Vs Buy.gslides` | Competitor Analysis | **HIGH** | competitor | ANONYMIZE | Build vs buy presentation |
+| `[Client-commercial-NAM-2026-b] Build Vs Buy.gslides` | Competitor Analysis | **HIGH** | competitor | ANONYMIZE | Build vs buy presentation |
 
 ### Output Subfolder
 
@@ -39,9 +39,9 @@
 | `5 3 Business Case Model.gsheet` | ROI Model | **HIGH** | roi_logic, benchmark | ANONYMIZE | Value levers and calculations |
 | `5 3 APR Final.gsheet` | Assessment | **HIGH** | capability, benchmark | ANONYMIZE | Final assessment results |
 | `5 3 APR Analysis.gsheet` | Analysis | MEDIUM | capability | ANONYMIZE | Supporting analysis |
-| `V1 Fifth Third Commercial Onboarding Executive ReadOut.gslides` | Final Report | **HIGH** | pattern, journey | ANONYMIZE | Executive deliverable template |
+| `V1 [Client-commercial-NAM-2026-b] Commercial Onboarding Executive ReadOut.gslides` | Final Report | **HIGH** | pattern, journey | ANONYMIZE | Executive deliverable template |
 | `anonymized shareable version.gslides` | Final Report | **HIGH** | pattern | SAFE | Already anonymized - ready for extraction |
-| `Fifth Third Agent Library.gslides` | Capability | MEDIUM | capability | ANONYMIZE | Agent/capability mapping |
+| `[Client-commercial-NAM-2026-b] Agent Library.gslides` | Capability | MEDIUM | capability | ANONYMIZE | Agent/capability mapping |
 | `Copy of Luminor_ Vendor_ Comparison.gslides` | Competitor | MEDIUM | competitor | SAFE | Cross-reference from other engagement |
 | APR/ subfolder | Assessment | MEDIUM | capability | ANONYMIZE | Assessment artifacts |
 
@@ -71,7 +71,7 @@
 ### HIGH Priority (Extract First)
 
 1. **Build vs Buy Framework**
-   - Files: `5 3 Build vs Buy Commercial Onboarding.gsheet`, `Fifth Third Build Vs Buy.gslides`
+   - Files: `5 3 Build vs Buy Commercial Onboarding.gsheet`, `[Client-commercial-NAM-2026-b] Build Vs Buy.gslides`
    - Extraction: Competitor comparison matrix, decision criteria, cost comparison structure
    - Output: `competitor_analyses/build_vs_buy_commercial_onboarding.md`
 
@@ -91,7 +91,7 @@
    - Output: `capability_frameworks/commercial_onboarding_capabilities.md`
 
 5. **Executive Report Template**
-   - Files: `V1 Fifth Third Commercial Onboarding Executive ReadOut.gslides`, `anonymized shareable version.gslides`
+   - Files: `V1 [Client-commercial-NAM-2026-b] Commercial Onboarding Executive ReadOut.gslides`, `anonymized shareable version.gslides`
    - Extraction: Report structure, narrative flow, visualization patterns
    - Output: `engagement_patterns/commercial_onboarding_exec_report.md`
 
@@ -106,7 +106,7 @@
    - Extraction: Pre-engagement discovery questions
 
 8. **Agent/Capability Library**
-   - Files: `Fifth Third Agent Library.gslides`
+   - Files: `[Client-commercial-NAM-2026-b] Agent Library.gslides`
    - Extraction: Agent role mapping methodology
 
 ---
@@ -150,6 +150,6 @@
    - `5 3 APR Final.gsheet` → `.xlsx`
    - Onsite transcripts → `.pdf` or `.txt`
 
-2. Run: `/extract-learnings 2025/38. Fifth Third --priority HIGH`
+2. Run: `/extract-learnings 2025/38. [Client-commercial-NAM-2026-b] --priority HIGH`
 
 3. Review extracted learnings for accuracy and completeness

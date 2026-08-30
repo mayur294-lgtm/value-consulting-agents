@@ -30,17 +30,17 @@ This registry tracks all knowledge extracted from past engagements into the agen
 | [Client-retail-LATAM-2025] | LATAM (Bolivia) | Retail Bank | Retail | Value Assessment | 2026-02-05 | Extracted |
 | [Client-retail-AFRICA-2025] | Africa (East) | Multi-Country | Multi-Segment | Multi-Country | 2026-02-05 | Extracted |
 | [Client-retail-LATAM-2021] | LATAM (Colombia) | Retail Bank | Lending | Value Assessment | 2026-02-05 | Extracted |
-| Fifth Third Bank | NAM | Universal | Commercial | Full Engagement | 2026-02-05 | Awaiting Export |
-| CRDB Tanzania | Africa (East) | Retail Bank | Retail | Value Assessment | 2026-02-05 | Partial Data |
-| BEDC Cameroon | Africa (Central) | Retail Bank | Retail | Value Assessment | 2026-02-05 | Pending |
-| Peoples Group | NAM | Regional | Retail | Value Assessment | 2026-02-05 | Pending |
-| Fortis Bank | NAM | Regional | Retail | Value Assessment | 2026-02-05 | Pending |
+| [Client-commercial-NAM-2026-b] | NAM | Universal | Commercial | Full Engagement | 2026-02-05 | Awaiting Export |
+| [Client-retail-AFRICA-2026-a] | Africa (East) | Retail Bank | Retail | Value Assessment | 2026-02-05 | Partial Data |
+| [Client-retail-AFRICA-2026-b] | Africa (Central) | Retail Bank | Retail | Value Assessment | 2026-02-05 | Pending |
+| [Client-retail-NAM-2026-a] | NAM | Regional | Retail | Value Assessment | 2026-02-05 | Pending |
+| [Client-retail-NAM-2026-b] | NAM | Regional | Retail | Value Assessment | 2026-02-05 | Pending |
 | [Client-cards-NAM-2022] | NAM | Universal | Cards | Pre-Sales | 2026-02-05 | Extracted |
 | [Client-creditunion-NAM-2022] | NAM | Credit Union | Retail | Full Engagement | 2026-02-05 | Extracted |
-| CIMB Niaga | APAC (Indonesia) | Universal | Retail | Pre-Workshop | 2026-02-05 | Template Only |
+| [Client-retail-APAC-2026-a] | APAC (Indonesia) | Universal | Retail | Pre-Workshop | 2026-02-05 | Template Only |
 | [Client-retail-NAM-2021] | NAM | Regional | Retail | Pre-Sales | 2026-02-05 | Template Only |
-| [Client-retail-EMEA-2025] Bank | EMEA (Albania) | Retail Bank | Retail | Pre-Workshop | 2026-02-06 | Extracted |
-| Peoples Group | NAM (Canada) | Digital Bank | Retail | Pre-Workshop | 2026-02-06 | Template Only |
+| [Client-retail-EMEA-2025] | EMEA (Albania) | Retail Bank | Retail | Pre-Workshop | 2026-02-06 | Extracted |
+| [Client-retail-CAN-2026-a] | NAM (Canada) | Digital Bank | Retail | Pre-Workshop | 2026-02-06 | Template Only |
 | harborlight_synthetic / 2026-07_retail_assessment | NAM | Credit Union | Retail | Pipeline Test (Synthetic) | 2026-07-28 | Quarantined (2026-08-18) |
 
 ---
@@ -151,7 +151,7 @@ orchestrator, and retrieval skills is tracked in `.prd/backlog.md`.
 
 | Engagement | Pending Files | Reason | Action Required |
 |------------|---------------|--------|-----------------|
-| Fifth Third Bank | Build vs Buy.gsheet, Business Case.gsheet, APR Final.gsheet, Transcripts | Google-native files | Export to PDF/Excel |
+| [Client-commercial-NAM-2026-b] | Build vs Buy.gsheet, Business Case.gsheet, APR Final.gsheet, Transcripts | Google-native files | Export to PDF/Excel |
 
 ---
 

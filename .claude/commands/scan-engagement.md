@@ -127,12 +127,12 @@ Create the `scans/` folder if it doesn't exist.
 ## Example
 
 ```
-/scan-engagement 2025/38. Fifth Third Engagement Plan Version 2
+/scan-engagement 2025/38. [Client-commercial-NAM-2026-b] Engagement Plan Version 2
 ```
 
 Output:
 ```markdown
-# Engagement Scan: Fifth Third Bank
+# Engagement Scan: [Client-commercial-NAM-2026-b]
 
 ## Metadata
 - **Region:** NAM
