@@ -510,3 +510,60 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
   identifiers.** Same trade as `.pii_mapping.json` and `.engagement_map.json`:
   chmod 600, inside gitignored `engagements/`, never committed. Worth knowing it
   travels with the engagement if the directory is later migrated or copied.
+
+## From fixing the build scripts (2026-08-30)
+
+- [x] **Build scripts no longer regenerate client-named outputs.** Five build
+  scripts exist across the engagements, not the two the rename tool flagged —
+  the other three had clean FILENAMES and were never suspected. Three had already
+  been corrected as a side effect of the rename pass rewriting references; two
+  had not:
+
+  - one wrote `<Client>_Exec_Workshop_v2.html`. The rename pass missed it because
+    the file ON DISK was `..._v2.1.html` and the script writes `..._v2.html` — a
+    different string, so the reference rewrite never matched. **A reference
+    rewrite only fixes references that already point at something real.**
+  - one wrote a deck named after the client AND a named STAKEHOLDER, from a
+    hardcoded absolute path, and the script itself carried both names. Renamed;
+    output is now neutral.
+
+  Both now derive paths from `__file__` instead of a hardcoded absolute path.
+  That fixes a second, unrelated defect nobody had filed: a hardcoded
+  `engagements/<client-slug>/...` path **breaks the moment
+  `migrate_engagement_ids.sh` runs**, because the directory it names ceases to
+  exist. Every such script would have silently stopped working after the
+  migration. Verified: both scripts parse, and their derived REPO / template /
+  output directories all resolve.
+
+  Zero client-named output literals remain in any build script.
+
+### CORRECTION — "46 renamed, residual 0" was scoped, and I did not say so
+
+- [ ] **86 further files under `engagements/inputs/` and `engagements/outputs/`
+  carry a client or stakeholder name in the FILENAME, and nothing has touched
+  them.** The residual-0 result reported for the filename scrub is true of the
+  SEVEN client engagements only. Both `migrate_engagements._client_named_files`
+  and `rename_engagement_files.py` skip `denylist.SKIP_CLIENT_DIRS`, so the two
+  shared staging trees were never in scope for either — the measurement inherited
+  the reporting tool's blind spot, which is exactly the failure mode this cycle
+  keeps finding.
+
+  Measured: 19 under `inputs/`, 67 under `outputs/`. Business cases, transcripts,
+  engagement plans, research reports and customer-segmentation decks.
+
+  **At least one filename contains a named individual**, not just an institution
+  — a sharper category than client identity and the reason this should not sit
+  behind the "shared staging is a separate decision" note indefinitely.
+
+  The rename tool can do this work: it needs `--only` to accept the staging
+  subdirectories, or the staging trees added to its scan. The reason it does not
+  already is that those subdirectories are not engagements and have no
+  `CLIENT_PROFILE.md`-derived slug to strip — the needles would have to come from
+  the profiles added on 2026-08-30 instead.
+
+- [ ] **Deck CONTENT still names the client and its competitors.** One build
+  script's slide copy carries the client in a cover label and names three other
+  named institutions in a market-context slide. That is client-facing deliverable
+  copy rather than a path or a filename, was never in scope for a filename tool,
+  and is recorded only so "the filenames are clean" is not read as "the deck is
+  anonymous".
