@@ -26,16 +26,16 @@ This registry tracks all knowledge extracted from past engagements into the agen
 | Engagement | Region | Bank Type | Domain | Engagement Type | Scan Date | Status |
 |------------|--------|-----------|--------|-----------------|-----------|--------|
 | [Client-wealth-NAM-2023] | NAM | Wealth Manager | Wealth | Value Assessment | 2026-02-05 | Extracted |
-| OneAZ Credit Union | NAM | Credit Union | Retail | Decommission | 2026-02-05 | Extracted |
+| [Client-creditunion-NAM-2026] | NAM | Credit Union | Retail | Decommission | 2026-02-05 | Extracted |
 | [Client-retail-LATAM-2025] | LATAM (Bolivia) | Retail Bank | Retail | Value Assessment | 2026-02-05 | Extracted |
-| [Client-retail-AFRICA-2025] Kenya | Africa (East) | Multi-Country | Multi-Segment | Multi-Country | 2026-02-05 | Extracted |
+| [Client-retail-AFRICA-2025] | Africa (East) | Multi-Country | Multi-Segment | Multi-Country | 2026-02-05 | Extracted |
 | [Client-retail-LATAM-2021] | LATAM (Colombia) | Retail Bank | Lending | Value Assessment | 2026-02-05 | Extracted |
 | Fifth Third Bank | NAM | Universal | Commercial | Full Engagement | 2026-02-05 | Awaiting Export |
 | CRDB Tanzania | Africa (East) | Retail Bank | Retail | Value Assessment | 2026-02-05 | Partial Data |
 | BEDC Cameroon | Africa (Central) | Retail Bank | Retail | Value Assessment | 2026-02-05 | Pending |
 | Peoples Group | NAM | Regional | Retail | Value Assessment | 2026-02-05 | Pending |
 | Fortis Bank | NAM | Regional | Retail | Value Assessment | 2026-02-05 | Pending |
-| TD Bank Cards | NAM | Universal | Cards | Pre-Sales | 2026-02-05 | Extracted |
+| [Client-cards-NAM-2022] | NAM | Universal | Cards | Pre-Sales | 2026-02-05 | Extracted |
 | [Client-creditunion-NAM-2022] | NAM | Credit Union | Retail | Full Engagement | 2026-02-05 | Extracted |
 | CIMB Niaga | APAC (Indonesia) | Universal | Retail | Pre-Workshop | 2026-02-05 | Template Only |
 | [Client-retail-NAM-2021] | NAM | Regional | Retail | Pre-Sales | 2026-02-05 | Template Only |
@@ -50,18 +50,18 @@ This registry tracks all knowledge extracted from past engagements into the agen
 | Engagement | Region | Domain | Types Extracted | Extraction Date | Files Created |
 |------------|--------|--------|-----------------|-----------------|---------------|
 | [Client-wealth-NAM-2023] | NAM | Wealth | roi_logic, benchmark | 2026-02-05 | wealth_entitlements_roi.md |
-| OneAZ Credit Union | NAM | CU/Retail | tech_rationalization, decommission, marketplace_costs | 2026-02-06 | tech_rationalization_decommission.md |
+| [Client-creditunion-NAM-2026] | NAM | CU/Retail | tech_rationalization, decommission, marketplace_costs | 2026-02-06 | tech_rationalization_decommission.md |
 | [Client-retail-LATAM-2025] | LATAM | Retail | roi_logic, channel_costs | 2026-02-05 | latam_channel_costs.md |
-| [Client-retail-AFRICA-2025] Kenya | Africa | Multi-Country | implementation, team_sizing | 2026-02-05 | multi-country-rollout.md |
+| [Client-retail-AFRICA-2025] | Africa | Multi-Country | implementation, team_sizing | 2026-02-05 | multi-country-rollout.md |
 | [Client-retail-LATAM-2021] | LATAM | Lending | roi_logic, lending_model | 2026-02-05 | digital_lending_roi.md |
 | [Client-wealth-APAC-2025] | APAC | Wealth | full_assessment, journey, roi, persona | 2026-02-05 | Updated wealth/benchmarks.md, wealth/journey_maps.md |
 | [Client-retail-ANZ-2025] | APAC | Retail | journey_assessment, business_case, process_flows | 2026-02-05 | Updated retail/benchmarks.md |
-| BOK Financial | NAM | Commercial/Treasury | discovery_transcript, pain_points, security, integration | 2026-02-05 | Updated commercial/benchmarks.md |
+| [Client-commercial-NAM-2026] | NAM | Commercial/Treasury | discovery_transcript, pain_points, security, integration | 2026-02-05 | Updated commercial/benchmarks.md |
 | [Client-creditunion-NAM-2025] | NAM | Credit Union/Retail | client_questionnaire, business_case, digital_metrics, call_center | 2026-02-05 | Updated retail/benchmarks.md |
 | [Client-retail-NAM-2025] | NAM | Regional/Consumer+Business | client_questionnaire, digital_metrics, pain_points, business_banking | 2026-02-05 | Updated retail/benchmarks.md |
-| [Client-wealth-NAM-2024]/Scotiabank | NAM (Canada) | Wealth | roi_model, business_case, advisor_productivity | 2026-02-05 | Updated wealth/benchmarks.md |
+| [Client-wealth-NAM-2024] | NAM (Canada) | Wealth | roi_model, business_case, advisor_productivity | 2026-02-05 | Updated wealth/benchmarks.md |
 | [Client-creditunion-NAM-2022] | NAM | Credit Union | transaction_costs, channel_economics, fee_income | 2026-02-05 | Updated retail/benchmarks.md |
-| TD Bank Cards | NAM | Cards | credit_card_economics, revenue_per_account | 2026-02-05 | Updated retail/benchmarks.md |
+| [Client-cards-NAM-2022] | NAM | Cards | credit_card_economics, revenue_per_account | 2026-02-05 | Updated retail/benchmarks.md |
 | 2026-07_retail_assessment [SYNTHETIC — QUARANTINED 2026-08-18] | NAM | Retail/CU | roi_models (formula patterns only) | 2026-07-28 | KEPT (marked synthetic): roi_models/call_deflection_roi.md, card_controls_roi.md, dispute_management_roi.md, digital_onboarding_completion_roi.md — formulas reusable, all [Synthetic-Test] values fabricated. QUARANTINED to tests/engagements/harborlight_synthetic/2026-07_retail_assessment/outputs/knowledge_harvest/: retail benchmarks (+22 entries, reverted from retail/benchmarks.md), journey map, pain-point patterns, digital_lending NAM data points (reverted append) |
 
 ---
@@ -74,16 +74,16 @@ This registry tracks all knowledge extracted from past engagements into the agen
 |--------|--------------|------------|-------------------|
 | Wealth | `knowledge/domains/wealth/benchmarks.md` | Entitlements & Operational Efficiency, RM Admin Load, IT Support, Platform Consolidation | [Client-wealth-NAM-2023] (NAM) |
 | Wealth | `knowledge/domains/wealth/benchmarks.md` | [Client-wealth-APAC-2025] ROI Value Levers (APAC) | [Client-wealth-APAC-2025] |
-| Wealth | `knowledge/domains/wealth/benchmarks.md` | [Client-wealth-NAM-2024] Digital Wealth ROI Model (Canada) | [Client-wealth-NAM-2024]/Scotiabank |
+| Wealth | `knowledge/domains/wealth/benchmarks.md` | [Client-wealth-NAM-2024] Digital Wealth ROI Model (Canada) | [Client-wealth-NAM-2024] |
 | Retail | `knowledge/domains/retail/benchmarks.md` | LATAM Channel Costs, Transaction CAGR, Consumer Lending Economics | [Client-retail-LATAM-2025] (LATAM), [Client-retail-LATAM-2021] (LATAM) |
 | Retail | `knowledge/domains/retail/benchmarks.md` | Australia/APAC Onboarding Benchmarks, Business Case Value | [Client-retail-ANZ-2025] |
 | Retail | `knowledge/domains/retail/benchmarks.md` | NAM Credit Union Benchmarks ([Client-creditunion-NAM-2025], [Client-retail-NAM-2025]) | [Client-creditunion-NAM-2025], [Client-retail-NAM-2025] |
 | Retail | `knowledge/domains/retail/benchmarks.md` | Credit Union Transaction Economics ([Client-creditunion-NAM-2022]) | [Client-creditunion-NAM-2022] |
-| Retail | `knowledge/domains/retail/benchmarks.md` | Credit Card Economics (TD Bank) | TD Bank Cards |
+| Retail | `knowledge/domains/retail/benchmarks.md` | Credit Card Economics ([Client-cards-NAM-2022]) | [Client-cards-NAM-2022] |
 | Retail | `knowledge/domains/retail/benchmarks.md` | EMEA Retail Benchmarks (Albania) - Digital adoption 7%, Churn 13.5% | [Client-retail-EMEA-2025] Bank |
-| Retail | `knowledge/domains/retail/benchmarks.md` | Africa Retail Benchmarks (East Africa) - Multi-country rollout, RM efficiency | [Client-retail-AFRICA-2025] Kenya |
+| Retail | `knowledge/domains/retail/benchmarks.md` | Africa Retail Benchmarks (East Africa) - Multi-country rollout, RM efficiency | [Client-retail-AFRICA-2025] |
 | Commercial | `knowledge/domains/commercial/benchmarks.md` | Commercial Onboarding Benchmarks, Value Levers | Seacoast Bank |
-| Commercial | `knowledge/domains/commercial/benchmarks.md` | Treasury Discovery Pain Points, Integration Patterns | BOK Financial |
+| Commercial | `knowledge/domains/commercial/benchmarks.md` | Treasury Discovery Pain Points, Integration Patterns | [Client-commercial-NAM-2026] |
 
 **Note:** Benchmarks are integrated directly into domain-specific files rather than stored separately. This ensures agents and users find relevant benchmarks in context.
 

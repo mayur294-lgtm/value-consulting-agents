@@ -106,7 +106,7 @@
 
 ## Discovery Pain Points (NAM Treasury)
 
-### BOK Financial Reference (2025)
+### [Client-commercial-NAM-2026] Reference (2025)
 
 **Context:** US Regional Bank, multi-state, commercial + wealth platform, treasury services
 
@@ -140,7 +140,7 @@
 | MFA Methods | Okta + out-of-band + legacy physical tokens | Modernize to passwordless |
 | Session Monitoring | Homegrown tools, gaps in real-time correlation | Platform-level fraud engine |
 
-**Source:** BOK Treasury Services Assessment Workshop (2025)
+**Source:** [Client-commercial-NAM-2026] Treasury Services Assessment Workshop (2025)
 
 ---
 
@@ -148,7 +148,7 @@
 
 ### Typical Commercial/Treasury Portal Architecture Challenges
 
-Based on BOK discovery, common patterns observed:
+Based on [Client-commercial-NAM-2026] discovery, common patterns observed:
 
 | Integration Layer | Common Issues | Impact |
 |-------------------|---------------|--------|
@@ -172,7 +172,7 @@ Based on BOK discovery, common patterns observed:
 ## Sources
 
 1. **Seacoast Bank** - Commercial Onboarding Business Case (2026)
-2. **BOK Financial** - Treasury Services Assessment Workshop (2025)
+2. **[Client-commercial-NAM-2026]** - Treasury Services Assessment Workshop (2025)
 3. **Backbase Consulting Playbook** - Commercial Banking Benchmarks
 4. **Industry Reports** - Treasury Management Association, AFP
 

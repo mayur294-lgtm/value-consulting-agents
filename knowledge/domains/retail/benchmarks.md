@@ -508,7 +508,7 @@ This document provides benchmark data for retail banking digital transformation,
 
 ## Credit Card Economics (NAM)
 
-### TD Bank Cards Reference (2022)
+### [Client-cards-NAM-2022] Reference (2022)
 
 **Context:** US Bank credit card program economics, industry average analysis
 
@@ -547,7 +547,7 @@ This document provides benchmark data for retail banking digital transformation,
 | Default/Inactive Adjustment | 25-50% | Portfolio quality |
 | Net Revenue per Active Account | $227-491/year | Conservative range |
 
-**Source:** TD Bank Cards Cost-Benefit Analysis (2022)
+**Source:** [Client-cards-NAM-2022] Cost-Benefit Analysis (2022)
 
 ---
 
@@ -652,4 +652,4 @@ This document provides benchmark data for retail banking digital transformation,
 ---
 
 *Last Updated: February 2026*
-*Sources: Backbase Consulting Playbook Metrics Benchmark [Master], Client Discovery Workshops, [Client-retail-LATAM-2025] Bolivia (2025), [Client-retail-LATAM-2021] Colombia (2025), [Client-creditunion-NAM-2025] (2025-2026), [Client-retail-NAM-2025] (2025), [Client-creditunion-NAM-2022] (2022), TD Bank Cards (2022), [Client-retail-EMEA-2025] Bank (2025), [Client-retail-AFRICA-2025] Kenya (2025)*
+*Sources: Backbase Consulting Playbook Metrics Benchmark [Master], Client Discovery Workshops, [Client-retail-LATAM-2025] Bolivia (2025), [Client-retail-LATAM-2021] Colombia (2025), [Client-creditunion-NAM-2025] (2025-2026), [Client-retail-NAM-2025] (2025), [Client-creditunion-NAM-2022] (2022), [Client-cards-NAM-2022] (2022), [Client-retail-EMEA-2025] Bank (2025), [Client-retail-AFRICA-2025] Kenya (2025)*

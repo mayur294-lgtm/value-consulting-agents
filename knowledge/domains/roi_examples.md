@@ -573,7 +573,7 @@ This is typically the largest lever in wealth engagements.
 - Parallel-run period costs (3-6 months overlap before full decommission)
 - Termination penalties (one-time; deduct from savings)
 
-**Reference:** See `knowledge/learnings/roi_models/tech_rationalization_decommission.md` for the OneAZ/Lumin case study ($6.65M annual legacy spend, 80%+ savings potential).
+**Reference:** See `knowledge/learnings/roi_models/tech_rationalization_decommission.md` for the [Client-creditunion-NAM-2026]/Lumin case study ($6.65M annual legacy spend, 80%+ savings potential).
 
 ### Calculation Methodology
 
