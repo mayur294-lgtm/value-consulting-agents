@@ -567,3 +567,48 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
   copy rather than a path or a filename, was never in scope for a filename tool,
   and is recorded only so "the filenames are clean" is not read as "the deck is
   anonymous".
+
+## Staging filenames (2026-08-30) — closed, and two defects the tool had
+
+- [x] **All 86 staging filenames done; residual across the WHOLE `engagements/`
+  tree is 0.** 134 renames recorded across every reversal map, 0 missing targets.
+  `rename_engagement_files.py` now covers the shared staging trees, with needles
+  taken from each subdirectory's `CLIENT_PROFILE.md` rather than its directory
+  name — mining `<datecode>_<Client>_<Programme>` would have stripped `Ignite`
+  and the geography out of filenames that exist to carry them.
+
+  Three scan gaps closed while doing it, each found by re-measuring rather than
+  by reading code: files sitting LOOSE in a staging root outside any client
+  subfolder; subdirectories with no profile of their own (an ontology output
+  folder still held a client-named file), now covered by the union of all
+  clients' needles; and `--extra-needle` for terms no profile carries.
+
+### Two defects in the tool itself, both caught by verification
+
+- [x] **It wanted to rewrite `.filename_map.json`.** The map is `.json`, so it
+  matched the text-file reference sweep — and it exists precisely to hold the OLD
+  names. "Updating" it would have erased the only way back, on a tree with no git
+  history. Caught in a dry run BEFORE it ran; the map is now excluded explicitly.
+
+- [x] **The map did not compose across successive passes.** With `{B: A}`
+  recorded and `B -> C` then applied, it stored `{C: B}` alongside a now-dangling
+  `{B: A}`, leaving revert dependent on dictionary ordering to walk the chain.
+  Found by an integrity check reporting 3 missing targets, not by the tool
+  itself. `save_map` now collapses chains so every key is a file on disk and
+  every value is the TRUE original. Existing maps repaired; verified end to end —
+  two passes then one revert returns the original name.
+
+### Remaining, and it is a detection limit rather than a backlog of work
+
+- [ ] **Stakeholder names in filenames are only caught if an engagement document
+  records that person.** `extract_stakeholder_terms` found 6 stakeholder terms
+  across all engagement docs, and NONE of them appeared in a filename. Two files
+  nonetheless carried a person's first name, because nothing records them as a
+  stakeholder anywhere — they were renamed via `--extra-needle`, which means the
+  fix was a human noticing, not the system detecting. Any other such name is
+  still there and neither this tool nor the deny-list can see it. Closing this
+  needs the stakeholder register populated per engagement, not more tooling.
+
+- [ ] **Binary CONTENT and archive INTERIORS are unchanged** by all of the above —
+  see the earlier entry. Filenames being clean is not the same as the files being
+  clean, and should not be reported as if it were.

@@ -60,11 +60,38 @@ ARCHIVE_SUFFIXES = {".zip", ".gz", ".tar", ".7z", ".rar"}
 OPAQUE_TO_BINARY = {".pptx", ".docx", ".xlsx", ".pdf"}
 
 
-def _needles(client_dir: Path):
-    """The identity tokens to strip. Same definition `migrate_engagements.
-    _client_named_files` uses to REPORT them, so this tool fixes exactly what
-    that one flags — a different definition here would leave a gap between the
-    warning and the remedy."""
+def _profile_terms(client_dir: Path):
+    """Identifier forms declared in this directory's CLIENT_PROFILE.md."""
+    prof = client_dir / "CLIENT_PROFILE.md"
+    if not prof.is_file():
+        return set()
+    try:
+        text = prof.read_text(encoding="utf-8")
+    except OSError:
+        return set()
+    terms = set()
+    D.extract_terms_from_text(
+        text, terms, label_res=(D.LABEL_LINE_RE, D.CLIENT_PROFILE_LABEL_LINE_RE))
+    return {t for t in terms if len(t) >= 3}
+
+
+def _needles(client_dir: Path, profile_only: bool = False):
+    """The identity tokens to strip.
+
+    Default: the same definition `migrate_engagements._client_named_files` uses
+    to REPORT a leak, so this tool fixes exactly what that one flags — a
+    different definition would leave a gap between the warning and the remedy.
+
+    `profile_only=True` is for the shared staging subdirectories, whose names
+    are `<datecode>_<Client>_<Geography-or-programme>`. Mining those names would
+    strip the geography and the PROGRAMME name out of filenames too
+    ("MyState Alignment - Ignite Update.pdf" -> "Alignment - Update.pdf"),
+    losing meaning the filename exists to carry. Their CLIENT_PROFILE.md (added
+    2026-08-30) declares the client identifier and nothing else, which is
+    exactly the right needle set.
+    """
+    if profile_only:
+        return {t.lower() for t in _profile_terms(client_dir)}
     prof = client_dir / "CLIENT_PROFILE.md"
     name = ""
     if prof.is_file():
@@ -98,6 +125,9 @@ def _strip_name(filename: str, needles) -> str:
 
     # Tidy: collapse separator runs, drop leading/trailing separators and the
     # stray connectives a removed token leaves behind ("BB &  Managed" -> "BB Managed").
+    # A removed token can leave an orphaned possessive ("Duncan's" -> "'s") or a
+    # dangling connective. Both are artefacts of the strip, not part of the name.
+    stem = re.sub(r"[ _\-]*['\u2019]s\b", "", stem)
     stem = re.sub(r"[ _\-]*&[ _\-]*", " ", stem)
     stem = re.sub(r"\s+", " ", stem)
     stem = re.sub(r"[ _]*_[ _]*", "_", stem)
@@ -108,17 +138,49 @@ def _strip_name(filename: str, needles) -> str:
     return (stem + suffixes) if stem else ""
 
 
-def plan_engagement(client_dir: Path):
-    """(renames, collisions, unnameable, archives, generators)"""
-    prof = client_dir / "CLIENT_PROFILE.md"
-    name = ""
-    if prof.is_file():
-        try:
-            name = I._client_name_from_profile(prof.read_text(encoding="utf-8")) or ""
-        except OSError:
-            name = ""
-    hits = M._client_named_files(client_dir, client_dir.name, name)
-    needles = _needles(client_dir)
+def _hits_from_needles(client_dir: Path, needles):
+    """Files whose NAME contains a needle. Used for the staging subdirectories,
+    which `migrate_engagements._client_named_files` cannot serve: it derives its
+    own needles from the directory slug, and for these that slug is not the
+    client."""
+    if not needles:
+        return []
+    pat = re.compile("|".join(sorted((re.escape(n) for n in needles), key=len, reverse=True)), re.I)
+    return [p for p in client_dir.rglob("*") if p.is_file() and pat.search(p.name)]
+
+
+def plan_engagement(client_dir: Path, profile_only: bool = False,
+                    extra=None, fallback=None, loose_only: bool = False):
+    """(renames, collisions, unnameable, archives, generators)
+
+    `fallback` is the union of every client's needles, used where a directory
+    has no CLIENT_PROFILE.md of its own — a staging subdirectory that is not a
+    client (an ontology output folder, say) can still hold a client-named file.
+    `loose_only` scans just the files sitting directly in the directory, for the
+    staging tree ROOTS where a stray file lives outside any client subfolder.
+    """
+    needles = _needles(client_dir, profile_only=profile_only)
+    if not needles and fallback:
+        needles = set(fallback)
+    needles = set(needles) | {e.lower() for e in (extra or [])}
+    if loose_only:
+        pat_src = sorted((re.escape(n) for n in needles), key=len, reverse=True)
+        pat = re.compile("|".join(pat_src), re.I) if pat_src else None
+        hits = [c for c in client_dir.iterdir()
+                if c.is_file() and not c.name.startswith(".") and pat and pat.search(c.name)]
+    elif profile_only:
+        hits = _hits_from_needles(client_dir, needles)
+    else:
+        prof = client_dir / "CLIENT_PROFILE.md"
+        name = ""
+        if prof.is_file():
+            try:
+                name = I._client_name_from_profile(prof.read_text(encoding="utf-8")) or ""
+            except OSError:
+                name = ""
+        hits = M._client_named_files(client_dir, client_dir.name, name)
+        if extra:
+            hits = sorted(set(hits) | set(_hits_from_needles(client_dir, {e.lower() for e in extra})))
 
     renames, collisions, unnameable, archives, generators = [], [], [], [], []
     proposed = {}
@@ -150,6 +212,11 @@ def find_references(client_dir: Path, renames):
     for p in client_dir.rglob("*"):
         if not p.is_file():
             continue
+        if p.name == MAP_NAME:
+            # NEVER rewrite the reversal record. It exists to hold the OLD
+            # names; "updating" it to the new ones would erase the only way
+            # back, and `engagements/` is gitignored so there is no other.
+            continue
         if p.suffix.lower() in TEXT_SUFFIXES:
             try:
                 body = p.read_text(encoding="utf-8", errors="replace")
@@ -179,9 +246,21 @@ def load_map(client_dir: Path):
 
 
 def save_map(client_dir: Path, mapping):
+    """Merge new renames into the reversal record, COMPOSING chains.
+
+    A second pass over a directory renames files this map already knows about:
+    with `{B: A}` recorded and `B -> C` now applied, storing `{C: B}` alongside
+    would leave `{B: A}` pointing at a file that no longer exists, and revert
+    would depend on dictionary ordering to walk the chain. Collapse instead, so
+    the map always maps CURRENT name -> ORIGINAL name in one hop and every key
+    names a file that is really on disk.
+    """
     f = client_dir / MAP_NAME
     existing = load_map(client_dir)
-    existing.update(mapping)
+    for new_rel, prev_rel in mapping.items():
+        # if `prev_rel` was itself a renamed name, inherit its original
+        original = existing.pop(prev_rel, prev_rel)
+        existing[new_rel] = original
     f.write_text(json.dumps(existing, indent=2, sort_keys=True), encoding="utf-8")
     os.chmod(str(f), MAP_MODE)
     return f
@@ -260,6 +339,13 @@ def main():
     ap.add_argument("--only", action="append", default=None, help="client slug (repeatable)")
     ap.add_argument("--apply", action="store_true", help="actually rename. Without it, plan only.")
     ap.add_argument("--revert", action="store_true", help="undo an applied run from .filename_map.json")
+    ap.add_argument("--extra-needle", action="append", default=None,
+                    help="an additional token to strip (repeatable). For terms no "
+                         "CLIENT_PROFILE.md carries — most often a STAKEHOLDER's "
+                         "name, which is a person rather than the institution and "
+                         "so is not a client identifier form.")
+    ap.add_argument("--skip-staging", action="store_true",
+                    help="engagements only; leave engagements/inputs|outputs alone")
     args = ap.parse_args()
 
     root = Path("engagements")
@@ -267,29 +353,65 @@ def main():
         print("no engagements/ directory here", file=sys.stderr)
         return 1
 
-    dirs = []
+    # (directory, profile_only). Client engagements use the reporting tool's
+    # needle definition; the shared staging trees' per-client SUBDIRECTORIES use
+    # their profile's identifier forms — see _needles.
+    # Union of every client's needles. Staging is SHARED, so a file sitting
+    # there may belong to any client — and a subdirectory that is not a client
+    # at all (an ontology output folder) can still hold a client-named file.
+    fallback = set()
     for d in sorted(root.iterdir()):
-        if not d.is_dir() or d.name.startswith(".") or d.name.lower() in D.SKIP_CLIENT_DIRS:
+        if d.is_dir() and not d.name.startswith("."):
+            if d.name.lower() in D.SKIP_CLIENT_DIRS:
+                for sd in sorted(d.iterdir()):
+                    if sd.is_dir():
+                        fallback |= _needles(sd, profile_only=True)
+            else:
+                fallback |= _needles(d)
+
+    dirs = []   # (directory, profile_only, loose_only)
+    for d in sorted(root.iterdir()):
+        if not d.is_dir() or d.name.startswith("."):
+            continue
+        if d.name.lower() in D.SKIP_CLIENT_DIRS:
+            if args.skip_staging:
+                continue
+            if not args.only:
+                # files sitting directly in the staging root, outside any
+                # client subfolder — missed entirely by a subdirectory walk
+                dirs.append((d, True, True))
+            for staged in sorted(d.iterdir()):
+                if not staged.is_dir() or staged.name.startswith("."):
+                    continue
+                if args.only and staged.name not in args.only:
+                    continue
+                dirs.append((staged, True, False))
             continue
         if args.only and d.name not in args.only:
             continue
-        dirs.append(d)
+        dirs.append((d, False, False))
 
     if args.revert:
-        total = sum(revert_engagement(d) for d in dirs)
+        total = sum(revert_engagement(d) for d, _, _ in dirs)
         print("Reverted %d file(s) from %s." % (total, MAP_NAME))
         return 0
 
     mode = "APPLY" if args.apply else "DRY RUN"
     print("Engagement filename scrub — %s\n" % mode)
     grand = 0
-    for d in dirs:
-        renames, collisions, unnameable, archives, generators = plan_engagement(d)
+    for d, profile_only, loose_only in dirs:
+        renames, collisions, unnameable, archives, generators = plan_engagement(
+            d, profile_only=profile_only, extra=args.extra_needle,
+            fallback=fallback, loose_only=loose_only)
         if not (renames or collisions or unnameable):
             continue
         text_refs, binary_refs = find_references(d, renames)
         grand += len(renames)
-        print("=== %s — %d rename(s) ===" % (d.name, len(renames)))
+        label = ("%s/%s" % (d.parent.name, d.name)) if (profile_only and not loose_only) else d.name
+        if loose_only:
+            label += " (loose files)"
+        print("=== %s — %d rename(s)%s ===" % (
+            label, len(renames), " [staging]" if profile_only else ""))
         for src, dst in renames:
             print("    %s\n      -> %s" % (src.name, dst.name))
         if collisions:
