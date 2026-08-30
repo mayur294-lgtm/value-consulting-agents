@@ -113,7 +113,8 @@ Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at t
 
 
 - [done v6] `_LABEL_LINE_RE` did not match `- **Name:**` (the label `templates/client_profile.md:9` actually uses) — FIXED in `7b91758`: a CLIENT_PROFILE-scoped label pattern plus `[...]` placeholder skipping, with two mutation-proved checks. The placeholder skipping was essential — without it the live unfilled `- **Name:** [Full legal name]` in the one populated `CLIENT_PROFILE.md` would have injected `name` into the deny-list and blocked every query containing that word (a repeat of finding 1).
-- [done v8] .claude/hooks/mcp-query-guard.py `_add_term` — the strip set removes a trailing `)` from a phrase containing a mid-string `(`, producing an unbalanced term like `'Example Bank (Example Savings Fund Society'` that can never match a query. Over-inclusive rather than under-matching, and masked today by the acronym path, but the multi-word phrase heuristic is effectively dead for any client name written with a parenthetical (found during PR #171 refine, out of scope for the three findings fixed)
+- [ ] **REOPENED 2026-08-30 — this was marked `[done v8]` and is NOT done.** Measured against the live engagements: BOTH `.claude/hooks/mcp-query-guard.py` AND `scripts/pii/denylist.py` still emit an unbalanced term today. `drift_check.py` PASSES, because the two copies are consistently wrong — parity is not correctness, and this is the first case where drift-check's green has masked a live defect. Original entry follows.
+  .claude/hooks/mcp-query-guard.py `_add_term` — the strip set removes a trailing `)` from a phrase containing a mid-string `(`, producing an unbalanced term like `'Example Bank (Example Savings Fund Society'` that can never match a query. Over-inclusive rather than under-matching, and masked today by the acronym path, but the multi-word phrase heuristic is effectively dead for any client name written with a parenthetical (found during PR #171 refine, out of scope for the three findings fixed)
 
 - [in v7] .github/workflows/evals.yml:11 — `paths:` omits `.claude/hooks/**`, so a PR editing only a hook skips the blocking eval gate entirely; the mcp-query-guard gate ran only because the PR also touched `evals/` (PR #171 review finding 7, score 85 — deferred) (from PR #171 refine)
 - [done v8] .claude/hooks/mcp-query-guard.py:274 — `_iter_strings` recurses into dict values but not keys, so `{"filters":{"Acmeco":true}}` is allowed while `{"filters":{"x":"Acmeco"}}` is denied (PR #171 review finding 8, score 65 — deferred) (from PR #171 refine)
@@ -354,3 +355,44 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
   never client names), run the script dry, then `--apply`. The two hand-assigned
   stopgap pairs (`-a`/`-b`, from the two genuine collisions the scrub found) are
   replaced by real discriminators in the same pass.
+
+## From the 2026-08-30 engagement-migration dry run
+
+### High — four clients are invisible to the outbound MCP gate
+
+- [ ] **`engagements/inputs/` and `engagements/outputs/` hold four clients' staging
+  material, and `denylist.SKIP_CLIENT_DIRS = {"inputs", "outputs"}` excludes them
+  from EVERY deny-list scan.** Verified by resolving the deny-list repo-wide: it
+  returns 12 terms, and not one of the four staging clients contributes anything.
+  So `mcp-query-guard.py` would not block an outbound Infobank query naming any of
+  them — the §5 control is simply absent for those four.
+
+  The exclusion is not a bug in itself; those directories really are shared legacy
+  staging rather than client directories, and the skip stops `inputs`/`outputs`
+  being mined as if they were client slugs. The gap is that nothing else covers
+  them: they have no `CLIENT_PROFILE.md`, so there is no other deny-list source.
+
+  **The fix is not to remove the skip** — that would put the words "inputs" and
+  "outputs" on the deny-list and block most ordinary queries. It is either to give
+  the four staging engagements real client directories (which the migration tool
+  already reports as out of scope, deliberately), or to have `resolve_deny_list`
+  descend INTO those two directories and treat their per-client subdirectories as
+  client dirs, which is what they actually are.
+
+### Medium — the migration is blocked on names nobody has supplied
+
+- [ ] **6 of 7 live engagements REFUSE to migrate**, correctly: for each, the
+  directory slug is the ONLY thing putting that client on its deny-list, and an
+  opaque directory would remove it — silently disarming the outbound gate for that
+  client. The tool refuses the whole run rather than migrating the safe ones, which
+  is the right call. Unblocking it needs one `--name <slug>="<Client Name>"` per
+  engagement, supplied by the consultant; nothing in the repo can infer them.
+
+  The seventh would migrate, but with a warning worth heeding: no
+  `CLIENT_PROFILE.md` would be written for it, making `.engagement_map.json` the
+  single record of who it belongs to, with no `rebuild_map()` recovery path.
+  Supply its name too.
+
+  Also reported by the dry run and still open above: three files in that
+  engagement carry the client's name in the FILENAME, which renaming the directory
+  does not touch.
