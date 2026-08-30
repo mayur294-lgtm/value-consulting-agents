@@ -33,6 +33,72 @@ binaries in `knowledge/`, and archive/binary CONTENT which no filename work touc
 
 ---
 
+## PRIORITY ORDER — 2026-08-30. Read this before the severity headings below.
+
+The severity headings further down no longer sort: "High severity — client-facing
+correctness" sits above four sections of hygiene, and the 2026-08-30 privacy work
+appended seven sections that are mostly NOTES ABOUT LIMITS rather than work. At 80
+open items this file has become a log rather than a queue. This block is the queue.
+
+### TIER 1 — the pipeline can produce a deliverable built on nothing (do next)
+
+Five items, one coherent cycle, one theme: **a step fails and the pipeline carries
+on and bills for a deliverable anyway.** Four of the five are cheap.
+
+1. `step_discovery` has no failure gate — every extraction can fail, an empty
+   checkpoint is auto-generated and auto-approved, and a finalize agent runs on
+   zero interims. The empty checkpoint satisfies `require-checkpoint` and
+   `enforce-journal` VACUOUSLY, which is the sharpest part.
+2. `step_assembly` continues past total shard failure — observed live: three shard
+   writers refused, the step merged anyway and spent $1.09 on an exec summary of
+   nothing.
+3. Post-Assembly Cross-Deliverable Review lost — 61 lines of numeric-consistency
+   and orphan-audit checks deleted and re-homed nowhere, so numbers can disagree
+   across deliverables with nothing looking.
+4. Scenario label drift — four surfaces disagree (conservative/moderate/aggressive
+   vs conservative/base/aspirational). A deck can name a scenario never computed.
+5. Act 7 phase→lever contract broken — the assembler mandates output whose
+   producing spec lives only in the DEPRECATED agent, so the live modeler is never
+   told to emit it.
+
+### TIER 2 — small and bleeding (do alongside Tier 1)
+
+- `journal_path` still carries the client's directory name in the telemetry
+  payload. The label was anonymised in #169; this field was not, and telemetry
+  LEAVES THE MACHINE to a shared GitHub issue. Two lines.
+- The reopened unbalanced deny term — live in BOTH the hook and the module;
+  `drift_check` passes because the two copies are consistently wrong.
+- Hardcoded `/Users/<name>/...` paths in three component docs — broken for every
+  consultant who is not their author. Pure adoption tax.
+- `VERSION` is behind `CHANGELOG`; `version-release.yml` parses the changelog, so
+  this breaks the next `v*` tag.
+
+### TIER 3 — the gate means what it says
+
+`MUTATION_PROOF_REQUIRED_ROWS` has no independent guard (marked High severity in
+this file); `declared_checks_all_executed` is a structural NO-OP for all four
+deliverable rows; 17 path classes trigger evals and silently continue; both
+governance hooks document fail-open and actually fail by RAISING;
+`roi-calibrator` + `frontline-builders` are hand-proven only.
+
+### THEN v8 — #223 widened first
+
+#223 must gate FILENAMES repo-wide, not just `knowledge/**` content, and
+`SKIPPED_NO_MAP` must be loud — see the blind-spot entries below for why. Then
+#218, then the output-naming cluster.
+
+### DELIBERATELY NOT NEXT
+
+- #219 / #222 (mutations for 19 + 21 checks) — the largest v8 tickets, buying
+  proof for gates that already pass.
+- The OCR/PDF ingest refinements — real, but refinements to a path that works for
+  the common case.
+- The #186 canary misdiagnosis — latent, has never fired on a real run.
+- Retraction, the ~12 client binaries, archive interiors — these are DECISIONS,
+  not builds. They belong in a conversation, not a cycle.
+
+---
+
 ## From the 2026-07-28 post-extraction full-system audit (47-item history verification + live tests)
 
 ### High severity — client-facing correctness
