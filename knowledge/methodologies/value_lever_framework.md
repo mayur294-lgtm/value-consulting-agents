@@ -146,15 +146,15 @@ Questions it answers:
 | **Financial Impact** | Direct servicing savings: $276K/yr. Plus RM capacity redeployment: 45 RMs × $8K incremental revenue per RM from deeper relationships and improved hunting ratio = $360K. Plus cost avoidance framing: freed capacity equivalent to 12 FTEs not hired × $23,069/yr = $277K. Total lever value: $556K/yr (servicing savings + capacity redeployment). |
 
 
-### Retail Banking — SeABank (Vietnam, 3.6M customers)
+### Retail Banking — [Client-retail-APAC-2026] (Vietnam, 3.6M customers)
 
 **Lever: Cross-Lending Origination — Pre-Approved Digital Offers**
 
 | Link | Content |
 |------|---------|
-| **Root Driver** | SeABank has a large retail customer base with pre-approved lending eligibility data, but no digital channel for pre-approved offer presentation. Customers must visit branches to learn about loan eligibility. Digital lending conversion is low; branch-dependent origination limits volume. Source: Workshop data (June 2025) + Data Request Responses. |
+| **Root Driver** | [Client-retail-APAC-2026] has a large retail customer base with pre-approved lending eligibility data, but no digital channel for pre-approved offer presentation. Customers must visit branches to learn about loan eligibility. Digital lending conversion is low; branch-dependent origination limits volume. Source: Workshop data (June 2025) + Data Request Responses. |
 | **Operational Change** | Backbase Digital Lending with pre-approved offer engine: customers see personalized loan offers with pre-approved rates within the digital banking app (Product Explorer). Instant credit decisioning via integration with existing scoring systems. Single-session digital application with e-signature. Income verification via digital bank statement analysis. |
-| **Volume/Rate Impact** | Monthly pre-approved base × digital conversion rate uplift × average loan ticket. Conversion uplift benchmarked against LATAM digital lending data (Banco Caja Social, Banesco). STP rate improvement reduces origination processing time. |
+| **Volume/Rate Impact** | Monthly pre-approved base × digital conversion rate uplift × average loan ticket. Conversion uplift benchmarked against LATAM digital lending data ([Client-retail-LATAM-2021], [Client-retail-LATAM-2025]). STP rate improvement reduces origination processing time. |
 | **Financial Impact** | Additional funded loans × average ticket × net margin (interest spread − provision expense + origination fee) = $2.63M annual benefit. |
 
 ---
@@ -228,4 +228,4 @@ Some levers span stages — tag them accordingly (e.g., [Client-investing-NAM-20
 
 *Status: DRAFT — requires validation with consulting team*
 *Created: 2026-04-03*
-*Sources: [Client-creditunion-NAM-2025] ROI Model v7 (Raghu-validated), [Client-investing-NAM-2026] ROI v5, [Client-wealth-APAC-2025] roi_config_calibrated.json, SeABank roi_config.json*
+*Sources: [Client-creditunion-NAM-2025] ROI Model v7 (Raghu-validated), [Client-investing-NAM-2026] ROI v5, [Client-wealth-APAC-2025] roi_config_calibrated.json, [Client-retail-APAC-2026] roi_config.json*

@@ -128,7 +128,7 @@ This agent executes in **3 phases** with two consultant checkpoints.
 Before proceeding with the evidence scan, confirm the bank entity that will be used for market context research and annual report analysis:
 
 1. **Identify the bank** from the engagement intake, client profile, or discovery outputs
-2. **Determine the legal entity** — for banks with subsidiaries or divisions (e.g., "HNB — Wealth Management Division" vs "HNB PLC"), clarify which entity's financials are relevant
+2. **Determine the legal entity** — for banks with subsidiaries or divisions (e.g., "[Client-wealth-APAC-2025] — Wealth Management Division" vs "[Client-wealth-APAC-2025] PLC"), clarify which entity's financials are relevant
 3. **Check for public data availability** — is the bank publicly listed? What stock ticker? Which exchange? What is the most recent annual report year?
 
 Present to the consultant:
@@ -297,8 +297,8 @@ Before building any ROI model, consult these reference files to understand the f
 | Reference | Path | Purpose |
 |-----------|------|---------|
 | Business Case Builder Template | `knowledge/Business Case Builder_ ROI Calculator (Final).xlsx` | **Canonical ROI template** — shows full lifecycle lever structure, loading curves per category, cashflow rollup, and servicing task breakdown for a generic "Bank A" engagement |
-| MSB ROI Assessment | `knowledge/MSB - RB ROI Assessment.xlsx` | **Real engagement example** (Vietnam retail bank) — demonstrates extended levers including CC origination, product upsell, fee income, and granular servicing items with data source annotations |
-| ROI Examples | `knowledge/domains/roi_examples.md` | Worked examples: Seabank, HNB Wealth, Goodbody |
+| [Client-retail-EMEA-2023] ROI Assessment | `knowledge/[Client-retail-EMEA-2023] - RB ROI Assessment.xlsx` | **Real engagement example** (Vietnam retail bank) — demonstrates extended levers including CC origination, product upsell, fee income, and granular servicing items with data source annotations |
+| ROI Examples | `knowledge/domains/roi_examples.md` | Worked examples: Seabank, [Client-wealth-APAC-2025] Wealth, [Client-wealth-EMEA-2025] |
 | Domain Value Levers | `knowledge/domains/[domain]/` | Domain-specific benchmarks and value drivers |
 | ROI Pattern Library | `knowledge/learnings/roi_models/` | Reusable patterns: wealth, lending, LATAM, tech rationalization |
 
@@ -527,7 +527,7 @@ The `bank_profile` section in the config JSON populates the **Bank Profile** she
 
 ### Lever-by-Lever Breakdown (REQUIRED)
 
-Each benefit lever must follow the HNB/Seabank structure:
+Each benefit lever must follow the [Client-wealth-APAC-2025]/Seabank structure:
 
 | Element | Description | Example |
 |---------|-------------|---------|

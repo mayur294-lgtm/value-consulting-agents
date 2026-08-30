@@ -1,6 +1,6 @@
 ---
 name: roi-financial-modeler
-description: "Use this agent to build the financial ROI model from validated value lever candidates. It computes gap-based Backbase impacts, builds 3-scenario projections, and produces roi_config.json + roi_report.md. This agent runs AFTER the roi-hypothesis-builder \u2014 it receives identified levers and quantifies them.\n\n**Examples:**\n\n<example>\nContext: Lever candidates have been identified and validated by the consultant.\nuser: \"The lever candidates are approved. Build the financial model.\"\nassistant: \"I'll use the ROI Financial Modeler to compute the gap-based impacts, build scenarios, and produce the ROI config and report.\"\n</example>\n\n<example>\nContext: Direct invocation with a pre-existing lever list.\nuser: \"I have a list of 6 value levers for BECU. Build the ROI model from them.\"\nassistant: \"I'll use the ROI Financial Modeler to quantify these levers into a defensible financial model.\"\n</example>"
+description: "Use this agent to build the financial ROI model from validated value lever candidates. It computes gap-based Backbase impacts, builds 3-scenario projections, and produces roi_config.json + roi_report.md. This agent runs AFTER the roi-hypothesis-builder \u2014 it receives identified levers and quantifies them.\n\n**Examples:**\n\n<example>\nContext: Lever candidates have been identified and validated by the consultant.\nuser: \"The lever candidates are approved. Build the financial model.\"\nassistant: \"I'll use the ROI Financial Modeler to compute the gap-based impacts, build scenarios, and produce the ROI config and report.\"\n</example>\n\n<example>\nContext: Direct invocation with a pre-existing lever list.\nuser: \"I have a list of 6 value levers for [Client-creditunion-NAM-2025]. Build the ROI model from them.\"\nassistant: \"I'll use the ROI Financial Modeler to quantify these levers into a defensible financial model.\"\n</example>"
 model: sonnet
 color: purple
 ---
@@ -52,7 +52,7 @@ Use MCP tools (`mcp__backbase-infobank__*`) to validate Backbase capabilities na
 
 ## Gap-Based Impact Methodology (MANDATORY)
 
-The `backbase_impact` for each lever is NOT a fixed percentage. It must be **derived from the client's current state vs. best-in-class** using the **percentage point gap method** (validated by BECU model, Raghu-approved):
+The `backbase_impact` for each lever is NOT a fixed percentage. It must be **derived from the client's current state vs. best-in-class** using the **percentage point gap method** (validated by [Client-creditunion-NAM-2025] model, Raghu-approved):
 
 ```
 backbase_impact = (Client Current − Best-in-Class) × Capture Rate
@@ -316,12 +316,12 @@ Every driver MUST include:
   "baseline_formula": "{eligible_members} * {penetration_rate} * {robo_mix} * {avg_aum} * {fee_rate}",
   "baseline_annual": 636000,
   "inputs": {
-    "eligible_members": {"value": 14000000, "unit": "members", "source": "NFCU total", "confidence": "HIGH"},
+    "eligible_members": {"value": 14000000, "unit": "members", "source": "[Client-creditunion-NAM-2024] total", "confidence": "HIGH"},
     "penetration_rate": {"value": 0.0127, "unit": "ratio", "source": "Gap-based", "confidence": "MEDIUM"},
     "robo_mix": {"value": 0.667, "unit": "ratio", "source": "2:1 robo preference", "confidence": "HIGH"},
     "avg_aum": {"value": 4350, "unit": "USD", "source": "$500M/115K", "confidence": "MEDIUM"},
     "fee_rate": {"value": 0.00275, "unit": "ratio", "source": "0.275% robo fee", "confidence": "MEDIUM"},
-    "backbase_impact": {"value": 0.19, "unit": "ratio", "source": "Consulting Playbook: Eastern Bank (USA, Backbase) achieved 69% funded vs client 50%", "confidence": "HIGH"}
+    "backbase_impact": {"value": 0.19, "unit": "ratio", "source": "Consulting Playbook: [Client-retail-NAM-2023] (USA, Backbase) achieved 69% funded vs client 50%", "confidence": "HIGH"}
   }
 }
 ```
@@ -627,7 +627,7 @@ gates: [cap_roi_config]   # declaration — /build-roi step 5 invokes it after t
 
 Entry paths: `/build-roi` step 4 (hypothesis-builder levers validated by the
 consultant) or direct invocation with a hand-provided lever list — "I have a
-list of 6 value levers for BECU. Build the ROI model from them." is a complete
+list of 6 value levers for [Client-creditunion-NAM-2025]. Build the ROI model from them." is a complete
 standalone request. Consultant-pasted levers ARE a valid lever source: cite
 them as "per consultant: ..." the way you would an evidence ID.
 

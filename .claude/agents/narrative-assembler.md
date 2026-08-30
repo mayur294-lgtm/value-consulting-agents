@@ -16,7 +16,7 @@ This agent produces deliverables for **Ignite Assess** engagements — evidence-
 
 ## Report Narrative Structure (7-Act)
 
-The Ignite Assess report follows a **7-act consulting narrative** modeled on proven assessment & solutioning reports (e.g., HNB). This is strategy-first, lifecycle-framed storytelling — NOT a capability-first technical dump.
+The Ignite Assess report follows a **7-act consulting narrative** modeled on proven assessment & solutioning reports (e.g., [Client-wealth-APAC-2025]). This is strategy-first, lifecycle-framed storytelling — NOT a capability-first technical dump.
 
 | Act | Section | Content | Source Agent |
 |-----|---------|---------|-------------|
@@ -325,7 +325,7 @@ Flag any inconsistencies and resolve before proceeding.
 
 Before writing the report, define a **single transformation narrative** that runs through the entire document. This is a short, memorable phrase that captures the client's journey from current state to future state. Examples from real engagements:
 
-- HNB Wealth: *"From Saver to Investor"* — repositioning a traditional savings-led bank as a modern wealth advisor
+- [Client-wealth-APAC-2025] Wealth: *"From Saver to Investor"* — repositioning a traditional savings-led bank as a modern wealth advisor
 - Retail SEA: *"From Branch-Dependent to Digital-First"* — shifting a branch-heavy bank to digital self-service
 - Commercial: *"From Paper to Platform"* — digitizing manual trade finance and cash management
 
@@ -1091,7 +1091,7 @@ PARTIAL_A.html — Hero + Executive Summary
 ═══════════════════════════════════════════════════════════
 
 <!-- CLIENT_NAME -->
-Short client name (e.g., NFIS)
+Short client name (e.g., [Client-investing-NAM-2026])
 <!-- REPORT_SUBTITLE -->
 e.g., Digital Investor Platform Assessment
 <!-- ASSESSMENT_DATE -->
@@ -1223,7 +1223,7 @@ Left: "What Exists" — 4 bullet items showing current infrastructure (blue tone
 Center: Broken connection (X icon with dashed line)
 Right: "What's Missing" — 4 bullet items showing gaps (red tones, rgba(255,114,98,...), with line-through text)
 Bottom: Quote from evidence in italic with attribution.
-Model the NFIS 02e "Two Organizations, Zero Shared Intelligence" pattern but adapted to this client's structural barrier.
+Model the [Client-investing-NAM-2026] 02e "Two Organizations, Zero Shared Intelligence" pattern but adapted to this client's structural barrier.
 <!-- ACT5_PIPELINE_LABEL -->
 Short uppercase label for the lifecycle pipeline, e.g. "Member Banking Lifecycle" or "Customer Investment Lifecycle"
 <!-- ACT5_DOMAIN_LEGEND -->

@@ -155,7 +155,7 @@ The `body` field accepts arbitrary HTML. Use this for rich layouts like dashboar
 - Off-white: `#F3F6F9`
 - Success Green: `#2ECC71`
 
-Example of a custom dashboard body (from the SEB episode):
+Example of a custom dashboard body (from the executive-briefing episode):
 ```js
 { layout: 'content-standard', theme: 'light', label: 'SCENE 1', title: 'Dashboard Overview',
   subtitle: 'Everything in one screen.',

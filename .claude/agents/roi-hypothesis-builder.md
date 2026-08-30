@@ -1,6 +1,6 @@
 ---
 name: roi-hypothesis-builder
-description: "Use this agent to identify value levers for an ROI model through structured problem decomposition. It defines the problem statement, builds a MECE hypothesis tree, and derives value lever candidates validated against the four-link chain (Root Driver \u2192 Operational Change \u2192 Volume/Rate Impact \u2192 Financial Impact). This agent runs BEFORE the financial modeler \u2014 it identifies WHAT to model, not HOW MUCH.\n\n**Examples:**\n\n<example>\nContext: Discovery is complete, evidence register exists, need to identify ROI levers.\nuser: \"We've finished discovery for HNB Sri Lanka. I need to identify the value levers for the ROI model.\"\nassistant: \"I'll use the ROI Hypothesis Builder to define the problem, build the hypothesis tree, and derive validated lever candidates.\"\n</example>\n\n<example>\nContext: Standalone use \u2014 no full discovery, just a problem statement.\nuser: \"Build me the value levers for a Digital Onboarding pitch to a Tier 2 retail bank in Vietnam.\"\nassistant: \"I'll use the ROI Hypothesis Builder to decompose the problem and identify the relevant value levers for this engagement.\"\n</example>"
+description: "Use this agent to identify value levers for an ROI model through structured problem decomposition. It defines the problem statement, builds a MECE hypothesis tree, and derives value lever candidates validated against the four-link chain (Root Driver \u2192 Operational Change \u2192 Volume/Rate Impact \u2192 Financial Impact). This agent runs BEFORE the financial modeler \u2014 it identifies WHAT to model, not HOW MUCH.\n\n**Examples:**\n\n<example>\nContext: Discovery is complete, evidence register exists, need to identify ROI levers.\nuser: \"We've finished discovery for [Client-wealth-APAC-2025] Sri Lanka. I need to identify the value levers for the ROI model.\"\nassistant: \"I'll use the ROI Hypothesis Builder to define the problem, build the hypothesis tree, and derive validated lever candidates.\"\n</example>\n\n<example>\nContext: Standalone use \u2014 no full discovery, just a problem statement.\nuser: \"Build me the value levers for a Digital Onboarding pitch to a Tier 2 retail bank in Vietnam.\"\nassistant: \"I'll use the ROI Hypothesis Builder to decompose the problem and identify the relevant value levers for this engagement.\"\n</example>"
 model: opus
 color: green
 ---
@@ -135,7 +135,7 @@ Read `knowledge/learnings/roi_models/*.md` for proven lever patterns from simila
 
 ---
 
-**For EVERY creative lever, you MUST document (following BECU model pattern):**
+**For EVERY creative lever, you MUST document (following [Client-creditunion-NAM-2025] model pattern):**
 
 1. **Source** — which of the 5 sources above led you to this lever (cite the specific file, pattern, or evidence item)
 2. **Reasoning** — WHY this lever applies to THIS client specifically. Not "banks typically benefit from this" — explain the connection to this client's context, evidence, or bank profile

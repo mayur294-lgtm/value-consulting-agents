@@ -31,11 +31,11 @@ Revenue upside: 50 RMs × 15 additional clients each × $3,500 avg revenue/clien
 
 | Parameter | Conservative | Base | Aggressive | Confidence |
 |-----------|-------------|------|------------|------------|
-| Current admin time (% of RM day) | 40% | 50-55% | 60%+ | `[Industry]` — Goodbody, [Client-wealth-APAC-2025] discovery data |
+| Current admin time (% of RM day) | 40% | 50-55% | 60%+ | `[Industry]` — [Client-wealth-EMEA-2025], [Client-wealth-APAC-2025] discovery data |
 | Admin time reduction (with digital) | 25% | 35-40% | 50% | `[Industry]` — Backbase implementation benchmarks |
 | Annual loaded RM cost | $80K | $100-130K | $150K+ | `[Industry]` — varies by market; NAM $180-220K |
 | Additional clients per RM (freed capacity) | 10 | 15-25 | 40 | `[Estimated]` |
-| Meeting prep time reduction | 40% | 55-65% | 75% | `[Proxy]` — Goodbody: 2 hrs to 30 min target |
+| Meeting prep time reduction | 40% | 55-65% | 75% | `[Proxy]` — [Client-wealth-EMEA-2025]: 2 hrs to 30 min target |
 
 ### Backbase Enablers
 - Digital Assist: Unified RM workspace with Client 360 view — eliminates toggling between 5-8 systems
@@ -104,7 +104,7 @@ Alternative per-client view:
 | Parameter | Conservative | Base | Aggressive | Confidence |
 |-----------|-------------|------|------------|------------|
 | Annual client attrition rate | 5% | 7-9% | 12% | `[Proxy]` — industry reports, segment dependent |
-| Retention improvement (digital engagement) | 1% | 2-3% | 4% | `[Proxy]` — Tangerine: 3% improvement benchmark |
+| Retention improvement (digital engagement) | 1% | 2-3% | 4% | `[Proxy]` — [Client-wealth-NAM-2024]: 3% improvement benchmark |
 | Average AUM per departing client | $250K | $750K-1.5M | $3M+ | `[Industry]` — HNW segment |
 | Multi-product retention uplift | +10% | +15-20% | +25% | `[Estimated]` — banking + wealth vs. wealth-only |
 | Client NPS improvement (digital) | +5 pts | +10-15 pts | +20 pts | `[Proxy]` — industry benchmarks |
@@ -179,8 +179,8 @@ Cost savings:
 
 | Parameter | Conservative | Base | Aggressive | Confidence |
 |-----------|-------------|------|------------|------------|
-| Current onboarding time | 14 days | 21-30 days | 30+ days | `[Industry]` — Goodbody: 31 days current |
-| Target onboarding time (digital) | 7 days | 4-5 days | 2-3 days | `[Industry]` — Goodbody best-in-class: 4 days |
+| Current onboarding time | 14 days | 21-30 days | 30+ days | `[Industry]` — [Client-wealth-EMEA-2025]: 31 days current |
+| Target onboarding time (digital) | 7 days | 4-5 days | 2-3 days | `[Industry]` — [Client-wealth-EMEA-2025] best-in-class: 4 days |
 | Application drop-off rate (current) | 30% | 35-45% | 50%+ | `[Industry]` — multi-client analysis |
 | Drop-off reduction (digital) | 10% | 15-20% | 25% | `[Estimated]` |
 | RM time per onboarding (manual) | 3 hrs | 4-5 hrs | 5+ hrs | `[Industry]` — [Client-wealth-APAC-2025] workshop data |
@@ -218,7 +218,7 @@ Alternative — per-review calculation:
 
 | Parameter | Conservative | Base | Aggressive | Confidence |
 |-----------|-------------|------|------------|------------|
-| AML/KYC review time reduction | 40% | 55-65% | 75% | `[Industry]` — Goodbody: 3.5 days to 0.5 days |
+| AML/KYC review time reduction | 40% | 55-65% | 75% | `[Industry]` — [Client-wealth-EMEA-2025]: 3.5 days to 0.5 days |
 | Suitability check automation | 30% | 45-55% | 65% | `[Estimated]` |
 | Compliance FTE effort reduction | 25% | 35-40% | 50% | `[Proxy]` — Backbase implementation data |
 | Loaded compliance/ops FTE cost | $70K | $85-100K | $120K | `[Industry]` — market dependent |
@@ -301,10 +301,10 @@ When building a wealth management ROI model, select levers based on the client's
 
 **Reference engagements:**
 - [Client-wealth-APAC-2025] (Sri Lanka, 13K clients, $1B+ AUM): $20-25M conservative 5-year value
-- Tangerine/Scotiabank (Canada, 138K wealth clients, $7.3B AUM): $107M cumulative 5-year value
-- Goodbody (Ireland, HNW brokerage): 8x onboarding time reduction as primary lever
+- [Client-wealth-NAM-2024]/Scotiabank (Canada, 138K wealth clients, $7.3B AUM): $107M cumulative 5-year value
+- [Client-wealth-EMEA-2025] (Ireland, HNW brokerage): 8x onboarding time reduction as primary lever
 
 ---
 
 *Last Updated: 2026-02-13*
-*Status: Production — ranges calibrated against Goodbody, [Client-wealth-APAC-2025], Tangerine, and NAM wealth engagement data.*
+*Status: Production — ranges calibrated against [Client-wealth-EMEA-2025], [Client-wealth-APAC-2025], [Client-wealth-NAM-2024], and NAM wealth engagement data.*

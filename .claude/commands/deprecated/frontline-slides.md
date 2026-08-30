@@ -10,7 +10,7 @@ Use this when building **Google Slides-native presentations** in the 2026 Backba
 
 **Do NOT use this for:**
 - Interactive HTML previews for brainstorming → use `/frontline-html`
-- Presentations in the older Schroders/SEB style → use `/executive-briefing-slides`
+- Presentations in the older executive-briefing style → use `/executive-briefing-slides`
 - Assessment dashboards → use `/generate-assessment-html`
 
 ## Design System

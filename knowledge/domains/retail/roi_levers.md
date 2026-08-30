@@ -31,7 +31,7 @@ Example:
 | Parameter | Conservative | Base | Aggressive | Confidence |
 |-----------|-------------|------|------------|------------|
 | Digital leakage reduction | 10% | 15-20% | 25-30% | `[Industry]` — Backbase benchmarks: 50-97% pre-digital, <50% post |
-| Funding rate improvement | +10% | +15-25% | +30% | `[Proxy]` — range from 12% ([Client-retail-NAM-2025]) to 100% (Pichincha) |
+| Funding rate improvement | +10% | +15-25% | +30% | `[Proxy]` — range from 12% ([Client-retail-NAM-2025]) to 100% ([Client-retail-LATAM-2022]) |
 | Average new CASA balance | $3,000 | $4,500-5,200 | $8,000 | `[Industry]` — [Client-creditunion-NAM-2022]/[Client-creditunion-NAM-2025] reference data |
 | NII margin on deposits | 2.0% | 2.5-3.0% | 3.5% | `[Industry]` — varies by rate environment |
 | Onboarding time reduction | 50% | 60-75% | 80% | `[Industry]` — 30+ min branch to <15 min digital |
@@ -89,7 +89,7 @@ Plus: Application drop-off reduction
 
 **What it is:** Increasing the number of products per customer by surfacing contextual offers within the digital banking experience — turning single-product holders into multi-product relationships.
 
-**Why it matters:** Industry cross-sell ratios range from 1.2 to 3.2 products per customer. Each additional product increases annual revenue per customer by $200-500+ and dramatically improves retention. Banks like CIH Morocco achieve 3.2 products/customer; most average 1.2-1.5.
+**Why it matters:** Industry cross-sell ratios range from 1.2 to 3.2 products per customer. Each additional product increases annual revenue per customer by $200-500+ and dramatically improves retention. Banks like [Client-retail-EMEA-2022] Morocco achieve 3.2 products/customer; most average 1.2-1.5.
 
 ### Calculation
 
@@ -110,11 +110,11 @@ Example:
 
 | Parameter | Conservative | Base | Aggressive | Confidence |
 |-----------|-------------|------|------------|------------|
-| Cross-sell ratio improvement | +0.1 | +0.2-0.3 | +0.5 | `[Industry]` — range 1.2 (EWB) to 3.2 (CIH) |
+| Cross-sell ratio improvement | +0.1 | +0.2-0.3 | +0.5 | `[Industry]` — range 1.2 ([Client-commercial-NAM-2021]) to 3.2 ([Client-retail-EMEA-2022]) |
 | Revenue per additional product | $150 | $300-500 | $800 | `[Proxy]` — deposit NII + fee income blend |
 | NBA campaign conversion rate | 2% | 5-8% | 12% | `[Estimated]` |
 | Digital channel cross-sell rate vs. branch | 1.5x | 2-3x | 4x | `[Proxy]` — digital enables always-on offers |
-| Products per customer (target) | 1.5 | 1.8-2.0 | 2.5+ | `[Industry]` — [Client-creditunion-NAM-2025] 2.3, Sandy Spring 1.95, CIH 3.2 |
+| Products per customer (target) | 1.5 | 1.8-2.0 | 2.5+ | `[Industry]` — [Client-creditunion-NAM-2025] 2.3, [Client-retail-NAM-2021] 1.95, [Client-retail-EMEA-2022] 3.2 |
 
 ### Backbase Enablers
 - Digital Engage: Next-Best-Action engine, contextual product recommendations
@@ -128,7 +128,7 @@ Example:
 
 **What it is:** Reducing customer attrition through superior digital experience, proactive engagement, and multi-product stickiness — protecting the existing revenue base.
 
-**Why it matters:** Retail banking attrition ranges from 1.3% (I&M Kenya) to 21% ([Client-retail-NAM-2025]). Losing a customer means losing their entire lifetime value — $600-1,200/year for retail. A 1% retention improvement on a 200K customer base protects $1.2-2.4M in annual revenue.
+**Why it matters:** Retail banking attrition ranges from 1.3% ([Client-retail-AFRICA-2025] Kenya) to 21% ([Client-retail-NAM-2025]). Losing a customer means losing their entire lifetime value — $600-1,200/year for retail. A 1% retention improvement on a 200K customer base protects $1.2-2.4M in annual revenue.
 
 ### Calculation
 
@@ -151,7 +151,7 @@ Example:
 | Annual revenue per customer | $500 | $700-1,000 | $1,200 | `[Industry]` — [Client-retail-NAM-2025] CLV: $732-1,173 by segment |
 | Multi-product retention uplift vs. single | +10% | +15-20% | +25% | `[Estimated]` |
 | Digital-engaged churn reduction | 15% | 25-35% | 40% | `[Proxy]` — digitally active customers churn less |
-| Current attrition rate (typical) | 5% | 10-15% | 20%+ | `[Industry]` — I&M 1.3%, Credins 13.5%, [Client-retail-NAM-2025] 21% |
+| Current attrition rate (typical) | 5% | 10-15% | 20%+ | `[Industry]` — [Client-retail-AFRICA-2025] 1.3%, [Client-retail-EMEA-2025] 13.5%, [Client-retail-NAM-2025] 21% |
 
 ### Backbase Enablers
 - Digital Engage: Proactive retention campaigns, dormancy detection, re-engagement flows
@@ -184,8 +184,8 @@ Example:
 
 | Parameter | Conservative | Base | Aggressive | Confidence |
 |-----------|-------------|------|------------|------------|
-| Branch transaction cost | $4.00 | $4.00-5.00 | $5.00+ | `[Industry]` — Banesco Bolivia benchmark |
-| Digital transaction cost | $0.40 | $0.25-0.40 | $0.25 | `[Industry]` — Banesco Bolivia benchmark |
+| Branch transaction cost | $4.00 | $4.00-5.00 | $5.00+ | `[Industry]` — [Client-retail-LATAM-2025] Bolivia benchmark |
+| Digital transaction cost | $0.40 | $0.25-0.40 | $0.25 | `[Industry]` — [Client-retail-LATAM-2025] Bolivia benchmark |
 | Branch-to-digital shift (Year 1) | 10% | 15-20% | 25% | `[Proxy]` — depends on current digital adoption |
 | Branch-to-digital shift (Year 3) | 20% | 30-40% | 50% | `[Proxy]` — cumulative adoption curve |
 | Cost-to-serve ratio (digital:branch) | 1:10 | 1:15-20 | 1:40 | `[Industry]` — Backbase benchmark data |
@@ -227,9 +227,9 @@ Example (LATAM):
 |-----------|-------------|------|------------|------------|
 | Call center deflection rate | 20% | 30-40% | 50-60% | `[Industry]` — Backbase benchmark: 20-60% range |
 | Cost per call (NAM) | $5.00 | $6.00-8.00 | $12.00 | `[Industry]` — [Client-creditunion-NAM-2025]: $25/hr, 6-7 min AHT |
-| Cost per call (LATAM) | $2.50 | $3.00-4.00 | $5.00 | `[Industry]` — Banesco Bolivia benchmark |
+| Cost per call (LATAM) | $2.50 | $3.00-4.00 | $5.00 | `[Industry]` — [Client-retail-LATAM-2025] Bolivia benchmark |
 | Digital-related call % | 15% | 20-25% | 30% | `[Industry]` — [Client-creditunion-NAM-2025]: 5K digital calls/25K total = 20% |
-| Average handle time | 5 min | 6-7 min | 10 min | `[Industry]` — I&M 5 min, [Client-creditunion-NAM-2025] 6-7 min, [Client-retail-NAM-2025] 7:21 |
+| Average handle time | 5 min | 6-7 min | 10 min | `[Industry]` — [Client-retail-AFRICA-2025] 5 min, [Client-creditunion-NAM-2025] 6-7 min, [Client-retail-NAM-2025] 7:21 |
 | Self-service adoption (routine tasks) | 40% | 50-65% | 75-90% | `[Industry]` — Backbase benchmark data |
 
 ### Backbase Enablers
@@ -270,7 +270,7 @@ Total: $371,250
 | STP rate improvement | +15% | +20-30% | +40% | `[Industry]` — Backbase: from 25-70% to 70-90% |
 | Manual processing cost per application | $25 | $30-45 | $60 | `[Estimated]` — 30-60 min at $30-50/hr |
 | Internal handoffs reduced | 1 | 2-3 | 4 | `[Industry]` — from 3-5 handoffs to 1-2 |
-| Auto ID validation improvement | +20% | +30-40% | +50% | `[Industry]` — range 0% (ABK) to 72% (Tech CU) |
+| Auto ID validation improvement | +20% | +30-40% | +50% | `[Industry]` — range 0% ([Client-retail-MENA-2022b]) to 72% ([Client-creditunion-NAM-2021]) |
 | Back-office FTE productivity gain | 15% | 25-35% | 45% | `[Proxy]` — fewer manual exceptions |
 | Branch processing time reduction | 40% | 50-65% | 75% | `[Industry]` — [Client-retail-ANZ-2025]: 30-35 min to 10-15 min target |
 
@@ -314,4 +314,4 @@ When building a retail banking ROI model, select levers based on the client's st
 ---
 
 *Last Updated: 2026-02-13*
-*Status: Production — benchmarks sourced from Backbase Consulting Playbook (15+ banks), Banesco Bolivia (2025), Banco Caja Social (2025), [Client-retail-ANZ-2025] (2025), [Client-creditunion-NAM-2025] (2025-2026), [Client-retail-NAM-2025] (2025), [Client-creditunion-NAM-2022] (2022), Credins (2025), I&M Kenya (2025).*
+*Status: Production — benchmarks sourced from Backbase Consulting Playbook (15+ banks), [Client-retail-LATAM-2025] Bolivia (2025), [Client-retail-LATAM-2021] (2025), [Client-retail-ANZ-2025] (2025), [Client-creditunion-NAM-2025] (2025-2026), [Client-retail-NAM-2025] (2025), [Client-creditunion-NAM-2022] (2022), [Client-retail-EMEA-2025] (2025), [Client-retail-AFRICA-2025] Kenya (2025).*

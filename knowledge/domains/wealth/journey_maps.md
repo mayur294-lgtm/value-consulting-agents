@@ -351,7 +351,7 @@ Legend: ⬤ High = Significant time/friction | ⬤ Medium = Moderate | ⬤ Low =
 
 These benchmarks from actual Backbase engagements provide reference points for capability assessment:
 
-| Metric | [Client-wealth-EMEA-2024] (UK) | ISPWM (Luxembourg) | [Client-wealth-APAC-2025] (Sri Lanka) | Goodbody (Ireland) |
+| Metric | [Client-wealth-EMEA-2024] (UK) | [Client-wealth-EMEA-2023] (Luxembourg) | [Client-wealth-APAC-2025] (Sri Lanka) | [Client-wealth-EMEA-2025] (Ireland) |
 |--------|---------------|--------------------|-----------------|--------------------|
 | RM effort per onboarding | 4.5 hrs (benchmark: 1 hr) | N/A | 3 hrs | N/A |
 | Ops effort per onboarding | 5 hrs (benchmark: 1 hr) | N/A | 1 hr | N/A |

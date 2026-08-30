@@ -1,6 +1,6 @@
 # Capability Workshop Data Structure
 
-**Purpose:** This template defines the data structure for capability assessment workshop outputs. The structured data can be consumed by interactive dashboards (like the NFIS workshop tool) for heatmap visualization, drill-down navigation, and CSV export.
+**Purpose:** This template defines the data structure for capability assessment workshop outputs. The structured data can be consumed by interactive dashboards (like the [Client-investing-NAM-2026] workshop tool) for heatmap visualization, drill-down navigation, and CSV export.
 
 **Usage:** After a capability assessment workshop, the agent exports structured data in this format. The data can then be loaded into an interactive HTML dashboard for stakeholder review.
 

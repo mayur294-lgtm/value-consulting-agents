@@ -237,6 +237,6 @@ The output JSON is designed to feed directly into the ROI config:
 ## Example
 
 ```
-User: /profile-bank HNB Sri Lanka
+User: /profile-bank [Client-wealth-APAC-2025] Sri Lanka
 
 [Step 2: WebSearch identifies Hatton National Bank PLC]

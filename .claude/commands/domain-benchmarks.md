@@ -91,13 +91,13 @@ Assistant: Loading Retail Banking onboarding benchmarks from Consulting Playbook
 
 | KPI | Sample Data Points | Range |
 |-----|-------------------|-------|
-| Time to complete onboarding (digital) | Pichincha: 1:10:00, BSF: varies | 5 min - 70 min |
-| Time for branch-assisted onboarding | Pichincha: 0:10:00 | 5-30 min |
+| Time to complete onboarding (digital) | [Client-retail-LATAM-2022]: 1:10:00, BSF: varies | 5 min - 70 min |
+| Time for branch-assisted onboarding | [Client-retail-LATAM-2022]: 0:10:00 | 5-30 min |
 | Digital Leakage Rate | Multiple: 20-60% | <20% best |
 | Auto ID & Validation Rate | Varies by region | 60-95% |
 | First Time Right Application | Target: >80% | 50-90% |
 
-**Customers with data:** Tech CU, Sandy Spring, EWB, Banco Pichincha, BSF, CIH, Letshego, ABK, etc.
+**Customers with data:** [Client-creditunion-NAM-2021], [Client-retail-NAM-2021], [Client-commercial-NAM-2021], Banco [Client-retail-LATAM-2022], BSF, [Client-retail-EMEA-2022], [Client-retail-AFRICA-2022], [Client-retail-MENA-2022b], etc.
 ```
 
 ## Notes

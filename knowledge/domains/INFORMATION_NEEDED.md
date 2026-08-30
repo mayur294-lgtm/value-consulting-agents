@@ -9,7 +9,7 @@ This document outlines the Backbase-specific information required to populate th
 **Source:** Consulting Playbook CSV already provides customer data. Additional needs:
 
 ### What's Available
-- Customer-specific metrics from implementations (Tech CU, Sandy Spring, EWB, Pichincha, BSF, etc.)
+- Customer-specific metrics from implementations ([Client-creditunion-NAM-2021], [Client-retail-NAM-2021], [Client-commercial-NAM-2021], [Client-retail-LATAM-2022], BSF, etc.)
 - Journey-based KPIs (Onboarding, Loan Origination, Cards, Payments)
 
 ### What's Needed

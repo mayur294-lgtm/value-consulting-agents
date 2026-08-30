@@ -1,6 +1,6 @@
 # Generate ROI Excel Model
 
-Generate a professional ROI Excel model following the Backbase Value Consulting methodology (HNB/Seabank format).
+Generate a professional ROI Excel model following the Backbase Value Consulting methodology ([Client-wealth-APAC-2025]/Seabank format).
 
 ## What This Skill Does
 

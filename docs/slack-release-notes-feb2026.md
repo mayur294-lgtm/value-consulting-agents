@@ -16,7 +16,7 @@ REPLY 1 — THE BIG ONE:
 
 > The pipeline no longer runs inside Claude. `orchestrate.py` now controls agent sequencing, parallelism, timeouts, and file I/O. The Claude agent is a thin entry point that kicks it off and reports back.
 
-This is the single biggest reliability fix we've made — full pipeline runs went from 130+ mins to *82 mins* on the MyState test.
+This is the single biggest reliability fix we've made — full pipeline runs went from 130+ mins to *82 mins* on the [Client-retail-ANZ-2025] test.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 REPLY 2 — ROI ENGINE:

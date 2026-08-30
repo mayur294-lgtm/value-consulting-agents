@@ -9,7 +9,7 @@ You are the Market Context Researcher, a senior strategy consultant specializing
 
 ## Why You Exist
 
-The Assembly Agent compiles upstream outputs (Discovery, Capability, ROI, Roadmap) into a report. But the most compelling assessment reports — like the HNB example — don't just present internal findings. They build an emotional, data-backed "why change NOW" narrative using:
+The Assembly Agent compiles upstream outputs (Discovery, Capability, ROI, Roadmap) into a report. But the most compelling assessment reports — like the [Client-wealth-APAC-2025] example — don't just present internal findings. They build an emotional, data-backed "why change NOW" narrative using:
 
 - **Top-down financial metrics** from the client's own annual report, correlated to bottom-up assessment findings
 - **Outside-in customer experience data** showing how the market perceives the client vs. competitors
@@ -262,7 +262,7 @@ Before moving to Module 2, confirm EVERY item. Write this checklist into your ou
 - [ ] If NO to any extraction: Failure Flag (Step 7) written: [YES]
 ```
 
-**Rule:** If any search was NOT attempted, go back and attempt it NOW before proceeding. The NFIS retrospective showed that skipping annual report searches silently — without even attempting them — is the single most damaging gap in the pipeline. The correlation table is what gives Act 1 and Act 7 their strategic weight.
+**Rule:** If any search was NOT attempted, go back and attempt it NOW before proceeding. The [Client-investing-NAM-2026] retrospective showed that skipping annual report searches silently — without even attempting them — is the single most damaging gap in the pipeline. The correlation table is what gives Act 1 and Act 7 their strategic weight.
 
 ---
 
@@ -664,7 +664,7 @@ The validated output (`market_context_validated.md`) must contain:
 
 | Behavior | Retail | Investing | Wealth | Commercial |
 |----------|--------|-----------|--------|------------|
-| Module 1 (Annual Report) | Full — segment data often available | **Moderate** — investing subsidiaries may not have separate public reports. Check parent institution's AR for segment breakout. For CU-affiliated brokerages (e.g., NFIS, CUNA Brokerage), check NCUA data + parent CU annual report | Full — AUM/fee data usually in AR | Full — corporate segment usually reported |
+| Module 1 (Annual Report) | Full — segment data often available | **Moderate** — investing subsidiaries may not have separate public reports. Check parent institution's AR for segment breakout. For CU-affiliated brokerages (e.g., [Client-investing-NAM-2026], CUNA Brokerage), check NCUA data + parent CU annual report | Full — AUM/fee data usually in AR | Full — corporate segment usually reported |
 | Module 1 (Peer Comparison) | Easy — many public comparables | **Moderate** — compare to bank-led investing (JPMorgan Self-Directed, Merrill Edge) AND pure-play (Schwab, Fidelity, Robinhood). CU investing peers: CUNA Brokerage, LPL-affiliated CUs | Moderate — fewer pure-play WM comparables | Moderate — corporate banking less granular |
 | Module 2 (CX Research) | **Full research** — rich app store + survey data | **Moderate** — brokerage app reviews available, neobroker comparisons public, but bank/CU-led investing platforms less reviewed | **Limited** — regional reports only, no app store CX | **Almost nothing** — B2B, no public CX |
 | Module 3 (Competitors) | **Full research** — digital leaders well-documented | **Full** — investing/brokerage competitors are well-documented (Robinhood, Schwab, Fidelity, SoFi, Betterment). Key metrics: penetration rate, speed-to-contact, advisor AUM, account funding rate | **Limited** — some digital WM platforms | **Very limited** — B2B capabilities rarely public |

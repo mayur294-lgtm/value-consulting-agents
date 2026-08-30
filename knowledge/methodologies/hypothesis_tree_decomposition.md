@@ -132,7 +132,7 @@ Where:
 
 ### Retail Banking
 
-**Training data available:** [Client-creditunion-NAM-2025] (USA, Credit Union), SeABank (Vietnam), [Client-retail-ANZ-2025] (Australia), Credins (Albania), [Client-retail-NAM-2025], [Client-creditunion-NAM-2022], Banesco (Bolivia), Banco Caja Social (Colombia)
+**Training data available:** [Client-creditunion-NAM-2025] (USA, Credit Union), [Client-retail-APAC-2026] (Vietnam), [Client-retail-ANZ-2025] (Australia), [Client-retail-EMEA-2025] (Albania), [Client-retail-NAM-2025], [Client-creditunion-NAM-2022], [Client-retail-LATAM-2025] (Bolivia), [Client-retail-LATAM-2021] (Colombia)
 
 **Most relevant problem types:** Type 1, Type 2, Type 3, Type 5
 
@@ -287,7 +287,7 @@ Revenue is concentrated: top 20% of clients typically generate 60-80% of revenue
 
 ### Wealth Management / Private Banking
 
-**Training data available:** [Client-wealth-APAC-2025] (Sri Lanka, 19K wealth clients), Tangerine/Scotiabank (Canada, 138K wealth clients), Goodbody (Ireland), TriState Capital (NAM)
+**Training data available:** [Client-wealth-APAC-2025] (Sri Lanka, 19K wealth clients), [Client-wealth-NAM-2024]/Scotiabank (Canada, 138K wealth clients), [Client-wealth-EMEA-2025] (Ireland), [Client-wealth-NAM-2023] (NAM)
 
 **Most relevant problem types:** Type 6, Type 4, Type 1 (Branch B: churn), Type 2 (compliance costs)
 
@@ -389,8 +389,8 @@ Full-service advisor (FA): 65-100 bps on AUM
 
 | LOB | Status | What's Available | What's Needed |
 |-----|--------|-----------------|---------------|
-| **Retail** | Strong | [Client-creditunion-NAM-2025], SeABank, [Client-retail-ANZ-2025], Credins, [Client-retail-NAM-2025], [Client-creditunion-NAM-2022], Banesco, Banco Caja Social | Sufficient for now |
-| **Wealth** | Strong | [Client-wealth-APAC-2025], Tangerine, Goodbody, TriState Capital | Sufficient for now |
+| **Retail** | Strong | [Client-creditunion-NAM-2025], [Client-retail-APAC-2026], [Client-retail-ANZ-2025], [Client-retail-EMEA-2025], [Client-retail-NAM-2025], [Client-creditunion-NAM-2022], [Client-retail-LATAM-2025], [Client-retail-LATAM-2021] | Sufficient for now |
+| **Wealth** | Strong | [Client-wealth-APAC-2025], [Client-wealth-NAM-2024], [Client-wealth-EMEA-2025], [Client-wealth-NAM-2023] | Sufficient for now |
 | **Investing** | Moderate | [Client-investing-NAM-2026] (1 engagement) | 1-2 more investing engagements to validate patterns |
 | **SME** | Weak | Referenced in calibrator, no full ROI model | Need 1+ complete SME ROI model (ideally SME-primary bank) |
 | **Commercial** | Moderate | Seacoast (onboarding only), BOK Financial (treasury discovery) | Need 1 complete commercial ROI model with full lever set |

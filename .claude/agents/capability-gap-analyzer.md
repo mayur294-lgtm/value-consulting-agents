@@ -1,6 +1,6 @@
 ---
 name: capability-gap-analyzer
-description: "Use this agent when you have a set of use cases (with required Backbase capabilities) and need to determine which capabilities are available Out-of-the-Box (OOTB), which require configuration, and which require custom development. This agent queries the Backbase Infobank MCP and cross-references the Product Directory CSV to produce a gap analysis matrix.\n\n**Examples:**\n\n<example>\nContext: User has designed use cases from an Ignite engagement and needs a gap analysis before roadmapping.\nuser: \"Here are our 8 prioritized use cases from the Ignite workshops. Each lists the Backbase capabilities it needs. Can you tell me what's OOTB vs custom?\"\nassistant: \"I'll launch the capability-gap-analyzer agent to classify every required capability across your use cases and produce the OOTB/Config/Custom matrix.\"\n</example>\n\n<example>\nContext: User has a Chinabank-style use case document with 'Enabled by' capability lists.\nuser: \"Here's our customer segmentation with 22 use cases mapped to Backbase capabilities. I need a single view of platform coverage vs custom work.\"\nassistant: \"I'll use the capability-gap-analyzer agent to validate each capability against the Product Directory and MCP Infobank, then produce the coverage matrix.\"\n</example>\n\n<example>\nContext: User has BECU-style journey slides with use cases grouped by initiative.\nuser: \"We have the Ignite Day presentation with 6 initiatives and 20 use cases mapped across the member journey. I need to know what Backbase covers OOTB.\"\nassistant: \"I'll launch the capability-gap-analyzer agent to extract the use cases from each initiative, identify the required Backbase capabilities, classify them, and produce the gap analysis report.\"\n</example>"
+description: "Use this agent when you have a set of use cases (with required Backbase capabilities) and need to determine which capabilities are available Out-of-the-Box (OOTB), which require configuration, and which require custom development. This agent queries the Backbase Infobank MCP and cross-references the Product Directory CSV to produce a gap analysis matrix.\n\n**Examples:**\n\n<example>\nContext: User has designed use cases from an Ignite engagement and needs a gap analysis before roadmapping.\nuser: \"Here are our 8 prioritized use cases from the Ignite workshops. Each lists the Backbase capabilities it needs. Can you tell me what's OOTB vs custom?\"\nassistant: \"I'll launch the capability-gap-analyzer agent to classify every required capability across your use cases and produce the OOTB/Config/Custom matrix.\"\n</example>\n\n<example>\nContext: User has a [Client-commercial-APAC-2024]-style use case document with 'Enabled by' capability lists.\nuser: \"Here's our customer segmentation with 22 use cases mapped to Backbase capabilities. I need a single view of platform coverage vs custom work.\"\nassistant: \"I'll use the capability-gap-analyzer agent to validate each capability against the Product Directory and MCP Infobank, then produce the coverage matrix.\"\n</example>\n\n<example>\nContext: User has [Client-creditunion-NAM-2025]-style journey slides with use cases grouped by initiative.\nuser: \"We have the Ignite Day presentation with 6 initiatives and 20 use cases mapped across the member journey. I need to know what Backbase covers OOTB.\"\nassistant: \"I'll launch the capability-gap-analyzer agent to extract the use cases from each initiative, identify the required Backbase capabilities, classify them, and produce the gap analysis report.\"\n</example>"
 model: sonnet
 color: cyan
 ---
@@ -74,7 +74,7 @@ This agent accepts use cases in ANY of the following formats. Your first task is
 |-------|--------------|-------------|-----------------|---------------|-------------------------------------|
 | UC-001 | Digital Account Opening | ... | Retail | Acquire | Digital Onboarding, Flow Foundation, Platform Identity |
 
-#### Format B: Journey-Stage Map (BECU-style Ignite Day presentation)
+#### Format B: Journey-Stage Map ([Client-creditunion-NAM-2025]-style Ignite Day presentation)
 
 Use cases grouped by initiative within a member journey arc:
 ```
@@ -88,7 +88,7 @@ Confidence → Manage Everyday Money → [Tailored dashboards, AI-Driven Convers
 2. Infer required Backbase capabilities from the use case name + HMW questions + business value context
 3. Present the inferred capability list at the Consultant Checkpoint for validation
 
-#### Format C: Narrative Use Case Documents (Chinabank-style)
+#### Format C: Narrative Use Case Documents ([Client-commercial-APAC-2024]-style)
 
 Use cases with explicit "Enabled by" capability lists:
 ```

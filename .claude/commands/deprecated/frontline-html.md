@@ -14,7 +14,7 @@ Use this when the user wants to:
 
 **Do NOT use this for:**
 - Final Google Slides-compatible PPTX → use `/frontline-slides`
-- Presentations in the older Schroders/SEB style → use `/executive-briefing`
+- Presentations in the older executive-briefing style → use `/executive-briefing`
 
 ## Design System
 

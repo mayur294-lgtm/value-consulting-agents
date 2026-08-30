@@ -90,7 +90,7 @@ python scripts/test_agent.py --branch HEAD --base-branch origin/main --output te
 
 **Anonymize a transcript (or any file) before it reaches MCP/KG:** `.claude/hooks/_resolve_python.sh scripts/anonymize_transcript.py --file <path> --engagement-dir <engagement_dir>` — plain `python3` cannot run this (Presidio needs 3.10–3.13; see Commands above), so always go through `_resolve_python.sh` or `.venv/bin/python` directly. This is the ONE anonymization tool in Cortex — every other surface that needs to anonymize something (knowledge harvest, `/extract-learnings`, `/scan-engagement`, `upgrade-analysis`) calls this same tool and applies at most a descriptive relabeling on top (`[Client-{domain}-{region}-{year}]`) — see `.claude/agents/knowledge-harvester.md` Core Rule 2 for that convention. The `anonymize-guard.py` hook also blocks unscrubbed reads under `engagements/*/inputs/` automatically (fails closed).
 
-> `tests/` holds **engagement validation runs** (BECU, WSFS, NFIS, Mystate), not unit tests.
+> `tests/` holds **engagement validation runs** ([Client-creditunion-NAM-2025], [Client-retail-NAM-2025], [Client-investing-NAM-2026], Mystate), not unit tests.
 
 ---
 
@@ -426,7 +426,7 @@ Cover · Section Divider · Agenda · Content · Split Comparison (From/To) · S
 
 **Do NOT use these skills for:**
 - Assessment dashboards → use `/generate-assessment-html`
-- Schroders/SEB-style executive briefings → use `/executive-briefing` family
+- Executive-briefing-style deliverables → use `/executive-briefing` family
 
 ### /generate-roi-questionnaire - ROI Questionnaire Generator
 
