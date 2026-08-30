@@ -8,416 +8,436 @@
 # repo disagree, so the sheet cannot quietly go stale.
 #
 # status:  new         arrived this release, expect rough edges
-#          deprecated  still on disk, replaced by something else
-#          pending     merged into the catalog ahead of the code landing;
-#                      set `pending_ref` to the PR it's waiting on
+#          pending     documented ahead of the code landing; set `pending_ref`
+#
+# Every entry needs: name, does, eg. Skills also need `cmd`; agents need
+# `agent` + `ask` (the words that summon it).
 
-version: "1.0"
-updated: "2026-08-27"
+version: "2.0"
+updated: "2026-08-28"
 
 changelog:
+  - version: "2.0"
+    date: "2026-08-28"
+    note: >-
+      Rebuilt for people using Cortex rather than building it. One table of
+      every skill and agent with a worked example on each row, the pipelines
+      underneath, and a start-here guide for anyone opening the repo for the
+      first time.
   - version: "1.0"
     date: "2026-08-27"
     note: >-
       First published catalog. Covers the pipeline split — every assessment
       agent now runs standalone — plus the proposal system and /critty.
 
-jobs:
-  - id: discovery
-    title: "I have transcripts from a discovery call"
-    lead: >-
-      Turning raw notes, recordings and client documents into structured
-      evidence you can build on. This is the front door of almost every
-      engagement.
-    video: { week: 1, title: "From a messy call recording to an evidence register", url: null }
-    entries:
-      - cmd: "/scan-engagement"
-        does: "Reads a folder of client material and classifies what's in it — what's extractable, what's noise, what's missing"
-        needs: "A folder with files in it"
-        gives: "A classified inventory, plus a list of gaps"
-      - cmd: "/chunk-document"
-        does: "Splits a document too large for one pass into workable pieces"
-        needs: "A PDF, CSV or text file"
-        gives: "Ordered chunks, ready to process"
-      - ask: "interpret these transcripts"
-        agent: "discovery-transcript-interpreter"
-        does: "Extracts pain points, metrics, constraints and stakeholder priorities, each tagged with an evidence ID"
-        needs: "Transcripts in the engagement's inputs/"
-        gives: "Evidence, pain-point and metric registers — the inputs every downstream step reads"
-    notes:
-      - kind: amber
-        text: >-
-          <strong>Put client files in <span class="cs-cmd">inputs/</span> rather than pasting them.</strong>
-          That's where the scrubber sits. A transcript pasted into the chat goes through exactly as typed.
+hero:
+  kicker: "Cortex"
+  title: "Everything Cortex can do, on one page"
+  lead: >-
+    Cortex is the Value Consulting team's assistant. It reads client material,
+    scores capability, builds ROI models, writes decks and runs whole
+    assessments. Find what you need below, copy the example, change the words
+    to fit your deal.
+  mascot: gryphon
+  mascot_caption: >-
+    This is the Gryphon. It's what all of the below looks like when you run it
+    at once.
 
-  - id: assessment
-    title: "I need a full assessment"
-    lead: >-
-      The complete Ignite Assess run: discovery, five parallel analyses,
-      roadmap, assembly, dashboard, Excel. Hours, not minutes — and real cost.
-      Reach for it when the engagement genuinely warrants the whole thing.
-    video: { week: 2, title: "What a full assessment run actually looks like", url: null }
+groups:
+  - id: start
+    icon: fox
+    title: "Start an engagement"
+    blurb: "Getting client material into a shape everything else can read."
     entries:
-      - cmd: "/run-pipeline"
-        does: "Runs the whole assessment end to end, stopping at consultant checkpoints along the way"
-        needs: "An engagement folder with transcripts in inputs/"
-        gives: "The full deliverable set — assessment, ROI model, roadmap, dashboard, Excel"
-      - cmd: "/generate-assessment-html"
-        does: "Builds the assessment dashboard on its own — sidebar navigation, capability heatmaps, ROI scenario toggles, phone-frame prototypes"
-        needs: "Assessment outputs already produced"
-        gives: "One self-contained HTML file, 250–400 KB"
-      - ask: "run the assessment for…"
-        agent: "value-consulting-orchestrator"
-        does: "Works out which engagement type you're describing and routes to the right pipeline — Assess, Inspire, or both"
-        needs: "A sentence describing the engagement"
-        gives: "Routing, then whichever pipeline fits"
-    notes:
-      - kind: blue
-        text: >-
-          <strong>You usually don't want the whole pipeline.</strong> That's the point of the split.
-          If what you need is the ROI model, or the capability assessment, or the journey maps,
-          go to that section and run just that. The full run is for producing the complete
-          assessment deliverable.
-      - kind: red
-        text: >-
-          <strong>Never hand-build an assessment dashboard.</strong> Converting markdown to HTML or
-          writing custom CSS produces something that looks broadly right and is missing the entire
-          design system. If the file is much under 250 KB, it was built the wrong way.
+      - name: "Folder scan"
+        cmd: "/scan-engagement"
+        does: "Reads a folder of client material and tells you what's in it, what's usable and what's missing"
+        eg: "/scan-engagement — then paste the engagement folder path when it asks"
+      - name: "Transcript reader"
+        agent: "discovery-transcript-interpreter"
+        ask: "interpret the transcripts in this engagement"
+        does: "Pulls pain points, metrics, constraints and stakeholder priorities out of calls and notes, tagging each with an evidence ID"
+        eg: "\"Read the three discovery calls in inputs/ and give me the evidence register.\""
+      - name: "Bank profiler"
+        cmd: "/profile-bank"
+        does: "Pulls a bank's public financials — annual reports, investor decks — and turns them into numbers you can model with"
+        eg: "/profile-bank Acme Bank, Sri Lanka"
+      - name: "Document splitter"
+        cmd: "/chunk-document"
+        does: "Breaks a file too big to read in one pass into ordered pieces"
+        eg: "/chunk-document — then point it at the 200-page annual report"
+
+  - id: assess
+    icon: owl
+    title: "Work out where they are"
+    blurb: "Current state, scored against evidence rather than impressions."
+    entries:
+      - name: "Capability scoring"
+        agent: "capability-assessment"
+        ask: "assess their capabilities"
+        does: "Scores current-state maturity against the evidence, names the gaps and what each one costs"
+        eg: "\"Score their retail capabilities from the evidence register and show me the gaps.\""
+      - name: "Journey mapping"
+        cmd: "/build-journey"
+        agent: "journey-builder"
+        does: "Maps a journey end to end with the value leaking at each step quantified, and the future state beside it"
+        eg: "/build-journey — ask for account opening, or let it pick by where the evidence is thickest"
+      - name: "Outside-in research"
+        agent: "market-context-researcher"
+        ask: "get me the market context"
+        does: "Annual-report metrics, peer comparison and public CX data — the case for change from outside the building"
+        eg: "\"What does the market context look like for a mid-tier retail bank in Indonesia?\""
+      - name: "Benchmark librarian"
+        agent: "benchmark-librarian"
+        ask: "find me a defensible benchmark for…"
+        does: "Finds reference figures with a source and a confidence rating on every one"
+        eg: "\"I need a defensible digital onboarding time benchmark for European retail banking.\""
 
   - id: roi
-    title: "I need an ROI model"
-    lead: >-
-      The most-repeated deliverable in the team, and the one that most rewards
-      running the method rather than reaching for a spreadsheet. Two phases:
-      work out <em>what</em> to model, then work out <em>how much</em>.
-    video: { week: 3, title: "An ROI model from a bank name and a problem statement", url: null }
+    icon: badger
+    title: "Build the money case"
+    blurb: "Two moves: work out what to model, then work out how much."
     entries:
-      - cmd: "/build-roi"
-        does: "The standalone ROI run — identifies the value levers, then quantifies them, without the full assessment around it"
-        needs: "Bank, country, line of business, and the problem being solved. Nothing else."
-        gives: "roi_config.json and a written ROI report"
-      - cmd: "/profile-bank"
-        does: "Pulls a bank's public financials — annual reports, investor decks — and turns them into model inputs"
-        needs: "A bank name and country"
-        gives: "Structured metrics that drop straight into the ROI config, at high confidence instead of estimated"
-      - cmd: "/generate-roi-questionnaire"
-        does: "Builds the client data request, pre-filled with everything Cortex already knows. Turns \"fill all this in\" into \"check what we've got\""
-        needs: "Whatever upstream work exists — more is better, none still works"
-        gives: "A colour-coded Excel questionnaire: green to verify, yellow to fill"
-      - cmd: "/generate-roi-excel"
-        does: "Produces the full Excel model — dashboard, cashflows, three scenarios, servicing analysis, assumptions"
-        needs: "An ROI config"
-        gives: "The client-ready workbook"
-      - ask: "what are the levers here?"
+      - name: "ROI model"
+        cmd: "/build-roi"
+        does: "The standalone ROI run — finds the value levers, then quantifies them, without the full assessment around it"
+        eg: "/build-roi — \"Acme Bank, Sri Lanka, retail. Onboarding takes six weeks and half of them drop out.\""
+      - name: "Value levers"
         agent: "roi-hypothesis-builder"
-        does: "Decomposes the problem and derives the value levers, each validated against the four-link chain from root driver to financial impact"
-        needs: "Evidence, or just a problem statement"
-        gives: "Validated lever candidates for you to approve"
-      - ask: "model these levers"
+        ask: "what are the levers here?"
+        does: "Breaks the problem down and derives the levers, each one traced from root cause to financial impact"
+        eg: "\"What are the value levers for digital onboarding at a tier-2 bank in Vietnam?\""
+      - name: "Financial model"
         agent: "roi-financial-modeler"
-        does: "Turns approved levers into three-scenario projections with the Backbase impact computed from the gap"
-        needs: "Approved levers"
-        gives: "The financial model behind the workbook"
-    notes:
-      - kind: blue
-        text: >-
-          <strong>The order that works.</strong> <span class="cs-cmd">/profile-bank</span> first so the
-          baseline is real rather than assumed, then <span class="cs-cmd">/build-roi</span>, then
-          <span class="cs-cmd">/generate-roi-excel</span>. Use
-          <span class="cs-cmd">/generate-roi-questionnaire</span> when you need the client to supply
-          numbers you can't get from public sources — it goes out far better pre-filled.
+        ask: "model these levers"
+        does: "Turns approved levers into best / likely / worst projections with the Backbase impact computed from the gap"
+        eg: "\"The levers are approved — build the three-scenario model.\""
+      - name: "Client data request"
+        cmd: "/generate-roi-questionnaire"
+        does: "Builds the Excel data request already filled in with everything Cortex knows, so the client verifies instead of authors"
+        eg: "/generate-roi-questionnaire — green cells are ours to check, yellow are theirs to fill"
+      - name: "ROI workbook"
+        cmd: "/generate-roi-excel"
+        does: "The client-ready Excel — dashboard, cashflows, three scenarios, servicing analysis, assumptions"
+        eg: "/generate-roi-excel — run it once the ROI config is settled"
 
-  - id: decks
-    title: "I need a deck or a document"
-    lead: >-
-      Anything client-facing and visual. Start at the router — it asks which
-      format you want and sends you to the right builder, which is more
-      reliable than guessing between four similar names.
-    video: { week: 4, title: "Deck, document or PowerPoint: picking the right builder", url: null }
+  - id: shape
+    icon: hare
+    title: "Shape and sequence the solution"
+    blurb: "Where an opportunity becomes specific enough to cost and sequence."
     entries:
-      - cmd: "/frontline"
-        does: "Asks what you're making, explains the options, routes you. <strong>Always start here.</strong>"
-        needs: "Nothing"
-        gives: "The right builder, already running"
-      - cmd: "/frontline-slides-html"
-        does: "A deck as a single HTML file — 17 layouts, presenter mode, overview grid"
-        needs: "Your content and argument"
-        gives: "One .html deck you can iterate on fast"
-      - cmd: "/frontline-slides-pptx"
-        does: "The same deck as a real PowerPoint file that imports cleanly into Google Slides"
-        needs: "Your content, ideally settled"
-        gives: "A shareable .pptx"
-      - cmd: "/frontline-long-form"
-        does: "A scrolling document with sidebar navigation — value cases, ROI summaries, executive briefings"
-        needs: "Your content"
-        gives: "A single HTML document that also prints to PDF"
-    notes:
-      - kind: blue
-        text: >-
-          <strong>The workflow that saves rework.</strong> Draft in
-          <span class="cs-cmd">/frontline-slides-html</span> while the argument is still moving — it's
-          fast to regenerate. Only convert to <span class="cs-cmd">/frontline-slides-pptx</span> once
-          the story is settled. This page was built with
-          <span class="cs-cmd">/frontline-long-form</span>.
-      - kind: amber
-        text: >-
-          <strong>Three rules that carry most of the quality.</strong> Maximum four points on a slide.
-          Headers say the outcome, not the topic — "Unifying 60% of the bank's manual work", not
-          "Our Platform". Open on From→To.
+      - name: "Use case design"
+        agent: "usecase-designer"
+        ask: "design these use cases"
+        does: "Designs use cases that are architecturally grounded and checked against what the platform actually does"
+        eg: "\"Design the P1 use cases from the workshops — instant card issuance and mobile wallet.\""
+      - name: "OOTB or custom?"
+        agent: "capability-gap-analyzer"
+        ask: "is this out of the box or custom?"
+        does: "Checks every capability your use cases need against the product directory and the live Infobank"
+        eg: "\"Here are our eight use cases — which capabilities are OOTB, config, or a custom build?\""
+      - name: "Use case document"
+        cmd: "/usecase-doc"
+        does: "Writes the full ten-section specification an implementation team can work from"
+        eg: "/usecase-doc — \"Digital account opening for SME.\""
+      - name: "Clickable prototype"
+        cmd: "/prototype"
+        does: "Builds an interactive HTML mockup following the happy path of a use case"
+        eg: "/prototype — \"Show the onboarding flow we just designed.\""
+      - name: "Roadmap"
+        agent: "roadmap-prioritization"
+        ask: "sequence this into a roadmap"
+        does: "Phases the initiatives by value, dependency and capacity, with decision gates and value milestones"
+        eg: "\"Twelve gaps and eight levers — sequence them into a three-phase roadmap.\""
+
+  - id: deliver
+    icon: crow
+    title: "Make the deliverable"
+    blurb: "Anything the client actually sees. Start at the router; it picks the format with you."
+    entries:
+      - name: "Deck & document router"
+        cmd: "/frontline"
+        does: "Asks what you're making, explains the options, sends you to the right builder. Always start here"
+        eg: "/frontline — then answer \"a deck for the CFO\""
+      - name: "HTML deck"
+        cmd: "/frontline-slides-html"
+        does: "A deck as one HTML file — 17 layouts, presenter mode, overview grid. Fast to regenerate while the story is still moving"
+        eg: "/frontline-slides-html — \"Six slides on why onboarding is the first thing to fix.\""
+      - name: "PowerPoint deck"
+        cmd: "/frontline-slides-pptx"
+        does: "The same deck as a real .pptx that imports cleanly into Google Slides. Use it once the argument is settled"
+        eg: "/frontline-slides-pptx — converts the HTML draft you already like"
+      - name: "Long-form document"
+        cmd: "/frontline-long-form"
+        does: "A scrolling document with sidebar navigation — value cases, ROI summaries, executive briefings. This page is one"
+        eg: "/frontline-long-form — \"Turn the ROI report into a document for the exec committee.\""
+      - name: "Assessment dashboard"
+        cmd: "/generate-assessment-html"
+        does: "The full assessment dashboard — capability heatmaps, ROI scenario toggles, phone-frame prototypes"
+        eg: "/generate-assessment-html — run it after the assessment outputs exist"
+      - name: "Narrative assembly"
+        agent: "narrative-assembler"
+        ask: "package this into the final deliverable"
+        does: "Takes everything upstream and threads it into one argument rather than four stapled reports"
+        eg: "\"Discovery, capabilities, ROI and roadmap are all done — assemble the package.\""
 
   - id: workshops
-    title: "I'm prepping an Ignite workshop"
-    lead: >-
-      Ignite Inspire is workshop-driven rather than evidence-driven, so it
-      doesn't run through the assessment pipeline at all. Four workshops, each
-      prepared and then run, then synthesised into the Ignite Day deck.
-    video: { week: 5, title: "Preparing a workshop deck you'd actually facilitate from", url: null }
+    title: "Run an Ignite workshop"
+    blurb: >-
+      Ignite Inspire is workshop-driven, so it doesn't touch the assessment
+      pipeline. Prep writes a checkpoint and stops, on purpose — fix the
+      hypotheses before a deck gets built on top of them.
     entries:
-      - ask: "prepare the strategy workshop for…"
+      - name: "Workshop prep"
         agent: "workshop-preparation"
-        does: "Researches the client and builds a pre-populated facilitation deck with hypotheses for the room to validate. Four modes: strategy, member, employee, architecture"
-        needs: "Client documents — annual report, strategy material — and which workshop"
-        gives: "A checkpoint file for you to approve, then the workshop deck"
-      - ask: "synthesise the workshops"
+        ask: "prepare the strategy workshop for…"
+        does: "Researches the client and builds a pre-populated facilitation deck with hypotheses for the room to challenge. Four modes: strategy, member, employee, architecture"
+        eg: "\"Prepare the member experience workshop for Pacific Credit Union.\""
+      - name: "Workshop synthesis"
         agent: "ignite-workshop-synthesizer"
-        does: "Reads all four workshop outputs, works out which hypotheses held, and ranks use-case candidates"
-        needs: "All four workshops done"
-        gives: "Hypothesis validation matrix and prioritised use cases for Ignite Day"
-    notes:
-      - kind: amber
-        text: >-
-          <strong>Workshop prep runs in two phases on purpose.</strong> It writes a checkpoint file and
-          stops, so you can correct the hypotheses <em>before</em> a deck gets built around them.
-          Approving quickly to save time here usually costs more time later.
-      - kind: blue
-        text: >-
-          <strong>Ignite Inspire has its own manual.</strong> A self-contained subsystem under
-          <span class="cs-cmd">knowledge/Ignite Inspire/</span> with eight agent prompts, deck
-          templates, worked example decks, brand assets and a consultant guide. If you're running an
-          Inspire engagement, read its own <span class="cs-cmd">CLAUDE.md</span> first.
-
-  - id: usecases
-    title: "I need use cases, journeys or a prototype"
-    lead: >-
-      The middle layer of an engagement — where a validated opportunity becomes
-      something specific enough to cost, sequence and show.
-    video: { week: 6, title: "From an opportunity to a clickable prototype", url: null }
-    entries:
-      - cmd: "/build-journey"
-        does: "Maps a customer-to-employee journey with the value leaking at each step quantified, friction called out, and the Backbase-enabled future state beside it"
-        needs: "Discovery outputs. Name the journeys or let it recommend by evidence density"
-        gives: "Journey maps as JSON and markdown, feeding the dashboard"
-      - cmd: "/usecase-doc"
-        does: "Writes the full ten-section use case specification"
-        needs: "A use case worth specifying"
-        gives: "A structured document an implementation team can read"
-      - cmd: "/prototype"
-        does: "Builds a clickable HTML mockup following the happy path of a use case"
-        needs: "A defined use case"
-        gives: "A single-file interactive prototype"
-      - ask: "is this OOTB or custom?"
-        agent: "capability-gap-analyzer"
-        does: "Checks every capability your use cases need against the Backbase product directory and the live Infobank"
-        needs: "Use cases with their required capabilities"
-        gives: "A matrix splitting out-of-the-box from configuration from custom build"
-      - ask: "design these use cases"
-        agent: "usecase-designer"
-        does: "Designs use cases that are architecturally grounded, linked to value themes and validated against what the platform actually does"
-        needs: "Prioritised opportunities, usually from workshops"
-        gives: "Designed use cases with the gap analysis attached"
-    notes:
-      - kind: blue
-        text: >-
-          <strong>Run the gap analysis before you commit to a roadmap, not after.</strong> It's the
-          difference between a sequence built on what the platform does and one built on what we
-          assumed it does.
-
-  - id: proposals
-    title: "I need a commercial proposal"
-    status: new
-    lead: >-
-      The newest part of Cortex, and the one with the sharpest internal/client
-      divide. The strategy work and the client document are deliberately
-      separate skills, because they must never leak into each other.
-    video: { week: 7, title: "Running a live deal through the proposal builder", url: null }
-    entries:
-      - cmd: "/proposal-builder"
-        status: pending
-        pending_ref: "#153"
-        does: "The deal cockpit. Reads what the engagement already knows, interviews you only on the genuine gaps, then works the strategy — story model, anchor, lever families, Good/Better/Best, the concession ladder, approval tiers, the Deal Desk gate"
-        needs: "A deal entering the pricing conversation. Pricing supplied fresh each run — never stored"
-        gives: "The internal strategy pack and the client proposal, with a hard wall between them"
-      - cmd: "/proposal-longform"
-        status: pending
-        pending_ref: "#153"
-        does: "The client-facing document on its own — branded, sidebar-navigated, with a language toggle including right-to-left Arabic, live pricing sliders, and a one-click executive readout PDF"
-        needs: "Content you've already settled"
-        gives: "One self-contained HTML proposal the client can open anywhere"
-      - cmd: "/deal-notes"
-        status: pending
-        pending_ref: "#153"
-        does: "Feeds what happened in the last client meeting back into the deal, and reports what changed against the plan"
-        needs: "A transcript or your bullets from the meeting"
-        gives: "Updated deal state and a delta report — what moved, which levers just became available, what to do next round"
-      - cmd: "/pricing-model"
-        status: pending
-        pending_ref: "#153"
-        does: "The deterministic pricing engine underneath the other three"
-        needs: "Pricing inputs"
-        gives: "Computed pricing every render reconciles to"
-      - cmd: "/upgrade-analysis"
-        agent: "upgrade-analysis"
-        does: "Works out a client's packaging migration path and builds the case for the tier move"
-        needs: "Account context — current products, packaging, ARR"
-        gives: "The outside-in point of view, tier value articulation and upgrade business case"
-    notes:
-      - kind: red
-        text: >-
-          <strong>Anything prefixed <span class="cs-cmd">INTERNAL_</span> never goes to a client.</strong>
-          Negotiation plans, deal state, delta reports, Deal Desk fields. The rendering skill is built
-          so it cannot read those files, and <span class="cs-cmd">/publish</span> excludes them — but
-          the prefix is also there so <em>you</em> can see at a glance what must not be attached to an email.
-      - kind: blue
-        text: >-
-          <strong>Every number comes from the engine, not from the model reasoning about it.</strong>
-          One config, one engine, all renders reconciled to the penny. If a figure in a proposal
-          disagrees with the model, that's a bug worth reporting rather than something to correct by hand.
+        ask: "synthesise the workshops"
+        does: "Reads all four workshop outputs, works out which hypotheses held, and ranks the use-case candidates"
+        eg: "\"All four workshops are done — what are our P1 use cases for Ignite Day?\""
 
   - id: knowledge
-    title: "What do we already know about this?"
-    lead: >-
-      Cortex accumulates every engagement. These are the ways to ask it what it
-      has — before you research something the team already did.
-    video: { week: 8, title: "Asking Cortex what it already knows", url: null }
+    title: "Ask Cortex what it already knows"
+    blurb: "Every engagement feeds these. Check here before researching something the team already did."
     entries:
-      - cmd: "/domain-context"
-        does: "The overall picture for a line of business — start here if you're new to the domain"
-        needs: "A domain: retail, commercial, sme, wealth, investing or corporate"
-        gives: "Orientation on how that line of business works"
-      - cmd: "/domain-benchmarks"
-        does: "Benchmarks and KPIs to anchor an assessment or an ROI case"
-        needs: "A domain, optionally a journey"
-        gives: "Sourced reference figures"
-      - cmd: "/domain-pain-points"
-        does: "The problems that show up repeatedly in this domain"
-        needs: "A domain"
-        gives: "Recurring pain points with the evidence behind them"
-      - cmd: "/domain-journeys"
-        does: "Reference journey maps"
-        needs: "A domain"
-        gives: "Journeys you can start from rather than invent"
-      - cmd: "/domain-usecases"
-        does: "Use cases that have worked elsewhere"
-        needs: "A domain"
-        gives: "Proven use cases with context"
-      - cmd: "/domain-value-props"
-        does: "The value propositions that land with this audience"
-        needs: "A domain"
-        gives: "Positioning that has already been tested"
-      - ask: "find me a defensible benchmark for…"
-        agent: "benchmark-librarian"
-        does: "Curates benchmarks with a source and a confidence rating on each, and excludes anything from a test engagement"
-        needs: "What you need a reference point for"
-        gives: "Benchmarks you can put in front of a CFO"
-    notes:
-      - kind: amber
-        text: >-
-          <strong>Anything tagged <span class="cs-cmd">[Synthetic-Test]</span> is fictional and must
-          never reach a client deliverable.</strong> Test engagements were once harvested into shared
-          knowledge as if they were real, and a fabricated call-volume benchmark made it into a live
-          client workbook before it was caught. Retrieval now excludes them — but if you ever see that
-          tag in an output, stop and report it.
+      - name: "Domain orientation"
+        cmd: "/domain-context"
+        does: "How a line of business works, start to finish. Best first stop in an unfamiliar domain"
+        eg: "/domain-context wealth"
+      - name: "Benchmarks"
+        cmd: "/domain-benchmarks"
+        does: "Sourced reference figures and KPIs to anchor an assessment or an ROI case"
+        eg: "/domain-benchmarks retail — onboarding"
+      - name: "Known pain points"
+        cmd: "/domain-pain-points"
+        does: "The problems that show up again and again in this domain, with the evidence behind them"
+        eg: "/domain-pain-points sme"
+      - name: "Reference journeys"
+        cmd: "/domain-journeys"
+        does: "Journey maps you can start from instead of inventing"
+        eg: "/domain-journeys commercial"
+      - name: "Proven use cases"
+        cmd: "/domain-usecases"
+        does: "Use cases that have already worked elsewhere, with the context they worked in"
+        eg: "/domain-usecases investing"
+      - name: "Value propositions"
+        cmd: "/domain-value-props"
+        does: "The positioning that lands with this audience, already tested"
+        eg: "/domain-value-props corporate"
+
+  - id: commercial
+    title: "Price it and propose it"
+    status: new
+    blurb: >-
+      The strategy work and the client document are separate on purpose.
+      Anything prefixed INTERNAL_ never leaves the building.
+    entries:
+      - name: "Proposal builder"
+        cmd: "/proposal-builder"
+        status: pending
+        pending_ref: "#153"
+        does: "The deal cockpit — story model, anchor, lever families, Good/Better/Best, the concession ladder and the Deal Desk gate"
+        eg: "/proposal-builder — it asks only about the gaps it can't already answer"
+      - name: "Client proposal"
+        cmd: "/proposal-longform"
+        status: pending
+        pending_ref: "#153"
+        does: "The client-facing document — branded, navigable, language toggle including Arabic, live pricing sliders"
+        eg: "/proposal-longform — run it once the commercial shape is agreed"
+      - name: "Meeting feedback"
+        cmd: "/deal-notes"
+        status: pending
+        pending_ref: "#153"
+        does: "Feeds the last client meeting back into the deal and reports what moved against the plan"
+        eg: "/deal-notes — paste your bullets from the pricing call"
+      - name: "Pricing engine"
+        cmd: "/pricing-model"
+        status: pending
+        pending_ref: "#153"
+        does: "The deterministic engine underneath the other three. Every number in every render reconciles to it"
+        eg: "/pricing-model — you rarely call this directly"
+      - name: "Upgrade case"
+        cmd: "/upgrade-analysis"
+        agent: "upgrade-analysis"
+        does: "Works out a client's packaging migration path and builds the case for the tier move"
+        eg: "/upgrade-analysis — \"Acme Bank, legacy packaging, 7 products, $3.2M ARR.\""
 
   - id: finish
-    title: "I'm done — pressure-test it, share it, bank the learning"
-    lead: >-
-      The last mile. One of these makes the work better before it goes out; the
-      rest make sure the next engagement starts further ahead than this one did.
-    video: { week: 9, title: "Pressure-test, publish, and bank what you learned", url: null }
+    title: "Finish, share, bank the learning"
+    blurb: "The last mile. One of these makes the work better; the rest make the next engagement start further ahead."
     entries:
-      - cmd: "/critty"
+      - name: "Tear it apart"
+        cmd: "/critty"
         status: pending
         pending_ref: "#97"
-        does: "Turns the critical dial to maximum and attacks the current work — assumptions, weak evidence, unearned conclusions"
-        needs: "Something worth challenging. Run it before anything important goes out"
-        gives: "A hard critique. It's meant to sting."
-      - cmd: "/publish"
+        does: "Turns the critical dial to maximum and attacks the work — assumptions, thin evidence, unearned conclusions. It's meant to sting"
+        eg: "/critty — run it the day before anything important goes out"
+      - name: "Publish"
+        cmd: "/publish"
         does: "Commits, pushes and opens a pull request. You never touch git"
-        needs: "Work that's ready for review"
-        gives: "A PR, and your changes safely off your laptop"
-      - cmd: "/reconcile"
-        does: "Checks every open PR for conflicts, merges the clean ones, resolves the rest"
-        needs: "PRs piling up"
-        gives: "A tidy repository"
-      - cmd: "/extract-learnings"
+        eg: "/publish — or just say \"publish my changes\""
+      - name: "Tidy the queue"
+        cmd: "/reconcile"
+        does: "Checks every open pull request for conflicts, merges the clean ones, resolves the rest"
+        eg: "/reconcile — when reviews are piling up"
+      - name: "Bank the learning"
+        cmd: "/extract-learnings"
         does: "Pulls the reusable knowledge out of a finished engagement and files it, anonymised"
-        needs: "A closed engagement"
-        gives: "Knowledge entries the whole team retrieves later"
-      - cmd: "/log-modification"
-        does: "Records that you had to fix an agent's output by hand, and why"
-        needs: "Any time you rewrite something Cortex produced"
-        gives: "The signal that decides what gets improved next"
-    notes:
-      - kind: blue
-        text: >-
-          <strong><span class="cs-cmd">/log-modification</span> is thirty seconds that compounds.</strong>
-          Nobody watches you edit an output. If you fix the same weakness on every engagement and never
-          log it, it stays broken for everyone, forever. It's the cheapest contribution anyone on the
-          team can make.
-      - kind: amber
-        text: >-
-          <strong>Publishing is blocked if there's no knowledge harvest.</strong> Deliberately. An
-          engagement that produces outputs but no learnings leaves the system exactly as clever as it
-          was before.
+        eg: "/extract-learnings — point it at the closed engagement"
+      - name: "Log a fix"
+        cmd: "/log-modification"
+        does: "Records that you had to fix an output by hand, and why. Thirty seconds that decides what gets improved next"
+        eg: "/log-modification — \"Rewrote the ROI summary again; it buries the headline number.\""
+      - name: "Knowledge harvest"
+        agent: "knowledge-harvester"
+        ask: "runs on its own"
+        auto: true
+        does: "Files anonymised learnings automatically after every pipeline run. Don't call this by hand"
+        eg: "Nothing to type — it happens at the end of a run"
 
-under_the_hood:
+pipelines:
   lead: >-
-    The agents the pipeline runs for you. You can now invoke any of them on
-    their own — that's what the split changed — but in most cases the command
-    above is the better door, because it sets up the inputs correctly first.
+    A pipeline is several agents run in order, with you approving at the
+    checkpoints. Reach for one when you want the whole deliverable. If you only
+    want the ROI model or the capability scoring, run that on its own from the
+    table above.
   entries:
-    - agent: "discovery-transcript-interpreter"
-      stage: "Discovery"
-      gives: "Evidence, pain-point and metric registers — everything downstream reads these"
-    - agent: "capability-assessment"
-      stage: "Analysis"
-      gives: "Current-state maturity scored against evidence, with the gaps and what they cost"
-    - agent: "market-context-researcher"
-      stage: "Analysis"
-      gives: "Outside-in context — annual report metrics, peer comparison, public CX data"
-    - agent: "roi-hypothesis-builder"
-      stage: "Analysis"
-      gives: "The value levers worth modelling"
-    - agent: "roi-financial-modeler"
-      stage: "Analysis"
-      gives: "Three-scenario financial projections"
-    - agent: "journey-builder"
-      stage: "Analysis"
-      gives: "Journey maps with value leakage quantified per step"
-    - agent: "benchmark-librarian"
-      stage: "Supporting"
-      gives: "Sourced, confidence-rated benchmarks for anything that needs a reference point"
-    - agent: "roadmap-prioritization"
-      stage: "Sequencing"
-      gives: "A phased roadmap with dependencies, decision gates and value milestones"
-    - agent: "narrative-assembler"
-      stage: "Assembly"
-      gives: "Everything above, packaged into one deliverable that reads as a single argument"
-    - agent: "knowledge-harvester"
-      stage: "Automatic"
-      gives: "Anonymised learnings, filed after every run. Don't invoke this by hand."
-    - agent: "roi-business-case-builder"
-      stage: "—"
-      status: deprecated
-      gives: "Replaced by roi-hypothesis-builder and roi-financial-modeler. Use those."
+    - name: "Ignite Assess"
+      cmd: "/run-pipeline"
+      does: >-
+        The full evidence-driven assessment: discovery, five analyses in
+        parallel, roadmap, assembly, dashboard, Excel. Hours, not minutes, and
+        real API cost
+      eg: "/run-pipeline — point it at an engagement folder with transcripts in inputs/"
+      cast: [fox, owl, badger, hare, crow]
+    - name: "Ignite Inspire"
+      agent: "workshop-preparation"
+      ask: "we're running an Ignite with…"
+      does: >-
+        Four workshops — strategy, member, employee, architecture — each
+        prepared, run, then synthesised into the Ignite Day deck. Not the
+        assessment pipeline; it's driven by the room, not by transcripts
+      eg: "\"We're running an Ignite with Pacific Credit Union. Start with the strategy workshop.\""
+    - name: "Hybrid"
+      agent: "value-consulting-orchestrator"
+      ask: "describe the engagement and let it route"
+      does: >-
+        Assess and Inspire together, with the workshop priorities feeding the
+        ROI model. The orchestrator works out which you're describing and
+        routes you, so you don't have to pick
+      eg: "\"We've got transcripts and we're running workshops in March — what should we do first?\""
+    - name: "ROI run"
+      cmd: "/build-roi"
+      does: >-
+        Levers, then model, then workbook — the money case on its own, without
+        the assessment around it. The most-used pipeline in the team
+      eg: "/profile-bank first so the baseline is real, then /build-roi, then /generate-roi-excel"
+      cast: [badger]
 
-# Deliberately not on the cheat sheet: infrastructure agents consultants never call.
+rules:
+  title: "Six things worth knowing before you start"
+  entries:
+    - kind: red
+      text: >-
+        <strong>Client files go in the engagement's <span class="cs-cmd">inputs/</span> folder.
+        Never paste a transcript into the chat.</strong> That folder is where the scrubber sits —
+        names, account numbers and anything else identifying get stripped before the model sees them.
+        Pasted text goes through exactly as you typed it.
+    - kind: amber
+      text: >-
+        <strong>It stops and asks you things. Those stops are the point.</strong> Cortex pauses at
+        checkpoints so you can correct it before it builds three more things on top of a wrong
+        assumption. Clicking through quickly to save ten minutes is what costs you an afternoon.
+    - kind: blue
+      text: >-
+        <strong>What comes out is a first draft by a very fast analyst, not a finished deliverable.</strong>
+        You're still the consultant. Read it before it goes anywhere near a client — especially the
+        assumptions register, which is where it tells you what it had to guess.
+    - kind: blue
+      text: >-
+        <strong>Every number should trace back to something.</strong> An evidence ID, a sourced
+        benchmark, or a documented assumption. If you find a figure that traces to none of those,
+        that's a bug worth reporting, not something to quietly correct.
+    - kind: amber
+      text: >-
+        <strong>Fixed something by hand? Spend thirty seconds on
+        <span class="cs-cmd">/log-modification</span>.</strong> Nobody can see you editing an output.
+        If you fix the same weakness on every engagement and never say so, it stays broken for
+        everyone, forever. It is the cheapest thing anyone on the team can contribute.
+    - kind: blue
+      text: >-
+        <strong>You can't break anything.</strong> You're always working on your own copy, you never
+        touch git yourself, and nothing reaches the shared repository until
+        <span class="cs-cmd">/publish</span> opens it for review. Experiment freely.
+
+getting_started:
+  title: "New here? This is the whole setup"
+  lead: >-
+    About half an hour, most of it waiting for a download. You need a laptop, a
+    Backbase GitHub account and a Claude account. You do not need to know how to
+    code, and you never need to use git directly.
+  steps:
+    - n: 1
+      title: "Get a GitHub account, and access to the repo"
+      body: >-
+        Sign up at <span class="cs-cmd">github.com</span> with your Backbase email if you don't
+        already have an account, then ask Mariam, Mayur or Shobhit to add you to the
+        <span class="cs-cmd">value-consulting-agents</span> repository. Nothing below works until
+        you can see it.
+    - n: 2
+      title: "Install Claude Code"
+      body: >-
+        Claude Code is the tool that runs Cortex — a chat window that can read and write files on
+        your machine. Get it from <span class="cs-cmd">claude.ai/code</span> and sign in with your
+        Backbase account. The desktop app is the easiest start; the terminal version is the same
+        thing.
+    - n: 3
+      title: "Copy the repo onto your laptop"
+      body: >-
+        Open Claude Code and ask it: <em>“Clone the Backbase value-consulting-agents repo into
+        my projects folder.”</em> It will walk you through signing in to GitHub the first time.
+        Then open that folder as your working directory.
+      code: "git clone https://github.com/mayur294-lgtm/value-consulting-agents.git"
+    - n: 4
+      title: "Run the one-time setup"
+      body: >-
+        This installs the PII scrubber that keeps client names out of anything Cortex sends
+        outside. It downloads about 380 MB, so give it a few minutes. Until it's done, client
+        documents in <span class="cs-cmd">inputs/</span> won't open — that's deliberate.
+      code: "bash scripts/setup_pii.sh"
+      link: { text: "Full PII setup guide", href: "presidio-setup.html" }
+    - n: 5
+      title: "Start an engagement"
+      body: >-
+        One command creates the folder structure, the journal and the intake template. Put client
+        material in the <span class="cs-cmd">inputs/</span> folder it makes. You'll never need to
+        remember the folder name — the second command finds it from the client name.
+      code: |
+        ./scripts/init_engagement.sh navy_federal 2026-02_retail_assessment assessment
+        ./scripts/find_engagement.sh navy_federal
+    - n: 6
+      title: "Do the work"
+      body: >-
+        Type a slash command from the table above, or just describe what you want in plain English.
+        Cortex asks before it does anything expensive, and stops at checkpoints so you can steer.
+        When you're finished, <span class="cs-cmd">/publish</span> saves everything and opens a pull
+        request for review.
+  closing: >-
+    Stuck, or something behaved oddly? Say so in the Cortex channel. A confusing
+    output is a bug in the system, not a mistake you made — reporting it is how
+    the next version stops doing it.
+
+# Deliberately not on the cheat sheet.
 excluded_agents:
-  - release-agent          # CI-triggered release automation
-  - dev-agent              # deprecated auto-dev loop
-  - review-agent           # deprecated auto-dev loop
-  - coach-agent            # deprecated auto-dev loop
+  - release-agent           # CI-triggered release automation
+  - roi-business-case-builder  # deprecated; split into hypothesis-builder + financial-modeler
+  - dev-agent               # deprecated auto-dev loop
+  - review-agent            # deprecated auto-dev loop
+  - coach-agent             # deprecated auto-dev loop
 
 excluded_commands:
-  - sync-telemetry         # core team, covered in the core-team section
-  - process-meeting        # core team, Cortex standup
+  - sync-telemetry          # core team plumbing
+  - process-meeting         # core team standup

@@ -14,7 +14,7 @@ previous: prd-v1.md
 
 ## 1. Problem
 
-Consultants use individual skills far more than the full pipeline — the 2026-07 engagement record (People's First Bank, Bank Australia, HNB, MyState) is almost entirely single-skill invocations, while the docs, agent definitions, and governance all assume the orchestrated pipeline. This mismatch has three concrete costs:
+Consultants use individual skills far more than the full pipeline — the 2026-07 engagement record (four live engagements) is almost entirely single-skill invocations, while the docs, agent definitions, and governance all assume the orchestrated pipeline. This mismatch has three concrete costs:
 
 1. **Split-brain contracts.** Each pipeline agent's real operating contract — which files to read and write, phase behavior, output discipline, knowledge whitelist — lives in `orchestrate.py`'s inline prompt strings, while the agent `.md` file describes a different (and in places contradictory) invocation model. Example: agent descriptions instruct Task-tool orchestration; the orchestrator injects a hard ban on it. Standalone invocations of the same agent get undefined behavior — the multi-mode agents (e.g. the assembler's shard / report / HTML-partial behaviors) are selected entirely by injected prompt text a standalone consultant never sends.
 2. **Orphaned safety logic.** ROI reasonableness capping, PII de-anonymization, and output validation run only inside the pipeline. A standalone `/build-roi` today produces uncapped numbers and never de-anonymizes — skill-first usage silently ships less defensible output than pipeline usage.

@@ -12,21 +12,21 @@ previous: null
 
 The Value Consulting system's reason for existing is defensible, evidence-traced business cases. The ROI Excel is the deliverable a client CFO scrutinises line by line. Today the pipeline has a **silent quality regression** in exactly this dimension.
 
-During the MyState IGNITE engagement, the consultant hand-built a `roi_config.json` carrying full provenance — a top-level `sources` list, a per-field `_source` **and** `_confidence` on every Basic Information input, and a derived `operating_costs` — and locally patched `tools/roi_excel_generator.py` to render it. That produced the clean v5 model (`2606_MyState_ROI_Model_v5.xlsx`: a Sources & Provenance sheet, live `=C10*C12` operating-costs formula, honest confidence flags). The patch was auto-stashed on a branch switch and never merged.
+During a live IGNITE engagement, the consultant hand-built a `roi_config.json` carrying full provenance — a top-level `sources` list, a per-field `_source` **and** `_confidence` on every Basic Information input, and a derived `operating_costs` — and locally patched `tools/roi_excel_generator.py` to render it. That produced the clean v5 model (`2606_<client>_ROI_Model_v5.xlsx`: a Sources & Provenance sheet, live `=C10*C12` operating-costs formula, honest confidence flags). The patch was auto-stashed on a branch switch and never merged.
 
 So `main` regresses on any future ROI model:
 - A config carrying `sources` is **silently dropped** — no provenance sheet, the one artifact that answers "is this borrowed data again?"
 - Every `*_confidence` key **leaks as a junk row** in Model Inputs.
-- The confidence column is derived from a keyword heuristic on the source string, which **mis-flags client-confirmed HIGH inputs as LOW** (e.g. MyState `total_fte`, the exact number that fixed last year's "blank ops data" failure, would render LOW and paint red).
+- The confidence column is derived from a keyword heuristic on the source string, which **mis-flags client-confirmed HIGH inputs as LOW** (e.g. that engagement's `total_fte`, the exact number that fixed last year's "blank ops data" failure, would render LOW and paint red).
 - Derived inputs are hard-coded numbers, breaking the "change a cell, the model recalculates" promise.
 
-Separately, even with the generator fixed, **nothing upstream emits provenance automatically** — MyState only had it because it was hand-authored. The `roi-financial-modeler` agent's output contract doesn't require `sources` / `_source` / `_confidence` on `basic_information`, so the next engagement starts from a blank provenance slate.
+Separately, even with the generator fixed, **nothing upstream emits provenance automatically** — that config only had it because it was hand-authored. The `roi-financial-modeler` agent's output contract doesn't require `sources` / `_source` / `_confidence` on `basic_information`, so the next engagement starts from a blank provenance slate.
 
-If we don't solve it: ROI models silently lose provenance and mislabel confidence — reintroducing the precise failure mode (blank/borrowed data, no source trail) that produced last year's rejected −$1.46M MyState case.
+If we don't solve it: ROI models silently lose provenance and mislabel confidence — reintroducing the precise failure mode (blank/borrowed data, no source trail) that produced last year's rejected −$1.46M business case.
 
 ## 2. Solution
 
-Land the orphaned generator improvements on `main` and make provenance a first-class, auto-emitted part of the ROI config contract. Two coordinated changes: (a) `tools/roi_excel_generator.py` renders a Sources & Provenance sheet, honours explicit per-field confidence, and emits live Excel formulas for derived inputs — all additive and backward-compatible; (b) the `roi-financial-modeler` agent (and the `/generate-roi-excel` skill doc) require and emit the `sources` list plus `_source` + `_confidence` companions on every Basic Information field, and express derived fields (operating_costs) as a formula rather than a baked number. The MyState v5 config is the reference fixture and the regression's proof.
+Land the orphaned generator improvements on `main` and make provenance a first-class, auto-emitted part of the ROI config contract. Two coordinated changes: (a) `tools/roi_excel_generator.py` renders a Sources & Provenance sheet, honours explicit per-field confidence, and emits live Excel formulas for derived inputs — all additive and backward-compatible; (b) the `roi-financial-modeler` agent (and the `/generate-roi-excel` skill doc) require and emit the `sources` list plus `_source` + `_confidence` companions on every Basic Information field, and express derived fields (operating_costs) as a formula rather than a baked number. That v5 config is the reference fixture and the regression's proof.
 
 ## 3. Scope
 
@@ -37,7 +37,7 @@ Land the orphaned generator improvements on `main` and make provenance a first-c
 | Generator: live Excel formula for `operating_costs` (= revenue × cost-to-income) + general `formula`/`fmt` support for derived driver inputs | Reworking the lever calculation engine or scenario math |
 | Agent contract: `roi-financial-modeler` requires + emits `sources`, per-field `_source` + `_confidence`, and derived `operating_costs` as a formula | Auto-emission for `roi-hypothesis-builder` / `roi-business-case-builder` (separate agents) |
 | Skill doc: `/generate-roi-excel` documents the provenance + derived-formula config keys and is corrected to the current dict-of-dicts schema | Full rewrite of the stale `/generate-roi-excel` example schema beyond provenance + the structural correction |
-| A new deterministic eval row for the generator, using the MyState config as fixture | LLM-judge rubrics (judges skipped this cycle — deterministic checks only) |
+| A new deterministic eval row for the generator, using that config as fixture | LLM-judge rubrics (judges skipped this cycle — deterministic checks only) |
 | Backward compatibility: all new behaviour is additive (absent keys → prior behaviour) | Backfilling provenance into past engagements' configs |
 
 ## 4. Success Metrics
@@ -53,7 +53,7 @@ Land the orphaned generator improvements on `main` and make provenance a first-c
 
 ## 5. Eval Acceptance Criteria (mandatory)
 
-Judges are skipped this cycle (deterministic checks only, per setup choice). Verification is objective Python `code` checks run against a fixture config; the fixture is the MyState v5 `roi_config.json` (`engagements/outputs/2605_Mystate_Ignite/roi_config.json`), plus a minimal `sources`-absent config to prove backward compatibility.
+Judges are skipped this cycle (deterministic checks only, per setup choice). Verification is objective Python `code` checks run against a fixture config; the fixture is the v5 `roi_config.json` from that engagement's outputs directory, plus a minimal `sources`-absent config to prove backward compatibility.
 
 | Component | `evals/registry.yaml` cases | Threshold | Altitude |
 | --- | --- | --- | --- |
@@ -62,7 +62,7 @@ Judges are skipped this cycle (deterministic checks only, per setup choice). Ver
 | `roi` (existing deliverable) | existing `rubrics.deliverable.roi` golden | stays ≥ 0.80 (no regression) | deliverable |
 | pipeline | `run_experiment.py --altitude pipeline` | green (no downstream break) | pipeline |
 
-- **NEW cases authored as part of this work:** the six `roi-excel-generator` checks above and the three `roi-financial-modeler` additions, wired into `evals/registry.yaml` with the MyState fixture.
+- **NEW cases authored as part of this work:** the six `roi-excel-generator` checks above and the three `roi-financial-modeler` additions, wired into `evals/registry.yaml` with that fixture.
 - **Downstream:** the generator is consumed by `orchestrate.py` and `/generate-roi-excel`; changes are additive, but the pipeline-altitude experiment MUST stay green as the backstop.
 
 ## 6. Out of Scope

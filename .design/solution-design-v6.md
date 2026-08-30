@@ -88,7 +88,7 @@ Plus prompt and documentation edits across the 20 rule surfaces catalogued in PR
 
 # 3. Engagement identity map — .engagement_map.json  (chmod 600, gitignored, repo root)
 {
-  "e7f3a2c1": {"client": "HDFC", "slug": "hdfc", "created": "2026-08-25"}
+  "e7f3a2c1": {"client": "Acme Bank", "slug": "acmebank", "created": "2026-08-25"}
 }
 # The ONLY place the client's real name is bound to a path. Never leaves the machine.
 
@@ -209,7 +209,7 @@ The extension/naming lists are a hand-copied, self-contained duplicate of `scrip
 
 **D14 — Opaque directories do NOT change where `denylist.py` gets its terms. The map stays out of the deny-list resolver in #166; the client slug reaches the engine through the `client_slug=` parameter that already exists, wired by #167.**
 
-D6 makes engagement directories opaque, and `scripts/pii/denylist.py` mines the directory slug for client terms (`extract_terms_from_slug` — this is how `hdfc` becomes a deny-list term). So the obvious next move is to teach `denylist.py` to read `.engagement_map.json`. That move is wrong, and the reason is `scripts/pii/drift_check.py`: it asserts that `pii.denylist` and the hand-copied implementation inside `.claude/hooks/mcp-query-guard.py` produce **identical** deny-lists. Teach one to read the map and not the other, and they diverge by construction. The hook cannot simply import the shared module — its self-containment is load-bearing (a module-level import failure raises before `main()`'s try/except, and a PreToolUse hook that exits that way is treated as non-blocking, i.e. fail-open in a gate built to fail closed), so parity would require hand-copying a *third* copy of privacy-critical logic into the hook.
+D6 makes engagement directories opaque, and `scripts/pii/denylist.py` mines the directory slug for client terms (`extract_terms_from_slug` — this is how a client slug becomes a deny-list term). So the obvious next move is to teach `denylist.py` to read `.engagement_map.json`. That move is wrong, and the reason is `scripts/pii/drift_check.py`: it asserts that `pii.denylist` and the hand-copied implementation inside `.claude/hooks/mcp-query-guard.py` produce **identical** deny-lists. Teach one to read the map and not the other, and they diverge by construction. The hook cannot simply import the shared module — its self-containment is load-bearing (a module-level import failure raises before `main()`'s try/except, and a PreToolUse hook that exits that way is treated as non-blocking, i.e. fail-open in a gate built to fail closed), so parity would require hand-copying a *third* copy of privacy-critical logic into the hook.
 
 *Measured before deciding* (synthetic fixture, `CLIENT_PROFILE.md` holding `- **Name:** Zzzplaceholder Meridian Holdings`):
 
@@ -218,7 +218,7 @@ D6 makes engagement directories opaque, and `scripts/pii/denylist.py` mines the 
 | today — `engagements/zzzplaceholderclient/` + profile | `Meridian`, `Zzzplaceholder`, `Zzzplaceholder Meridian Holdings`, `zzzplaceholderclient` |
 | post-#168 — `engagements/e7f3a2c1/` + profile | `Meridian`, `Zzzplaceholder`, `Zzzplaceholder Meridian Holdings`, `e7f3a2c1` |
 | post-#168 — `engagements/e7f3a2c1/`, **no** profile | `e7f3a2c1` only |
-| post-#168 — `engagements/e7f3a2c1/`, no profile, `client_slug="hdfc"` passed | `hdfc` |
+| post-#168 — `engagements/e7f3a2c1/`, no profile, `client_slug="acmebank"` passed | `acmebank` |
 
 So going opaque costs the deny-list **one redundant term, not the client's identity**: three of four terms are unchanged, because `CLIENT_PROFILE.md` — which `init_engagement.sh` creates for every client and which stays inside the engagement directory (#166 changes nothing about the directory's internal structure) — is a stronger source than the slug ever was. The slug was a *fallback* for an unfilled profile, and it degrades to a meaningless token rather than disappearing.
 

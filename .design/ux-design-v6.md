@@ -144,7 +144,7 @@ Agents read the sidecar text when they need words, and open the redacted image w
 ### Flow D — MCP query carrying a client identifier *(PR 1 — ships first)*
 
 ```
-agent calls mcp__backbase-infobank__search("HNB digital onboarding capabilities")
+agent calls mcp__backbase-infobank__search("<Client> digital onboarding capabilities")
         │
         ▼
  mcp-query-guard scans the query against the engagement deny-list
@@ -160,7 +160,7 @@ agent calls mcp__backbase-infobank__search("HNB digital onboarding capabilities"
 ```
 🛑 That Infobank search names the client
 
-   Your search contained "HNB". Infobank sits outside Cortex, so client
+   Your search contained the client's name. Infobank sits outside Cortex, so client
    names must not go into it.
 
    Ask the same question generically:
@@ -207,15 +207,15 @@ This is deliberate: the guard once failed closed *everywhere* and wedged every s
 ### Flow G — Engagements get opaque directory names
 
 ```
-./scripts/init_engagement.sh hdfc 2026-08_retail_assessment
+./scripts/init_engagement.sh acmebank 2026-08_retail_assessment
         │
         ▼
   creates engagements/e7f3a2c1/2026-08_retail_assessment/
   writes  .engagement_map.json   (gitignored, local, chmod 600)
         │
         ▼
-  "Created engagement e7f3a2c1 for HDFC.
-   Find it any time with:  ./scripts/find_engagement.sh hdfc"
+  "Created engagement e7f3a2c1 for Acme Bank.
+   Find it any time with:  ./scripts/find_engagement.sh acmebank"
 ```
 
 Consultants never hand-type an ID. `find_engagement.sh <client>` resolves the name; `ls` inside the engagement is unchanged. Existing directories migrate once via `migrate_engagement_ids.sh`, which rewrites paths and preserves history.

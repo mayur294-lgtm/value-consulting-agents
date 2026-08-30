@@ -10,11 +10,11 @@ previous: prd-v3.md
 
 ## 1. Problem
 
-Cortex cannot tell fictional test banks from real clients. Synthetic engagements (Harborlight, Zenith, PBCOM Demo, Bank X, TEST-WSFS) were created purely to test the pipeline, but the system treated them as real:
+Cortex cannot tell fictional test banks from real clients. Synthetic engagements (Harborlight, Zenith, Bank X and two demo/test engagements named after real institutions) were created purely to test the pipeline, but the system treated them as real:
 
 - **The harvester wrote fiction into shared knowledge.** After the 2026-07-28 Harborlight pipeline test, the knowledge-harvester (which runs automatically after every pipeline run) appended fabricated metrics to the shared knowledge base — and its anonymization rule made them *more* convincing: "Harborlight" became `[Client-retail-NAM-2026]` with tier `[Client-Validated]`, HIGH confidence.
 - **Retrieval served the fiction back.** Every retrieval surface (the six `/domain-*` skills, benchmark-librarian, and the ROI agents that read harvested ROI patterns) is provenance-blind: no surface excludes any source tier, and none knows `tests/` or `[Synthetic-Test]` exists.
-- **It reached a real client.** The HNB Sri Lanka business-case workbook picked up a synthetic call-volume benchmark ("233 per 1,000 customers, NAM CU") from the harvested files. It was caught in review and is flagged in the deck's governance notes — a documented near-miss, and proof of the leak path end-to-end.
+- **It reached a real client.** A live business-case workbook picked up a synthetic call-volume benchmark ("233 per 1,000 customers, NAM CU") from the harvested files. It was caught in review and is flagged in the deck's governance notes — a documented near-miss, and proof of the leak path end-to-end.
 
 On 2026-08-18 the data was cleaned up and a quarantine **convention** was established: test engagements live in `tests/engagements/` with a `.synthetic` marker file; harvest from test runs must go to the engagement's own `outputs/knowledge_harvest/`; retrieval must never cite `[Synthetic-Test]` values. But the convention is documentation only — **nothing enforces it**. The next pipeline test will contaminate shared knowledge exactly the same way.
 
@@ -29,7 +29,7 @@ Enforce the quarantine convention at every point where synthetic data can enter 
 | This PRD covers | This PRD does NOT cover |
 | --- | --- |
 | Synthetic-engagement gate in the pipeline's harvest step (detect `.synthetic` / `tests/` path; quarantine-redirect or skip per `harvest_policy`) | The already-completed 2026-08-18 data cleanup and relocation (done, pre-PRD) |
-| The same gate as a mandatory self-check in the knowledge-harvester prompt (both modes, covering manual `backfill` runs) and in the `/extract-learnings` command (the second manual pathway) | Fixing the HNB workbook's synthetic benchmark cell (stays an open item in the HNB engagement workstream, already documented there) |
+| The same gate as a mandatory self-check in the knowledge-harvester prompt (both modes, covering manual `backfill` runs) and in the `/extract-learnings` command (the second manual pathway) | Fixing that workbook's synthetic benchmark cell (stays an open item in the engagement's own workstream, already documented there) |
 | `[Synthetic-Test]` formalized as an excluded tier in the canonical benchmark-tier standard (`benchmark_evolution.md`) | Broader governance tiering of skills (skill-first Phase 2) |
 | Retrieval-side exclusion rule added to all readers of shared knowledge: the six `/domain-*` skills, benchmark-librarian, and the three ROI agents that read harvested ROI patterns | Moving/tombstoning the deprecated roi-business-case-builder (parked; skill-first Phase 3 pruning) |
 | Zenith example in the deprecated-in-place roi-business-case-builder replaced with a neutral placeholder | A PreToolUse hook backstop — **conditional**: built only if design-phase verification shows hooks fire for SDK-driven pipeline writes; otherwise dropped with the finding recorded |
@@ -63,7 +63,7 @@ Enforce the quarantine convention at every point where synthetic data can enter 
 
 ## 6. Out of Scope
 
-- The HNB workbook fix (`Assumptions!C23`) — tracked in the HNB engagement's own open items.
+- The workbook fix (`Assumptions!C23`) — tracked in that engagement's own open items.
 - Deprecated roi-business-case-builder relocation/tombstone (only its Zenith example line changes).
 - Skill-first Phase 2 (governance tiering) and Phase 3 (pruning, JTBD front door).
 - Retroactive sweep of past deliverables for synthetic citations.
