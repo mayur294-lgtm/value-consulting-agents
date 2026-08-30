@@ -67,6 +67,19 @@ jobs:
         # step needed. The setup-python cache above keys on this file so the
         # wheel isn't re-fetched every run.
         run: |
+          # The image checks in the pii-anonymizer rubric
+          # (image_input_produces_sidecar_and_redacted_copy,
+          # image_unreadable_script_refuses_and_writes_nothing, and the .png leg
+          # of document_formats_converted_and_scrubbed) exercise the OCR path.
+          # requirements.txt carries `pytesseract`, which is only the PYTHON
+          # BINDING — the tesseract BINARY it shells out to is a system package
+          # and was never installed here. Without it scripts/pii/ingest.py
+          # correctly raises OCRUnavailableError, the three checks HARD-FAIL on
+          # the wrong error type, and the row scores 0.842 against its 1.00
+          # threshold. That is an environment gap, not a code defect: the binding
+          # without the binary is a half-installed dependency.
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq tesseract-ocr
           pip install -r requirements.txt
       - name: Registry preflight
         # Fail fast if any GATING golden can't resolve in CI (missing or
