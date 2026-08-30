@@ -53,10 +53,10 @@ tests/engagements/*
 # gate on every clone. It is a per-developer marker, never a repo state.
 .prd/ACTIVE_CHANGE
 
-# Video production workspace for the rollout enablement clips — source scripts
-# are tracked, rendered frames/captures/renders are not.
-docs/rollout/videos/build/
-docs/rollout/videos/*.mp4
+# Video workspace for the rollout announcement film. Start frames and scripts
+# are tracked; Runway renders and the stitched cut are not.
+docs/rollout/video/**/*.mp4
+docs/rollout/video/**/*.mov
 
 # Neutral pipeline workspaces (#167). Throwaway per-run directories holding
 # scrubbed copies of engagement inputs and the outputs agents produce, kept
@@ -78,3 +78,10 @@ Desktop.ini
 
 # Cortex ontology handover — PII round-trip mappings stay local, never committed
 *.mapping.json
+
+# Cheat-sheet art: the six inlined character PNGs and the pipeline diagram are
+# TRACKED (tools/build_cheatsheet.py base64-inlines them, so CI cannot generate
+# a byte-identical sheet without them). The multi-megabyte working sources they
+# were cut from are not needed for the build and stay local.
+docs/rollout/assets/gryphon-source.png
+docs/rollout/assets/cast-clean.png

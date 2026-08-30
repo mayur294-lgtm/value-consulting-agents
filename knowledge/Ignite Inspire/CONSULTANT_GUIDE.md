@@ -583,7 +583,7 @@ The context file has 10 sections that accumulate information:
 ### DO ✅
 
 ```
-✅ "Generate the Strategy Workshop deck for First National Bank. 
+✅ "Generate the Strategy Workshop deck for <client>. 
    They are a regional bank with 200,000 customers and $5B in assets, 
    headquartered in Ohio. Their strategic priority is digital transformation 
    of lending. Include competitive analysis against Huntington and KeyBank."
