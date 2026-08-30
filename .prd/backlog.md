@@ -61,7 +61,7 @@ on and bills for a deliverable anyway.** Four of the five are cheap.
    producing spec lives only in the DEPRECATED agent, so the live modeler is never
    told to emit it.
 
-### TIER 2 — small and bleeding (do alongside Tier 1)
+### TIER 2 — small and bleeding — **3 of 4 DONE 2026-08-30**; the fourth is #218
 
 - `journal_path` still carries the client's directory name in the telemetry
   payload. The label was anonymised in #169; this field was not, and telemetry
@@ -115,7 +115,7 @@ governance hooks document fail-open and actually fail by RAISING;
 - [ ] **Stale pre-retune chunking thresholds** — context protocol Rule 9 Step 3 still says 500/1500 (Rule 1 was retuned to 1500/3000); roi-hypothesis-builder/roi-financial-modeler core text still says "chunk files over 500 lines" (live standalone test hit this conflict and had to pick). Align all to Rule 1.
 - [ ] **Rule 10 contradictions** — narrative-assembler (its own :71 forbids what :477 instructs), upgrade-analysis, capability-gap-analyzer still point at the full Product Directory CSV; journey-builder + capability-gap-analyzer at the full taxonomy master. Pre-existing.
 - [done v4] **Phantom `benchmarks/` registry paths** — benchmark-librarian body + whitelists reference `benchmarks/benchmark_registry.md`, `benchmarks/regions/*`, `benchmarks/domains/*` which have never existed. Create the structure or repoint to `knowledge/domains/*/benchmarks.md` + `knowledge/learnings/benchmarks/`.
-- [ ] **VERSION (1.2.0) is BEHIND CHANGELOG (1.3.0)** — version-release.yml parses the changelog; reconcile before the next `v*` tag.
+- [x] **[done 2026-08-30 — bumped to 1.3.0]** **VERSION (1.2.0) is BEHIND CHANGELOG (1.3.0)** — version-release.yml parses the changelog; reconcile before the next `v*` tag.
 - [ ] Telemetry "Layer 1" (orchestrator direct `gh issue create` after Step 7/8c) is documented in FLYWHEEL.md but was never implemented — implement or correct the docs.
 - [ ] knowledge conflicts: `retail/roi_levers.md` claims NBA/churn-prediction capabilities absent from the Product Directory; one client's call volume stated as 25K/mo in one knowledge file and ~239K/mo implied in another; `value_lever_framework.md` states the gap formula in ratio form but its worked example uses percentage-points (production configs use ratio).
 - [ ] **`declared_checks_all_executed` (#182) is a structural no-op for all four deliverable rows** — deck, roi, assessment, and report declare no `code:`/`judge:` lists in `registry.yaml` at all (their checks live inside the evaluator modules, `evals/rubrics/deliverable/*.py`), so `_assert_declared_checks_executed` (`run_experiment.py`, ~line 143) returns early on an empty declared set and those four rows get zero benefit from the new assertion. Not a defect in #182 — a scoped gap: closing it means declaring `code:`/`judge:` lists for deliverable rows, which belongs to the three-tier registry restructuring in #188/#201. In the gate-that-measures-nothing epic's own terms: a tier where the coverage assertion is structurally inert is exactly where the next false green would live.
@@ -123,7 +123,7 @@ governance hooks document fail-open and actually fail by RAISING;
 ### Low — docs, hygiene, prompts
 - [ ] FLYWHEEL.md: five sections below the deprecation banner still describe the killed auto-dev loop as live (File Map, labels, cost model, triggers).
 - [ ] CLAUDE.md: `.claude/skills/` claim wrong (holds bb-* six, not coding-standards); anti-patterns 8-10 (experience map, bullet narratives, silent checkpoint skip) referenced in agent files but never added; CHANGELOG unlogged since 1.3.0 (PRs #70-#123).
-- [ ] Hardcoded `/Users/mayur@backbase.com/...` paths in value-consulting-orchestrator.md (4 command examples), run-pipeline.md, scan-engagement.md — broken for every other consultant. (Also queued for skill-first Phase 3.)
+- [x] **[done 2026-08-30 — repo-root-relative, and the interpreter corrected to `.venv/bin/python`; the examples were wrong twice]** Hardcoded `/Users/mayur@backbase.com/...` paths in value-consulting-orchestrator.md (4 command examples), run-pipeline.md, scan-engagement.md — broken for every other consultant. (Also queued for skill-first Phase 3.)
 - [ ] `/executive-briefing` referenced from CLAUDE.md:415 + frontline-long-form.md:32 but no such command exists.
 - [done v6] anonymize-guard deny message tells consultants to run `python3 scripts/anonymize_transcript.py <file>` — actual CLI requires `--file`/`--engagement-dir`.
 - [ ] `ACTIONS_STEP_DEBUG: false` exists only as a CHANGELOG claim, in no workflow (default is off — cosmetic).
