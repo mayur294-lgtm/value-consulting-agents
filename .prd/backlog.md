@@ -360,7 +360,7 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
 
 ### High — four clients are invisible to the outbound MCP gate
 
-- [ ] **`engagements/inputs/` and `engagements/outputs/` hold four clients' staging
+- [x] **FIXED 2026-08-30 (code), PARTLY OPEN (data — see below).** `engagements/inputs/` and `engagements/outputs/` hold four clients' staging
   material, and `denylist.SKIP_CLIENT_DIRS = {"inputs", "outputs"}` excludes them
   from EVERY deny-list scan.** Verified by resolving the deny-list repo-wide: it
   returns 12 terms, and not one of the four staging clients contributes anything.
@@ -396,3 +396,38 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
   Also reported by the dry run and still open above: three files in that
   engagement carry the client's name in the FILENAME, which renaming the directory
   does not touch.
+
+### Follow-on from that fix — the code ships, the data does not
+
+- [ ] **The staging-directory deny-list fix is only half-portable, and the half
+  that matters on a colleague's machine is the half that does not travel.** The
+  resolver change (descend one level into `engagements/inputs|outputs`, read
+  DOCUMENTS only, never the directory name) is committed and applies everywhere.
+  The `CLIENT_PROFILE.md` files that give it something to read are under
+  `engagements/`, which `.gitignore:29` excludes as a whole tree — correctly, since
+  they carry client identifiers.
+
+  So on any other machine those four clients remain uncovered until someone writes
+  the profiles there. That is inherent to engagements being machine-local and is
+  not a defect in the fix, but it means "the gate covers these four" is true of ONE
+  machine, not of the system. Anyone auditing this should re-resolve the deny-list
+  locally rather than trusting this entry.
+
+  **Why the directory names are not mined, recorded so it is not "simplified" later:**
+  measured on the live tree, mining them yields NOTHING for the two acronym clients
+  (`_single_word_ok` has a four-character floor, so three-letter acronyms are
+  dropped) while harvesting `Ignite` — a Backbase programme name — plus geography,
+  `cortex`, `ontology`, a datecode and a consultant's own first name. The eval check
+  `staging_directory_names_do_not_become_deny_terms` pins this: under a mutation
+  that mines the names, two ordinary product queries are denied.
+
+- [ ] **Two new checks on `mcp-query-guard` are hand-proven, not mutation-proven.**
+  `denies_client_from_staging_subdirectory` and
+  `staging_directory_names_do_not_become_deny_terms` join the row's existing 17 in
+  the counted DEBT list. A `mutations:` entry could not be added for them alone:
+  `check_registry._row_claims_mutation_proof` makes a row hard-enforced as soon as
+  it declares ANY `mutations:` key, so adding one would have turned the other 17
+  into hard errors in a change about something else. Both were proven by hand
+  instead — removing the descent takes the first to HARD-FAIL, and mining the
+  directory names takes the second to HARD-FAIL with two legitimate queries denied.
+  Treat their green as hand-verified evidence until the row is migrated wholesale.

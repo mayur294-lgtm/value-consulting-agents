@@ -567,11 +567,25 @@ def _iter_doc_paths(client_dir, doc_name):
             yield Path(dirpath) / doc_name
 
 
-def _scan_client_dir(client_dir, terms, budget):
+def _scan_client_dir(client_dir, terms, budget, mine_slug=True):
     """Extract every identifier term a single client directory contributes:
     its slug, its CLIENT_PROFILE.md, and every ENGAGEMENT_CONTEXT.md /
-    inputs/engagement_intake.md anywhere beneath it."""
-    extract_terms_from_slug(client_dir.name, terms)
+    inputs/engagement_intake.md anywhere beneath it.
+
+    `mine_slug=False` scans the DOCUMENTS only. Used for the per-client
+    subdirectories of the shared staging trees, whose names are not client
+    slugs but `<datecode>_<Client>_<Geography-or-programme>` — mining those
+    produces the wrong terms in both directions. Measured on the live tree:
+    the two acronym clients yield NOTHING (`_single_word_ok` has a four-
+    character floor, so `BSP` and `HNB` are dropped), while the harvest DOES
+    include `Ignite` — a Backbase programme name, which as a deny term would
+    block ordinary product queries — plus geography, `cortex`, `ontology` and
+    a consultant's own first name. A profile inside the directory yields the
+    acronym correctly and yields nothing else, so that is the supported
+    source; see `resolve_deny_list`.
+    """
+    if mine_slug:
+        extract_terms_from_slug(client_dir.name, terms)
 
     profile = client_dir / CLIENT_PROFILE_NAME
     if profile.is_file():
@@ -615,6 +629,20 @@ def resolve_deny_list(project_dir):
         if client_dir.name.startswith("."):
             continue
         if client_dir.name.lower() in SKIP_CLIENT_DIRS:
+            # `engagements/inputs/` and `engagements/outputs/` are shared
+            # legacy staging, so the directory ITSELF is not a client and must
+            # not be mined — that would put the words "inputs" and "outputs"
+            # on the deny-list and block most ordinary queries.
+            #
+            # But their SUBDIRECTORIES are per-client, and skipping the whole
+            # tree meant four real clients contributed NOTHING to the
+            # deny-list: the outbound MCP gate was not weakened for them, it
+            # was absent (found by the 2026-08-30 migration dry run). Descend
+            # one level and scan each subdirectory's DOCUMENTS — never its
+            # name, for the reasons in `_scan_client_dir`.
+            for staged in sorted(client_dir.iterdir()):
+                if staged.is_dir() and not staged.name.startswith("."):
+                    _scan_client_dir(staged, terms, budget, mine_slug=False)
             continue
         _scan_client_dir(client_dir, terms, budget)
 

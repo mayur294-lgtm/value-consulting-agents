@@ -482,7 +482,14 @@ components:
            matching_is_case_insensitive, denies_identifier_from_engagement_context_file,
            denies_identifier_from_engagement_intake_file, denies_client_name_from_profile_name_label,
            ignores_unfilled_template_placeholders, scan_limit_hit_fails_closed,
-           runs_under_registered_interpreter]
+           runs_under_registered_interpreter,
+           # 2026-08-30: engagements/inputs|outputs were skipped WHOLESALE, so four real
+           # clients sat on NO deny-list — the gate was absent for them, not weak. The
+           # resolver now descends one level and reads DOCUMENTS only. The second check
+           # pins why not the directory names: they carry a Backbase programme name and
+           # geography, which must never become deny terms.
+           denies_client_from_staging_subdirectory,
+           staging_directory_names_do_not_become_deny_terms]
 
   # pii-anonymizer (ticket #161, PRD v6 §5, solution-design-v6.md D9) — the
   # acceptance gate for the whole v6 Presidio PII cycle. Covers

@@ -516,6 +516,27 @@ def _iter_doc_paths(client_dir, doc_name):
             yield Path(dirpath) / doc_name
 
 
+def _scan_one_dir(client_dir, terms, mine_slug=True):
+    """One directory's contribution. Mirrors
+    `pii.denylist._scan_client_dir`; drift_check.py asserts parity."""
+    if mine_slug:
+        _extract_terms_from_slug(client_dir.name, terms)
+
+    profile = client_dir / CLIENT_PROFILE_NAME
+    if profile.is_file():
+        # CLIENT_PROFILE.md is the one document scanned with the extra
+        # bare-"Name:" label regex — see _CLIENT_PROFILE_LABEL_LINE_RE's
+        # docstring for why this is scoped to this filename only.
+        _extract_terms_from_text(
+            _read_bounded(profile), terms,
+            label_res=(_LABEL_LINE_RE, _CLIENT_PROFILE_LABEL_LINE_RE),
+        )
+
+    for doc_name in ENGAGEMENT_DOC_NAMES:
+        for doc_path in _iter_doc_paths(client_dir, doc_name):
+            _extract_terms_from_text(_read_bounded(doc_path), terms)
+
+
 def _resolve_deny_list():
     """Aggregate client/stakeholder identifier terms across every engagement
     found locally under engagements/. Returns a set of terms (strings).
@@ -530,24 +551,27 @@ def _resolve_deny_list():
             continue
         if client_dir.name.startswith("."):
             continue
-        if client_dir.name.lower() in SKIP_CLIENT_DIRS:
+        staging = client_dir.name.lower() in SKIP_CLIENT_DIRS
+        if staging:
+            # `engagements/inputs/` and `engagements/outputs/` are shared
+            # legacy staging: the directory itself is not a client and mining
+            # its name would put "inputs"/"outputs" on the deny-list. But its
+            # SUBDIRECTORIES are per-client, and skipping the whole tree meant
+            # four real clients contributed NOTHING here — the gate was not
+            # weakened for them, it was absent (2026-08-30 migration dry run).
+            # Descend one level, documents only, never the name: those names
+            # are `<datecode>_<Client>_<Geography-or-programme>` and mining
+            # them drops the acronym clients while harvesting a Backbase
+            # programme name. Kept byte-for-byte equivalent to
+            # `pii.denylist._scan_client_dir(..., mine_slug=False)` —
+            # `scripts/pii/drift_check.py` asserts the two produce identical
+            # deny-lists.
+            for staged in sorted(client_dir.iterdir()):
+                if staged.is_dir() and not staged.name.startswith("."):
+                    _scan_one_dir(staged, terms, mine_slug=False)
             continue
 
-        _extract_terms_from_slug(client_dir.name, terms)
-
-        profile = client_dir / CLIENT_PROFILE_NAME
-        if profile.is_file():
-            # CLIENT_PROFILE.md is the one document scanned with the extra
-            # bare-"Name:" label regex — see _CLIENT_PROFILE_LABEL_LINE_RE's
-            # docstring for why this is scoped to this filename only.
-            _extract_terms_from_text(
-                _read_bounded(profile), terms,
-                label_res=(_LABEL_LINE_RE, _CLIENT_PROFILE_LABEL_LINE_RE),
-            )
-
-        for doc_name in ENGAGEMENT_DOC_NAMES:
-            for doc_path in _iter_doc_paths(client_dir, doc_name):
-                _extract_terms_from_text(_read_bounded(doc_path), terms)
+        _scan_one_dir(client_dir, terms, mine_slug=True)
 
     return terms
 

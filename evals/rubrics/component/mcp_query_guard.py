@@ -614,6 +614,64 @@ def _runs_under_registered_interpreter(root: Path) -> CheckResult:
     )
 
 
+
+def _seed_staging_subdir_project(root: Path):
+    """A project whose ONLY client material sits under the shared staging trees
+    `engagements/inputs/<datecode>_<Client>_<Geo>/` — the real layout that the
+    2026-08-30 migration dry run found uncovered.
+
+    Deliberately builds the adversarial shape, not a friendly one:
+      - the staging directory NAME encodes a 3-character acronym, which
+        `_single_word_ok`'s four-character floor drops, so slug mining cannot
+        recover it — only the profile can;
+      - the name also carries a programme word (`Ignite`) and a geography, both
+        of which slug mining WOULD harvest and which must never become deny
+        terms; a query using them has to stay allowed.
+    """
+    staged = root / "engagements" / "inputs" / "2602_ZZQ_Ignite_Testland"
+    staged.mkdir(parents=True)
+    (staged / "CLIENT_PROFILE.md").write_text(
+        "# Client Profile — [Client Name]\n\n## Client Identity\n\n"
+        "- **Name:** [Full legal name]\n\n"
+        "## Identifier Forms (deny-list)\n\n- **Client Name:** ZZQ\n",
+        encoding="utf-8")
+
+
+def _denies_client_from_staging_subdirectory(root: Path) -> CheckResult:
+    """`engagements/inputs/` and `outputs/` are skipped as client dirs — the
+    directories themselves are shared staging, and mining their names would put
+    "inputs"/"outputs" on the deny-list. But skipping the whole TREE left four
+    real clients contributing nothing: the gate was not weakened for them, it
+    was absent. The resolver now descends one level and reads each per-client
+    subdirectory's documents."""
+    name = "denies_client_from_staging_subdirectory"
+    _seed_staging_subdir_project(root)
+    result = _run_hook(root, _payload({"query": "ZZQ digital onboarding capabilities"}))
+    ok = result.returncode == 0 and result.denied
+    return bool_check(name, ok, detail=(
+        f"rc={result.returncode} denied={result.denied} "
+        f"stdout={result.stdout_text[:200]!r} stderr={result.stderr_text[:200]!r}"))
+
+
+def _staging_directory_names_do_not_become_deny_terms(root: Path) -> CheckResult:
+    """The other half, and the reason the descent reads DOCUMENTS ONLY. The
+    staging subdirectory name is `<datecode>_<Client>_<Geography-or-programme>`;
+    mining it would harvest `Ignite` — a Backbase programme name — plus
+    geography and the datecode, and blocking those breaks ordinary product
+    queries. Mining the parent would be worse still ("inputs"/"outputs")."""
+    name = "staging_directory_names_do_not_become_deny_terms"
+    _seed_staging_subdir_project(root)
+    probes = ["Ignite programme rollout guidance",
+              "core banking in Testland",
+              "what is in the inputs folder"]
+    outcomes = []
+    for q in probes:
+        r = _run_hook(root, _payload({"query": q}))
+        outcomes.append((q, r.returncode, r.denied))
+    ok = all(rc == 0 and not denied for _, rc, denied in outcomes)
+    return bool_check(name, ok, detail=f"probes={outcomes}")
+
+
 def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained, ignores target
     hook = _hook_path()
     if not hook.exists():
@@ -641,4 +699,6 @@ def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained
         _run_in_tmp(_ignores_unfilled_template_placeholders),
         _run_in_tmp(_scan_limit_hit_fails_closed),
         _run_in_tmp(_runs_under_registered_interpreter),
+        _run_in_tmp(_denies_client_from_staging_subdirectory),
+        _run_in_tmp(_staging_directory_names_do_not_become_deny_terms),
     ]
