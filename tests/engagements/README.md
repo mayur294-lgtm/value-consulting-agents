@@ -2,7 +2,7 @@
 
 **Every engagement in this directory is TEST DATA. None of these are real clients.**
 
-This directory exists because synthetic test banks (Harborlight, Zenith, PBCOM Demo, Bank X)
+This directory exists because synthetic test banks (Harborlight, Zenith, Bank X and a demo bank)
 previously lived under `engagements/` alongside real clients, and the knowledge-harvester
 extracted their fabricated metrics into the shared knowledge base as if they were real,
 anonymized, client-validated benchmarks. See `knowledge/learnings/EXTRACTION_REGISTRY.md`
@@ -24,7 +24,7 @@ anonymized, client-validated benchmarks. See `knowledge/learnings/EXTRACTION_REG
    `tests/`. Anything tagged `[Synthetic-Test]` in shared knowledge is fabricated
    and must not be cited in client work.
 5. **Contents are gitignored** (except this README). Some test engagements contain
-   real source material used as test input (e.g. `test_wsfs` holds real WSFS
+   real source material used as test input (e.g. `test_<client>` holds real client
    documents) — PII/anonymization rules still apply to those.
 
 ## Creating a new test engagement
@@ -50,4 +50,4 @@ engagement directory.
 | `2602_Zenith_Nigeria/` | Fictional Nigerian retail bank — Cortex ontology demos |
 | `pbcom_demo/` | Demo engagement |
 | `bank_x_demo/` | Demo engagement |
-| `test_wsfs/` | Test copy of **real** WSFS inputs — not fictional; PII rules apply |
+| `test_<client>/` | Test copy of **real** client inputs — not fictional; PII rules apply |

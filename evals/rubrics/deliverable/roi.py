@@ -96,8 +96,8 @@ def _driver_backbase_impact(driver: dict):
     """A driver's Backbase-impact ratio, wherever the current contract puts
     it: `inputs.backbase_impact.value` (the documented shape — roi-financial-
     modeler.md "backbase_impact as an input key"), a bare `inputs.
-    backbase_impact` number, or (seen in Managed Hosting commercial configs,
-    e.g. tests/roi_pipeline_v2/managed_hosting_commercial_test) a bare
+    backbase_impact` number, or (seen in Managed Hosting commercial configs)
+    a bare
     top-level `backbase_impact` on the driver itself. Returns None if none
     of those parse as a number."""
     inputs = driver.get("inputs")
