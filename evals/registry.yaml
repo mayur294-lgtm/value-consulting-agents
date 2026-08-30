@@ -545,7 +545,11 @@ components:
     altitude: component
     threshold: 1.00
     input: evals/goldens/pii_roundtrip_fixture.md
-    code: [round_trip_byte_identical, distinct_values_distinct_placeholders,
+    # 2026-08-30: the Unicode-Latin widening pulled forward from PRD v10 ahead of
+    # #220/#221 (design D10). Measured before it, a single-word accented CLIENT
+    # name was LOST, not mis-cased — and the client is D3's most important entity.
+    code: [accented_latin_identity_extracted_whole,
+           round_trip_byte_identical, distinct_values_distinct_placeholders,
            repeated_value_reuses_placeholder, no_raw_pii_in_anonymized_output,
            cross_transcript_merge_collision_free, mapping_files_chmod_600_and_cleaned,
            client_name_redacted_via_denylist, allowlist_prevents_generic_overredaction,

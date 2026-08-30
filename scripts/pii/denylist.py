@@ -196,7 +196,21 @@ CLIENT_PROFILE_LABEL_LINE_RE = re.compile(
 _PAREN_ACRONYM_RE = re.compile(r"\(([A-Z]{2,8})\)")
 _ALLCAPS_TOKEN_RE = re.compile(r"\b[A-Z]{2,8}\b")
 _HEADING_RE = re.compile(r"^\s*#{1,3}\s+(.+)$", re.MULTILINE)
-_WORD_RE = re.compile(r"[A-Za-z]+")
+# Unicode Latin, not ASCII. `[A-Za-z]` silently shreds every accented name:
+# measured 2026-08-30 on the real extractors, "Länsförsäkringar" yielded only
+# "kringar", "Bagócs" yielded NOTHING, and "Åland" yielded "land" — which
+# under-detects the client AND emits a generic term that over-blocks. The client
+# name is the single most important entity we hide (solution-design-v6 D3), so an
+# ASCII class here is a silent, total miss for a whole class of client.
+#
+# Explicit ranges rather than \w or a `regex` dependency: this module is
+# stdlib-only and 3.9-clean by contract (the hook copy cannot import anything),
+# and \w would admit digits and every non-Latin script. Covers Latin-1
+# Supplement, Latin Extended-A and Latin Extended-B — French, Spanish, German,
+# Portuguese, Nordic, Polish, Czech, Turkish. D7 in the Sinhala/Devanagari sense
+# is untouched: non-Latin script remains out of scope.
+_LATIN = "A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\u0100-\u017F\u0180-\u024F"
+_WORD_RE = re.compile("[" + _LATIN + "]+")
 
 # Unfilled template placeholder segments look like "[Full legal name]" or
 # "[slug used in directory names, e.g., `navy_federal`]" — every unfilled
@@ -378,7 +392,7 @@ _SUB_BULLET_RE = re.compile(r"^\s+[-*]\s+(.+)$")
 # "Ravi Menon (Group CIO)". The dash form requires SURROUNDING SPACE so a
 # hyphenated name ("Jean-Luc Marchand") is not cut in half.
 _NAME_SEGMENT_RE = re.compile(r"[,;|]|\s+[\u2014\u2013-]\s+|\(")
-_PERSON_TOKEN_RE = re.compile(r"^[A-Za-z][A-Za-z'\u2019.\-]*$")
+_PERSON_TOKEN_RE = re.compile("^[" + _LATIN + "][" + _LATIN + "'\u2019.\\-]*$")
 
 
 def _stakeholder_value(raw):

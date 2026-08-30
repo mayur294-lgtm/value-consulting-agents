@@ -288,6 +288,54 @@ wait for the output-naming cluster, #219, or #223. *Trade-off:* v10 and the
 remaining v8 tickets then run concurrently over `evals/registry.yaml`, so
 whichever lands second rebases its row edits — cheap, and cheaper than idling.
 
+**D11 — The Unicode widening shipped ALONE on 2026-08-30, ahead of #218, and it
+is WIDER than this spec scoped it.** *Overrides D10's "fold into #218" for this
+one item; D10 stands for everything else.*
+
+*Why pulled forward:* the leak is live. Measured on the shipped extractors, every
+accented Latin name was dropped or corrupted — in ENGLISH engagements, today,
+with no error and no failed check. D10's economics argument (fold, don't sequence)
+was about avoiding a second `drift_check` parity pass. That cost was accepted
+deliberately rather than leaving a live client-identity leak waiting on two
+unrelated `engine.py` tickets.
+
+*Why WIDER than §3 scoped:* §3 names only `_PERSON_TOKEN_RE`. That is half the
+defect, and the smaller half. `_WORD_RE = [A-Za-z]+` shreds accented CLIENT names
+— and the client, not the stakeholder, is D3's single most important entity.
+Measured before the change:
+
+    Länsförsäkringar -> ['kringar']    the name itself never becomes a term
+    Crédito          -> ['dito']
+    Bagócs           -> []             no terms at all
+    Åland            -> ['land']       under-detects AND emits a generic over-blocker
+
+A fix to `_PERSON_TOKEN_RE` alone would have looked complete, passed review, and
+left the client leaking. Both regexes now derive from one `_LATIN` constant,
+hand-copied identically into the hook.
+
+*Scope held:* explicit Latin ranges (Latin-1 Supplement + Extended-A + Extended-B),
+NOT `\w` and NOT a `regex` dependency — the hook is stdlib-only and 3.9-clean by
+contract. Non-Latin script is untouched and remains out of scope per §6. The
+hook's term-matching boundary at `mcp-query-guard.py:599`
+(`(?<![A-Za-z0-9])…(?![A-Za-z0-9])`) is deliberately NOT changed: it is the
+hook's matching behaviour, which §3 excludes, and its accented failure mode
+over-blocks rather than under-blocks. Filed rather than fixed.
+
+*Verification:* `drift_check.py`'s parity fixture gains an accented client and
+stakeholder, so a one-sided widening now diverges there. One eval check,
+`accented_latin_identity_extracted_whole`, asserts through
+`resolve_engagement_deny_list` and is HAND-PROVEN in both directions — reverting
+`_WORD_RE` fails it with the client names missing and `kringar` back; reverting
+`_PERSON_TOKEN_RE` fails it with the stakeholder gone. It is DEBT rather than
+mutation-proven, because `pii-anonymizer` carries no `mutations:` key and adding
+one for a single check would hard-enforce the row's other 19. #222 is where that
+becomes machine-enforced; this check takes the row from 19 to 20, so #222's
+arithmetic moves again.
+
+*What did NOT come forward:* per-language registration, the language registry,
+`init_engagement.sh --language`, entity coverage. Those still need #220/#221 and
+remain sequenced by D10.
+
 ## Open Questions
 
 1. **Threshold for `verified`.** English scores 137/150 (91%). Setting the bar at

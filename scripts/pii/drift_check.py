@@ -84,6 +84,23 @@ def _seed_fixture(root):
         encoding="utf-8",
     )
 
+    # 1b. Accented Latin identity — the 2026-08-30 widening. Both copies must
+    #     extract these identically, and BOTH regexes are involved: the
+    #     single-word client name goes through _WORD_RE/_single_word_ok (which
+    #     used to shred "Länsförsäkringar" to "kringar" and "Bagócs" to
+    #     nothing), and the stakeholder goes through _PERSON_TOKEN_RE (which
+    #     used to drop "José Ramírez" entirely). A copy widened on one side
+    #     only diverges here.
+    c1b = eng / "zzzaccentedclient"
+    c1b.mkdir(parents=True)
+    (c1b / "CLIENT_PROFILE.md").write_text(
+        "# CLIENT_PROFILE\n\n"
+        "- **Client Name:** Zzzbagócs\n"
+        "- **Client Name:** Zzzlänsförsäkringar\n"
+        "- **Primary Contact:** Zzzjosé Zzzramírez, CFO\n",
+        encoding="utf-8",
+    )
+
     # 2. Regression 2 — bold label whose value is entirely generic words, so
     #    only the multi-word phrase path can catch it.
     c2 = eng / "zzzboldlabeltest"

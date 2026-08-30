@@ -421,6 +421,11 @@ def _boundary():
     return _ab
 
 
+def _denylist():
+    from pii import denylist as _d  # noqa: PLC0415
+    return _d
+
+
 def _new_session(engine, *, entity_mapping: Optional[dict] = None, deny_terms=None):
     """Default deny list is CLIENT-ONLY, and that default is load-bearing.
 
@@ -2538,6 +2543,51 @@ def _workspace_paths_contain_no_client_identifiers(target: str) -> CheckResult: 
     )
 
 
+
+def _accented_latin_identity_extracted_whole(_target: str) -> CheckResult:
+    """Accented Latin names survive extraction INTACT — the 2026-08-30 widening.
+
+    Asserts through `denylist.resolve_engagement_deny_list`, the function
+    `orchestrate.py` and `anonymize_transcript.py` actually call, so this is a
+    statement about the shipped extractor rather than about this file.
+
+    Measured before the widening, against the real extractors: a single-word
+    accented CLIENT name was not merely mis-cased, it was LOST —
+    "Länsförsäkringar" yielded only "kringar", "Bagócs" yielded nothing at all,
+    and "Åland" yielded "land", which under-detects the client and emits a
+    generic term that over-blocks. The stakeholder path failed separately:
+    "José Ramírez" was dropped whole by `_PERSON_TOKEN_RE`.
+
+    Two regexes, two failure modes, one check — because a fix applied to only
+    one of them looks complete and still leaks the client, which is the more
+    important of the two (solution-design-v6 D3).
+    """
+    name = "accented_latin_identity_extracted_whole"
+    with tempfile.TemporaryDirectory(prefix="pii_accent_") as td:
+        root = Path(td)
+        client_dir = root / "engagements" / "zzzaccented"
+        eng = client_dir / "2026-08_test"
+        (eng / "inputs").mkdir(parents=True)
+        (client_dir / "CLIENT_PROFILE.md").write_text(
+            "# CLIENT_PROFILE\n\n"
+            "- **Client Name:** Zzzbagócs\n"
+            "- **Client Name:** Zzzlänsförsäkringar\n"
+            "- **Primary Contact:** Zzzjosé Zzzramírez, CFO\n",
+            encoding="utf-8")
+        terms = {t.lower() for t in _denylist().resolve_engagement_deny_list(str(eng))}
+
+    want_client = {"zzzbagócs", "zzzlänsförsäkringar"}
+    want_person = "zzzjosé zzzramírez"
+    missing_client = sorted(w for w in want_client if w not in terms)
+    person_ok = want_person in terms
+    # the pre-widening failure emitted ASCII fragments instead of the name
+    fragments = sorted(t for t in terms if t in {"kringar", "dito", "land", "bagócs"[1:]})
+    ok = not missing_client and person_ok and not fragments
+    return bool_check(name, ok, detail=(
+        f"missing_client={missing_client} person_extracted={person_ok} "
+        f"ascii_fragments={fragments}"))
+
+
 def evaluate(target: str) -> list:
     fixture = _fixture_path(target)
     if not fixture.exists():
@@ -2560,6 +2610,7 @@ def evaluate(target: str) -> list:
         )]
 
     checks = [
+        _accented_latin_identity_extracted_whole,
         _round_trip_byte_identical,
         _distinct_values_distinct_placeholders,
         _repeated_value_reuses_placeholder,
