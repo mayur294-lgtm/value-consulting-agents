@@ -1201,11 +1201,37 @@ components:
   engagement-identity:
     altitude: component
     threshold: 1.00
+    # The four `label_*` / `engagement_id_*` checks are D1 of
+    # .design/knowledge-identity-resolution.md — the knowledge label's
+    # discriminator. domain+region+year alone is many-to-one: three
+    # institutions in ONE EXTRACTION_REGISTRY table resolved to the identical
+    # [Client-retail-NAM-2026], merging their benchmarks into one apparent
+    # peer with nothing raising.
     code: [mints_opaque_hex_id_not_slug_derived, map_entry_written_chmod_600,
            client_identity_absent_from_directory_path, find_engagement_resolves_partial_match,
            find_engagement_resolves_case_insensitive_match,
-           duplicate_engagement_refused_not_silently_recreated]
+           duplicate_engagement_refused_not_silently_recreated,
+           label_discriminated_by_opaque_engagement_id,
+           label_discriminator_never_derived_from_client_name,
+           label_well_formed_when_id_absent,
+           engagement_id_resolved_from_opaque_path_only]
     mutations:
+      label_discriminated_by_opaque_engagement_id:
+        file: scripts/pii/identity.py
+        find: "return eid[:LABEL_DISCRIMINATOR_CHARS]"
+        replace: "return eid[:0]"
+      label_discriminator_never_derived_from_client_name:
+        file: scripts/pii/identity.py
+        find: 'if not _OPAQUE_ID_RE.match(eid):'
+        replace: 'if False:'
+      label_well_formed_when_id_absent:
+        file: scripts/pii/identity.py
+        find: 'return base + ("-%s]" % disc if disc else "]")'
+        replace: 'return base + ("-%s]" % disc if disc else "")'
+      engagement_id_resolved_from_opaque_path_only:
+        file: scripts/pii/identity.py
+        find: 'if i and parts[i - 1].lower() == "engagements" and _OPAQUE_ID_RE.match(seg):'
+        replace: 'if _OPAQUE_ID_RE.match(seg):'
       mints_opaque_hex_id_not_slug_derived:
         file: scripts/pii/identity.py
         find: "engagement_id = _generate_id(set(data), client, resolved_slug)"

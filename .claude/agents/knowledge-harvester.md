@@ -35,7 +35,12 @@ You are the Knowledge Harvester — a silent, append-only agent that extracts in
    then read only the `.anon_<filename>` output it writes alongside the original — never the raw file. The tool finds the client name (as one or more `<CLIENT_N>` placeholders — a full legal name and an acronym both count, as separate numbers), stakeholder names (`<PERSON_N>`), and emails (`<EMAIL_ADDRESS_N>`) for you; you make no independent judgment calls about what counts as identifying.
 
    What you write to shared knowledge then applies exactly two mechanical relabeling steps — not detection, just formatting, because harvested knowledge has no mapping file and is never de-anonymised:
-   - Collapse every `<CLIENT_N>` placeholder (there may be more than one for the same client) into the single descriptive label `[Client-{domain}-{region}-{year}]`, built from the domain/region/year you already have from context — never from the placeholder itself. This label is deliberately descriptive, not opaque: a benchmark with no domain/region/year attached is useless to whoever reads it next (see `knowledge/standards/benchmark_evolution.md`).
+   - Collapse every `<CLIENT_N>` placeholder (there may be more than one for the same client) into the single descriptive label `[Client-{domain}-{REGION}-{year}-{disc}]`, built from the domain/region/year you already have from context — never from the placeholder itself. This label is deliberately descriptive, not opaque: a benchmark with no domain/region/year attached is useless to whoever reads it next (see `knowledge/standards/benchmark_evolution.md`).
+     - `{disc}` is the **first 4 characters of the engagement's opaque directory ID** — the 8-hex-character segment in the engagement path, e.g. `engagements/a3f2beef/...` gives `a3f2`, so the label reads `[Client-retail-NAM-2026-a3f2]`. Domain lower-case, region UPPER-case.
+     - **Why it is required:** without it the label is many-to-one. Two engagements sharing a domain, region and year produce the IDENTICAL label, their benchmarks merge into one apparent peer, and nothing errors — a consultant sizing against that benchmark is reading two different banks as one. Three institutions in `EXTRACTION_REGISTRY.md` collided this way before it was added.
+     - **Never derive `{disc}` from the client's name**, or from any hash, initials or transform of it. The opaque ID is random; a name-derived suffix would look anonymous and be reversible by anyone who guesses the bank, which would undo the anonymisation for every reader.
+     - **If the engagement directory is NOT an opaque ID** (a legacy client-named directory), omit `{disc}` entirely and say so in your journal entry — an honest colliding label beats a fabricated discriminator. Do not invent one.
+     - The canonical implementation is `pii.identity.client_label()`; `scripts/extract_telemetry.py` calls it, so telemetry and knowledge stay identical.
    - Drop every `<PERSON_N>`, `<EMAIL_ADDRESS_N>`, or other entity placeholder entirely — never write stakeholder identity into shared knowledge, opaque or not.
    Keep metrics, ratios, and patterns as-is.
 3. **Only extract what is new.** Check `knowledge/learnings/EXTRACTION_REGISTRY.md` first. Skip any engagement or data type already listed there.
@@ -72,7 +77,7 @@ Append new entries using this format:
 - **Value:** [X]
 - **Source:** [Client-Validated] / [Industry] / [Proxy]
 - **Context:** [1-line description of client type, e.g. "Credit Union, 400K members, NAM"]
-- **Engagement:** [Client-{domain}-{region}-{year}]
+- **Engagement:** [Client-{domain}-{REGION}-{year}-{disc}]
 ```
 
 ### 2. Journey Patterns → `knowledge/learnings/journey_maps/{engagement_id}.md`
@@ -93,7 +98,7 @@ From `roi_config.json`, extract novel lever structures worth reusing:
 
 Format:
 ```markdown
-### [Lever Name] — [Client-{domain}-{region}-{year}]
+### [Lever Name] — [Client-{domain}-{REGION}-{year}-{disc}]
 - Baseline: [formula or metric]
 - Backbase impact: [%]
 - Confidence: [High/Medium/Low]

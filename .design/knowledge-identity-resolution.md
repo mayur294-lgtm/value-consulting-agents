@@ -109,6 +109,15 @@ layer is ever built, and every other item here depends on the label being a real
 identifier. *Trade-off:* a migration pass over existing labels; the 2026-08-30
 scrub already touched every one of them, so the blast radius is known.
 
+> **BUILT 2026-08-30.** `pii.identity.client_label()`, `label_discriminator()`
+> and `engagement_id_for_path()` are the canonical implementation;
+> `extract_telemetry.py` calls them and `knowledge-harvester.md` Core Rule 2
+> documents the agent-facing form. Four checks added to the
+> `engagement-identity` row, mutation-proven 10/10. The label is now
+> `[Client-{domain}-{REGION}-{year}-{disc}]`, `{disc}` being the first 4
+> characters of the opaque engagement ID — refused, not coerced, when the ID
+> is anything client-controlled.
+
 **D2 — The index lives in a sibling repo, not in this one and not encrypted here.**
 A small repository — `label → {client, engagement_ids, first_seen}` — with the VC
 team as its access list. *Alternative:* encrypt it in place (Option B). *Why:* the
@@ -183,6 +192,21 @@ scripts/
 scripts/extract_telemetry.py    MODIFIED — _client_label() gains the discriminator so
                                 telemetry and knowledge labels stay identical
 ```
+
+## Built So Far
+
+**D1 — done 2026-08-30.** Building it surfaced a second defect the note had not
+predicted: `extract_telemetry._client_label()` lower-cased BOTH domain and
+region, while every label committed in `knowledge/**` uses an UPPER-case region
+(`[Client-wealth-APAC-2025]`). So telemetry and knowledge had been emitting
+different strings for the same engagement, and the docstring's claim that it used
+"the same descriptive label the knowledge harvester uses" was not quite true.
+Both now go through one function, so they cannot drift again.
+
+The convention was also restated in seven places (CLAUDE.md ×2,
+knowledge-harvester, sync-telemetry, scan-engagement, extract-learnings,
+benchmark_evolution.md). All updated together — a convention documented in seven
+places and changed in one is how the original drift happened.
 
 ## Open Items
 

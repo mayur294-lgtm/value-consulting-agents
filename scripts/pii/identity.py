@@ -475,6 +475,105 @@ def engagement_root(engagement_id, project_dir=None) -> Path:
     return base / "engagements" / str(engagement_id)
 
 
+# --- knowledge labels ------------------------------------------------------
+#
+# D1 of `.design/knowledge-identity-resolution.md`. The descriptive label the
+# knowledge-harvester writes into `knowledge/**` used to be built from domain,
+# region and year and NOTHING else, which made it MANY-TO-ONE: two engagements
+# sharing a domain, a region and a year produced the identical string, their
+# benchmarks merged into one apparent peer, and nothing anywhere errored.
+#
+# Measured before the fix, in a single table of `EXTRACTION_REGISTRY.md`: three
+# distinct institutions all resolved to `[Client-retail-NAM-2026]`, and a fourth
+# pair collided in commercial/NAM/2026.
+#
+# WHY THE DISCRIMINATOR COMES FROM THE ENGAGEMENT ID AND NOT THE CLIENT NAME
+#   This is the whole design, and it is the same argument this module already
+#   makes about IDs themselves ("A hash of 'hdfc' would be an opaque-looking
+#   string that a dictionary attack reverses in milliseconds"). A discriminator
+#   hashed from the client's name would look anonymous and not be: the candidate
+#   set is a few thousand banks, so anyone who suspects a label brute-forces a
+#   confirmation in milliseconds — which would UNDO the anonymisation for every
+#   reader, not just for index holders.
+#
+#   `client_label()` therefore does not accept the client's name as a parameter
+#   at all. It cannot leak what it is never given; that is structural, not a
+#   convention someone has to remember.
+
+LABEL_DISCRIMINATOR_CHARS = 4
+_OPAQUE_ID_RE = re.compile(r"^[0-9a-f]{%d}$" % (ID_BYTES * 2))
+_LABEL_PART_RE = re.compile(r"[^A-Za-z0-9]+")
+
+
+def engagement_id_for_path(path) -> Optional[str]:
+    """The opaque engagement ID owning `path`, or None.
+
+    Matches a path SEGMENT that is an opaque ID and whose parent segment is
+    `engagements` — deliberately strict, so a random 8-hex directory somewhere
+    else in the tree cannot be mistaken for an engagement. A legacy
+    client-named directory returns None on purpose: see `client_label`, which
+    must not invent a discriminator it cannot derive honestly.
+    """
+    parts = Path(path).resolve().parts
+    for i, seg in enumerate(parts):
+        if i and parts[i - 1].lower() == "engagements" and _OPAQUE_ID_RE.match(seg):
+            return seg
+    return None
+
+
+def label_discriminator(engagement_id) -> Optional[str]:
+    """The label suffix for an engagement ID, or None when there isn't one.
+
+    Returns a prefix of the RANDOM opaque ID. Anything that is not a
+    well-formed opaque ID (None, a client slug, a legacy directory name)
+    returns None rather than being coerced — a discriminator derived from a
+    client-controlled string is worse than no discriminator at all.
+    """
+    if not engagement_id:
+        return None
+    eid = str(engagement_id).strip().lower()
+    if not _OPAQUE_ID_RE.match(eid):
+        return None
+    return eid[:LABEL_DISCRIMINATOR_CHARS]
+
+
+def _label_part(value, upper=False) -> str:
+    part = _LABEL_PART_RE.sub("", str(value or "").strip())
+    if not part:
+        return "unknown"
+    return part.upper() if upper else part.lower()
+
+
+def client_label(domain, region, year, engagement_id=None) -> str:
+    """Build the descriptive knowledge label for ONE engagement.
+
+    `[Client-{domain}-{REGION}-{year}-{disc}]`, e.g.
+    `[Client-retail-NAM-2026-a3f2]`.
+
+    NOTE the deliberate absence of a `client` parameter — see this section's
+    header. Callers pass the domain/region/year they already hold and the
+    engagement's opaque ID; the client's name is never an input.
+
+    When `engagement_id` is absent or is not an opaque ID, the label is
+    returned UNDISCRIMINATED and may therefore collide. Callers that can
+    surface a warning should — `scripts/extract_telemetry.py` does. Emitting
+    an honest, possibly-colliding label beats fabricating a discriminator from
+    a client-controlled string, and beats raising in a telemetry path whose
+    failure would be silent anyway.
+
+    Case follows the committed corpus in `knowledge/**`: domain lower, region
+    upper (`[Client-wealth-APAC-2025]`). `_client_label` in
+    `extract_telemetry.py` previously lower-cased BOTH, so telemetry and
+    knowledge disagreed on the region and the "same label as the harvester"
+    claim in its docstring was not quite true. One function now, so they
+    cannot drift again.
+    """
+    base = "[Client-%s-%s-%s" % (
+        _label_part(domain), _label_part(region, upper=True), _label_part(year)
+    )
+    disc = label_discriminator(engagement_id)
+    return base + ("-%s]" % disc if disc else "]")
+
 # --- recovery --------------------------------------------------------------
 
 def _client_name_from_profile(text: str) -> Optional[str]:

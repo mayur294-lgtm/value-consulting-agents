@@ -90,7 +90,8 @@ For each extractable file:
    Then read only the `.anon_<filename>` output it produces (following the context management protocol for large files) — this is the same tool and detection every other PII-sensitive surface in Cortex uses.
 
 2. **Relabel for the knowledge base** (mechanical formatting, not detection — the tool already found everything identifying):
-   - Collapse every `<CLIENT_N>` placeholder to the single descriptive label `[Client-{domain}-{region}-{year}]` — the same convention `.claude/agents/knowledge-harvester.md` Core Rule 2 uses — built from context you already have, never from the placeholder.
+   - Collapse every `<CLIENT_N>` placeholder to the single descriptive label `[Client-{domain}-{REGION}-{year}-{disc}]` — the same convention `.claude/agents/knowledge-harvester.md` Core Rule 2 uses — built from context you already have, never from the placeholder.
+     `{disc}` is the first 4 characters of the engagement's opaque 8-hex directory ID (`engagements/a3f2beef/...` -> `a3f2`). It is REQUIRED: without it two engagements sharing a domain, region and year produce the identical label and their data merges silently. Never derive it from the client's name; omit it and say so if the directory is not an opaque ID. See Core Rule 2 for the full rule.
    - Drop every `<PERSON_N>`, `<EMAIL_ADDRESS_N>`, or other entity placeholder entirely — do not write stakeholder identity into shared knowledge, opaque or not.
    - Replace specific financials with ranges: `$50M revenue` → `[$40-60M revenue range]` — a commercial-sensitivity practice, separate from PII anonymization; keep it.
    - Remove contract terms, pricing, specific dates

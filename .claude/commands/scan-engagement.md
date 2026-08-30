@@ -72,7 +72,7 @@ For each file/folder, assess:
 
 3. **Client Sensitivity**
    - REDACT: Contains client-specific financials, names, contracts — exclude from extraction entirely
-   - ANONYMIZE: Can be generalized with bank type/region — before extracting it, run the shared tool rather than generalizing by hand: `.claude/hooks/_resolve_python.sh scripts/anonymize_transcript.py --file <file> --engagement-dir <source_engagement_dir>`, then read only the `.anon_<filename>` output. If the file is later routed through `/extract-learnings`, that skill's Step 2 applies the descriptive `[Client-{domain}-{region}-{year}]` relabeling on top.
+   - ANONYMIZE: Can be generalized with bank type/region — before extracting it, run the shared tool rather than generalizing by hand: `.claude/hooks/_resolve_python.sh scripts/anonymize_transcript.py --file <file> --engagement-dir <source_engagement_dir>`, then read only the `.anon_<filename>` output. If the file is later routed through `/extract-learnings`, that skill's Step 2 applies the descriptive `[Client-{domain}-{REGION}-{year}-{disc}]` relabeling on top.
    - SAFE: Generic patterns, public benchmarks
 
 ### Step 4: Generate Inventory Report

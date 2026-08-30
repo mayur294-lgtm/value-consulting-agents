@@ -288,6 +288,107 @@ def _duplicate_engagement_refused_not_silently_recreated(root: Path) -> CheckRes
     ))
 
 
+
+# --- D1: knowledge-label discriminator -------------------------------------
+#
+# `.design/knowledge-identity-resolution.md` D1. The label written into
+# `knowledge/**` was `[Client-{domain}-{region}-{year}]` and nothing else,
+# which is MANY-TO-ONE: three institutions in one table of
+# EXTRACTION_REGISTRY.md all resolved to `[Client-retail-NAM-2026]`, merging
+# their benchmarks into one apparent peer with nothing raising.
+#
+# These four checks run `pii.identity` in a SUBPROCESS resolved through
+# `repo_root()`, not by importing it here — same reason the rest of this file
+# subprocesses: an import would bind the real module once and a `--mutate`
+# shadow would never be seen. See this module's header.
+
+
+def _identity_eval(expr: str) -> subprocess.CompletedProcess:
+    """Evaluate `expr` against the repo's (or the shadow's) pii.identity."""
+    return subprocess.run(
+        [sys.executable, "-c",
+         "import sys; sys.path.insert(0, %r)\n"
+         "from pii import identity as I\n"
+         "print(%s)" % (str(repo_root() / "scripts"), expr)],
+        capture_output=True, timeout=60,
+    )
+
+
+def _out(result) -> str:
+    return result.stdout.decode("utf-8", errors="replace").strip()
+
+
+def _label_discriminated_by_opaque_engagement_id() -> CheckResult:
+    """Two engagements sharing domain, region AND year must not collide. This
+    is the defect D1 exists for, stated as a test: same three inputs, two
+    different opaque IDs, two different labels."""
+    name = "label_discriminated_by_opaque_engagement_id"
+    r = _identity_eval(
+        "I.client_label('retail','NAM','2026','a3f2beef') + '|' + "
+        "I.client_label('retail','NAM','2026','deadbe01')")
+    out = _out(r)
+    parts = out.split("|") if "|" in out else []
+    ok = (
+        r.returncode == 0 and len(parts) == 2
+        and parts[0] != parts[1]
+        and parts[0].endswith("-a3f2]") and parts[1].endswith("-dead]")
+    )
+    return bool_check(name, ok, detail=f"rc={r.returncode} out={out!r}")
+
+
+def _label_discriminator_never_derived_from_client_name() -> CheckResult:
+    """The discriminator must come from the RANDOM opaque ID, never from the
+    client. A name-derived suffix looks anonymous and is not — the candidate
+    set is a few thousand banks, so it is brute-forced in milliseconds, which
+    would undo the anonymisation for every reader. Enforced two ways: the
+    function takes no client parameter at all (it cannot leak what it is never
+    given), and a client-shaped string offered as an ID is REFUSED rather than
+    coerced into a suffix."""
+    name = "label_discriminator_never_derived_from_client_name"
+    sig = _identity_eval("__import__('inspect').signature(I.client_label)")
+    slug = _identity_eval("repr(I.label_discriminator('zzzplaceholderbank'))")
+    initials = _identity_eval("repr(I.label_discriminator('ZPB'))")
+    sig_out, slug_out, ini_out = _out(sig), _out(slug), _out(initials)
+    ok = (
+        sig.returncode == 0 and slug.returncode == 0 and initials.returncode == 0
+        and "client" not in sig_out.lower().replace("client_label", "")
+        and slug_out == "None" and ini_out == "None"
+    )
+    return bool_check(name, ok, detail=(
+        f"signature={sig_out!r} slug_disc={slug_out!r} initials_disc={ini_out!r}"))
+
+
+def _label_well_formed_when_id_absent() -> CheckResult:
+    """No opaque ID (a legacy client-named directory) must still yield a
+    WELL-FORMED, name-free label — undiscriminated and therefore possibly
+    colliding, which the caller warns about. Emitting an honest colliding
+    label beats fabricating a discriminator; raising here would break a git
+    hook."""
+    name = "label_well_formed_when_id_absent"
+    r = _identity_eval("I.client_label('retail','NAM','2026', None)")
+    out = _out(r)
+    ok = (
+        r.returncode == 0
+        and out.startswith("[Client-") and out.endswith("]")
+        and out == "[Client-retail-NAM-2026]"
+    )
+    return bool_check(name, ok, detail=f"rc={r.returncode} out={out!r}")
+
+
+def _engagement_id_resolved_from_opaque_path_only() -> CheckResult:
+    """An opaque ID is only an engagement ID when it sits directly under
+    `engagements/`. A random 8-hex directory elsewhere in the tree must not be
+    mistaken for one, and a legacy client-named directory must resolve to None
+    rather than to something that merely looks plausible."""
+    name = "engagement_id_resolved_from_opaque_path_only"
+    real = _identity_eval("repr(I.engagement_id_for_path('/tmp/x/engagements/a3f2beef/2026-02_retail'))")
+    legacy = _identity_eval("repr(I.engagement_id_for_path('/tmp/x/engagements/zzzclientname/2026-02_retail'))")
+    elsewhere = _identity_eval("repr(I.engagement_id_for_path('/tmp/x/cache/a3f2beef/thing'))")
+    ro, lo, eo = _out(real), _out(legacy), _out(elsewhere)
+    ok = (real.returncode == 0 and ro == "'a3f2beef'" and lo == "None" and eo == "None")
+    return bool_check(name, ok, detail=f"opaque={ro!r} legacy={lo!r} elsewhere={eo!r}")
+
+
 def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained, ignores target
     script = _init_identity_script()
     finder = _find_engagement_script()
@@ -305,4 +406,8 @@ def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained
         _run_in_tmp(_find_engagement_resolves_partial_match),
         _run_in_tmp(_find_engagement_resolves_case_insensitive_match),
         _run_in_tmp(_duplicate_engagement_refused_not_silently_recreated),
+        _label_discriminated_by_opaque_engagement_id(),
+        _label_discriminator_never_derived_from_client_name(),
+        _label_well_formed_when_id_absent(),
+        _engagement_id_resolved_from_opaque_path_only(),
     ]
