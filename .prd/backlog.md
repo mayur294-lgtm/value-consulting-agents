@@ -228,3 +228,67 @@ same change.
   **The work:** (1) add a conversational-banking use-case block to each `knowledge/domains/*/use_cases.md`, phrased per domain rather than copy-pasted retail intents — the four modes read very differently for corporate/commercial than for retail; (2) add `knowledge/conversational_banking.md` to `usecase-designer`'s source list and give it a classification rule for capabilities that exist in the solution but not in the Product Directory CSV (today they fall through to "Custom"); (3) carry the file's own attribution discipline through — the BMO/Nedbank/First Financial figures are **customer-cited, not Cortex-validated**, and its "Acceptance criteria for Cortex agents producing Conversational Banking content" section (:361) is the rule set to enforce, so these must not become load-bearing ROI inputs.
 
   **Open before this is PRD-able:** confirm whether the intended source is `knowledge/conversational_banking.md` as it stands, or a newer use-case list that has not landed in the repo yet. If the latter, that list has to be committed first — the harness cannot gate against a source that only exists in a deck.
+
+## From the 2026-08-30 repo scrub — what was done, and what is deliberately left
+
+The prevention half of the exposure item above was executed across five commits.
+Measured across all tracked text files with `denylist.py` plus a widened
+institution list: **1,584 hits before, 138 after.** Scrubbed: `.prd/`,
+`.design/`, `docs/rollout/`, `knowledge/**`, the benchmark master CSV, the
+`web/` ontology graphs, and the agents/commands/templates/docs surface.
+Deleted: three raw client reports and 32 files of engagement validation runs.
+
+### DELIBERATE EXCEPTION — client slugs in code are not scrubbed
+
+- [x] **~120 hits remain in `scripts/`, `evals/rubrics/`, `tools/` and
+  `.claude/hooks/`, and this is intentional.** These are engineering examples and
+  regression cases, not disclosure-shaped prose: `identity.uncovered({"<slug>"},
+  {"<SLUG>"})` in `evals/rubrics/component/engagement_migration.py` is a
+  *reproduction of a real false-negative* the migration gate once produced, and
+  the surrounding comments explain which historical defect each one pins. Rewriting
+  them to synthetic slugs is possible but would (a) risk silently weakening
+  assertions whose whole value is that they encode a bug that actually happened,
+  and (b) detach the comments from the cases they document. **Decision: leave, and
+  record the reason here so the next audit does not re-litigate it.** If this is
+  ever revisited, the work is mechanical but must be done with `--mutate` proof on
+  every affected row, not by find/replace.
+
+### REMAINING ACTION — client deliverables still committed as BINARIES
+
+- [ ] **~12 client deliverable PDFs/XLSX are still tracked under `knowledge/`,
+  with the client named in the filename.** Business cases, ROI models, assessment
+  reports and Ignite engagement plans for eight or so institutions. The `tests/`
+  equivalents were deleted in this cycle; these were left because several sit in
+  `knowledge/methodologies/` where they may be serving as reference exemplars, and
+  that is a judgement about their usefulness, not about the exposure. The exposure
+  is not in doubt: **the filenames alone publish the client roster.** The other ~13
+  binaries in the same directories are internal Backbase material (battlecards,
+  product plan, POV, master template, SOP) and are fine.
+
+### THE BLIND SPOT THIS CYCLE FOUND — and what #223 must do about it
+
+- [ ] **Every text scan run in this cycle, including the ones written for it,
+  missed binaries entirely.** The sharpest single item found — four raw
+  discovery-call transcript PDFs, plus an evidence register naming six
+  identifiable individuals with roles and employer — was invisible to a check that
+  globs text extensions. The repo has 41 tracked binaries. **A FILENAME check
+  would have caught all four transcripts instantly and costs nothing.** `#223`
+  currently specifies content scanning of `knowledge/**`; it should gate
+  **filenames repo-wide** as well as content, and its scope must include `.prd/`,
+  `.design/`, `docs/`, `tests/` and `web/` — every surface that turned out to be
+  contaminated. A `.txt` extension was also missing from the first sweep, which is
+  where two of the three raw client reports were hiding.
+
+- [ ] **The term list is the binding constraint, and it cannot be completed from
+  inside the repo.** `denylist.py` resolves from `engagements/`, which is
+  gitignored — on the machine this scrub ran on it resolved **12 terms for one
+  client**, while the actual roster is 40+. The rest were found by eye, and the
+  single best inventory turned out to be the `Customer` column of the benchmark
+  master CSV. This is exactly why the check must resolve at RUN TIME on a machine
+  that has the engagements, and why `SKIPPED_NO_MAP` must be loud: a scrub done
+  from inside a clean clone is structurally incapable of being complete, and any
+  future green from this check on a map-less machine means nothing.
+
+- [ ] **`#223` itself is still unbuilt.** All eleven v8 tickets (#212-#224) remain
+  OPEN; "PRD v8 built" recorded that the tickets were created, not implemented.
+  Everything above is cleanup, which is the half that does not prevent recurrence.
