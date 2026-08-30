@@ -114,9 +114,15 @@ def discover(root: Path):
                directly, with no engagement subdirectory (bdo-apa, bdo-mh)
 
     `engagements/inputs` and `engagements/outputs` are shared legacy staging,
-    not clients — `denylist.SKIP_CLIENT_DIRS` already excludes them from every
-    deny-list scan, and they are excluded here for the same reason. They still
-    carry client names in their paths; that is reported, not migrated.
+    not clients — `denylist.SKIP_CLIENT_DIRS` excludes the DIRECTORIES
+    THEMSELVES from client-slug mining, and they are excluded here for the same
+    reason. They still carry client names in their paths; that is reported, not
+    migrated.
+
+    Their per-client SUBDIRECTORIES are no longer excluded from the deny-list:
+    since 2026-08-30 the resolver descends one level and reads each
+    subdirectory's documents (never its name). Before that they were skipped
+    wholesale and four real clients were on no deny-list at all.
     """
     base = root / "engagements"
     plans = []
@@ -416,8 +422,11 @@ def report(root: Path, steps, applying: bool):
         for d in legacy:
             children = sorted(c.name for c in d.iterdir() if c.is_dir())
             print("    engagements/%s/  (%s)" % (d.name, ", ".join(children) or "empty"))
-        print("    These carry client names in their paths and are excluded "
-              "from every deny-list scan (denylist.SKIP_CLIENT_DIRS).")
+        print("    These carry client names in their PATHS, which migrating "
+              "these directories is a separate decision about.")
+        print("    Their per-client subdirectories ARE covered by the deny-list "
+              "(the resolver reads their CLIENT_PROFILE.md; it does not mine "
+              "these directory names).")
         print("    Migrating them is a separate decision — they are shared "
               "staging, not engagements.")
         print("")

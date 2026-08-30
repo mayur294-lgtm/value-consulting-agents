@@ -431,3 +431,37 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
   instead — removing the descent takes the first to HARD-FAIL, and mining the
   directory names takes the second to HARD-FAIL with two legitimate queries denied.
   Treat their green as hand-verified evidence until the row is migrated wholesale.
+
+## From writing the seven engagement profiles (2026-08-30)
+
+- [x] **The engagement migration is UNBLOCKED.** Was 6-of-7 refused; now **all 7
+  pass the deny-list superset check**. Each engagement's `CLIENT_PROFILE.md` now
+  carries an "Identifier Forms (deny-list)" section recording the terms that
+  engagement already resolves to, so the terms survive the slug being replaced by
+  an opaque ID. Nothing was invented: the forms are what `_scan_client_dir`
+  already derives, written down rather than guessed. Every engagement's after-set
+  is a superset of its before-set plus the new opaque ID.
+
+  The profiles live under `engagements/`, gitignored — so this is TRUE OF ONE
+  MACHINE. Any other machine needs its own profiles before its migration will
+  pass. Re-run the dry run locally rather than trusting this entry.
+
+  Still requires a consultant to run `--apply`, and still deliberately so: it
+  moves live working directories, `engagements/` is gitignored, and there is no
+  git history to fall back on.
+
+- [ ] **The filename leak is 46 files, not the 3 first reported.** The first dry
+  run only reached the filename check for the single engagement that was not
+  refused. With all seven passing, the real count is **46 files across the seven**
+  carrying a client's name in the FILENAME — proposals, transcripts,
+  questionnaires and pitch decks. Renaming the directory does not touch any of
+  them, and `materialise_workspace` (#167) only neutralises them for PIPELINE
+  runs; an interactive Read still puts the name in the path envelope. This
+  enlarges the already-open filename item above with a measured number.
+
+- [ ] **`wsfs`'s unbalanced deny term is still produced, from its intake
+  document.** The profile added for it deliberately writes the long form as
+  SEPARATE balanced lines rather than one "Name (Longer Name)" phrase, so this
+  change does not feed the defect a second instance — but the original instance
+  remains, and it comes from a file this work did not touch. See the reopened
+  unbalanced-term entry above.
