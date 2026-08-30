@@ -180,8 +180,14 @@ ROOT = HERE.parent                              # cortex repo root
 # honest if the shadow carries the same tree the real run reads; without this the
 # check hard-failed inside every shadow with "no .prd/prd-v*.md in the repo".
 # It is planning markdown — small, and no bigger risk in a temp dir than on disk.
+# Entries may be NESTED (`knowledge/standards`), which is how a gating fixture
+# inside an otherwise-huge tree gets shadowed without copying the tree: the CTP
+# row gates on knowledge/standards/critical_thought_partner_protocol.md, and
+# `knowledge/` is ~250 MB while `knowledge/standards/` is ~256 KB. Matching is by
+# path PREFIX (see is_shadowed), not by first segment.
 SHADOW_SUBTREES: tuple[str, ...] = ("evals", ".claude", "scripts", "tools",
-                                     "templates", "presentations", ".prd")
+                                     "templates", "presentations", ".prd",
+                                     "knowledge/standards")
 
 # Small root-level files copied alongside, so a shadow run reads the same
 # config a real run does.
@@ -416,6 +422,28 @@ class WorkingTreeGuard:
                 + "\n  ".join(problems[:40]))
 
 
+
+def is_shadowed(rel) -> bool:
+    """Whether a repo-RELATIVE path lands inside the shadow.
+
+    The single definition of shadow membership. `evals/check_registry.py` calls
+    this rather than re-deriving it, so the preflight and the harness cannot
+    disagree about what is shadowed — the drift that #201 was about.
+
+    Prefix-based, because SHADOW_SUBTREES may contain nested entries; a
+    first-segment test would say `knowledge/standards/x.md` is unshadowed when
+    the harness copies it.
+    """
+    # NOT lstrip("./") — that strips a CHARACTER SET, so `.claude/...` would
+    # lose its leading dot and stop matching the `.claude` subtree.
+    s = str(rel).replace(os.sep, "/")
+    if s.startswith("./"):
+        s = s[2:]
+    if s in SHADOW_ROOT_FILES:
+        return True
+    return any(s == sub or s.startswith(sub + "/") for sub in SHADOW_SUBTREES)
+
+
 def _tree_digest(root: Path) -> dict[str, str]:
     """sha256 per file across the shadowed subtrees + the shadowed root files."""
     out: dict[str, str] = {}
@@ -515,8 +543,7 @@ def _resolve_mutable(root: Path, rel_or_abs: str) -> tuple[Path, Path]:
         raise MutationHarnessError(
             f"`{rel_or_abs}` resolves outside the repo ({real}) — refusing to mutate it")
     rel = real.relative_to(root)
-    top = rel.parts[0] if rel.parts else ""
-    if top not in SHADOW_SUBTREES and str(rel) not in SHADOW_ROOT_FILES:
+    if not is_shadowed(rel):
         raise MutationHarnessError(
             f"`{rel}` is not inside a shadowed subtree ({', '.join(SHADOW_SUBTREES)}). "
             f"The harness copies only those trees, so mutating this file would change "

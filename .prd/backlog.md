@@ -612,3 +612,11 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
 - [ ] **Binary CONTENT and archive INTERIORS are unchanged** by all of the above —
   see the earlier entry. Filenames being clean is not the same as the files being
   clean, and should not be reported as if it were.
+
+## From the PR #97 review (CTP governance + /critty)
+
+> Carried in on the 2026-08-30 merge of `feat/ctp-critty`. Both are that
+> PR's own review findings; neither is recorded anywhere else.
+
+- [ ] evals/registry.yaml:critty,critical-thought-partner — No negative/stripped fixture proves the checks discriminate; add a WITH/WITHOUT fixture pair (like roi-excel-generator) or an inline assertion that evaluate() on a stripped copy scores <0.80 (from PR #97 review)
+- [ ] CLAUDE.md:142 — CTP suppression summary drops "low confidence AND" from standard rule S4 ("Low confidence AND low impact"); the self-sufficient CLAUDE.md section applies a looser suppression rule than the standard (from PR #97 review)

@@ -1426,6 +1426,41 @@ components:
     evaluator: rubrics.component.moved_to_rubric_calibration
     threshold: 1.00
 
+  # critty (#95) — verifies `.claude/commands/critty.md` (tickets #93/#94's
+  # on-demand CTP escalation skill) force-loads the full protocol (with a
+  # named fallback), scopes/aligns before critiquing, hunts all five CTP
+  # functions without waiting for a trigger, splits proactive provenance into
+  # challengeable vs. unverifiable, emits the five-field challenge-register
+  # table, flags where independence would bite harder, and states what
+  # /critty does NOT do. Deterministic code checks only — no judge this cycle.
+  critty:
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.critty
+    input: .claude/commands/critty.md
+    code: [frontmatter_valid, protocol_load_step, fallback_when_absent, scope_target_step,
+           align_before_critique_step, five_functions_hunt, proactive_provenance_split,
+           challenge_register_table, independence_flag, not_do_section]
+
+  # critical-thought-partner (#95) — verifies the CTP STANDARD
+  # (knowledge/standards/critical_thought_partner_protocol.md, ticket #93) is
+  # structurally complete (governing principle, T1-T5 triggers, S1-S4
+  # suppression rules, the five functions, the five detection mechanisms, a
+  # worked example, both v1 limits) AND that CLAUDE.md is actually wired to
+  # it (core section heading, governance-table row, the "most turns need no
+  # challenge" framing, both v1 limits echoed in the core section).
+  # CLAUDE.md is resolved via rubrics.base.repo_root() — never a hardcoded
+  # path. Deterministic code checks only — no judge this cycle.
+  critical-thought-partner:
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.critical_thought_partner
+    input: knowledge/standards/critical_thought_partner_protocol.md
+    code: [governing_principle, governor_triggers_t1_t5, suppression_s1_s4, five_functions,
+           five_detection_mechanisms, worked_example, v1_limits_standard,
+           claude_md_core_section_heading, claude_md_governance_table_row,
+           claude_md_zero_challenge_framing, claude_md_v1_limits_in_core]
+
 # Deliverable-structural altitude (#188 — was `pipeline:`; same checks, honest
 # name). It lints the inter-agent structural contracts across a set of output
 # FILES that already exist on disk. It does NOT run orchestrate.py, does not

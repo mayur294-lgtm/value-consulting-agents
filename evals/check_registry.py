@@ -163,10 +163,12 @@ def _outside_shadow(path: str) -> str | None:
         return "<outside the repo>"
     if not rel.parts:
         return "<repo root>"
-    top = rel.parts[0]
-    if top in mutations.SHADOW_SUBTREES or str(rel) in mutations.SHADOW_ROOT_FILES:
+    # Delegated so the preflight and the harness share ONE definition of shadow
+    # membership; SHADOW_SUBTREES may contain nested entries, which a
+    # first-segment test would get wrong.
+    if mutations.is_shadowed(rel):
         return None
-    return top
+    return rel.parts[0]
 
 
 def _shadow_containment_error(path: str, where: str) -> str | None:
@@ -199,8 +201,10 @@ def _shadow_containment_error(path: str, where: str) -> str | None:
         f"subtrees, so this fixture is absent in every shadow: the gate goes vacuous "
         f"there, and this preflight — which `mutation-harness` runs from inside a "
         f"shadow — hard-errors, breaking that row's proof no matter which row owns "
-        f"the fixture. Fix: add '{top}' to SHADOW_SUBTREES in evals/mutations.py, "
-        f"or move the fixture under evals/goldens/."
+        f"the fixture. Fix: add the NARROWEST containing subtree to SHADOW_SUBTREES "
+        f"in evals/mutations.py (nested entries like 'knowledge/standards' are "
+        f"supported, so a huge tree need not be copied for one fixture), or move "
+        f"the fixture under evals/goldens/."
     )
 
 
