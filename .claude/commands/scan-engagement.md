@@ -17,7 +17,7 @@ Or provide a partial path like:
 
 All engagement folders are located under:
 ```
-/Users/mayur@backbase.com/Library/CloudStorage/GoogleDrive-mayur@backbase.com/Shared drives/Customer Advisory/Team Value Consulting/Team Value Consulting /03 - Engagements/
+~/Library/CloudStorage/GoogleDrive-<you>@backbase.com/Shared drives/Customer Advisory/Team Value Consulting/Team Value Consulting /03 - Engagements/
 ```
 
 ## Classification Process

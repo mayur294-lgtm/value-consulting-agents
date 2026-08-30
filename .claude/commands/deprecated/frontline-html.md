@@ -114,7 +114,7 @@ layers=[
 
 ```python
 import sys
-sys.path.insert(0, '/Users/mayur@backbase.com/Documents/cortex')
+sys.path.insert(0, '<cortex-repo-root>')
 from tools.frontline_2026_html import Frontline2026HTML
 
 h = Frontline2026HTML("Backbase — AI-Native Banking OS")

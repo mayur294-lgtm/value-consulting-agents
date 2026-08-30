@@ -128,7 +128,7 @@ These rules are already enforced by the `Frontline2026Presenter` class:
 
 ```python
 import sys
-sys.path.insert(0, '/Users/mayur@backbase.com/Documents/cortex')
+sys.path.insert(0, '<cortex-repo-root>')
 from tools.frontline_2026_presenter import Frontline2026Presenter
 
 p = Frontline2026Presenter()

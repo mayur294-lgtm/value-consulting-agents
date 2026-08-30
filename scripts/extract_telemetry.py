@@ -180,7 +180,13 @@ def extract_telemetry(journal_path: str) -> dict:
 
     payload = {
         'extracted_at': extracted_at,
-        'journal_path': journal_path,
+        # BASENAME ONLY. The full path contains the engagement directory, which
+        # is client-named until the migration (#225) runs — and this payload
+        # LEAVES THE MACHINE, synced to a shared GitHub issue by /sync-telemetry
+        # and the post-commit/pre-push hooks. #169 anonymised the `client` field
+        # and missed this one. The engagement is still identifiable from the
+        # anonymised client label and session_id already in this payload.
+        'journal_path': os.path.basename(journal_path),
         'session_id': extract_session_id(engagement_dir),
         'engagement': engagement_metadata,
         'telemetry_entries': extract_telemetry_blocks(content),

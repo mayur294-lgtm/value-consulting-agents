@@ -43,22 +43,22 @@ Run the Python orchestrator. It handles everything: Discovery → Block A (5 par
 
 **Interactive mode** (consultant checkpoints — use when user is actively working):
 ```bash
-cd /Users/mayur@backbase.com/Documents/cortex && CLAUDECODE= python3 scripts/orchestrate.py {engagement_dir}
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py {engagement_dir}
 ```
 
 **Non-interactive mode** (fully automated, no checkpoints):
 ```bash
-cd /Users/mayur@backbase.com/Documents/cortex && CLAUDECODE= python3 scripts/orchestrate.py --non-interactive {engagement_dir}
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --non-interactive {engagement_dir}
 ```
 
 **Express mode** (fewer checkpoints):
 ```bash
-cd /Users/mayur@backbase.com/Documents/cortex && CLAUDECODE= python3 scripts/orchestrate.py --express {engagement_dir}
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --express {engagement_dir}
 ```
 
 **Resume from a specific stage** (if pipeline was interrupted):
 ```bash
-cd /Users/mayur@backbase.com/Documents/cortex && CLAUDECODE= python3 scripts/orchestrate.py --resume-from {step} {engagement_dir}
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --resume-from {step} {engagement_dir}
 ```
 
 Valid resume steps: `discovery`, `block_a`, `roadmap`, `assembly`, `html`, `validate`

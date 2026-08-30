@@ -31,7 +31,7 @@ Checkpoints are auto-approved with summaries shown in output. The consultant can
 
 1. **Identify the engagement directory.** Look at the current conversation context for references to an engagement folder. The path should be under `engagements/` and contain an `inputs/` subdirectory with at least one `transcript_*.md` file and `engagement_intake.md`.
 
-2. **Resolve the path.** If the user provided a relative path, resolve it relative to the cortex project root: `/Users/mayur@backbase.com/Documents/cortex/`
+2. **Resolve the path.** If the user provided a relative path, resolve it relative to the cortex project root (the repo root — run every command from there)
 
 3. **Validate inputs exist.** Before running, check:
    - `<engagement_dir>/inputs/engagement_intake.md` exists
@@ -41,7 +41,7 @@ Checkpoints are auto-approved with summaries shown in output. The consultant can
 4. **Run the pipeline.** Execute:
 
 ```bash
-cd /Users/mayur@backbase.com/Documents/cortex && CLAUDECODE= python3 scripts/orchestrate.py --non-interactive <engagement_dir>
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --non-interactive <engagement_dir>
 ```
 
 The `CLAUDECODE=` prefix unsets the nesting restriction. The `--non-interactive` flag auto-approves checkpoints (required when running inside Claude Code since `input()` is not available).
