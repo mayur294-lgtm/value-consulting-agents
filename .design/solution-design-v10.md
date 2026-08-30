@@ -260,3 +260,80 @@ discovered at runtime.
    `CREDIT_CARD` where French loses it, so it exercises D4's non-core warning
    path differently. Cheap to include, and it proves the registry is genuinely
    dynamic rather than a two-case special case.
+
+---
+
+## Reconciliation against the 2026-08-30 session
+
+This spec was written 2026-08-28. A long privacy/merge session on 2026-08-30
+changed several of the files it plans against. Reconciled before `/bb-tickets`;
+**nothing here reopens a decision** — D1–D8 all stand, including D7's hold.
+
+### 1. #218 and #219 now carry stale check counts — correct before ticketing
+
+`mcp-query-guard` went from **17 to 19 checks** on 2026-08-30
+(`denies_client_from_staging_subdirectory`,
+`staging_directory_names_do_not_become_deny_terms` — the shared staging trees
+were skipped wholesale, so four real clients were on no deny-list at all).
+
+Consequences for the v8 tickets D7 sequences against:
+
+| Ticket | Says | Should say |
+| --- | --- | --- |
+| #218 | "existing **17** checks stay green, +2 new" | existing **19** stay green, +2 → **21** |
+| #219 | "author mutations for all **19**" | all **21** |
+
+D7's recommendation — fold the Unicode widening into #218 — is **unaffected and
+still right**. Only the arithmetic moved.
+
+`pii-anonymizer` is **19** today and this PRD's acceptance criteria says 19,
+which is correct. #222's "21" is a FORWARD number assuming #220/#221 land first
+and each add a check; it is not stale and should not be "corrected" to 19.
+
+### 2. The parity surface grew, which makes #218's "change both" instruction bite harder
+
+Both `scripts/pii/denylist.py` and `.claude/hooks/mcp-query-guard.py` changed on
+2026-08-30: the resolver now descends one level into `engagements/inputs|outputs`
+and reads per-client documents, and the hook gained a `_scan_one_dir()` helper to
+keep its hand-copied implementation identical.
+
+This spec's "the Unicode widening, hand-copied. NOTHING else changes" still holds
+for v10's own change — verified: `_PERSON_TOKEN_RE` is present in BOTH copies and
+still ASCII (`mcp-query-guard.py:364`). But `drift_check.py` now asserts parity
+across more surface than it did on 2026-08-28, so a widening applied to one copy
+and not the other fails louder and later. Change both in the same commit.
+
+### 3. Fifteen CLIENT_PROFILE.md files now exist and NONE has a language field
+
+On 2026-08-28 there was effectively one profile, unfilled. On 2026-08-30, 14 more
+were written — one per live engagement and one per staging client — to carry
+"Identifier Forms (deny-list)" through the opaque-ID migration.
+
+This spec adds a language field to `CLIENT_PROFILE.md` and an `init_engagement.sh
+--language` flag. The flag only helps NEW engagements; **every profile that
+exists today predates the field.** The parser therefore needs an explicit,
+documented default for an absent field rather than treating absence as an error
+or an empty language — and the default must be `en`, since that is what those
+15 engagements were actually scrubbed under.
+
+### 4. A capability this spec could not assume: SHADOW_SUBTREES now takes nested entries
+
+`evals/mutations.py` gained nested-subtree support and a single
+`is_shadowed()` definition shared with `check_registry.py` (forced by the CTP
+merge: its row gated on a `knowledge/` fixture that mutation shadows did not
+copy).
+
+Relevant here because this spec puts language packs in `knowledge/languages/`.
+If ANY v10 check takes a language pack as its `input:`, #201's shadow-containment
+check hard-errors the registry preflight — the fixture would be absent in every
+shadow. Before 2026-08-30 the only fixes were "move the fixture" or "copy all
+~250 MB of `knowledge/`". Now `knowledge/languages` can be added to
+SHADOW_SUBTREES on its own. The new French fixture is specified under
+`evals/goldens/`, which is already shadowed, so this bites only if a coverage
+check reads a pack directly.
+
+### 5. D7's hold still stands, unchanged
+
+All eleven v8 tickets (#212–#224) remain OPEN and unbuilt. Nothing on 2026-08-30
+advanced v8 itself; the session's work was the privacy scrub, the eval-gate
+merge, and CTP. The dependency this spec declares is intact.
