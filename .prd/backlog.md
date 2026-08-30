@@ -20,7 +20,7 @@ all checks green, awaiting a code-owner approval to reach `main`):
   tree (46 in the seven engagements + 86 in the shared staging trees), reversibly.
 - **Build-script output paths fixed** — no script recreates a client-named file.
 - **The engagement migration is unblocked** — all 7 pass their dry run. It has
-  NOT been run; that is a deliberate consultant step.
+  NOT been run; that is a deliberate consultant step, tracked as **#225**.
 - **D1 label discriminator built** (`identity.client_label`), mutation-proven.
 - **Eval rows authored** for three previously ungated agents, 11/11
   mutation-proven, and those agents then scrubbed.
@@ -146,7 +146,7 @@ governance hooks document fail-open and actually fail by RAISING;
 
 - [done v6] ~~**Sequencing: #167 must land before or with #168.**~~ — DONE. #167 landed first and #168 built on it. **But this note's live-data claim was the exact inverse of the truth, and #168 measured it before writing anything.** It said one specific engagement was the risk and "the other six engagements have filled profiles". Measured on all seven live directories: **only ONE of the seven has a CLIENT_PROFILE.md at all**, and even that one is unfilled (`- **Name:** [Full legal name]` → zero terms). Its identifier terms come from `inputs/engagement_intake.md`, which travels *inside* the engagement and survives migration — so that one is the only one that loses nothing. **The other six have no deny-list source file whatsoever**: no profile, no ENGAGEMENT_CONTEXT.md, no intake. Their entire client deny-list is the directory slug, and a rename-only migration would have zeroed it for six of seven live engagements while reporting success. The fix: `migrate_engagement_ids.sh` resolves the deny-list before and after every move and refuses unless the after-set still *matches* everything the before-set did, with `identity.render_client_profile()` writing the client's identifier forms into a CLIENT_PROFILE.md inside the opaque directory. `denylist.py` is untouched — `drift_check.py` still passes, so D14's hook parity holds (from #166, resolved in #168)
 
-- [ ] **ACTION — run the live engagement migration. UNBLOCKED 2026-08-30 — it now passes its own dry run; it just has not been RUN.** Was 6-of-7 refused for want of client names; each engagement now carries a CLIENT_PROFILE.md supplying them, and all 7 pass the deny-list superset check with zero filename warnings. The remaining step is a consultant running `--apply`, deliberately: it moves live working directories and `engagements/` is gitignored, so there is no git history to fall back on. Take a copy first. Original note follows — #168 shipped the tooling but all seven live directories are still client-named (two of them two engagements for the same client). Until this runs, `compose_prompt` still renders the client's name into every agent invocation, which is the whole leak D6 exists to close. It was deliberately deferred, not forgotten — `engagements/` is gitignored, so there is no git history to fall back on and the consultant wanted to choose the moment.
+- [ ] **ACTION — run the live engagement migration → tracked as #225. UNBLOCKED 2026-08-30 — it now passes its own dry run; it just has not been RUN.** *Filed as its own issue because #168 (the tooling) closes when PR #211 merges, at which point this action would have survived only as this backlog line — where it had already been deferred once.* Was 6-of-7 refused for want of client names; each engagement now carries a CLIENT_PROFILE.md supplying them, and all 7 pass the deny-list superset check with zero filename warnings. The remaining step is a consultant running `--apply`, deliberately: it moves live working directories and `engagements/` is gitignored, so there is no git history to fall back on. Take a copy first. Original note follows — #168 shipped the tooling but all seven live directories are still client-named (two of them two engagements for the same client). Until this runs, `compose_prompt` still renders the client's name into every agent invocation, which is the whole leak D6 exists to close. It was deliberately deferred, not forgotten — `engagements/` is gitignored, so there is no git history to fall back on and the consultant wanted to choose the moment.
 
   It needs each client's REAL legal name, because a slug is not a name: `bdo_apa` yields no prose deny-list terms at all, and migration refuses rather than guessing (title-casing it to "Bdo Apa" would put a wrong term on the deny-list while looking like it had solved the problem). Write them into a names file and rehearse first:
 
@@ -429,7 +429,7 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
 
 ### Blocked on the engagement migration — historical knowledge labels stay undiscriminated
 
-- [ ] **The ~200 labels already committed in `knowledge/**` cannot be given a D1
+- [ ] **Blocked on #225.** **The ~200 labels already committed in `knowledge/**` cannot be given a D1
   discriminator yet, because there is nothing to derive one FROM.** Measured
   2026-08-30: **zero** engagements have an opaque ID — all seven live directories
   are still client-named and `.engagement_map.json` does not exist on any machine
