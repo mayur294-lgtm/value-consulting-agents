@@ -465,3 +465,48 @@ Deleted: three raw client reports and 32 files of engagement validation runs.
   change does not feed the defect a second instance — but the original instance
   remains, and it comes from a file this work did not touch. See the reopened
   unbalanced-term entry above.
+
+## From the 2026-08-30 filename scrub
+
+- [x] **The 46 client-named FILENAMES are renamed — residual is 0.** Done with
+  `scripts/rename_engagement_files.py` (new; dry-run by default, `--revert`
+  undoes it). Verified: `migrate_engagement_ids.sh` now reports the filename
+  warning for ZERO engagements, all 7 still pass the deny-list superset check,
+  and all 46 renamed files were confirmed present afterwards.
+
+  It uses `migrate_engagements._client_named_files` as its definition of a leak,
+  deliberately — the tool that REPORTS a leak and the tool that FIXES it sharing
+  one definition is what stops a gap opening between the warning and the remedy.
+
+  Reversibility was the precondition for running it at all: `engagements/` is
+  gitignored, so there is no git history to recover from. `.filename_map.json`
+  (chmod 600, one per engagement) records old→new, and `--revert` restores BOTH
+  the filenames and the references that were rewritten with them. That second
+  half was a defect found by testing the round trip on a fixture rather than by
+  reading the code: reverting names alone left every journal entry citing a file
+  that no longer existed, which is worse than either end state.
+
+### What renaming did NOT fix, and must not be reported as fixed
+
+- [ ] **14 archives were renamed on the OUTSIDE only.** A `.zip` holding a
+  client-named `.html` still holds that name internally. The directory listing is
+  clean and whoever opens the archive still sees the client. Closing this means
+  repacking each archive with its inner file renamed — mechanical, but it
+  rewrites deliverables that may already have been sent, so it is a separate
+  decision.
+
+- [ ] **Two build scripts were renamed, but not their OUTPUT paths.** They still
+  write client-named `.pptx` files, so the next run recreates exactly what this
+  scrub removed. A rename that undoes itself on next use is not a fix; the output
+  paths in those scripts need editing, and they live inside an engagement rather
+  than in a component the harness gates.
+
+- [ ] **Binary CONTENT still carries the name.** `.pptx`, `.xlsx` and `.pdf`
+  deliverables have the client's name inside them — that was never in scope for a
+  filename tool, and is only worth recording so "the filename leak is closed" is
+  not read as "the engagement is scrubbed".
+
+- [ ] **`.filename_map.json` binds old filenames to new, so it carries client
+  identifiers.** Same trade as `.pii_mapping.json` and `.engagement_map.json`:
+  chmod 600, inside gitignored `engagements/`, never committed. Worth knowing it
+  travels with the engagement if the directory is later migrated or copied.
