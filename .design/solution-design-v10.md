@@ -250,6 +250,44 @@ English is the vacuous-scrubbing failure with extra steps. *Trade-off:* non-Lati
 source material stays manual. Stated in the PRD as out of scope, not
 discovered at runtime.
 
+**D10 — The hold narrows from "the v8 epic" to FOUR tickets, and they are not
+four of a kind.** *Decided 2026-08-30, superseding D7's "build is on hold until
+the v8 epic (#212–#223) is pushed".* D7 was right that every file this spec
+touches has an open v8 ticket, but it converted that into a dependency on the
+whole epic, which is stronger than the coupling justifies: #213–#217
+(output-naming), #219 (mcp-guard mutations), #223 (knowledge check) and #224
+(build order) touch nothing this spec plans against. Waiting on them would idle
+v10 behind unrelated work while the accented-name leak stays live.
+
+The four that do couple, and they couple differently — this distinction is the
+point of the decision, because treating them as one class produces the wrong
+build order:
+
+- **#220 and #221 — hard prerequisites.** Both change `engine.py`'s entity set,
+  and this spec's per-language coverage table is computed against it. D7 already
+  records the consequence: post-#221 the uncovered-under-`fr` set is
+  `{CREDIT_CARD, US_SSN}`, not the three the PRD names. Building v10's coverage
+  work first means computing a table that is wrong on landing.
+- **#218 — a FOLD, not a wait.** D7's own recommendation. It opens
+  `denylist.py`, `mcp-query-guard.py` and `drift_check.py` — exactly the three
+  files the Unicode widening touches. Doing them separately means establishing
+  `drift_check` parity twice on a hook that fails open. Sequencing v10 *after*
+  #218 gets the ordering right and the economics wrong.
+- **#222 — an ordering consideration, not a blocker.** It flips the
+  `pii-anonymizer` mutation ratchet, so v10's four new checks are *required* to
+  ship authored mutations if they land after it, and are DEBT if they land
+  before. That changes an obligation, not a possibility. And it is close to moot
+  here: this spec's own "gate-bites requirement (non-negotiable)" already demands
+  mutation proof for `client_redacted_in_non_english_document`, so v10 should
+  author mutations for its checks whichever side of #222 it lands on. Ordering
+  only decides whether #222 grows from 21 to 25.
+
+*Consequence for build order:* v10 can start once #220 and #221 land, with the
+Unicode widening folded into #218 rather than sequenced behind it. It does not
+wait for the output-naming cluster, #219, or #223. *Trade-off:* v10 and the
+remaining v8 tickets then run concurrently over `evals/registry.yaml`, so
+whichever lands second rebases its row edits — cheap, and cheaper than idling.
+
 ## Open Questions
 
 1. **Threshold for `verified`.** English scores 137/150 (91%). Setting the bar at
