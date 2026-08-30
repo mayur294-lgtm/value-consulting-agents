@@ -31,7 +31,7 @@ Revenue upside: 50 RMs × 15 additional clients each × $3,500 avg revenue/clien
 
 | Parameter | Conservative | Base | Aggressive | Confidence |
 |-----------|-------------|------|------------|------------|
-| Current admin time (% of RM day) | 40% | 50-55% | 60%+ | `[Industry]` — Goodbody, HNB discovery data |
+| Current admin time (% of RM day) | 40% | 50-55% | 60%+ | `[Industry]` — Goodbody, [Client-wealth-APAC-2025] discovery data |
 | Admin time reduction (with digital) | 25% | 35-40% | 50% | `[Industry]` — Backbase implementation benchmarks |
 | Annual loaded RM cost | $80K | $100-130K | $150K+ | `[Industry]` — varies by market; NAM $180-220K |
 | Additional clients per RM (freed capacity) | 10 | 15-25 | 40 | `[Estimated]` |
@@ -65,7 +65,7 @@ Example:
 
 | Parameter | Conservative | Base | Aggressive | Confidence |
 |-----------|-------------|------|------------|------------|
-| Current share of wallet | 25% | 30-40% | 45%+ | `[Industry]` — HNB analysis |
+| Current share of wallet | 25% | 30-40% | 45%+ | `[Industry]` — [Client-wealth-APAC-2025] analysis |
 | Share of wallet improvement | +3% | +5-8% | +10-15% | `[Estimated]` |
 | Average total investable assets (HNW) | $500K | $1-2M | $5M+ | `[Industry]` — segment dependent |
 | Fee rate (managed discretionary) | 50 bps | 65-85 bps | 100 bps | `[Industry]` |
@@ -140,8 +140,8 @@ Example:
 | Retail-to-wealth conversion improvement | +0.5% | +1-2% | +3% | `[Estimated]` |
 | Average initial AUM (banking cross-sell) | $100K | $200-350K | $500K+ | `[Estimated]` — segment dependent |
 | Fee rate on new wealth accounts | 50 bps | 65-85 bps | 100 bps | `[Industry]` |
-| Internal upgrade conversion (mass affluent to affluent) | 12% | 15-18% | 22% | `[Proxy]` — HNB: 15% base, 18% with digital |
-| Events/referral conversion uplift | +15% | +20-30% | +40% | `[Proxy]` — HNB prospecting data |
+| Internal upgrade conversion (mass affluent to affluent) | 12% | 15-18% | 22% | `[Proxy]` — [Client-wealth-APAC-2025]: 15% base, 18% with digital |
+| Events/referral conversion uplift | +15% | +20-30% | +40% | `[Proxy]` — [Client-wealth-APAC-2025] prospecting data |
 
 ### Backbase Enablers
 - Digital Engage: NBA engine identifies banking clients with wealth potential (excess deposits, life events)
@@ -183,7 +183,7 @@ Cost savings:
 | Target onboarding time (digital) | 7 days | 4-5 days | 2-3 days | `[Industry]` — Goodbody best-in-class: 4 days |
 | Application drop-off rate (current) | 30% | 35-45% | 50%+ | `[Industry]` — multi-client analysis |
 | Drop-off reduction (digital) | 10% | 15-20% | 25% | `[Estimated]` |
-| RM time per onboarding (manual) | 3 hrs | 4-5 hrs | 5+ hrs | `[Industry]` — HNB workshop data |
+| RM time per onboarding (manual) | 3 hrs | 4-5 hrs | 5+ hrs | `[Industry]` — [Client-wealth-APAC-2025] workshop data |
 | RM time per onboarding (digital) | 1.5 hrs | 1-1.5 hrs | <1 hr | `[Industry]` — Backbase target |
 
 ### Backbase Enablers
@@ -300,11 +300,11 @@ When building a wealth management ROI model, select levers based on the client's
 | $20B+ AUM | $25-80M | $50-150M+ |
 
 **Reference engagements:**
-- HNB Wealth (Sri Lanka, 13K clients, $1B+ AUM): $20-25M conservative 5-year value
+- [Client-wealth-APAC-2025] (Sri Lanka, 13K clients, $1B+ AUM): $20-25M conservative 5-year value
 - Tangerine/Scotiabank (Canada, 138K wealth clients, $7.3B AUM): $107M cumulative 5-year value
 - Goodbody (Ireland, HNW brokerage): 8x onboarding time reduction as primary lever
 
 ---
 
 *Last Updated: 2026-02-13*
-*Status: Production — ranges calibrated against Goodbody, HNB, Tangerine, and NAM wealth engagement data.*
+*Status: Production — ranges calibrated against Goodbody, [Client-wealth-APAC-2025], Tangerine, and NAM wealth engagement data.*

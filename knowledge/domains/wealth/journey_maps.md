@@ -140,7 +140,7 @@ Every journey should be mapped using swimlane diagrams that show:
 │               │   client       │                    │                 │   onboarding   │
 ├───────────────┼────────────────┼────────────────────┼─────────────────┼────────────┤
 │ RM            │ ○ Identifies   │ ○ Checks for       │ ○ Maintains     │ ○ Makes formal│
-│               │   prospect via │   existing HNB     │   relationship  │   pitch       │
+│               │   prospect via │   existing group   │   relationship  │   pitch       │
 │               │   network      │   relationship     │   30-60 min/mo  │   1-2 hours   │
 │               │   5-10 min     │   5-10 min         │                 │              │
 │               │ ○ Collects     │ ○ Reaches out for  │                 │ ○ Initiates  │
@@ -290,8 +290,8 @@ Every journey should be mapped using swimlane diagrams that show:
 ├───────────────┼─────────┼────────────────┼─────────────┼───────────────┼────────────────┤
 │ BACK OFFICE / │          │ ○ BO provides │             │               │                │
 │ SUBSIDIARIES  │          │   statements  │             │               │                │
-│ (HNB Securities,│        │ ○ Securities  │             │               │                │
-│ HNB Assurance) │         │   advisor for │             │               │                │
+│ (Securities arm,│        │ ○ Securities  │             │               │                │
+│ Assurance arm) │         │   advisor for │             │               │                │
 │               │          │   stock data  │             │               │                │
 │               │          │ ○ Assurance   │             │               │                │
 │               │          │   for insurance│            │               │                │
@@ -336,10 +336,10 @@ Every journey should be mapped using swimlane diagrams that show:
 | **Transaction Support** | ⬤ Medium | ⬤ High | ⬤ High | Paper mandates, manual checks | Re-sign forms, no visibility | CAP-W-WI-03, CAP-W-PO-01 |
 | **Reporting & Statements** | ⬤ High | ⬤ Medium | ⬤ Medium | Manual data pull from multiple systems | Fragmented statements | CAP-W-DI-01, CAP-W-DI-02, CAP-W-CE-01 |
 | **Meeting Prep** | ⬤ High | ⬤ Low | ⬤ Low | Significant data collection time | Quality varies by prep time | CAP-W-AI-04, CAP-W-DI-01, CAP-W-CE-02 |
-| **Internal Coordination** | ⬤ High | ⬤ Medium | ⬤ Medium | Chase teams via calls/emails | Slow, opaque processes | CAP-W-PO-01, CAP-W-EE-01 |
+| **Internal Coordination** | ⬤ High | ⬤ Medium | ⬤ Medium | Chasing teams via calls/emails | Slow, opaque processes | CAP-W-PO-01, CAP-W-EE-01 |
 | **Compliance & Consent** | ⬤ Medium | ⬤ High | ⬤ High | Paper-heavy KYC, repeated rework | Long doc lists, re-submissions | CAP-W-RC-01, CAP-W-CL-01, CAP-W-AI-03 |
-| **Wealth Planning / Fact-Finding** | ⬤ High | ⬤ Low | ⬤ Low | 90 min per session (Schroders: 4.5x benchmark) | Manual data entry, delayed plans | CAP-W-WI-02, CAP-W-AI-04, CAP-W-DI-01 |
-| **Reasons-Why / Annual Review Letters** | ⬤ High | ⬤ Medium | ⬤ Low | 3 hrs per letter (Schroders: 6x benchmark) | Long wait for documentation | CAP-W-AI-04, CAP-W-AI-02, CAP-W-DI-01 |
+| **Wealth Planning / Fact-Finding** | ⬤ High | ⬤ Low | ⬤ Low | 90 min per session ([Client-wealth-EMEA-2024]: 4.5x benchmark) | Manual data entry, delayed plans | CAP-W-WI-02, CAP-W-AI-04, CAP-W-DI-01 |
+| **Reasons-Why / Annual Review Letters** | ⬤ High | ⬤ Medium | ⬤ Low | 3 hrs per letter ([Client-wealth-EMEA-2024]: 6x benchmark) | Long wait for documentation | CAP-W-AI-04, CAP-W-AI-02, CAP-W-DI-01 |
 | **Corporate Actions Processing** | ⬤ Low | ⬤ Medium | ⬤ High | Manual booking, cross-system reconciliation | No visibility on corporate events | CAP-W-WI-03, CAP-W-PO-01, CAP-W-DI-01 |
 | **Trade Execution & Settlement** | ⬤ Medium | ⬤ Medium | ⬤ High | Manual order entry, reconciliation | No self-service trading | CAP-W-WI-03, CAP-W-CE-01 |
 | **Suitability Reassessment** | ⬤ Medium | ⬤ High | ⬤ Medium | Periodic review manual and paper-based | Repeated questionnaires | CAP-W-RC-01, CAP-W-CL-02, CAP-W-AI-03 |
@@ -351,7 +351,7 @@ Legend: ⬤ High = Significant time/friction | ⬤ Medium = Moderate | ⬤ Low =
 
 These benchmarks from actual Backbase engagements provide reference points for capability assessment:
 
-| Metric | Schroders (UK) | ISPWM (Luxembourg) | HNB (Sri Lanka) | Goodbody (Ireland) |
+| Metric | [Client-wealth-EMEA-2024] (UK) | ISPWM (Luxembourg) | [Client-wealth-APAC-2025] (Sri Lanka) | Goodbody (Ireland) |
 |--------|---------------|--------------------|-----------------|--------------------|
 | RM effort per onboarding | 4.5 hrs (benchmark: 1 hr) | N/A | 3 hrs | N/A |
 | Ops effort per onboarding | 5 hrs (benchmark: 1 hr) | N/A | 1 hr | N/A |

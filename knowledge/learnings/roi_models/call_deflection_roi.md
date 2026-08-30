@@ -68,7 +68,7 @@ ACW_Savings = Non_Deflected_Calls_Remaining × AHT_Reduction_% × Current_AHT_mi
 - **Calls deflected:** ~133,800/year
 - **Annual savings (moderate scenario):** $1,370K/year
 - **Confidence:** High
-- **Notes:** 14× call density gap vs. BECU peer (233/1K members vs. 16.7/1K/month). Key sizing input: BECU operates at 16.7 calls/1K members — distance from client's 233/1K sets the theoretical ceiling for improvement. MyState Bank (Backbase) achieved −50% CC call volume as directional comparator.
+- **Notes:** 14× call density gap vs. [Client-creditunion-NAM-2025] peer (233/1K members vs. 16.7/1K/month). Key sizing input: [Client-creditunion-NAM-2025] operates at 16.7 calls/1K members — distance from client's 233/1K sets the theoretical ceiling for improvement. [Client-retail-ANZ-2025] (Backbase) achieved −50% CC call volume as directional comparator.
 
 ---
 
@@ -81,7 +81,7 @@ ACW_Savings = Non_Deflected_Calls_Remaining × AHT_Reduction_% × Current_AHT_mi
 | Variable Cost Per Call (NAM CU direct) | — | $5–8 | <$3 | $6.40 |
 | Fully-Loaded Cost Per Call (NAM CU) | — | $20–30 | — | ~$25 |
 | Calls per 1,000 Members / month | >200 | 50–150 | <20 | 233 |
-| BECU peer CU calls / 1K members / month | — | — | 16.7 | [Industry/BECU] |
+| [Client-creditunion-NAM-2025] peer CU calls / 1K members / month | — | — | 16.7 | [Industry/[Client-creditunion-NAM-2025]] |
 | Agent Annual Attrition | >25% | 15–25% | <15% | 31% |
 | After-Call Work (minutes) | >3 min | 2–3 min | <1 min | 2.8 min |
 | Screens Per Agent Per Call | >5 | 3–5 | 1–2 | 5 |
@@ -108,6 +108,6 @@ ACW_Savings = Non_Deflected_Calls_Remaining × AHT_Reduction_% × Current_AHT_mi
 
 ---
 
-*Source: [Synthetic-Test-NAM-2026] (NAM CU, 2026) | BECU (NAM, 2025–2026) | MyState Bank (Backbase, APAC)*
+*Source: [Synthetic-Test-NAM-2026] (NAM CU, 2026) | [Client-creditunion-NAM-2025] (NAM, 2025–2026) | [Client-retail-ANZ-2025] (Backbase, APAC)*
 *Confidence: HIGH for cost/volume benchmarks; MEDIUM for deflection rate improvement estimates*
 *Created: 2026-07-28 | Auto-harvested by knowledge-harvester (pipeline mode)*

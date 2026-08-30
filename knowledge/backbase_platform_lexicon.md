@@ -436,8 +436,8 @@ Grand Central provides unified connectivity to:
 | Engagement | Investment | Benefits (5yr) | ROI | Payback |
 |------------|------------|----------------|-----|---------|
 | ISPWM (Luxembourg) | €9.1M | €28.5M | 224% | ~2 years |
-| Schroders (UK) | ~£19M | £153M | 8x | ~1.5 years |
-| HNB Wealth (Sri Lanka) | $9.6M | $25.7M | 167% | ~2 years |
+| [Client-wealth-EMEA-2024] (UK) | ~£19M | £153M | 8x | ~1.5 years |
+| [Client-wealth-APAC-2025] (Sri Lanka) | $9.6M | $25.7M | 167% | ~2 years |
 | Seabank (Philippines) | $11M | $18.3M | 66% | 1.7 years |
 
 ---

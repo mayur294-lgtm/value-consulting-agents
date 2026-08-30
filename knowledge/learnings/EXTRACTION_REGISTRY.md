@@ -36,7 +36,7 @@ This registry tracks all knowledge extracted from past engagements into the agen
 | Peoples Group | NAM | Regional | Retail | Value Assessment | 2026-02-05 | Pending |
 | Fortis Bank | NAM | Regional | Retail | Value Assessment | 2026-02-05 | Pending |
 | TD Bank Cards | NAM | Universal | Cards | Pre-Sales | 2026-02-05 | Extracted |
-| UFCU | NAM | Credit Union | Retail | Full Engagement | 2026-02-05 | Extracted |
+| [Client-creditunion-NAM-2022] | NAM | Credit Union | Retail | Full Engagement | 2026-02-05 | Extracted |
 | CIMB Niaga | APAC (Indonesia) | Universal | Retail | Pre-Workshop | 2026-02-05 | Template Only |
 | Sandy Spring | NAM | Regional | Retail | Pre-Sales | 2026-02-05 | Template Only |
 | Credins Bank | EMEA (Albania) | Retail Bank | Retail | Pre-Workshop | 2026-02-06 | Extracted |
@@ -54,13 +54,13 @@ This registry tracks all knowledge extracted from past engagements into the agen
 | Banesco | LATAM | Retail | roi_logic, channel_costs | 2026-02-05 | latam_channel_costs.md |
 | I&M Kenya | Africa | Multi-Country | implementation, team_sizing | 2026-02-05 | multi-country-rollout.md |
 | Banco Caja Social | LATAM | Lending | roi_logic, lending_model | 2026-02-05 | digital_lending_roi.md |
-| HNB Sri Lanka | APAC | Wealth | full_assessment, journey, roi, persona | 2026-02-05 | Updated wealth/benchmarks.md, wealth/journey_maps.md |
-| MyState Australia | APAC | Retail | journey_assessment, business_case, process_flows | 2026-02-05 | Updated retail/benchmarks.md |
+| [Client-wealth-APAC-2025] | APAC | Wealth | full_assessment, journey, roi, persona | 2026-02-05 | Updated wealth/benchmarks.md, wealth/journey_maps.md |
+| [Client-retail-ANZ-2025] | APAC | Retail | journey_assessment, business_case, process_flows | 2026-02-05 | Updated retail/benchmarks.md |
 | BOK Financial | NAM | Commercial/Treasury | discovery_transcript, pain_points, security, integration | 2026-02-05 | Updated commercial/benchmarks.md |
-| BECU | NAM | Credit Union/Retail | client_questionnaire, business_case, digital_metrics, call_center | 2026-02-05 | Updated retail/benchmarks.md |
-| WSFS Bank | NAM | Regional/Consumer+Business | client_questionnaire, digital_metrics, pain_points, business_banking | 2026-02-05 | Updated retail/benchmarks.md |
+| [Client-creditunion-NAM-2025] | NAM | Credit Union/Retail | client_questionnaire, business_case, digital_metrics, call_center | 2026-02-05 | Updated retail/benchmarks.md |
+| [Client-retail-NAM-2025] | NAM | Regional/Consumer+Business | client_questionnaire, digital_metrics, pain_points, business_banking | 2026-02-05 | Updated retail/benchmarks.md |
 | Tangerine/Scotiabank | NAM (Canada) | Wealth | roi_model, business_case, advisor_productivity | 2026-02-05 | Updated wealth/benchmarks.md |
-| UFCU | NAM | Credit Union | transaction_costs, channel_economics, fee_income | 2026-02-05 | Updated retail/benchmarks.md |
+| [Client-creditunion-NAM-2022] | NAM | Credit Union | transaction_costs, channel_economics, fee_income | 2026-02-05 | Updated retail/benchmarks.md |
 | TD Bank Cards | NAM | Cards | credit_card_economics, revenue_per_account | 2026-02-05 | Updated retail/benchmarks.md |
 | 2026-07_retail_assessment [SYNTHETIC — QUARANTINED 2026-08-18] | NAM | Retail/CU | roi_models (formula patterns only) | 2026-07-28 | KEPT (marked synthetic): roi_models/call_deflection_roi.md, card_controls_roi.md, dispute_management_roi.md, digital_onboarding_completion_roi.md — formulas reusable, all [Synthetic-Test] values fabricated. QUARANTINED to tests/engagements/harborlight_synthetic/2026-07_retail_assessment/outputs/knowledge_harvest/: retail benchmarks (+22 entries, reverted from retail/benchmarks.md), journey map, pain-point patterns, digital_lending NAM data points (reverted append) |
 
@@ -73,12 +73,12 @@ This registry tracks all knowledge extracted from past engagements into the agen
 | Domain | File Updated | Data Added | Source Engagement |
 |--------|--------------|------------|-------------------|
 | Wealth | `knowledge/domains/wealth/benchmarks.md` | Entitlements & Operational Efficiency, RM Admin Load, IT Support, Platform Consolidation | TriState Capital (NAM) |
-| Wealth | `knowledge/domains/wealth/benchmarks.md` | HNB Sri Lanka ROI Value Levers (APAC) | HNB Wealth Management |
+| Wealth | `knowledge/domains/wealth/benchmarks.md` | [Client-wealth-APAC-2025] ROI Value Levers (APAC) | [Client-wealth-APAC-2025] |
 | Wealth | `knowledge/domains/wealth/benchmarks.md` | Tangerine Digital Wealth ROI Model (Canada) | Tangerine/Scotiabank |
 | Retail | `knowledge/domains/retail/benchmarks.md` | LATAM Channel Costs, Transaction CAGR, Consumer Lending Economics | Banesco (LATAM), Banco Caja Social (LATAM) |
-| Retail | `knowledge/domains/retail/benchmarks.md` | Australia/APAC Onboarding Benchmarks, Business Case Value | MyState Australia |
-| Retail | `knowledge/domains/retail/benchmarks.md` | NAM Credit Union Benchmarks (BECU, WSFS) | BECU, WSFS Bank |
-| Retail | `knowledge/domains/retail/benchmarks.md` | Credit Union Transaction Economics (UFCU) | UFCU |
+| Retail | `knowledge/domains/retail/benchmarks.md` | Australia/APAC Onboarding Benchmarks, Business Case Value | [Client-retail-ANZ-2025] |
+| Retail | `knowledge/domains/retail/benchmarks.md` | NAM Credit Union Benchmarks ([Client-creditunion-NAM-2025], [Client-retail-NAM-2025]) | [Client-creditunion-NAM-2025], [Client-retail-NAM-2025] |
+| Retail | `knowledge/domains/retail/benchmarks.md` | Credit Union Transaction Economics ([Client-creditunion-NAM-2022]) | [Client-creditunion-NAM-2022] |
 | Retail | `knowledge/domains/retail/benchmarks.md` | Credit Card Economics (TD Bank) | TD Bank Cards |
 | Retail | `knowledge/domains/retail/benchmarks.md` | EMEA Retail Benchmarks (Albania) - Digital adoption 7%, Churn 13.5% | Credins Bank |
 | Retail | `knowledge/domains/retail/benchmarks.md` | Africa Retail Benchmarks (East Africa) - Multi-country rollout, RM efficiency | I&M Kenya |

@@ -1,7 +1,7 @@
 # IGNITE AGENT 0: ENGAGEMENT PLAN
 # ═══════════════════════════════════════════════════════════════════════════════
 # Backbase Value Consulting - Ignite Engagement Plan Generator
-# Version: 2.0 (refined from BECU, UFCU, NFCU, and Ignite Overview samples)
+# Version: 2.0 (refined from three credit-union engagement plans and Ignite Overview samples)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 ## AGENT IDENTITY
@@ -491,7 +491,7 @@ FOCUS OVERLAY:
   "Post Ignite Lab Follow ups"
 ```
 
-This framework frames the entire Ignite Lab structure and helps clients understand the engagement's logical flow. It appears in 3 real engagement plans (BECU, UFCU, NFCU) as a key visual.
+This framework frames the entire Ignite Lab structure and helps clients understand the engagement's logical flow. It appears in 3 real credit-union engagement plans as a key visual.
 
 **HTML Implementation Notes:**
 - Use CSS flexbox or grid with `transform: translateY()` to create the staircase effect

@@ -74,7 +74,7 @@ Fraud_Avoidance = Total_Card_Fraud_Losses × Member_Reportable_Fraction × Freez
 
 | Metric | With In-App Controls | Without Controls | Source |
 |--------|----------------------|-----------------|--------|
-| Residual card management calls | <5% of card call category | 100% reach live agents | BECU peer [Industry] |
+| Residual card management calls | <5% of card call category | 100% reach live agents | [Client-creditunion-NAM-2025] peer [Industry] |
 | Member-reportable fraud reduction | 35–45% | Baseline | Javelin Strategy 2024 [Industry] |
 | Attributable fraud % (no freeze) | — | 10–20% of total fraud | [Synthetic-Test-NAM-2026] [Synthetic-Test] |
 | Monthly card control calls (absent) | ~0 | 6,800/month | [Synthetic-Test-NAM-2026] [Synthetic-Test] |
@@ -104,6 +104,6 @@ Card controls deployment qualifies as a **Phase 1 quick win** when:
 
 ---
 
-*Source: [Synthetic-Test-NAM-2026] (NAM CU, 2026) | BECU (NAM peer) | Javelin Strategy 2024*
+*Source: [Synthetic-Test-NAM-2026] (NAM CU, 2026) | [Client-creditunion-NAM-2025] (NAM peer) | Javelin Strategy 2024*
 *Confidence: MEDIUM — binary deployment, limited Backbase CU card controls case study comparator*
 *Created: 2026-07-28 | Auto-harvested by knowledge-harvester (pipeline mode)*

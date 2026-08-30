@@ -31,7 +31,7 @@ Questions it answers:
 - How do we know? (What is the evidence?)
 - Who told us, or where did we measure it?
 
-**Good:** "BECU has a 26.1% digital application abandonment rate (source: Questionnaire, 2025). Of 197,738 digital app starts, only 73.9% complete. Members drop off at manual form entry and ID upload steps requiring 20 min processing across 3-4 disconnected systems."
+**Good:** "[Client-creditunion-NAM-2025] has a 26.1% digital application abandonment rate (source: Questionnaire, 2025). Of 197,738 digital app starts, only 73.9% complete. Members drop off at manual form entry and ID upload steps requiring 20 min processing across 3-4 disconnected systems."
 
 **Bad:** "Banks typically have high abandonment rates in digital onboarding."
 
@@ -54,7 +54,7 @@ The measurable metric that moves as a result of the operational change. This is 
 
 The target state must be derived, not asserted:
 - **Gap-based method:** (Best-in-Class − Client Current) / Best-in-Class × Capture Rate (typically 0.30-0.50)
-- **Client-stated target:** The bank has declared a specific target (e.g., "BECU target: 5 min processing, 61K hrs/year saved")
+- **Client-stated target:** The bank has declared a specific target (e.g., "[Client-creditunion-NAM-2025] target: 5 min processing, 61K hrs/year saved")
 - **Benchmark range:** Published industry data with source citation
 
 Questions it answers:
@@ -83,13 +83,13 @@ Questions it answers:
 
 ## Real Examples
 
-### Retail Banking — BECU (Credit Union, USA, 1.5M members)
+### Retail Banking — [Client-creditunion-NAM-2025] (Credit Union, USA, 1.5M members)
 
 **Lever: Debit Card Activation Uplift**
 
 | Link | Content |
 |------|---------|
-| **Root Driver** | Debit cards issued to new members but not activated — lost interchange revenue. Current activation rate not at best-in-class. Source: BECU Questionnaire + annual report data. |
+| **Root Driver** | Debit cards issued to new members but not activated — lost interchange revenue. Current activation rate not at best-in-class. Source: [Client-creditunion-NAM-2025] Questionnaire + annual report data. |
 | **Operational Change** | Backbase Self-Service Card Management (RB.15): instant digital card issuance (virtual card in <60 seconds), push-to-wallet provisioning for Apple Pay/Google Pay (RB.15.3), real-time card activation via mobile app. Replaces mailed physical card with activation delay. |
 | **Volume/Rate Impact** | 25% activation uplift on baseline annual debit cards issued. Source: BCG Digital Banking Study 2023 + Mercator Advisory Debit Issuer Study 2024 — instant digital issuance drives 20-30% uplift in activation rates for institutions >$10B. |
 | **Financial Impact** | Additional activated cards × $126 interchange revenue per active card per year. Source: Pulse Debit Study 2024. |
@@ -101,10 +101,10 @@ Questions it answers:
 | **Root Driver** | 290,000 card disputes/year processed at 10 min avg (source: Sarah Slonsky, VP Servicing Ops, Mar 2026). Only 25% achieve STP via current Quavo system. Remaining 75% require manual processing across multiple systems. 98 FTE in servicing operations. |
 | **Operational Change** | Backbase Digital Assist with integrated dispute workflow: automated dispute categorization, pre-populated forms from transaction data, straight-through processing for standard dispute types (provisional credit, chargeback initiation), exception-only routing for complex cases. |
 | **Volume/Rate Impact** | STP rate improvement from 25% to target (scenario-dependent). Volume deflection rate applied to 290K annual disputes. Time reduction on remaining manual disputes. Dual-dimension: volume deflection + time-per-task reduction. |
-| **Financial Impact** | (Deflected volume × baseline cost per task) + (remaining volume × time reduction × $46.15/hr blended rate). Source: BECU Questionnaire blended FTE rate. |
+| **Financial Impact** | (Deflected volume × baseline cost per task) + (remaining volume × time reduction × $46.15/hr blended rate). Source: [Client-creditunion-NAM-2025] Questionnaire blended FTE rate. |
 
 
-### Digital Investing — NFIS (Navy Federal Investment Services, USA)
+### Digital Investing — [Client-investing-NAM-2026] (USA)
 
 **Lever: DI-to-FA Tier Upgrade — Automated Threshold Routing**
 
@@ -119,19 +119,19 @@ Questions it answers:
 
 | Link | Content |
 |------|---------|
-| **Root Driver** | NFIS members hold investment assets at competitor platforms (Schwab, Fidelity, Vanguard). No streamlined in-app mechanism to initiate asset transfers. Current ACAT process is paper-based and advisor-mediated, creating friction that discourages consolidation. |
+| **Root Driver** | [Client-investing-NAM-2026] members hold investment assets at competitor platforms (Schwab, Fidelity, Vanguard). No streamlined in-app mechanism to initiate asset transfers. Current ACAT process is paper-based and advisor-mediated, creating friction that discourages consolidation. |
 | **Operational Change** | Backbase Digital Onboarding with guided ACAT flow: in-app firm lookup, real-time transfer status tracking, digital authorization (no physical forms). Proactive "consolidate your accounts" campaigns via Digital Engage. Integration with clearing firm for seamless transfers. |
 | **Volume/Rate Impact** | ACAT initiation volume increases. Completion rate improves from current baseline. Average transfer AUM × improved completion rate. **Delayed curve: 0 impact in Y1-Y2** (platform must be established before consolidation campaigns launch), starts at 30% in Y3, ramps to 95% by Y5. |
 | **Financial Impact** | Transferred AUM × blended fee rate = $114K annual steady-state (Y5). Cumulative: $216.6K over 5 years. Smaller lever but compounds as transferred AUM is sticky. |
 
 
-### Wealth Management — HNB (Hatton National Bank, Sri Lanka, 19K wealth clients)
+### Wealth Management — [Client-wealth-APAC-2025] (19K wealth clients)
 
 **Lever: Cross-Subsidiary Revenue Synergy**
 
 | Link | Content |
 |------|---------|
-| **Root Driver** | HNB has 4 subsidiaries on completely separate systems: banking, investment bank, securities, insurance. RMs cannot see a client's full relationship — getting a consolidated view requires calling different departments, taking ~1 hour per client. Inter-company referrals happen via ad-hoc calls and emails. Source: Transcript S3-4, S5-6. |
+| **Root Driver** | [Client-wealth-APAC-2025] has 4 subsidiaries on completely separate systems: banking, investment bank, securities, insurance. RMs cannot see a client's full relationship — getting a consolidated view requires calling different departments, taking ~1 hour per client. Inter-company referrals happen via ad-hoc calls and emails. Source: Transcript S3-4, S5-6. |
 | **Operational Change** | Backbase Digital Assist provides unified RM workspace with Client 360 across all 4 entities via API integrations (Grand Central). RM sees banking balances, investment positions, securities holdings, and insurance policies in one screen. Automated referral routing replaces manual calls. |
 | **Volume/Rate Impact** | 3% AUM uplift from improved cross-sell across entities. On $1.82B total wealth AUM. Conservative estimate given 4 separate entities currently fully siloed. Source: Estimate — validated against wealth cross-sell benchmarks (5-8% typical for unified platforms). |
 | **Financial Impact** | $1.82B × 3% uplift × 1.0% blended revenue rate on AUM = $546K incremental annual revenue. Source: Client data — wealth revenue $18.15M / $1.82B AUM = ~1.0% blended rate. |
@@ -185,7 +185,7 @@ A lever passes review when every link is present and survives scrutiny:
 | **Missing operational change** | "Digital onboarding → $500K revenue uplift" — what specifically changes? | Add the HOW: which capability, what process changes, why it produces the impact |
 | **Ungrounded volume/rate** | "30% improvement in conversion" — says who? | Add derivation: gap-based calc with cited best-in-class, or client target with source |
 | **Double-counting** | Retention lever AND cross-sell lever both claiming revenue from the same retained customers | Check: does removing one lever change the other's calculation? If yes, they're interdependent — note it |
-| **Wrong level of abstraction** | "Customer Servicing" as a single lever | Break into channel-specific or task-specific sub-levers with their own four-link chains (see BECU back office: 5 task categories, each sized independently) |
+| **Wrong level of abstraction** | "Customer Servicing" as a single lever | Break into channel-specific or task-specific sub-levers with their own four-link chains (see [Client-creditunion-NAM-2025] back office: 5 task categories, each sized independently) |
 | **Assumed root driver** | "High call center volume is typical for banks this size" | Find the actual evidence: questionnaire data, transcript quote, annual report figure |
 
 ---
@@ -222,10 +222,10 @@ Levers map to the Backbase customer lifecycle flywheel, but a single lever can s
 | **Retain** | Churn reduction, retention campaigns, competitive defense | Servicing cost reduction, compliance automation |
 | **Operating Model** | Time to market (revenue acceleration) | IT rationalization, platform consolidation, managed hosting |
 
-Some levers span stages — tag them accordingly (e.g., NFIS "Advisor Referral Pipeline" is "Acquire → Expand").
+Some levers span stages — tag them accordingly (e.g., [Client-investing-NAM-2026] "Advisor Referral Pipeline" is "Acquire → Expand").
 
 ---
 
 *Status: DRAFT — requires validation with consulting team*
 *Created: 2026-04-03*
-*Sources: BECU ROI Model v7 (Raghu-validated), NFIS ROI v5, HNB roi_config_calibrated.json, SeABank roi_config.json*
+*Sources: [Client-creditunion-NAM-2025] ROI Model v7 (Raghu-validated), [Client-investing-NAM-2026] ROI v5, [Client-wealth-APAC-2025] roi_config_calibrated.json, SeABank roi_config.json*

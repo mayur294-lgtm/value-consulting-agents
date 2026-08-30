@@ -111,6 +111,6 @@ When a client has an active NCUA/OCC/FCA exam scheduled, add this framing:
 
 ---
 
-*Source: [Synthetic-Test-NAM-2026] (NAM CU, 2026) | MyState Bank (Backbase, APAC — case management reference)*
-*Confidence: MEDIUM — structured intake benchmarks from industry research; MyState Bank directional reference*
+*Source: [Synthetic-Test-NAM-2026] (NAM CU, 2026) | [Client-retail-ANZ-2025] (Backbase, APAC — case management reference)*
+*Confidence: MEDIUM — structured intake benchmarks from industry research; [Client-retail-ANZ-2025] directional reference*
 *Created: 2026-07-28 | Auto-harvested by knowledge-harvester (pipeline mode)*

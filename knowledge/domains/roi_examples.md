@@ -70,7 +70,7 @@ This document provides reference ROI models from actual Backbase engagements, de
 
 ---
 
-## Example 2: HNB Wealth Management (Sri Lanka)
+## Example 2: [Client-wealth-APAC-2025] (Sri Lanka)
 
 **Engagement Date:** December 2024
 **Region:** South Asia
@@ -368,7 +368,7 @@ The model includes three scenarios with the "Moderate" case as the base:
 
 ## Example 5: Wealth Management — RM Productivity & Share of Wallet Focus
 
-**Region:** Composite (based on HNB Sri Lanka + Goodbody Ireland patterns)
+**Region:** Composite (based on [Client-wealth-APAC-2025] + Goodbody Ireland patterns)
 **Segment:** Wealth Management
 **Primary Focus:** RM Productivity, Share of Wallet, Product Penetration
 **Reference Files:** `knowledge/learnings/roi_models/wealth_entitlements_roi.md`, `knowledge/MSB - RB ROI Assessment.xlsx` (methodology), `knowledge/domains/investing/roi_levers.md`

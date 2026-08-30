@@ -31,8 +31,8 @@ Example:
 | Parameter | Conservative | Base | Aggressive | Confidence |
 |-----------|-------------|------|------------|------------|
 | Digital leakage reduction | 10% | 15-20% | 25-30% | `[Industry]` — Backbase benchmarks: 50-97% pre-digital, <50% post |
-| Funding rate improvement | +10% | +15-25% | +30% | `[Proxy]` — range from 12% (WSFS) to 100% (Pichincha) |
-| Average new CASA balance | $3,000 | $4,500-5,200 | $8,000 | `[Industry]` — UFCU/BECU reference data |
+| Funding rate improvement | +10% | +15-25% | +30% | `[Proxy]` — range from 12% ([Client-retail-NAM-2025]) to 100% (Pichincha) |
+| Average new CASA balance | $3,000 | $4,500-5,200 | $8,000 | `[Industry]` — [Client-creditunion-NAM-2022]/[Client-creditunion-NAM-2025] reference data |
 | NII margin on deposits | 2.0% | 2.5-3.0% | 3.5% | `[Industry]` — varies by rate environment |
 | Onboarding time reduction | 50% | 60-75% | 80% | `[Industry]` — 30+ min branch to <15 min digital |
 
@@ -114,7 +114,7 @@ Example:
 | Revenue per additional product | $150 | $300-500 | $800 | `[Proxy]` — deposit NII + fee income blend |
 | NBA campaign conversion rate | 2% | 5-8% | 12% | `[Estimated]` |
 | Digital channel cross-sell rate vs. branch | 1.5x | 2-3x | 4x | `[Proxy]` — digital enables always-on offers |
-| Products per customer (target) | 1.5 | 1.8-2.0 | 2.5+ | `[Industry]` — BECU 2.3, Sandy Spring 1.95, CIH 3.2 |
+| Products per customer (target) | 1.5 | 1.8-2.0 | 2.5+ | `[Industry]` — [Client-creditunion-NAM-2025] 2.3, Sandy Spring 1.95, CIH 3.2 |
 
 ### Backbase Enablers
 - Digital Engage: Next-Best-Action engine, contextual product recommendations
@@ -128,7 +128,7 @@ Example:
 
 **What it is:** Reducing customer attrition through superior digital experience, proactive engagement, and multi-product stickiness — protecting the existing revenue base.
 
-**Why it matters:** Retail banking attrition ranges from 1.3% (I&M Kenya) to 21% (WSFS). Losing a customer means losing their entire lifetime value — $600-1,200/year for retail. A 1% retention improvement on a 200K customer base protects $1.2-2.4M in annual revenue.
+**Why it matters:** Retail banking attrition ranges from 1.3% (I&M Kenya) to 21% ([Client-retail-NAM-2025]). Losing a customer means losing their entire lifetime value — $600-1,200/year for retail. A 1% retention improvement on a 200K customer base protects $1.2-2.4M in annual revenue.
 
 ### Calculation
 
@@ -148,10 +148,10 @@ Example:
 | Parameter | Conservative | Base | Aggressive | Confidence |
 |-----------|-------------|------|------------|------------|
 | Retention improvement | 1% | 2-3% | 5% | `[Proxy]` — multi-product retention uplift |
-| Annual revenue per customer | $500 | $700-1,000 | $1,200 | `[Industry]` — WSFS CLV: $732-1,173 by segment |
+| Annual revenue per customer | $500 | $700-1,000 | $1,200 | `[Industry]` — [Client-retail-NAM-2025] CLV: $732-1,173 by segment |
 | Multi-product retention uplift vs. single | +10% | +15-20% | +25% | `[Estimated]` |
 | Digital-engaged churn reduction | 15% | 25-35% | 40% | `[Proxy]` — digitally active customers churn less |
-| Current attrition rate (typical) | 5% | 10-15% | 20%+ | `[Industry]` — I&M 1.3%, Credins 13.5%, WSFS 21% |
+| Current attrition rate (typical) | 5% | 10-15% | 20%+ | `[Industry]` — I&M 1.3%, Credins 13.5%, [Client-retail-NAM-2025] 21% |
 
 ### Backbase Enablers
 - Digital Engage: Proactive retention campaigns, dormancy detection, re-engagement flows
@@ -226,10 +226,10 @@ Example (LATAM):
 | Parameter | Conservative | Base | Aggressive | Confidence |
 |-----------|-------------|------|------------|------------|
 | Call center deflection rate | 20% | 30-40% | 50-60% | `[Industry]` — Backbase benchmark: 20-60% range |
-| Cost per call (NAM) | $5.00 | $6.00-8.00 | $12.00 | `[Industry]` — BECU: $25/hr, 6-7 min AHT |
+| Cost per call (NAM) | $5.00 | $6.00-8.00 | $12.00 | `[Industry]` — [Client-creditunion-NAM-2025]: $25/hr, 6-7 min AHT |
 | Cost per call (LATAM) | $2.50 | $3.00-4.00 | $5.00 | `[Industry]` — Banesco Bolivia benchmark |
-| Digital-related call % | 15% | 20-25% | 30% | `[Industry]` — BECU: 5K digital calls/25K total = 20% |
-| Average handle time | 5 min | 6-7 min | 10 min | `[Industry]` — I&M 5 min, BECU 6-7 min, WSFS 7:21 |
+| Digital-related call % | 15% | 20-25% | 30% | `[Industry]` — [Client-creditunion-NAM-2025]: 5K digital calls/25K total = 20% |
+| Average handle time | 5 min | 6-7 min | 10 min | `[Industry]` — I&M 5 min, [Client-creditunion-NAM-2025] 6-7 min, [Client-retail-NAM-2025] 7:21 |
 | Self-service adoption (routine tasks) | 40% | 50-65% | 75-90% | `[Industry]` — Backbase benchmark data |
 
 ### Backbase Enablers
@@ -272,7 +272,7 @@ Total: $371,250
 | Internal handoffs reduced | 1 | 2-3 | 4 | `[Industry]` — from 3-5 handoffs to 1-2 |
 | Auto ID validation improvement | +20% | +30-40% | +50% | `[Industry]` — range 0% (ABK) to 72% (Tech CU) |
 | Back-office FTE productivity gain | 15% | 25-35% | 45% | `[Proxy]` — fewer manual exceptions |
-| Branch processing time reduction | 40% | 50-65% | 75% | `[Industry]` — MyState: 30-35 min to 10-15 min target |
+| Branch processing time reduction | 40% | 50-65% | 75% | `[Industry]` — [Client-retail-ANZ-2025]: 30-35 min to 10-15 min target |
 
 ### Backbase Enablers
 - Flow Foundation: STP orchestration, automated decisioning, exception-only routing
@@ -314,4 +314,4 @@ When building a retail banking ROI model, select levers based on the client's st
 ---
 
 *Last Updated: 2026-02-13*
-*Status: Production — benchmarks sourced from Backbase Consulting Playbook (15+ banks), Banesco Bolivia (2025), Banco Caja Social (2025), MyState (2025), BECU (2025-2026), WSFS (2025), UFCU (2022), Credins (2025), I&M Kenya (2025).*
+*Status: Production — benchmarks sourced from Backbase Consulting Playbook (15+ banks), Banesco Bolivia (2025), Banco Caja Social (2025), [Client-retail-ANZ-2025] (2025), [Client-creditunion-NAM-2025] (2025-2026), [Client-retail-NAM-2025] (2025), [Client-creditunion-NAM-2022] (2022), Credins (2025), I&M Kenya (2025).*
