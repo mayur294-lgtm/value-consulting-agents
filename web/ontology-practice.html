@@ -115,7 +115,7 @@ n('c_james','consultant','James T.','consultant',{region:'APAC',deals:'3',domain
 n('c_erik','consultant','Erik S.','consultant',{region:'Nordics',deals:'2',domains:'Retail, Wealth'});
 
 // ── CLIENTS ────────────────────────────────
-n('cl_nfcu','client','Navy Federal CU','client',{industry:'Credit Union',geography:'North America',assets:'$170B+',members:'15M+',tech:'Pershing, FIS',domain:'Investing'});
+n('cl_nfcu','client','Client B CU','client',{industry:'Credit Union',geography:'North America',assets:'$170B+',members:'15M+',tech:'Pershing, FIS',domain:'Investing'});
 n('cl_sfcu','client','SchoolsFirst FCU','client',{industry:'Credit Union',geography:'North America',assets:'$28B',members:'1.3M',tech:'Symitar, Snowflake',domain:'Retail'});
 n('cl_aib','client','Allied Irish Banks','client',{industry:'Retail Bank',geography:'EMEA',assets:'$95B',tech:'Temenos T24, SAP',domain:'Retail & SME'});
 n('cl_mashreq','client','Mashreq Bank','client',{industry:'Commercial Bank',geography:'MEA',assets:'$45B',tech:'Finastra, Oracle',domain:'Corporate'});
@@ -123,11 +123,11 @@ n('cl_santander','client','Santander Chile','client',{industry:'Retail Bank',geo
 n('cl_dbs','client','DBS Bank','client',{industry:'Digital Bank',geography:'APAC',assets:'$400B+',tech:'In-house, AWS',domain:'Wealth'});
 n('cl_nordea','client','Nordea','client',{industry:'Universal Bank',geography:'Nordics',assets:'$600B+',tech:'Core Nordic, Salesforce',domain:'Retail & Wealth'});
 n('cl_pentagon','client','Pentagon FCU','client',{industry:'Credit Union',geography:'North America',assets:'$35B',tech:'Pershing, Fiserv',domain:'Investing'});
-n('cl_becu','client','BECU','client',{industry:'Credit Union',geography:'North America',assets:'$30B',tech:'Symitar, Custom',domain:'Investing'});
+n('cl_becu','client','CLIENT-C','client',{industry:'Credit Union',geography:'North America',assets:'$30B',tech:'Symitar, Custom',domain:'Investing'});
 n('cl_firsttech','client','First Tech FCU','client',{industry:'Credit Union',geography:'North America',assets:'$17B',tech:'Pershing, Custom CRM',domain:'Investing'});
 
 // ── ENGAGEMENTS ────────────────────────────
-n('e_nfis','engagement','NFIS Wealth Assessment','engagement',{type:'Value Assessment',domain:'Investing',stage:'Why Change',deal:'$2.8M',status:'Delivery',started:'2026-02',workshops:'6'});
+n('e_nfis','engagement','CLIENT-A Wealth Assessment','engagement',{type:'Value Assessment',domain:'Investing',stage:'Why Change',deal:'$2.8M',status:'Delivery',started:'2026-02',workshops:'6'});
 n('e_sfcu','engagement','SchoolsFirst CLO','engagement',{type:'Ignite Inspire',domain:'Retail',stage:'Why Change',deal:'$1.4M',status:'Workshop',started:'2026-03',workshops:'4'});
 n('e_aib','engagement','AIB Retail Assessment','engagement',{type:'Detailed Assessment',domain:'Retail & SME',stage:'Why Now',deal:'$3.2M',status:'Discovery',started:'2026-03',workshops:'3 (planned 6)'});
 n('e_mashreq','engagement','Mashreq Commercial','engagement',{type:'Hybrid',domain:'Corporate',stage:'Why Invest',deal:'$1.8M',status:'Proposal',started:'2026-02',workshops:'4'});
@@ -135,20 +135,20 @@ n('e_santander','engagement','Santander Retail','engagement',{type:'TBD (Prospec
 n('e_dbs','engagement','DBS Multi-Country','engagement',{type:'Multi-Country Rollout',domain:'Wealth',stage:'Why Change',deal:'$4.5M',status:'Discovery',started:'2026-03',workshops:'2 (planned 8)'});
 n('e_nordea','engagement','Nordea Transformation','engagement',{type:'Full Transformation',domain:'Retail & Wealth',stage:'Why Invest',deal:'$5.2M',status:'Closed Won',started:'2026-01',workshops:'5'});
 n('e_pentagon','engagement','Pentagon Wealth Assessment','engagement',{type:'Value Assessment',domain:'Investing',stage:'Why Change',deal:'$2.1M',status:'Closed Won',started:'2025-09',workshops:'5'});
-n('e_becu','engagement','BECU Investment Review','engagement',{type:'Value Assessment',domain:'Investing',stage:'Why Now',deal:'$1.8M→$3.2M',status:'Expanded',started:'2025-11',workshops:'3→5'});
+n('e_becu','engagement','CLIENT-C Investment Review','engagement',{type:'Value Assessment',domain:'Investing',stage:'Why Now',deal:'$1.8M→$3.2M',status:'Expanded',started:'2025-11',workshops:'3→5'});
 n('e_firsttech','engagement','First Tech DI Assessment','engagement',{type:'Value Assessment',domain:'Investing',stage:'Why Change',deal:'$1.5M',status:'Closed Won',started:'2025-10',workshops:'4'});
 
 // ── WORKSHOPS (key ones per engagement) ────
-// NFIS
-n('w_nfis_1','workshop','NFIS: Strategic Alignment','workshop',{date:'2026-02-12',status:'Completed',key:'CDO aligned on Unified Frontline. CTO skeptical.'});
-n('w_nfis_2','workshop','NFIS: Capability Assessment','workshop',{date:'2026-02-18',status:'Completed',key:'Mirror moment: 1.8 vs 2.8 self-assessment'});
-n('w_nfis_3','workshop','NFIS: Executive Readout','workshop',{date:'2026-03-05',status:'Completed',key:'CFO approved. Decision: proceed Phase 1.'});
+// CLIENT-A
+n('w_nfis_1','workshop','CLIENT-A: Strategic Alignment','workshop',{date:'2026-02-12',status:'Completed',key:'CDO aligned on Unified Frontline. CTO skeptical.'});
+n('w_nfis_2','workshop','CLIENT-A: Capability Assessment','workshop',{date:'2026-02-18',status:'Completed',key:'Mirror moment: 1.8 vs 2.8 self-assessment'});
+n('w_nfis_3','workshop','CLIENT-A: Executive Readout','workshop',{date:'2026-03-05',status:'Completed',key:'CFO approved. Decision: proceed Phase 1.'});
 // Pentagon
 n('w_pent_1','workshop','Pentagon: Capability Assessment','workshop',{date:'2025-09-15',status:'Completed',key:'Activation gap: 45% dormant accounts'});
 n('w_pent_2','workshop','Pentagon: Architecture','workshop',{date:'2025-09-22',status:'Completed',key:'Pershing integration pattern established'});
-// BECU
-n('w_becu_1','workshop','BECU: CX Deep Dive','workshop',{date:'2025-11-10',status:'Completed',key:'$12M revenue gap discovered. CFO attended.'});
-n('w_becu_2','workshop','BECU: Capability + ROI','workshop',{date:'2025-11-18',status:'Completed',key:'Combined session — CFO co-created ROI model'});
+// CLIENT-C
+n('w_becu_1','workshop','CLIENT-C: CX Deep Dive','workshop',{date:'2025-11-10',status:'Completed',key:'$12M revenue gap discovered. CFO attended.'});
+n('w_becu_2','workshop','CLIENT-C: Capability + ROI','workshop',{date:'2025-11-18',status:'Completed',key:'Combined session — CFO co-created ROI model'});
 // First Tech
 n('w_ft_1','workshop','First Tech: Capability Assessment','workshop',{date:'2025-10-08',status:'Completed',key:'Multi-vendor data silos. Unified Member Truth resonated.'});
 // AIB
@@ -164,15 +164,15 @@ n('w_dbs_1','workshop','DBS: Strategic Alignment (Group)','workshop',{date:'2026
 n('w_nord_1','workshop','Nordea: Use Case Validation','workshop',{date:'2026-01-20',status:'Completed',key:'Digital onboarding chosen as lighthouse'});
 
 // ── KEY DISCOVERIES (shared across engagements) ────
-n('d_activation_nfis','discovery','NFIS: 50% never funded','discovery',{severity:'Critical',client:'Navy Federal'});
+n('d_activation_nfis','discovery','CLIENT-A: 50% never funded','discovery',{severity:'Critical',client:'Client B'});
 n('d_activation_pent','discovery','Pentagon: 45% dormant','discovery',{severity:'Critical',client:'Pentagon FCU'});
-n('d_activation_becu','discovery','BECU: 38% inactive','discovery',{severity:'Critical',client:'BECU'});
+n('d_activation_becu','discovery','CLIENT-C: 38% inactive','discovery',{severity:'Critical',client:'CLIENT-C'});
 n('d_activation_ft','discovery','First Tech: 42% unfunded','discovery',{severity:'Critical',client:'First Tech'});
 n('d_activation_sfcu','discovery','SFCU: 9-month activation dip','discovery',{severity:'High',client:'SchoolsFirst'});
 
-n('d_referral_nfis','discovery','NFIS: 51% referrals cold','discovery',{severity:'High',client:'Navy Federal'});
+n('d_referral_nfis','discovery','CLIENT-A: 51% referrals cold','discovery',{severity:'High',client:'Client B'});
 n('d_referral_pent','discovery','Pentagon: 48% referrals cold','discovery',{severity:'High',client:'Pentagon FCU'});
-n('d_referral_becu','discovery','BECU: 44% referrals cold','discovery',{severity:'High',client:'BECU'});
+n('d_referral_becu','discovery','CLIENT-C: 44% referrals cold','discovery',{severity:'High',client:'CLIENT-C'});
 
 n('d_channel_aib','discovery','AIB: 70% digital→branch','discovery',{severity:'High',client:'Allied Irish Banks'});
 n('d_channel_sfcu','discovery','SFCU: Channel disconnect','discovery',{severity:'High',client:'SchoolsFirst'});
@@ -181,10 +181,10 @@ n('d_channel_nord','discovery','Nordea: 4 portals, no unity','discovery',{severi
 n('d_legacy_aib','discovery','AIB: Temenos batch-only','discovery',{severity:'Critical',client:'Allied Irish Banks'});
 n('d_legacy_mash','discovery','Mashreq: Finastra rigidity','discovery',{severity:'Critical',client:'Mashreq'});
 
-n('d_revenue_becu','discovery','BECU: $12M revenue gap','discovery',{severity:'Critical',client:'BECU'});
-n('d_awareness_nfis','discovery','NFIS: 36% member awareness','discovery',{severity:'Critical',client:'Navy Federal'});
+n('d_revenue_becu','discovery','CLIENT-C: $12M revenue gap','discovery',{severity:'Critical',client:'CLIENT-C'});
+n('d_awareness_nfis','discovery','CLIENT-A: 36% member awareness','discovery',{severity:'Critical',client:'Client B'});
 
-n('d_data_nfis','discovery','NFIS: NFCU/NFIS data siloed','discovery',{severity:'High',client:'Navy Federal'});
+n('d_data_nfis','discovery','CLIENT-A: CLIENT-B/CLIENT-A data siloed','discovery',{severity:'High',client:'Client B'});
 n('d_data_ft','discovery','First Tech: Multi-vendor silos','discovery',{severity:'High',client:'First Tech'});
 n('d_data_dbs','discovery','DBS: Country-level data isolation','discovery',{severity:'High',client:'DBS'});
 
@@ -203,9 +203,9 @@ n('uct_dashboard','usecase','UC: Unified Dashboard','usecase',{type:'Template',d
 n('uct_selfservice','usecase','UC: Self-Service Portal','usecase',{type:'Template',domain:'Retail/SME',used_in:'4 engagements',avg_effort:'12-16 weeks'});
 
 // ── OUTCOMES ──────────────────────────────
-n('o_nfis','outcome','NFIS: Reached Negotiation','outcome',{type:'reached_negotiation',deal:'$2.8M',days:'23 days',date:'2026-03-05'});
+n('o_nfis','outcome','CLIENT-A: Reached Negotiation','outcome',{type:'reached_negotiation',deal:'$2.8M',days:'23 days',date:'2026-03-05'});
 n('o_pentagon','outcome','Pentagon: Closed Won','outcome',{type:'closed_won',deal:'$2.1M',days:'45 days',date:'2025-10-30'});
-n('o_becu','outcome','BECU: Expanded','outcome',{type:'expanded',deal:'$1.8M → $3.2M',days:'38 days',date:'2025-12-20'});
+n('o_becu','outcome','CLIENT-C: Expanded','outcome',{type:'expanded',deal:'$1.8M → $3.2M',days:'38 days',date:'2025-12-20'});
 n('o_firsttech','outcome','First Tech: Closed Won','outcome',{type:'closed_won',deal:'$1.5M',days:'52 days',date:'2025-12-01'});
 n('o_nordea','outcome','Nordea: Closed Won','outcome',{type:'closed_won',deal:'$5.2M',days:'60 days',date:'2026-02-28'});
 n('o_aib','outcome','AIB: In Progress','outcome',{type:'in_progress',deal:'$3.2M',days:'28+ days',date:'ongoing'});
