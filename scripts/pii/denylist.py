@@ -106,6 +106,19 @@ GENERIC_STOPLIST = {
     "united", "community", "citizens", "state", "financial", "savings",
     "trust", "group", "holdings", "capital", "mutual", "valley", "coast",
     "pacific", "fund", "society",
+    # Domain / segment / lifecycle vocabulary. Engagement directories are
+    # routinely named for these ("engagements/retail", "engagements/demo"), and
+    # the joined-slug path put them straight onto the deny-list — so an Infobank
+    # query containing the word "retail" came back "your search names the
+    # client". Measured 2026-08-30. That is a FALSE ALARM, not a leak, and a
+    # control that fires on ordinary product questions is one people learn to
+    # route around. The PII engine already keeps a generic-banking allow-list
+    # for exactly this reason; the guard side never had one.
+    "retail", "wealth", "payments", "commercial", "corporate", "sme",
+    "investing", "private", "business", "lending", "cards", "deposits",
+    "treasury", "insurance", "channels", "onboarding", "servicing",
+    "demo", "test", "sandbox", "example", "sample", "pilot", "workshop",
+    "assessment", "engagement", "ignite", "internal", "shared",
 }
 
 # Common short all-caps tokens that are NOT client identifiers, so an
@@ -518,7 +531,15 @@ def extract_terms_from_slug(slug, terms):
     # literally named "hnb") becomes a deny-list term even with no markdown
     # docs present yet.
     joined = slug.replace("_", "").replace("-", "")
-    if len(joined) >= 2:
+    # The stoplist DOES apply to the joined form; the length floor does not.
+    # The old comment claimed concatenation "removes the common-English-word
+    # collision risk" — true for `bank_australia` -> `bankaustralia`, false for a
+    # single-word slug where joined == the word itself. Measured 2026-08-30:
+    # `engagements/retail` put "retail" on the deny-list and every Infobank query
+    # containing that word came back "your search names the client". The length
+    # floor stays lifted so a short bare-acronym slug (a directory literally
+    # named "hnb") still becomes a term.
+    if len(joined) >= 2 and joined.lower() not in GENERIC_STOPLIST:
         _add_term(terms, joined)
 
 

@@ -21,6 +21,14 @@ on:
       - "scripts/**.sh"               # setup_pii.sh, init_engagement.sh, _resolve_python.sh's callers — the .py-only filter skipped every shell script under scripts/
       - "tools/**.py"                 # roi_excel_generator.py and friends — was missing from this filter (#193)
       - "evals/**"
+      # The CTP rows (#95) gate on a GOVERNANCE STANDARD and on CLAUDE.md, not
+      # on a component file — so without these two lines a PR that guts
+      # knowledge/standards/critical_thought_partner_protocol.md, or unwires
+      # CLAUDE.md from it, never runs the checks written to catch exactly that.
+      # Both rows passed on a laptop and were unreachable from CI (Mayur's
+      # 2026-08-30 review, finding 4).
+      - "knowledge/standards/**"
+      - "CLAUDE.md"
       # THE GATE GATES ITSELF. Without this line a PR that only WEAKENS this
       # workflow — flipping SHADOW to "true", deleting the derive step,
       # narrowing the filter above — never runs it, and merges unopposed.
@@ -310,6 +318,13 @@ jobs:
               "${deliverable_cmds[@]}"
               "--component mcp-query-guard"
               "--component pii-anonymizer"
+              # CTP (#95). FIXED rather than derived: the derive step maps a
+              # CHANGED FILE to a component, and these two rows' subjects are a
+              # knowledge standard and CLAUDE.md, which map to no component
+              # name. Deriving them would mean inventing a second mapping; the
+              # rows are cheap and deterministic, so run them every time.
+              "--component critty"
+              "--component critical-thought-partner"
               "--altitude deliverable-structural"
             )
             for cmd in "${fixed_cmds[@]}"; do
@@ -320,7 +335,7 @@ jobs:
 
             # Changed-component rows (#193) — anything the diff maps to that
             # isn't already covered by the fixed list above.
-            declare -A already=( [mcp-query-guard]=1 [pii-anonymizer]=1 )
+            declare -A already=( [mcp-query-guard]=1 [pii-anonymizer]=1 [critty]=1 [critical-thought-partner]=1 )
             for name in $CHANGED_COMPONENTS; do
               if [ -z "${already[$name]:-}" ]; then
                 already[$name]=1

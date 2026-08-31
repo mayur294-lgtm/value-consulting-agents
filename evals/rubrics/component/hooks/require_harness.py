@@ -173,17 +173,22 @@ def _denies_component_edit_without_active_change(root: Path) -> CheckResult:
         f"rc={result.returncode} denied={result.denied} reason={result.reason[:200]!r}"))
 
 
-def _allows_when_prd_artifact_present(root: Path) -> CheckResult:
-    """First active-change signal: `.prd/prd-v*.md` exists, i.e. `/bb-prd` has
-    run for this change and there is an Eval Acceptance Criteria section for the
-    build step to verify against."""
-    name = "allows_when_prd_artifact_present"
+def _denies_when_prd_artifact_present(root: Path) -> CheckResult:
+    """A committed PRD is NOT an active-change signal, whatever its status.
+
+    This check asserts the OPPOSITE of what it did before 2026-08-30, and the
+    inversion is the point. The gate previously treated a PRD as evidence that a
+    cycle was running. It is not: a PRD is committed, so it says somebody
+    somewhere is working — never "this machine is mid-cycle". Only the
+    gitignored `.prd/ACTIVE_CHANGE` can say that.
+    """
+    name = "denies_when_prd_artifact_present"
     _with_prd(root)
     result = _run_hook(root, edit_payload(str(root / ".claude/agents/roi-financial-modeler.md")))
-    ok = result.returncode == 0 and not result.denied and result.silent
+    ok = result.returncode == 0 and result.denied and "Harness gate" in result.reason
     return bool_check(name, ok, detail=(
-        f".prd/prd-v1.md present -> rc={result.returncode} denied={result.denied} "
-        f"stdout={result.stdout_text[:160]!r}"))
+        f".prd/prd-v1.md present, no ACTIVE_CHANGE -> rc={result.returncode} "
+        f"denied={result.denied} reason={result.reason[:120]!r}"))
 
 
 def _allows_when_active_change_marker_present(root: Path) -> CheckResult:
@@ -397,88 +402,70 @@ def _runs_under_registered_interpreter(root: Path) -> CheckResult:
     )
 
 
-def _denies_when_every_prd_is_closed(root: Path) -> CheckResult:
-    """THE deployment regression, as a fixture: a tree whose only PRDs have
-    shipped is NOT a tree with a change running, and the gate must still refuse.
-    `_allows_when_prd_artifact_present` alone cannot catch this — it passes
-    whether the hook reads statuses or just counts files."""
-    name = "denies_when_every_prd_is_closed"
-    _with_closed_prds(root)
-    result = _run_hook(root, edit_payload(str(root / ".claude/agents/roi-financial-modeler.md")))
-    ok = result.returncode == 0 and result.denied and "Harness gate" in result.reason
-    return bool_check(name, ok, detail=(
-        f"prd-v1(archived)+prd-v2(built), no ACTIVE_CHANGE -> rc={result.returncode} "
-        f"denied={result.denied} reason={result.reason[:120]!r}"))
+def _denies_when_draft_prd_present(root: Path) -> CheckResult:
+    """THE regression test for Mayur's finding 1 (2026-08-30).
 
+    A DRAFT PRD is committed like any other. Under the previous rule — "a PRD
+    still in flight opens the gate" — shipping one re-opened the gate on every
+    clone, permanently, which is the exact bug the v7 fix had just closed
+    arriving through a different door. Measured on a clean tree containing only
+    `prd-v10.md` (status: draft): an Edit to `scripts/orchestrate.py` was
+    ALLOWED; removing that one file made the same Edit denied.
 
-def _allows_when_prd_in_flight(root: Path) -> CheckResult:
-    """The other half of the status rule: a PRD that has NOT shipped is exactly
-    what an open cycle looks like, and must still open the gate. Authored
-    opposite the check above so a hook that denied everything could not pass."""
-    name = "allows_when_prd_in_flight"
+    A draft must now deny exactly like a shipped PRD does.
+    """
+    name = "denies_when_draft_prd_present"
     prd = root / ".prd"
     prd.mkdir(parents=True, exist_ok=True)
     (prd / "prd-v1.md").write_text(_prd_text(1, "archived"), encoding="utf-8")
     (prd / "prd-v2.md").write_text(_prd_text(2, "draft"), encoding="utf-8")
     result = _run_hook(root, edit_payload(str(root / ".claude/agents/roi-financial-modeler.md")))
-    ok = result.returncode == 0 and not result.denied and result.silent
+    ok = result.returncode == 0 and result.denied and "Harness gate" in result.reason
     return bool_check(name, ok, detail=(
-        f"prd-v1(archived)+prd-v2(draft) -> rc={result.returncode} "
-        f"denied={result.denied} stdout={result.stdout_text[:120]!r}"))
+        f"prd-v1(archived)+prd-v2(DRAFT), no ACTIVE_CHANGE -> rc={result.returncode} "
+        f"denied={result.denied} reason={result.reason[:120]!r}"))
 
 
-def _repo_prd_state_matches_gate(root: Path) -> CheckResult:
-    """Deployment-level, not synthetic: run the hook over THIS repo's real
-    `.prd/prd-v*.md` files and require its verdict to match what those files
-    actually say. Every other check in this row builds its own tidy fixture and
-    so can stay green while the shipped repo state defeats the gate — which is
-    precisely what happened (measured 2026-08-28: 6 shipped PRDs, gate open on
-    every clone, this row fully green). `ACTIVE_CHANGE` is deliberately NOT
-    copied: it is gitignored and machine-local, so it must not decide what a
-    clone of `main` does."""
-    name = "repo_prd_state_matches_gate"
+def _committed_prd_state_does_not_affect_gate(root: Path) -> CheckResult:
+    """Deployment-level, not synthetic: run the hook over THIS repo's REAL
+    `.prd/prd-v*.md` files and require the verdict to be DENY regardless of what
+    any of them says.
+
+    Every other check here builds its own tidy fixture and so can stay green
+    while the shipped repo state defeats the gate — which has now happened
+    TWICE. 2026-08-28: six shipped PRDs, gate open on every clone, this row
+    fully green. 2026-08-30: one committed DRAFT, same outcome, same green row.
+    The first was fixed by reading statuses; that fix is what the second
+    defeated.
+
+    So this check no longer asks "does the verdict match what the statuses say".
+    It asserts the stronger property the statuses cannot undermine: with no
+    ACTIVE_CHANGE marker, the real repo's PRDs — whatever their number, whatever
+    their status — do not open the gate. `ACTIVE_CHANGE` is deliberately NOT
+    copied into the fixture: it is gitignored and machine-local, so it must not
+    decide what a clone of `main` does.
+    """
+    name = "committed_prd_state_does_not_affect_gate"
     statuses = _repo_prd_statuses()
     if not statuses:
         return bool_check(name, False, detail=(
-            "no .prd/prd-v*.md in the repo — this check cannot be vacuous; "
+            "no .prd/prd-v*.md in the repo — this check must not be vacuous; "
             "if the planning dir moved, retarget it rather than deleting it"))
 
-    closed_set = {"archived", "built", "superseded", "shipped", "done", "abandoned", "merged"}
-    in_flight = sorted(f for f, s in statuses.items() if s not in closed_set)
-    closed = sorted(f for f, s in statuses.items() if s in closed_set)
+    prd = root / ".prd"
+    prd.mkdir(parents=True, exist_ok=True)
+    for fname, status in statuses.items():
+        (prd / fname).write_text("---\nstatus: %s\n---\n" % status, encoding="utf-8")
+    assert not (prd / "ACTIVE_CHANGE").exists(), "fixture must not carry the marker"
 
-    if not closed:
-        return bool_check(name, False, detail=(
-            f"no SHIPPED PRD among {sorted(statuses)} — the shipped-PRD half of this "
-            "check would be vacuous. PRDs are the permanent record; if none is closed, "
-            "the statuses are not being maintained"))
-
-    component = ".claude/agents/roi-financial-modeler.md"
-
-    def _verdict(names: list[str], sub: str) -> bool:
-        prd = (root / sub / ".prd")
-        prd.mkdir(parents=True, exist_ok=True)
-        for fname in names:
-            (prd / fname).write_bytes((repo_root() / ".prd" / fname).read_bytes())
-        return _run_hook(root / sub, edit_payload(str(root / sub / component))).denied
-
-    # (a) The repo exactly as it stands: the hook must agree with what the front
-    #     matter says, whichever way that falls.
-    got_all = _verdict(sorted(statuses), "as_is")
-    want_all = not in_flight
-
-    # (b) The shipped PRDs ALONE — the state a clone of `main` is in once the
-    #     in-flight work merges and its PRD is marked built. Asserted separately
-    #     because (a) alone stops discriminating the moment one draft PRD exists
-    #     locally, which is exactly when this check is most needed.
-    got_closed = _verdict(closed, "closed_only")
-
-    ok = got_all == want_all and got_closed is True
+    result = _run_hook(root, edit_payload(str(root / ".claude/agents/roi-financial-modeler.md")))
+    ok = result.returncode == 0 and result.denied and "Harness gate" in result.reason
+    drafts = sorted(f for f, st in statuses.items()
+                    if st not in {"archived", "built", "superseded", "shipped",
+                                  "done", "abandoned", "merged"})
     return bool_check(name, ok, detail=(
-        f"{len(statuses)} real PRD(s); in-flight={in_flight or 'none'}; "
-        f"shipped={len(closed)} -> as-is: want denied={want_all} got {got_all}; "
-        f"shipped-only: want denied=True got {got_closed}"))
-
+        f"{len(statuses)} real PRD(s) copied, in-flight={drafts}, no ACTIVE_CHANGE -> "
+        f"denied={result.denied} (want True)"))
 
 def evaluate(target: str) -> list:  # noqa: ARG001 - self-contained, ignores target
     missing = missing_hook_check(_hook_path())
@@ -486,10 +473,9 @@ def evaluate(target: str) -> list:  # noqa: ARG001 - self-contained, ignores tar
         return [missing]
     return [
         run_in_tmp(_denies_component_edit_without_active_change, prefix=TMP_PREFIX),
-        run_in_tmp(_allows_when_prd_artifact_present, prefix=TMP_PREFIX),
-        run_in_tmp(_denies_when_every_prd_is_closed, prefix=TMP_PREFIX),
-        run_in_tmp(_allows_when_prd_in_flight, prefix=TMP_PREFIX),
-        run_in_tmp(_repo_prd_state_matches_gate, prefix=TMP_PREFIX),
+        run_in_tmp(_denies_when_prd_artifact_present, prefix=TMP_PREFIX),
+        run_in_tmp(_denies_when_draft_prd_present, prefix=TMP_PREFIX),
+        run_in_tmp(_committed_prd_state_does_not_affect_gate, prefix=TMP_PREFIX),
         run_in_tmp(_allows_when_active_change_marker_present, prefix=TMP_PREFIX),
         run_in_tmp(_exempts_harness_infra_paths, prefix=TMP_PREFIX),
         run_in_tmp(_gates_pipeline_python_only_by_extension, prefix=TMP_PREFIX),

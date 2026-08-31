@@ -98,6 +98,7 @@ Decision contract (stdout JSON, exit 0):
 import json
 import os
 import re
+import shlex
 import sys
 from pathlib import Path
 from typing import Optional
@@ -350,6 +351,18 @@ def _msg_fault(raw: str) -> str:
 
 # --- evaluation ------------------------------------------------------------
 
+def _msg_search_root(d) -> str:
+    return (
+        "🛑 That search reads straight from the client's raw files\n\n"
+        "   %s holds material exactly as it came from the client — real names,\n"
+        "   emails and account numbers. A search here returns those lines to Claude,\n"
+        "   the same as opening the file would.\n\n"
+        "   Search the scrubbed copies instead, or clean the folder first:\n\n"
+        "       .claude/hooks/_resolve_python.sh scripts/anonymize_transcript.py \\\n"
+        "           --file <file> --engagement-dir <engagement_dir>\n"
+    ) % d
+
+
 def _evaluate(raw: str) -> Optional[str]:
     """Returns a deny message, or None to allow. Fails CLOSED (a generic
     fault message) for a raw string that structurally looks like an
@@ -389,24 +402,93 @@ def _evaluate(raw: str) -> Optional[str]:
         return None
 
 
+
+def _evaluate_search_root(raw: str) -> Optional[str]:
+    """Grep/Glob variant of `_evaluate`, for a path that may be a DIRECTORY.
+
+    `_evaluate` returns None for a directory, which is right for Read (you
+    cannot Read a directory) and for Bash (a bare directory token is not a
+    read). It is wrong for a search: the directory IS the root, and Grep
+    returns matching LINES from everything beneath it.
+
+    Scope is deliberately the same the rest of this guard claims — a path that
+    IS, or sits inside, a gated `engagements/*/inputs/` tree. A recursive search
+    rooted ABOVE that tree still reaches it, and is NOT covered here: blocking
+    every search over any directory that happens to contain an engagement would
+    deny grepping the repo itself, and a control that fires on ordinary work is
+    one people learn to route around. Recorded in `.prd/backlog.md` rather than
+    papered over.
+    """
+    try:
+        p = _resolve(raw)
+        if p.is_dir() and _in_scope(p / "probe"):
+            return _msg_search_root(p)
+    except Exception:
+        if _raw_looks_like_inputs(raw):
+            return _msg_fault(raw)
+        return None
+    return _evaluate(raw)
+
 # --- Bash path extraction -----------------------------------------------------
 # Best-effort: pull path-like tokens out of a shell command so a `cat`/`head` of
 # a raw file is gated the same as a Read. Never raises.
 _ANONYMIZER_HINTS = ("anonymize_transcript", "scripts.pii.ingest", "pii/ingest.py", "pii.ingest")
-_TOKEN_RE = re.compile(r"""['"]?([^\s'";|&><]+)['"]?""")
+
+# Shell operators that end one command and begin another. A command line is
+# split on these and each SEGMENT is judged on its own.
+_SEGMENT_RE = re.compile(r"&&|\|\||;|\||\n")
+
+
+def _segment_candidates(segment: str):
+    """Path-like tokens in ONE shell command segment.
+
+    `shlex` rather than a regex, because a regex that splits on whitespace
+    cannot see quoting: `cat "…/Meeting Notes.md"` splits into two fragments,
+    neither of which is a real path, so nothing gets checked and the read is
+    allowed. Client files are called "Annual Report 2025.pdf" — spaces are the
+    norm. Falls back to the old token scan if the line will not lex (an
+    unbalanced quote), because failing to parse must not mean failing to check.
+    """
+    try:
+        toks = shlex.split(segment, comments=False, posix=True)
+    except ValueError:
+        # Unbalanced quote. The OLD fallback split on whitespace, which loses
+        # exactly the paths this fix is about — an unterminated
+        # `cat "…/Meeting Notes.md` would fragment and sail through. Grab
+        # quoted RUNS even when unterminated, so a spaced path survives intact.
+        toks = [next(g for g in m if g is not None)
+                for m in re.findall(r"""\"([^"]*)\"?|'([^']*)'?|(\S+)""", segment)]
+    cands = []
+    for tok in toks:
+        if tok.startswith("-"):
+            continue
+        if "/" not in tok and not tok.lower().endswith(tuple(ALL_GATED_EXTS)):
+            continue
+        cands.append(tok)
+    return cands
 
 
 def _bash_candidates(command: str):
-    if any(hint in command for hint in _ANONYMIZER_HINTS):
-        return []  # the scrub command itself is always allowed
+    """Path-like tokens across a whole command line, PER SEGMENT.
+
+    The anonymiser exemption is scoped to the segment that actually invokes it,
+    not to the whole line. Previously any line merely CONTAINING the substring
+    "anonymize_transcript" was waved through in full, so
+
+        python3 scripts/anonymize_transcript.py --file a.md && cat <raw input>
+
+    handed the raw client file straight to the model. That is not a contrived
+    chain: when this guard denies a read, its own message tells the consultant
+    to run that scrub command, and appending "&& show me the file" is the
+    obvious next keystroke.
+    """
     cands = []
-    for m in _TOKEN_RE.finditer(command):
-        tok = m.group(1)
-        if "/" not in tok and not tok.lower().endswith(tuple(ALL_GATED_EXTS)):
+    for segment in _SEGMENT_RE.split(command or ""):
+        if not segment.strip():
             continue
-        if tok.startswith("-"):
-            continue
-        cands.append(tok)
+        if any(hint in segment for hint in _ANONYMIZER_HINTS):
+            continue  # THIS segment is the scrub itself — exempt, on its own
+        cands.extend(_segment_candidates(segment))
     return cands
 
 
@@ -434,6 +516,26 @@ def main():
             msg = _evaluate(raw)
             if msg:
                 _deny(msg)
+        _allow()
+
+    elif tool in ("Grep", "Glob"):
+        # Grep RETURNS MATCHING LINES — that is file content, so an ungated
+        # Grep into `inputs/` hands over real names and emails exactly as a Read
+        # would. This guard was bound to Read|Bash only, so the rewrite's
+        # "nothing under inputs/ passes" guarantee had a third door standing
+        # open. Glob returns paths rather than content and is far weaker, but a
+        # client-named FILENAME is itself an identifier this repo spends real
+        # effort removing, so it is gated the same way.
+        #
+        # Both take `path` (a directory OR a file). A directory is evaluated as
+        # itself: `_evaluate` resolves whether it sits under a gated
+        # `engagements/*/inputs/` tree, which is the question being asked.
+        raw = tool_input.get("path") or tool_input.get("file_path")
+        if not raw:
+            _allow()
+        msg = _evaluate_search_root(raw)
+        if msg:
+            _deny(msg)
         _allow()
 
     _allow()

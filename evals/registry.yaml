@@ -489,7 +489,12 @@ components:
            # pins why not the directory names: they carry a Backbase programme name and
            # geography, which must never become deny terms.
            denies_client_from_staging_subdirectory,
-           staging_directory_names_do_not_become_deny_terms]
+           staging_directory_names_do_not_become_deny_terms,
+           # Mayur's 2026-08-30 review, finding 6: a domain-named engagement
+           # directory put its own name on the deny-list, so ordinary product
+           # queries were refused as 'names the client'. A false alarm trains
+           # people around the control, which is worse than the noise.
+           generic_slug_does_not_become_a_deny_term]
 
   # pii-anonymizer (ticket #161, PRD v6 §5, solution-design-v6.md D9) — the
   # acceptance gate for the whole v6 Presidio PII cycle. Covers
@@ -733,8 +738,26 @@ components:
            allows_paths_outside_inputs_scope, gates_bash_command_reading_raw_input,
            allows_bash_anonymizer_command_itself, fails_closed_under_injected_fault,
            degenerate_path_fails_closed_only_inside_inputs, invoked_as_subprocess_not_import,
-           runs_under_registered_interpreter]
+           runs_under_registered_interpreter,
+           # Mayur's 2026-08-30 review, findings 2, 3 and 7 — each as a regression
+           # test. All three were the same shape: the guard checked the doors it was
+           # pointed at, and nobody had enumerated the doors.
+           anonymizer_exemption_is_per_segment,
+           gates_quoted_path_containing_spaces,
+           gates_search_tools_not_only_read_and_bash]
     mutations:
+      anonymizer_exemption_is_per_segment:
+        file: .claude/hooks/anonymize-guard.py
+        find: 'if any(hint in segment for hint in _ANONYMIZER_HINTS):'
+        replace: 'if any(hint in command for hint in _ANONYMIZER_HINTS):'
+      gates_quoted_path_containing_spaces:
+        file: .claude/hooks/anonymize-guard.py
+        find: 'toks = shlex.split(segment, comments=False, posix=True)'
+        replace: 'toks = re.findall(r"[^\s]+", segment)'
+      gates_search_tools_not_only_read_and_bash:
+        file: .claude/hooks/anonymize-guard.py
+        find: 'elif tool in ("Grep", "Glob"):'
+        replace: 'elif tool in ("zzzNeverMatches",):'
       denies_unscrubbed_text_input:
         file: .claude/hooks/anonymize-guard.py
         find: "            if kind == \"text\":\n                return _msg_unscrubbed_text(p)"
@@ -769,8 +792,10 @@ components:
         replace: "        continue"
       allows_bash_anonymizer_command_itself:
         file: .claude/hooks/anonymize-guard.py
-        find: "    if any(hint in command for hint in _ANONYMIZER_HINTS):"
-        replace: "    if False:"
+        # Follows the 2026-08-30 rename: the exemption is matched per SEGMENT
+        # now, not against the whole command line (Mayur's finding 2).
+        find: "        if any(hint in segment for hint in _ANONYMIZER_HINTS):"
+        replace: "        if False:"
       fails_closed_under_injected_fault:
         file: .claude/hooks/anonymize-guard.py
         find: "    except Exception:\n        if in_scope_guess:\n            return _msg_fault(raw)\n        return None"
@@ -848,9 +873,9 @@ components:
     altitude: component
     threshold: 1.00
     evaluator: rubrics.component.hooks.require_harness
-    code: [denies_component_edit_without_active_change, allows_when_prd_artifact_present,
-           denies_when_every_prd_is_closed, allows_when_prd_in_flight,
-           repo_prd_state_matches_gate,
+    code: [denies_component_edit_without_active_change, denies_when_prd_artifact_present,
+           denies_when_draft_prd_present,
+           committed_prd_state_does_not_affect_gate,
            allows_when_active_change_marker_present, exempts_harness_infra_paths,
            gates_pipeline_python_only_by_extension, gates_non_exempt_skill_but_not_bb_skill,
            gates_root_orchestrate_py, ignores_read_tool, fails_open_on_malformed_payload,
@@ -861,36 +886,32 @@ components:
         file: .claude/hooks/require-harness.py
         find: "    if not _is_protected(rel):\n        _allow()"
         replace: "    _allow()"
-      allows_when_prd_artifact_present:
+      denies_when_prd_artifact_present:
         file: .claude/hooks/require-harness.py
-        find: "    if any(_prd_is_in_flight(p) for p in (PROJECT_DIR / \".prd\").glob(\"prd-v*.md\")):\n        return True"
-        replace: "    if False:\n        return True"
+        find: 'return (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
+        replace: 'return bool(list((PROJECT_DIR / ".prd").glob("prd-v*.md"))) or (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
       # The status rule, proved from both sides. Emptying the closed set makes a
       # shipped PRD read as in-flight (the old, broken behaviour) and must redden
       # the deny-side check; inverting the comparison makes every PRD read as
       # shipped and must redden the allow-side one.
-      denies_when_every_prd_is_closed:
-        file: .claude/hooks/require-harness.py
-        find: "    \"archived\", \"built\", \"superseded\", \"shipped\", \"done\", \"abandoned\", \"merged\","
-        replace: ""
       # NOT `not in` -> `in`: that reads a SHIPPED prd as in-flight, so the
       # fixture (archived + draft) still allows and the check stays green —
       # caught by --mutate on first run. Collapsing the in-flight verdict to
       # False is what actually starves this check of its signal.
-      allows_when_prd_in_flight:
+      denies_when_draft_prd_present:
         file: .claude/hooks/require-harness.py
-        find: "                    return status not in _CLOSED_PRD_STATUSES"
-        replace: "                    return False"
+        find: 'return (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
+        replace: 'return bool([p for p in (PROJECT_DIR / ".prd").glob("prd-v*.md") if "status: draft" in p.read_text(errors="replace")]) or (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
       # Stop reading `status:` at all and every PRD looks in-flight, which is
       # exactly the shipped-repo bug this check exists to catch.
-      repo_prd_state_matches_gate:
+      committed_prd_state_does_not_affect_gate:
         file: .claude/hooks/require-harness.py
-        find: "                if line.startswith(\"status:\"):"
-        replace: "                if False:"
+        find: 'return (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
+        replace: 'return bool(list((PROJECT_DIR / ".prd").glob("prd-v*.md"))) or (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
       allows_when_active_change_marker_present:
         file: .claude/hooks/require-harness.py
-        find: "    if (PROJECT_DIR / \".prd\" / \"ACTIVE_CHANGE\").exists():\n        return True"
-        replace: "    if False:\n        return True"
+        find: 'return (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
+        replace: 'return False'
       exempts_harness_infra_paths:
         file: .claude/hooks/require-harness.py
         find: "    \".claude/skills/coding-standards/\","

@@ -68,6 +68,7 @@ from rubrics._harness import (
 from rubrics.component.hooks._common import (
     HOOK_TIMEOUT_S,
     bash_payload,
+    pretooluse_payload,
     bool_check,
     check_invoked_as_subprocess_not_import,
     missing_hook_check,
@@ -437,6 +438,94 @@ def _runs_under_registered_interpreter(root: Path) -> CheckResult:
     )
 
 
+
+
+def _payload(tool: str, tool_input: dict) -> bytes:
+    """Generic PreToolUse payload via the shared builder. `_common` ships only
+    Read and Bash builders, which is itself a trace of the gap finding 7
+    describes — the harness could not express a Grep payload because nothing
+    gated Grep."""
+    return pretooluse_payload(tool, tool_input)
+
+
+def _anonymizer_exemption_is_per_segment(root: Path) -> CheckResult:
+    """Mayur's finding 2 (2026-08-30), as a regression test.
+
+    The exemption that lets the scrub command run was matched against the WHOLE
+    command line, so any line merely CONTAINING "anonymize_transcript" was waved
+    through in full:
+
+        python3 scripts/anonymize_transcript.py --file a.md && cat <raw input>
+
+    handed the raw client file to the model. Not contrived: when this guard
+    denies a read its own message tells the consultant to run that scrub, and
+    appending "&& show me the file" is the obvious next keystroke. The exemption
+    is now scoped to the segment that actually invokes the anonymiser.
+    """
+    name = "anonymizer_exemption_is_per_segment"
+    fixture = _engagement(root, documents={"inputs/notes.md": RAW_TEXT})
+    raw = fixture.inputs_dir / "notes.md"
+    chained_and = _run_hook(root, bash_payload(
+        f"python3 scripts/anonymize_transcript.py --file a.md && cat {raw}"))
+    chained_semi = _run_hook(root, bash_payload(
+        f"python3 scripts/anonymize_transcript.py --file a.md ; cat {raw}"))
+    scrub_alone = _run_hook(root, bash_payload(
+        f"python3 scripts/anonymize_transcript.py --file {raw} --engagement-dir x"))
+    ok = (chained_and.denied and chained_semi.denied and not scrub_alone.denied)
+    return bool_check(name, ok, detail=(
+        f"'&& cat raw' denied={chained_and.denied} (want True); "
+        f"'; cat raw' denied={chained_semi.denied} (want True); "
+        f"scrub alone denied={scrub_alone.denied} (want False)"))
+
+
+def _gates_quoted_path_containing_spaces(root: Path) -> CheckResult:
+    """Mayur's finding 3 (2026-08-30), as a regression test.
+
+    Path extraction split on whitespace, so `cat "…/Meeting Notes.md"` became
+    two fragments, neither a real path — nothing was checked and the read was
+    allowed, while a Read of the same file was correctly denied. Client files
+    are called "Annual Report 2025.pdf"; spaces are the norm, not the exception.
+    Also covers the UNBALANCED-quote fallback, which must stay closed: failing
+    to parse a command must never mean failing to check it.
+    """
+    name = "gates_quoted_path_containing_spaces"
+    fixture = _engagement(root, documents={"inputs/Meeting Notes.md": RAW_TEXT})
+    raw = fixture.inputs_dir / "Meeting Notes.md"
+    dq = _run_hook(root, bash_payload(f'cat "{raw}"'))
+    sq = _run_hook(root, bash_payload(f"cat '{raw}'"))
+    unbalanced = _run_hook(root, bash_payload(f'cat "{raw}'))
+    ok = dq.denied and sq.denied and unbalanced.denied
+    return bool_check(name, ok, detail=(
+        f'double-quoted denied={dq.denied}; single-quoted denied={sq.denied}; '
+        f'unbalanced-quote denied={unbalanced.denied} (all want True)'))
+
+
+def _gates_search_tools_not_only_read_and_bash(root: Path) -> CheckResult:
+    """Mayur's finding 7 (2026-08-30), as a regression test.
+
+    Grep RETURNS MATCHING LINES — that is file content, so an ungated Grep into
+    `inputs/` hands over real names and emails exactly as a Read would. The hook
+    was bound to Read|Bash only, leaving a third door open on a guarantee stated
+    as "nothing under inputs/ passes". A DIRECTORY search root is the case that
+    matters: `_evaluate` returns None for a directory, which is right for Read
+    and wrong for a search that walks everything beneath it.
+    """
+    name = "gates_search_tools_not_only_read_and_bash"
+    fixture = _engagement(root, documents={"inputs/notes.md": RAW_TEXT})
+    ing = fixture.inputs_dir
+    outs = fixture.engagement_dir / "outputs"
+    outs.mkdir(parents=True, exist_ok=True)
+    (outs / "report.md").write_text("ordinary output\n", encoding="utf-8")
+    grep_dir = _run_hook(root, _payload("Grep", {"pattern": "x", "path": str(ing)}))
+    grep_file = _run_hook(root, _payload("Grep", {"pattern": "x", "path": str(ing / "notes.md")}))
+    glob_dir = _run_hook(root, _payload("Glob", {"pattern": "*.md", "path": str(ing)}))
+    grep_out = _run_hook(root, _payload("Grep", {"pattern": "x", "path": str(outs)}))
+    ok = (grep_dir.denied and grep_file.denied and glob_dir.denied and not grep_out.denied)
+    return bool_check(name, ok, detail=(
+        f"Grep@inputs-dir={grep_dir.denied} Grep@file={grep_file.denied} "
+        f"Glob@inputs={glob_dir.denied} (want True) | Grep@outputs={grep_out.denied} (want False)"))
+
+
 def evaluate(target: str) -> list:  # noqa: ARG001 - self-contained, ignores target
     missing = missing_hook_check(_hook_path())
     if missing is not None:
@@ -455,4 +544,7 @@ def evaluate(target: str) -> list:  # noqa: ARG001 - self-contained, ignores tar
         run_in_tmp(_degenerate_path_fails_closed_only_inside_inputs, prefix=TMP_PREFIX),
         run_in_tmp(_invoked_as_subprocess_not_import, prefix=TMP_PREFIX),
         run_in_tmp(_runs_under_registered_interpreter, prefix=TMP_PREFIX),
+        run_in_tmp(_anonymizer_exemption_is_per_segment, prefix=TMP_PREFIX),
+        run_in_tmp(_gates_quoted_path_containing_spaces, prefix=TMP_PREFIX),
+        run_in_tmp(_gates_search_tools_not_only_read_and_bash, prefix=TMP_PREFIX),
     ]

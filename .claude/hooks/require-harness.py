@@ -14,14 +14,14 @@ evals/, .github/, and the .prd/.design planning dirs) so the harness can be buil
 and maintained without self-deadlock, and EXEMPTS engagement deliverables (those
 are gated by require-checkpoint.py instead).
 
-Active-change signal (any one):
-  - a PRD is IN FLIGHT: some .prd/prd-v*.md whose front-matter `status:` is not
-    a closing one (archived / built / superseded / ...). A PRD that has shipped
-    is a permanent record, not a running change, and must not hold the gate
-    open — see _CLOSED_PRD_STATUSES and _prd_is_in_flight().
-  - an explicit marker: .prd/ACTIVE_CHANGE (gitignored — it acknowledges work
-    deliberately done outside a cycle on ONE machine; committing it would
-    disable the gate for everyone who clones).
+Active-change signal — exactly one, deliberately:
+  - .prd/ACTIVE_CHANGE exists. Gitignored, per-machine, never committed.
+
+  A committed PRD is NOT a signal, at any status. Two earlier versions tried to
+  make it one and both left the gate open for everybody: first `any(prd-v*.md)`,
+  then "any PRD still in flight" — which a committed DRAFT satisfies, so
+  shipping a draft re-opened the gate on every clone. Committed state cannot
+  express "this machine is mid-cycle"; only a gitignored marker can.
 
 Fail-OPEN on any error — never wedge a session on a hook bug.
 
@@ -47,16 +47,6 @@ PROTECTED_PREFIXES = (
 PROTECTED_PIPELINE_DIR = "scripts/"
 PIPELINE_EXTS = {".py"}
 
-# PRD front-matter `status:` values meaning the change cycle is CLOSED. A PRD
-# carrying one of these is a record of finished work and must NOT hold the
-# harness gate open; anything else (including a PRD with no `status:` at all)
-# counts as a change still in flight. See _prd_is_in_flight().
-_CLOSED_PRD_STATUSES = frozenset({
-    "archived", "built", "superseded", "shipped", "done", "abandoned", "merged",
-})
-# Front matter is a handful of keys; cap the scan so a pathological file can
-# never turn a per-edit hook into a full read.
-_FRONT_MATTER_MAX_LINES = 40
 
 # Harness infra + planning dirs + deliverables — always allowed past THIS hook.
 EXEMPT_PREFIXES = (
@@ -107,46 +97,39 @@ def _is_protected(rel: str) -> bool:
     return False
 
 
-def _prd_is_in_flight(path: Path) -> bool:
-    """True when this PRD's front matter does NOT carry a closing `status:`.
-
-    Deliberately a line scan of the front-matter block, not a YAML parse: this
-    runs in a PreToolUse hook on every Edit/Write, so it must stay stdlib-only
-    and cheap. A PRD whose front matter cannot be read is treated as IN FLIGHT,
-    so a parse problem opens the gate rather than wedging the session — the
-    fail-OPEN promise in this module's docstring.
-    """
-    try:
-        with path.open("r", encoding="utf-8", errors="replace") as fh:
-            if fh.readline().strip() != "---":
-                return True                      # no front matter -> not closed
-            for _ in range(_FRONT_MATTER_MAX_LINES):
-                line = fh.readline()
-                if not line or line.strip() == "---":
-                    return True                  # block ended, no status: key
-                if line.startswith("status:"):
-                    status = line.split(":", 1)[1].strip().strip("\"'").lower()
-                    return status not in _CLOSED_PRD_STATUSES
-    except OSError:
-        return True
-    return True
-
-
 def _change_active() -> bool:
     # bb-* uses .prd/ as the planning dir. (The legacy .sprint/ from the prior
     # development-advanced experiment is intentionally NOT a signal — it would
     # leave the gate permanently open; it is retired in the cleanup step.)
-    if (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists():
-        return True
-    # Only a PRD still IN FLIGHT signals an active change. `any(prd-v*.md)` was
-    # the original test and was wrong in a way that got worse over time: a PRD is
-    # the permanent record of a change, not evidence one is running, so once the
-    # first PRD was committed the gate was unconditionally open on every clone,
-    # forever. Measured 2026-08-28 on the v7 branch: 6 shipped PRDs present, the
-    # gate had not been able to deny for anyone since the first of them landed.
-    if any(_prd_is_in_flight(p) for p in (PROJECT_DIR / ".prd").glob("prd-v*.md")):
-        return True
-    return False
+    # `.prd/ACTIVE_CHANGE` is the ONLY signal, and it is gitignored on purpose.
+    #
+    # Two earlier versions of this test were both wrong, in the same direction:
+    #
+    #   `any(prd-v*.md)`            — every PRD counted, so the gate was open on
+    #                                 every clone from the moment the first PRD
+    #                                 landed. Measured 2026-08-28: 6 shipped
+    #                                 PRDs, gate unable to deny for anyone.
+    #   `any(_prd_is_in_flight(p))` — the v7 fix. Better, and still wrong: a
+    #                                 DRAFT PRD is committed, so shipping one
+    #                                 re-opened the gate for everybody. Measured
+    #                                 2026-08-30 on a clean clone containing only
+    #                                 `prd-v10.md` (status: draft): an Edit to
+    #                                 scripts/orchestrate.py was ALLOWED. Remove
+    #                                 that one file and the same Edit was denied.
+    #                                 (Mayur's review, finding 1.)
+    #
+    # The root problem is not which statuses count. It is that COMMITTED STATE
+    # CANNOT EXPRESS "this machine is mid-cycle". A draft PRD in the repo says
+    # somebody, somewhere, is working — which is not the question this gate asks.
+    # Only a gitignored, per-machine marker can answer it, which is precisely
+    # what ACTIVE_CHANGE was introduced to be. So the PRD signal is gone rather
+    # than re-tuned: any committed artifact used this way reintroduces the same
+    # hole the next time one is committed.
+    #
+    # `/bb-prd` writes ACTIVE_CHANGE when a cycle starts; `/bb-pr-review` clears
+    # it. A developer working outside a cycle creates it by hand and deletes it
+    # after — which is the acknowledgement, not a loophole.
+    return (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()
 
 
 def main():

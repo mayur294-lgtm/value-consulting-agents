@@ -672,6 +672,51 @@ def _staging_directory_names_do_not_become_deny_terms(root: Path) -> CheckResult
     return bool_check(name, ok, detail=f"probes={outcomes}")
 
 
+
+def _seed_generic_slug_project(root: Path):
+    """A project whose only engagement directory is named for a DOMAIN, not a
+    client — `engagements/retail/`, which is how these directories are commonly
+    named. No CLIENT_PROFILE.md: the slug is the only source, which is exactly
+    the path that produced the false alarm."""
+    (root / "engagements" / "retail").mkdir(parents=True)
+    (root / "engagements" / "zzqbank").mkdir(parents=True)
+    (root / "engagements" / "zzqbank" / "CLIENT_PROFILE.md").write_text(
+        "- **Client Name:** Zzqbank\n", encoding="utf-8")
+
+
+def _generic_slug_does_not_become_a_deny_term(root: Path) -> CheckResult:
+    """Mayur's finding 6 (2026-08-30), as a regression test.
+
+    `extract_terms_from_slug` added the JOINED slug form unconditionally,
+    skipping the stoplist, on the reasoning that concatenation removes the
+    common-English-word collision risk. True for `bank_australia` ->
+    `bankaustralia`; false for a single-word slug, where the joined form IS the
+    word. With `engagements/retail/` present, every Infobank query containing
+    "retail" came back "your search names the client".
+
+    Not a leak — the opposite, and worse for it: a control that fires on
+    ordinary product questions is one people learn to route around. The PII
+    engine keeps a generic-banking allow-list for exactly this; the guard side
+    never had one.
+
+    Asserts both directions, because a guard that denied nothing would pass a
+    one-sided version of this check.
+    """
+    name = "generic_slug_does_not_become_a_deny_term"
+    _seed_generic_slug_project(root)
+    generic = ["retail onboarding capabilities",
+               "wealth management APIs",
+               "payments hub architecture",
+               "what does Backbase offer for demo environments"]
+    allowed = [(q, _run_hook(root, _payload({"query": q}))) for q in generic]
+    client = _run_hook(root, _payload({"query": "Zzqbank digital onboarding"}))
+    false_alarms = [q for q, r in allowed if r.denied]
+    ok = not false_alarms and client.denied
+    return bool_check(name, ok, detail=(
+        f"false alarms={false_alarms} (want none); "
+        f"real client name denied={client.denied} (want True)"))
+
+
 def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained, ignores target
     hook = _hook_path()
     if not hook.exists():
@@ -701,4 +746,5 @@ def evaluate(target: str) -> list[CheckResult]:  # noqa: ARG001 - self-contained
         _run_in_tmp(_runs_under_registered_interpreter),
         _run_in_tmp(_denies_client_from_staging_subdirectory),
         _run_in_tmp(_staging_directory_names_do_not_become_deny_terms),
+        _run_in_tmp(_generic_slug_does_not_become_a_deny_term),
     ]
