@@ -4,6 +4,17 @@ on:
   push:
     branches: [main]
 
+# LOAD-BEARING. Without this block the job runs with the repository's default
+# GITHUB_TOKEN scopes, which are read-only, and `issues.create` fails 403
+# "Resource not accessible by integration". This workflow was the only one in
+# .github/workflows/ with no permissions: block, and it had failed on every
+# push to main since at least 2026-06-16 — 50 runs, zero notifications ever
+# delivered. The two other workflows that open issues (evals-monitor.yml,
+# triage-weekly.yml) both declare issues: write; this one just never did.
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   notify:
     runs-on: ubuntu-latest
