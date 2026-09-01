@@ -1,6 +1,6 @@
 ---
 version: 10
-status: draft
+status: built
 date: 2026-08-28
 author: Mariam Tahir
 previous: prd-v8.md
