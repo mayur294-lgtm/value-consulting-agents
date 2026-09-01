@@ -25,7 +25,7 @@ evals/
     negatives/                  #   known-bad per check (must FAIL)
   rubrics/
     base.py                     # CheckResult / RubricResult
-    deliverable/                # CODE evaluators: decks.py, roi.py, assessment.py
+    deliverable/                # CODE evaluators: decks.py, roi.py, assessment.py, proposal.py
     structural/contracts.py     # deliverable-structural altitude: inter-agent
                                  #   contract lint over output FILES (no agent runs)
     component/                  # component (unit) altitude: per-agent checks — a MIX of
@@ -358,6 +358,15 @@ rubric-calibration check can be perfectly calibrated (every golden above
 threshold, every negative below) and still tell you nothing about the agent
 prompt, because calibration only proves the regex distinguishes good text
 from bad text — never that it read the prompt that generated either.
+
+**Single-defect negatives (proposal, #150).** The seven `proposal_*` negatives each carry
+exactly ONE defect, so a failure names the check that regressed. They are blocked by a
+**hard-fail** check, not by mean score (0.889–0.944 against a 0.85 threshold — on the
+mean alone every one of them would pass): a single-defect fixture should not have to fail
+eight unrelated checks to be rejected, so each integrity check in
+`rubrics/deliverable/proposal.py` is declared `hard_fail` and can never be averaged away.
+Multi-defect negatives (e.g. `deck_offpalette.html`, 0.364) push the mean down as well —
+both patterns are valid; pick per what the fixture is testing.
 
 ## Billing: what costs money and what doesn't
 

@@ -1,0 +1,43 @@
+{
+  "_synthetic": "SYNTHETIC FIXTURE — Meridian Bank is fictional. All figures, volumes, stages and levers are authored for eval use only. Never cite as a real deal, benchmark or price point.",
+  "rounds": [
+    {
+      "n": 1,
+      "date": "2026-07-29",
+      "inputs_hash": "afe7b23d19c4f085",
+      "scenarios_shown": ["best", "better"],
+      "ladder_position": "anchor",
+      "concessions": {
+        "given": [],
+        "extracted": ["Reference rights"]
+      },
+      "meeting_note_refs": [],
+      "open_levers_snapshot": [
+        "Family 1 (Solution optionality): Phasing",
+        "Family 1 (Solution optionality): Scope ramp",
+        "Family 2 (Commitment terms): Year-one prepay",
+        "Family 2 (Commitment terms): Expansion commit",
+        "Family 3 (Non-price value): Sandbox",
+        "Family 3 (Non-price value): Training credits",
+        "Family 3 (Non-price value): Program architect",
+        "Family 4 (Timing & cash flow): Payment terms",
+        "Family 4 (Timing & cash flow): Staggered activation",
+        "Family 5 (Price): Volume discount"
+      ],
+      "strategy_summary": "Why Change story model; anchored on Best at full scope, 5-yr term and list-anchored value with zero discount (tactics §2 stage 1), Better shown as the lighter alternative with phase-2 scope deferred; discount budget 8% of list, unspent at anchor; reference rights taken as the extract.",
+      "notes": "Round 1 generated CHECKPOINT_deal_brief_v1.md, INTERNAL_strategy_brief_v1.md, INTERNAL_negotiation_plan_v1.md and Meridian_Proposal_v1.html — all frozen."
+    }
+  ],
+  "current": {
+    "round": 1,
+    "next_planned_stage": "counter1",
+    "elasticity_exposure": "conservative"
+  },
+  "pending_meeting_notes": [
+    {
+      "date": "2026-08-12",
+      "meeting_ref": "DEAL_JOURNAL.md#2026-08-12-procurement-review",
+      "headline": "Procurement pushed on price; volumes revised up"
+    }
+  ]
+}

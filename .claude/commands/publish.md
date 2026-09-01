@@ -46,6 +46,24 @@ You are executing the `/publish` skill. This makes git invisible to the consulta
      Published with `/publish` by {consultant-name}
      ```
 
+## Internal-Only Artifacts
+
+Some engagement deliverables include files that are governed work product but not meant for
+client eyes — e.g. the deal-strategy cockpit writes `INTERNAL_*` files (strategy briefs,
+negotiation plans, Deal Desk fields, deal state) and `CHECKPOINT_*` files (consultant
+approval records) alongside the client-facing output.
+
+- **Committing them to the repo branch is fine.** They are the audit trail — journal entries,
+  provenance, checkpoint approvals — and belong in git like any other engagement output.
+- **Sharing them externally is not.** When packaging or referencing engagement deliverables for
+  EXTERNAL sharing — a client zip, a client package, or a deliverable-review PR description —
+  exclude any file prefixed `INTERNAL_` or `CHECKPOINT_`. If a PR body lists "Files Changed" or
+  links a deliverable for client-facing review, name only the client-safe files; internal files
+  can still appear in the PR's diff (that's normal review), just don't hand them to the client.
+
+This does not change how `/publish` commits, pushes, or opens the PR — it only governs what you
+call out as client-shareable when describing the PR's contents.
+
 ## Knowledge Harvest Check
 
 9. Before creating the PR, check if this branch contains engagement output files:

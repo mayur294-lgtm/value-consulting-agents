@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian Bank · Backbase · Commercial Proposal</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   PROPOSAL LONG-FORM — Frontline 2026 design language
+   Tokens: knowledge/design-system/frontline-tokens.json (Theme 1)
+   Modules: [1] language toggle (LTR/RTL aware)
+            [2] pricing transparency sliders
+            [3] executive readout → print-to-PDF
+   ══════════════════════════════════════════════════════════════════ */
+:root {
+  --navy:#041326;--blue:#3367FF;--blue-l:#E5EBFF;--blue-m:#C5D1FF;
+  --white:#FFFFFF;--off:#F3F6F9;--border:#CED2D7;
+  --text:#041326;--muted:#6B7786;--faint:#9CA3AF;
+  --red:#FF503C;--red-l:#FAE0DE;--amber:#B45309;--amb-l:#FFFBEB;
+  --green:#2ECC71;--grn-l:#ECFDF5;
+  --sp-2:0.5rem;--sp-3:1rem;--sp-4:1.5rem;--sp-5:2rem;--sp-6:3rem;--sp-7:4rem;
+  --sidebar-w:260px;--nav-h:64px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Libre Franklin','Trebuchet MS',sans-serif;font-weight:300;font-size:1rem;line-height:1.65;color:var(--text);background:var(--white);-webkit-font-smoothing:antialiased}
+html[data-lang="ar"] body{font-family:'IBM Plex Sans Arabic','Libre Franklin',sans-serif}
+a{color:var(--blue);text-decoration:none}
+h1,h2{font-weight:300}h1{line-height:1.08;letter-spacing:-0.5px}h2{line-height:1.12}
+h3{font-size:1.2rem;font-weight:500;margin-bottom:var(--sp-3)}
+p{margin-bottom:var(--sp-3)}strong{font-weight:600}
+.outer{max-width:1020px;margin:0 auto;padding:0 40px}
+section{padding:var(--sp-6) 0;border-bottom:1px solid var(--border)}
+.section--off{background:var(--off)}
+
+/* ── language pairing: only the active language's blocks render ── */
+html[data-lang="en"] [lang="ar"]{display:none !important}
+html[data-lang="ar"] [lang="en"]{display:none !important}
+
+/* ── TOP NAV ── */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;gap:14px;height:var(--nav-h);padding:0 20px;background:var(--navy);color:#fff;font-size:13px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;letter-spacing:.2px}
+.glyph{width:15px;height:15px;background:var(--blue);clip-path:polygon(0 52.4%,49.8% 52.4%,49.8% 0,100% 0,100% 100%,0 100%)}
+.top-nav__title{flex:1;font-weight:300;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lang-toggle{display:flex;border:1px solid rgba(255,255,255,.28)}
+.lang-toggle button{background:none;border:0;color:#fff;font:inherit;font-size:12px;font-weight:500;padding:6px 14px;cursor:pointer;opacity:.65}
+.lang-toggle button.active{background:var(--blue);opacity:1}
+.btn-readout{background:var(--blue);color:#fff;border:0;font:inherit;font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;padding:9px 16px;cursor:pointer;white-space:nowrap}
+.btn-readout:hover{filter:brightness(1.1)}
+
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;top:var(--nav-h);left:0;width:var(--sidebar-w);height:calc(100vh - var(--nav-h));overflow-y:auto;padding:22px 16px;border-right:1px solid var(--border);background:var(--white);z-index:90;font-size:13px}
+.sidebar a{display:block;padding:6px 16px;color:var(--muted);border-left:2px solid transparent}
+.sidebar a:hover,.sidebar a.active{background:var(--off);color:var(--blue);border-left-color:var(--blue)}
+.sidebar__label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--faint);padding:14px 10px 6px}
+.main{margin-left:var(--sidebar-w);margin-top:var(--nav-h)}
+
+/* RTL flips */
+html[dir="rtl"] .sidebar{left:auto;right:0;border-right:0;border-left:1px solid var(--border)}
+html[dir="rtl"] .sidebar a{border-left:0;border-right:2px solid transparent}
+html[dir="rtl"] .sidebar a:hover,html[dir="rtl"] .sidebar a.active{border-right-color:var(--blue)}
+html[dir="rtl"] .main{margin-left:0;margin-right:var(--sidebar-w)}
+html[dir="rtl"] .callout{border-left:0;border-right:3px solid}
+
+/* ── HERO ── */
+.hero{background:var(--navy);color:#fff;padding:var(--sp-7) 0;margin-top:var(--nav-h)}
+.hero__badge{display:inline-block;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;background:var(--blue);margin-bottom:var(--sp-4)}
+.hero h1{font-size:clamp(34px,5vw,52px);margin-bottom:var(--sp-3)}
+.hero__sub{opacity:.85;max-width:720px;margin-bottom:var(--sp-6)}
+.hero__stats{display:flex;flex-wrap:wrap;gap:12px}
+.hero__stat{padding:12px 22px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);min-width:150px}
+.hero__stat-label{display:block;font-size:11px;font-weight:500;letter-spacing:.9px;text-transform:uppercase;color:#7FA0FF;margin-bottom:4px}
+.hero__stat-value{font-size:19px;font-weight:500}
+
+/* ── SECTION HEADERS / CARDS / TABLES ── */
+.sh{margin-bottom:var(--sp-5)}
+.sh-eyebrow{font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:var(--sp-2)}
+.sh-eyebrow::before{content:'+ ';color:var(--blue)}
+.sh h2{font-size:clamp(24px,3.2vw,34px)}
+.lead{color:var(--muted);max-width:760px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{background:var(--white);border:1px solid var(--border);padding:22px}
+.card h4{font-size:15px;font-weight:600;margin-bottom:8px}
+.card .kpi{font-size:26px;font-weight:600;color:var(--blue);margin-bottom:6px}
+.card p{font-size:13.5px;color:var(--muted);margin:0}
+.callout{padding:16px 20px;margin:var(--sp-4) 0;border-left:3px solid var(--blue);background:var(--blue-l);font-size:14px}
+.callout p{margin:0}
+.dt{width:100%;border-collapse:collapse;font-size:13.5px}
+.dt thead{background:var(--navy);color:#fff}
+.dt th{text-align:start;padding:10px 14px;font-size:10px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase}
+.dt td{padding:11px 14px;border-bottom:1px solid var(--border)}
+.dt td:last-child.num,.dt .num{text-align:end;font-variant-numeric:tabular-nums}
+.phase{display:flex;gap:16px;margin-bottom:14px;align-items:flex-start}
+.phase__n{flex:0 0 34px;height:34px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}
+.phase h4{font-size:15px;font-weight:600}
+.phase p{font-size:13.5px;color:var(--muted);margin:0}
+
+/* ── [2] PRICING SLIDERS ── */
+.pricing-wrap{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+@media(max-width:900px){.pricing-wrap{grid-template-columns:1fr}}
+.driver{margin-bottom:22px}
+.driver__head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:10px}
+.driver__label{font-size:13px;font-weight:500}
+.driver__value{font-size:16px;font-weight:600;color:var(--blue);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;appearance:none;-webkit-appearance:none;height:4px;background:linear-gradient(to right,var(--blue) var(--fill,50%),var(--border) var(--fill,50%));outline:none}
+html[dir="rtl"] input[type=range]{background:linear-gradient(to left,var(--blue) var(--fill,50%),var(--border) var(--fill,50%))}
+input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--white);border:3px solid var(--blue);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--white);border:3px solid var(--blue);cursor:pointer}
+.driver__scale{display:flex;justify-content:space-between;font-size:11px;color:var(--faint);margin-top:4px}
+.presets{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+.presets button{font:inherit;font-size:12px;font-weight:500;padding:7px 14px;border:1px solid var(--border);background:var(--white);cursor:pointer}
+.presets button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.math-panel{background:var(--off);border:1px solid var(--border);padding:22px}
+.math-panel h4{font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.math-row{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;padding:7px 0;border-bottom:1px dashed var(--border)}
+.math-row .m-label{color:var(--muted)}
+.math-row .m-num{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.math-row.total{border-bottom:0;border-top:2px solid var(--navy);margin-top:6px;padding-top:12px;font-size:16px}
+.math-row.total .m-label{color:var(--text);font-weight:600}
+.math-row.total .m-num{font-weight:700;color:var(--blue);font-size:19px}
+.tier-note{font-size:12px;color:var(--muted);margin-top:12px}
+.tier-note table{border-collapse:collapse;margin-top:6px}
+.tier-note td{padding:3px 12px 3px 0;font-variant-numeric:tabular-nums}
+html[dir="rtl"] .tier-note td{padding:3px 0 3px 12px}
+.tier-note .on{color:var(--blue);font-weight:600}
+.disclaim{font-size:12px;color:var(--muted);border-top:1px solid var(--border);margin-top:18px;padding-top:12px}
+
+/* ── DARK CTA ── */
+.cta{background:var(--navy);color:#fff;padding:var(--sp-6) 0;text-align:center}
+.cta h2{font-size:clamp(22px,3vw,30px);margin-bottom:10px}
+.cta p{opacity:.8;max-width:640px;margin:0 auto var(--sp-4)}
+
+/* ── [3] EXECUTIVE READOUT (print-only) ── */
+#readout{display:none}
+.doc-footer{padding:26px 0;font-size:12px;color:var(--muted)}
+
+@media print{
+  .top-nav,.sidebar,.no-print{display:none !important}
+  .main{margin:0 !important}
+  section{page-break-inside:avoid}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  /* readout mode: only the readout prints */
+  body.print-readout .main,body.print-readout .hero{display:none !important}
+  body.print-readout #readout{display:block !important}
+  @page{size:A4;margin:13mm}
+}
+.ro-page{padding:0 0 8mm}
+.ro-head{background:var(--navy);color:#fff;padding:22px 26px;display:flex;align-items:flex-start;gap:14px;margin-bottom:20px}
+.ro-head .glyph{margin-top:6px;flex:0 0 15px}
+.ro-head h1{font-size:24px;font-weight:400;line-height:1.2}
+.ro-head .ro-meta{font-size:11px;opacity:.8;margin-top:6px}
+.ro-h2{font-size:12px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--blue);margin:18px 0 8px}
+.ro-stats{display:flex;gap:10px;margin:14px 0}
+.ro-stat{flex:1;border:1px solid var(--border);padding:10px 14px}
+.ro-stat b{display:block;font-size:18px;font-weight:600;color:var(--navy)}
+.ro-stat span{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.ro-body{font-size:13px;line-height:1.6}
+.ro-body p{margin-bottom:8px}
+.ro-foot{border-top:1px solid var(--border);margin-top:18px;padding-top:8px;font-size:10.5px;color:var(--faint)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ TOP NAV ═══════════ -->
+<nav class="top-nav">
+  <div class="brand"><span class="glyph"></span><span>Backbase</span></div>
+  <span style="opacity:.4">|</span>
+  <div class="top-nav__title">
+    <span lang="en">Meridian Bank · Digital Banking Proposal</span>
+    <span lang="ar">بنك ميريديان · عرض الخدمات المصرفية الرقمية</span>
+  </div>
+  <div class="lang-toggle no-print" id="langToggle">
+    <button data-setlang="en" class="active">EN</button>
+    <button data-setlang="ar">العربية</button>
+  </div>
+  <button class="btn-readout no-print" id="btnReadout">
+    <span lang="en">Executive readout (PDF)</span>
+    <span lang="ar">الملخص التنفيذي (PDF)</span>
+  </button>
+</nav>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar no-print">
+  <div class="sidebar__label"><span lang="en">Proposal</span><span lang="ar">العرض</span></div>
+  <a href="#s-exec" class="active"><span lang="en">Executive summary</span><span lang="ar">الملخص التنفيذي</span></a>
+  <a href="#s-value"><span lang="en">The value opportunity</span><span lang="ar">فرصة القيمة</span></a>
+  <a href="#s-scope"><span lang="en">Scope &amp; approach</span><span lang="ar">النطاق والمنهجية</span></a>
+  <a href="#s-invest"><span lang="en">Projected investment</span><span lang="ar">الاستثمار المتوقع</span></a>
+  <a href="#s-scenarios"><span lang="en">Scenarios</span><span lang="ar">السيناريوهات</span></a>
+  <a href="#s-assump"><span lang="en">Assumptions</span><span lang="ar">الافتراضات</span></a>
+  <a href="#s-next"><span lang="en">Next steps</span><span lang="ar">الخطوات التالية</span></a>
+</aside>
+
+<main class="main">
+
+<!-- ═══════════ HERO ═══════════ -->
+<header class="hero">
+  <div class="outer">
+    <span class="hero__badge"><span lang="en">Draft for discussion</span><span lang="ar">مسودة للنقاش</span></span>
+    <h1><span lang="en">One bank, one platform, measurable value.</span>
+        <span lang="ar">بنك واحد، منصة واحدة، قيمة قابلة للقياس.</span></h1>
+    <p class="hero__sub">
+      <span lang="en">A phased path to unify Meridian Bank's digital channels on the Backbase platform, sized transparently against your volumes and priorities.</span>
+      <span lang="ar">مسار مرحلي لتوحيد القنوات الرقمية لبنك ميريديان على منصة Backbase، بتسعير شفاف مبني على أحجامكم وأولوياتكم.</span>
+    </p>
+    <div class="hero__stats">
+      <div class="hero__stat"><span class="hero__stat-label"><span lang="en">Projected TCV</span><span lang="ar">القيمة التعاقدية المتوقعة</span></span><span class="hero__stat-value" data-out="tcv">—</span></div>
+      <div class="hero__stat"><span class="hero__stat-label"><span lang="en">Term</span><span lang="ar">المدة</span></span><span class="hero__stat-value" data-out="termLabel">—</span></div>
+      <div class="hero__stat"><span class="hero__stat-label"><span lang="en">Time to first value</span><span lang="ar">الوقت حتى أول قيمة</span></span><span class="hero__stat-value"><span lang="en">16 weeks</span><span lang="ar">16 أسبوعًا</span></span></div>
+      <div class="hero__stat"><span class="hero__stat-label"><span lang="en">Value at stake</span><span lang="ar">القيمة المعرضة</span></span><span class="hero__stat-value"><span lang="en">€8–12M / yr</span><span lang="ar">8–12 مليون يورو سنويًا</span></span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════ EXEC SUMMARY ═══════════ -->
+<section id="s-exec">
+  <div class="outer">
+    <div class="sh">
+      <div class="sh-eyebrow"><span lang="en">Executive summary</span><span lang="ar">الملخص التنفيذي</span></div>
+      <h2><span lang="en">Why this, why now.</span><span lang="ar">لماذا هذا، ولماذا الآن.</span></h2>
+    </div>
+    <p class="lead">
+      <span lang="en">Meridian Bank has won the reach race: one in four retail customers already holds a digital relationship. The open race is activity. This proposal funds the platform, the journeys, and the operating rhythm that turn registered customers into daily users, with the commercial model laid out in the open so your team can test every number.</span>
+      <span lang="ar">حسم بنك ميريديان سباق الانتشار: واحد من كل أربعة عملاء أفراد لديه علاقة رقمية قائمة بالفعل. السباق المفتوح الآن هو التفاعل. يموّل هذا العرض المنصة والرحلات الرقمية ونموذج التشغيل الذي يحوّل العملاء المسجلين إلى مستخدمين يوميين، مع نموذج تجاري معروض بشفافية كاملة ليتمكن فريقكم من اختبار كل رقم.</span>
+    </p>
+    <div class="callout"><p>
+      <span lang="en"><strong>How to read this document:</strong> the investment section is interactive. Move the sliders to your own volumes and the projected pricing, and the math behind it, updates live. Nothing is hidden in a formula.</span>
+      <span lang="ar"><strong>كيف تقرأ هذه الوثيقة:</strong> قسم الاستثمار تفاعلي. حرّك المؤشرات إلى أحجامكم الفعلية وستتحدّث الأسعار المتوقعة، والحسابات خلفها، مباشرة. لا شيء مخفي في معادلة.</span>
+    </p></div>
+  </div>
+</section>
+
+<!-- ═══════════ VALUE ═══════════ -->
+<section id="s-value" class="section--off">
+  <div class="outer">
+    <div class="sh">
+      <div class="sh-eyebrow"><span lang="en">The value opportunity</span><span lang="ar">فرصة القيمة</span></div>
+      <h2><span lang="en">Three levers, one number each.</span><span lang="ar">ثلاث روافع، رقم واحد لكل منها.</span></h2>
+    </div>
+    <div class="grid3">
+      <div class="card">
+        <div class="kpi">€4.2M</div>
+        <h4><span lang="en">Activation</span><span lang="ar">التفعيل</span></h4>
+        <p><span lang="en">Every +1pt of monthly active customers is ~32K customers transacting again. Modeled conservatively at +4pts over the term.</span>
+           <span lang="ar">كل نقطة مئوية إضافية من العملاء النشطين شهريًا تعني نحو 32 ألف عميل يتعاملون من جديد. النموذج محافظ عند +4 نقاط خلال المدة.</span></p>
+      </div>
+      <div class="card">
+        <div class="kpi">€2.8M</div>
+        <h4><span lang="en">Cost to serve</span><span lang="ar">كلفة الخدمة</span></h4>
+        <p><span lang="en">Digital-first servicing deflects branch and call-center contacts; modeled on your contact volumes, not benchmarks.</span>
+           <span lang="ar">الخدمة الرقمية أولًا تخفّض تفاعلات الفروع ومراكز الاتصال؛ النموذج مبني على أحجام تواصلكم الفعلية لا على مؤشرات عامة.</span></p>
+      </div>
+      <div class="card">
+        <div class="kpi">€1.6M</div>
+        <h4><span lang="en">Time to market</span><span lang="ar">سرعة الإطلاق</span></h4>
+        <p><span lang="en">Journeys configured, not rebuilt: new propositions ship in weeks, and the platform carries them across segments.</span>
+           <span lang="ar">الرحلات تُهيّأ ولا يُعاد بناؤها: العروض الجديدة تُطلق خلال أسابيع، والمنصة تنقلها عبر الشرائح كافة.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SCOPE ═══════════ -->
+<section id="s-scope">
+  <div class="outer">
+    <div class="sh">
+      <div class="sh-eyebrow"><span lang="en">Scope &amp; approach</span><span lang="ar">النطاق والمنهجية</span></div>
+      <h2><span lang="en">Three phases, value first.</span><span lang="ar">ثلاث مراحل، القيمة أولًا.</span></h2>
+    </div>
+    <div class="phase"><div class="phase__n">1</div><div>
+      <h4><span lang="en">Foundation &amp; first journeys (weeks 1–16)</span><span lang="ar">الأساس والرحلات الأولى (الأسابيع 1–16)</span></h4>
+      <p><span lang="en">Platform live, onboarding and daily-banking journeys shipped, first measurable value.</span>
+         <span lang="ar">تشغيل المنصة، وإطلاق رحلات فتح الحسابات والخدمات اليومية، وأول قيمة قابلة للقياس.</span></p>
+    </div></div>
+    <div class="phase"><div class="phase__n">2</div><div>
+      <h4><span lang="en">Scale across segments (months 5–12)</span><span lang="ar">التوسّع عبر الشرائح (الأشهر 5–12)</span></h4>
+      <p><span lang="en">Extend to SME and affluent, retire duplicate channel stacks, lift activation.</span>
+         <span lang="ar">التوسّع إلى شرائح المنشآت الصغيرة والعملاء الميسورين، وإيقاف الأنظمة المكررة، ورفع التفعيل.</span></p>
+    </div></div>
+    <div class="phase"><div class="phase__n">3</div><div>
+      <h4><span lang="en">Intelligent engagement (year 2+)</span><span lang="ar">التفاعل الذكي (السنة الثانية+)</span></h4>
+      <p><span lang="en">Data-driven journeys and assisted servicing compound the activation gains.</span>
+         <span lang="ar">رحلات مدفوعة بالبيانات وخدمة معزّزة تضاعف مكاسب التفعيل.</span></p>
+    </div></div>
+  </div>
+</section>
+
+<!-- ═══════════ INVESTMENT (sliders) ═══════════ -->
+<section id="s-invest" class="section--off">
+  <div class="outer">
+    <div class="sh">
+      <div class="sh-eyebrow"><span lang="en">Projected investment</span><span lang="ar">الاستثمار المتوقع</span></div>
+      <h2><span lang="en">The math, in the open.</span><span lang="ar">الحساب، على المكشوف.</span></h2>
+      <p class="lead"><span lang="en">Set the drivers to your volumes. The projection updates live, and every line of the calculation stays visible.</span>
+         <span lang="ar">اضبط المؤشرات على أحجامكم. يتحدّث التوقع مباشرة، ويبقى كل سطر من الحساب ظاهرًا.</span></p>
+    </div>
+
+    <div class="presets no-print" id="presets">
+      <button data-preset="conservative"><span lang="en">Conservative</span><span lang="ar">متحفّظ</span></button>
+      <button data-preset="base" class="active"><span lang="en">Base</span><span lang="ar">أساسي</span></button>
+      <button data-preset="upside"><span lang="en">Upside</span><span lang="ar">طموح</span></button>
+    </div>
+
+    <div class="pricing-wrap">
+      <div>
+        <div class="driver">
+          <div class="driver__head">
+            <span class="driver__label"><span lang="en">Active digital users</span><span lang="ar">المستخدمون الرقميون النشطون</span></span>
+            <span class="driver__value" data-out="usersLabel">—</span>
+          </div>
+          <input type="range" id="drv-users" min="50000" max="500000" step="10000" value="150000">
+          <div class="driver__scale"><span>50K</span><span>500K</span></div>
+        </div>
+        <div class="driver">
+          <div class="driver__head">
+            <span class="driver__label"><span lang="en">Term (years)</span><span lang="ar">المدة (سنوات)</span></span>
+            <span class="driver__value" data-out="termYears">—</span>
+          </div>
+          <input type="range" id="drv-term" min="3" max="7" step="1" value="5">
+          <div class="driver__scale"><span>3</span><span>7</span></div>
+        </div>
+        <div class="driver">
+          <div class="driver__head">
+            <span class="driver__label"><span lang="en">Implementation services estimate</span><span lang="ar">تقدير خدمات التنفيذ</span></span>
+            <span class="driver__value" data-out="svcLabel">—</span>
+          </div>
+          <input type="range" id="drv-services" min="300000" max="1500000" step="50000" value="650000">
+          <div class="driver__scale"><span>€300K</span><span>€1.5M</span></div>
+        </div>
+        <div class="tier-note">
+          <span lang="en"><strong>Published volume tiers</strong> (per active user, per year); the rate applied is highlighted:</span>
+          <span lang="ar"><strong>شرائح الحجم المعلنة</strong> (لكل مستخدم نشط سنويًا)؛ السعر المطبق مظلل:</span>
+          <table id="tierTable"></table>
+        </div>
+      </div>
+
+      <div class="math-panel">
+        <h4><span lang="en">Projected pricing · live calculation</span><span lang="ar">التسعير المتوقع · حساب مباشر</span></h4>
+        <div class="math-row"><span class="m-label"><span lang="en">Platform base fee / yr</span><span lang="ar">الرسم الأساسي للمنصة / سنة</span></span><span class="m-num" data-out="baseFee">—</span></div>
+        <div class="math-row"><span class="m-label" data-out="userLine"><span lang="en">User fee</span><span lang="ar">رسوم المستخدمين</span></span><span class="m-num" data-out="userFee">—</span></div>
+        <div class="math-row"><span class="m-label"><span lang="en">Software ACV (annual)</span><span lang="ar">قيمة الاشتراك السنوية للبرمجيات</span></span><span class="m-num" data-out="acv">—</span></div>
+        <div class="math-row"><span class="m-label" data-out="swLine"><span lang="en">Software over term</span><span lang="ar">البرمجيات على مدى العقد</span></span><span class="m-num" data-out="swTcv">—</span></div>
+        <div class="math-row"><span class="m-label"><span lang="en">Implementation services (one-off)</span><span lang="ar">خدمات التنفيذ (لمرة واحدة)</span></span><span class="m-num" data-out="svc">—</span></div>
+        <div class="math-row total"><span class="m-label"><span lang="en">Projected TCV</span><span lang="ar">القيمة التعاقدية الإجمالية المتوقعة</span></span><span class="m-num" data-out="tcv2">—</span></div>
+        <div class="math-row"><span class="m-label"><span lang="en">Effective cost per user / month</span><span lang="ar">الكلفة الفعلية لكل مستخدم / شهر</span></span><span class="m-num" data-out="perUser">—</span></div>
+        <div class="disclaim">
+          <span lang="en">Projected pricing on the published list basis, for planning and comparison. It is not a quote: the formal commercial proposal follows the standard quotation process and contract terms.</span>
+          <span lang="ar">تسعير متوقع وفق الأسعار المعلنة لأغراض التخطيط والمقارنة، وليس عرضًا ملزمًا: يصدر العرض التجاري الرسمي عبر إجراءات التسعير والعقود المعتمدة.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SCENARIOS ═══════════ -->
+<section id="s-scenarios">
+  <div class="outer">
+    <div class="sh">
+      <div class="sh-eyebrow"><span lang="en">Scenarios</span><span lang="ar">السيناريوهات</span></div>
+      <h2><span lang="en">Three honest futures.</span><span lang="ar">ثلاثة مستقبلات واقعية.</span></h2>
+    </div>
+    <div class="grid3">
+      <div class="card"><h4><span lang="en">Conservative</span><span lang="ar">متحفّظ</span></h4>
+        <p><span lang="en">100K users, 3-year term. Slowest ramp; value case still clears payback inside the term.</span>
+           <span lang="ar">100 ألف مستخدم، مدة 3 سنوات. أبطأ منحنى نمو؛ وما تزال حالة القيمة تسترد الاستثمار ضمن المدة.</span></p></div>
+      <div class="card" style="border-color:var(--blue);border-width:2px"><h4><span lang="en">Base (recommended)</span><span lang="ar">أساسي (مُوصى به)</span></h4>
+        <p><span lang="en">150K users, 5-year term. Matches your stated volumes and the phasing in this proposal.</span>
+           <span lang="ar">150 ألف مستخدم، مدة 5 سنوات. يطابق الأحجام المعلنة لديكم والمراحل الواردة في هذا العرض.</span></p></div>
+      <div class="card"><h4><span lang="en">Upside</span><span lang="ar">طموح</span></h4>
+        <p><span lang="en">300K users, 5-year term. Assumes the activation program hits plan; unit rate improves with the published tier.</span>
+           <span lang="ar">300 ألف مستخدم، مدة 5 سنوات. يفترض نجاح برنامج التفعيل وفق الخطة؛ ويتحسّن سعر الوحدة وفق الشريحة المعلنة.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ ASSUMPTIONS ═══════════ -->
+<section id="s-assump" class="section--off">
+  <div class="outer">
+    <div class="sh">
+      <div class="sh-eyebrow"><span lang="en">Assumptions</span><span lang="ar">الافتراضات</span></div>
+      <h2><span lang="en">Every assumption, on the record.</span><span lang="ar">كل افتراض، موثّق.</span></h2>
+    </div>
+    <table class="dt">
+      <thead><tr>
+        <th><span lang="en">Assumption</span><span lang="ar">الافتراض</span></th>
+        <th><span lang="en">Basis</span><span lang="ar">الأساس</span></th>
+        <th><span lang="en">To validate with</span><span lang="ar">جهة التحقق</span></th>
+      </tr></thead>
+      <tbody>
+        <tr><td><span lang="en">150K active digital users at start</span><span lang="ar">150 ألف مستخدم رقمي نشط عند البداية</span></td>
+            <td><span lang="en">Client discovery figures</span><span lang="ar">أرقام الاستكشاف من العميل</span></td>
+            <td><span lang="en">Digital team</span><span lang="ar">الفريق الرقمي</span></td></tr>
+        <tr><td><span lang="en">16-week first-value milestone</span><span lang="ar">أول قيمة خلال 16 أسبوعًا</span></td>
+            <td><span lang="en">Comparable delivered programs</span><span lang="ar">برامج مماثلة تم تسليمها</span></td>
+            <td><span lang="en">Joint delivery plan</span><span lang="ar">خطة التنفيذ المشتركة</span></td></tr>
+        <tr><td><span lang="en">Value at stake €8–12M / yr</span><span lang="ar">قيمة معرضة 8–12 مليون يورو سنويًا</span></td>
+            <td><span lang="en">Value model, conservative case</span><span lang="ar">نموذج القيمة، الحالة المتحفظة</span></td>
+            <td><span lang="en">Finance, in the value workshop</span><span lang="ar">الإدارة المالية، في ورشة القيمة</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════ NEXT STEPS + CTA ═══════════ -->
+<section id="s-next" style="border-bottom:0;padding-bottom:0">
+  <div class="outer">
+    <div class="sh">
+      <div class="sh-eyebrow"><span lang="en">Next steps</span><span lang="ar">الخطوات التالية</span></div>
+      <h2><span lang="en">One workshop makes these numbers yours.</span><span lang="ar">ورشة واحدة تجعل هذه الأرقام أرقامكم.</span></h2>
+    </div>
+    <div class="phase"><div class="phase__n">1</div><div><h4><span lang="en">Value workshop (half day)</span><span lang="ar">ورشة القيمة (نصف يوم)</span></h4><p><span lang="en">Replace every projected number with your validated one.</span><span lang="ar">استبدال كل رقم متوقع برقمكم المعتمد.</span></p></div></div>
+    <div class="phase"><div class="phase__n">2</div><div><h4><span lang="en">Solution review</span><span lang="ar">مراجعة الحل</span></h4><p><span lang="en">Architecture and scope confirmed with your IT leadership.</span><span lang="ar">تأكيد البنية والنطاق مع قيادة تقنية المعلومات لديكم.</span></p></div></div>
+    <div class="phase"><div class="phase__n">3</div><div><h4><span lang="en">Formal proposal</span><span lang="ar">العرض الرسمي</span></h4><p><span lang="en">Commercial proposal issued through the standard quotation process.</span><span lang="ar">إصدار العرض التجاري عبر إجراءات التسعير المعتمدة.</span></p></div></div>
+  </div>
+  <div class="cta" style="margin-top:40px">
+    <div class="outer">
+      <h2><span lang="en">Ready when you are.</span><span lang="ar">جاهزون متى كنتم جاهزين.</span></h2>
+      <p><span lang="en">Download the executive readout above, or book the value workshop and we bring the model to your numbers.</span>
+         <span lang="ar">حمّلوا الملخص التنفيذي أعلاه، أو احجزوا ورشة القيمة لنطبّق النموذج على أرقامكم.</span></p>
+    </div>
+  </div>
+  <div class="outer doc-footer">
+    <span lang="en">Prepared by Backbase Value Consulting · Projected figures for planning purposes · <span data-out="today"></span></span>
+    <span lang="ar">إعداد فريق استشارات القيمة في Backbase · أرقام متوقعة لأغراض التخطيط · <span data-out="today2"></span></span>
+  </div>
+</main>
+
+<!-- ═══════════ EXECUTIVE READOUT (prints via the button) ═══════════ -->
+<div id="readout">
+  <div class="ro-page">
+    <div class="ro-head">
+      <span class="glyph"></span>
+      <div>
+        <h1><span lang="en">Meridian Bank · Executive readout</span><span lang="ar">بنك ميريديان · الملخص التنفيذي</span></h1>
+        <div class="ro-meta"><span lang="en">Backbase digital banking proposal · generated </span><span lang="ar">عرض Backbase للخدمات المصرفية الرقمية · أُنشئ في </span><span data-out="roDate"></span></div>
+      </div>
+    </div>
+    <div class="ro-body">
+      <div class="ro-h2"><span lang="en">The case in one paragraph</span><span lang="ar">الخلاصة في فقرة واحدة</span></div>
+      <p><span lang="en">Meridian has peer-grade reach; activity is the gap. This program funds the platform and journeys that move monthly activation, with €8–12M a year at stake on the conservative value model and first value in 16 weeks.</span>
+         <span lang="ar">يمتلك ميريديان انتشارًا يضاهي نظراءه؛ والفجوة في التفاعل. يموّل هذا البرنامج المنصة والرحلات التي تحرّك التفعيل الشهري، مع قيمة معرضة تتراوح بين 8 و12 مليون يورو سنويًا وفق النموذج المتحفظ، وأول قيمة خلال 16 أسبوعًا.</span></p>
+      <div class="ro-h2"><span lang="en">Projected investment · as configured in this document</span><span lang="ar">الاستثمار المتوقع · كما هو مضبوط في هذه الوثيقة</span></div>
+      <div class="ro-stats">
+        <div class="ro-stat"><b data-out="roTcv">—</b><span><span lang="en">Projected TCV</span><span lang="ar">القيمة الإجمالية المتوقعة</span></span></div>
+        <div class="ro-stat"><b data-out="roAcv">—</b><span><span lang="en">Software ACV</span><span lang="ar">القيمة السنوية للبرمجيات</span></span></div>
+        <div class="ro-stat"><b data-out="roUsers">—</b><span><span lang="en">Active users</span><span lang="ar">المستخدمون النشطون</span></span></div>
+        <div class="ro-stat"><b data-out="roTerm">—</b><span><span lang="en">Term</span><span lang="ar">المدة</span></span></div>
+      </div>
+      <p style="font-size:11.5px;color:var(--muted)"><span lang="en">Configuration: </span><span lang="ar">الإعداد: </span><span data-out="roConfig"></span></p>
+      <div class="ro-h2"><span lang="en">Next steps</span><span lang="ar">الخطوات التالية</span></div>
+      <p>1 · <span lang="en">Value workshop (half day): replace projected numbers with validated ones.</span><span lang="ar">ورشة القيمة (نصف يوم): استبدال الأرقام المتوقعة بأرقام معتمدة.</span><br>
+         2 · <span lang="en">Solution review with IT leadership.</span><span lang="ar">مراجعة الحل مع قيادة تقنية المعلومات.</span><br>
+         3 · <span lang="en">Formal proposal via the standard quotation process.</span><span lang="ar">العرض الرسمي عبر إجراءات التسعير المعتمدة.</span></p>
+    </div>
+    <div class="ro-foot">
+      <span lang="en">Projected pricing on the published list basis; not a quote. Prepared by Backbase Value Consulting.</span>
+      <span lang="ar">تسعير متوقع وفق الأسعار المعلنة وليس عرضًا ملزمًا. إعداد فريق استشارات القيمة في Backbase.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════ [1] LANGUAGE TOGGLE ════════ */
+/* numerals: 'ar-SA-u-nu-latn' keeps Western digits (the usual convention for Gulf
+   financial documents); switch to plain 'ar-SA' for Arabic-Indic numerals */
+const LANGS = {en:{dir:'ltr',locale:'en-GB'}, ar:{dir:'rtl',locale:'ar-SA-u-nu-latn'}};
+let lang = 'en';
+try {
+  const stored = localStorage.getItem('prop_lang');
+  if (stored && LANGS[stored]) lang = stored;   // guard: stale/foreign values must not block the initial paint
+} catch(e){}
+function setLang(l){
+  if(!LANGS[l]) return;
+  lang = l;
+  const root = document.documentElement;
+  root.setAttribute('data-lang', l);
+  root.setAttribute('lang', l);
+  root.setAttribute('dir', LANGS[l].dir);
+  document.querySelectorAll('#langToggle button').forEach(b =>
+    b.classList.toggle('active', b.dataset.setlang === l));
+  try { localStorage.setItem('prop_lang', l); } catch(e){}
+  recompute(); // re-render numbers in the new locale
+}
+document.querySelectorAll('#langToggle button').forEach(b =>
+  b.addEventListener('click', () => setLang(b.dataset.setlang)));
+
+/* ════════ [2] PRICING MODEL — edit per deal ════════ */
+const PRICING = {
+  currency: 'EUR',
+  baseFee: 450000,                      // platform base fee, per year
+  tiers: [                              // published volume tiers: per active user / yr
+    {upTo: 150000, rate: 2.40},
+    {upTo: 300000, rate: 2.10},
+    {upTo: Infinity, rate: 1.90},
+  ],
+  presets: {
+    conservative: {users: 100000, term: 3, services: 500000},
+    base:         {users: 150000, term: 5, services: 650000},
+    upside:       {users: 300000, term: 5, services: 800000},
+  },
+};
+const $ = id => document.getElementById(id);
+const outs = sel => document.querySelectorAll(`[data-out="${sel}"]`);
+function setOut(key, val){ outs(key).forEach(el => { el.textContent = val; }); }
+function fmtMoney(n){
+  return new Intl.NumberFormat(LANGS[lang].locale,
+    {style:'currency', currency: PRICING.currency, maximumFractionDigits:0}).format(n);
+}
+function fmtNum(n){ return new Intl.NumberFormat(LANGS[lang].locale).format(n); }
+function fmtRate(n){
+  return new Intl.NumberFormat(LANGS[lang].locale,
+    {style:'currency', currency: PRICING.currency, minimumFractionDigits:2, maximumFractionDigits:2}).format(n);
+}
+function tierFor(users){
+  for (const t of PRICING.tiers) if (users <= t.upTo) return t;
+  return PRICING.tiers[PRICING.tiers.length-1];
+}
+function paintSlider(el){
+  const pct = (el.value - el.min) / (el.max - el.min) * 100;
+  el.style.setProperty('--fill', pct + '%');
+}
+function recompute(){
+  const users = +$('drv-users').value;
+  const term  = +$('drv-term').value;
+  const services = +$('drv-services').value;
+  ['drv-users','drv-term','drv-services'].forEach(id => paintSlider($(id)));
+  const tier = tierFor(users);
+  const userFee = users * tier.rate;
+  const acv = PRICING.baseFee + userFee;
+  const swTcv = acv * term;
+  const tcv = swTcv + services;
+  const perUserMonth = acv / users / 12;
+
+  setOut('usersLabel', fmtNum(users));
+  setOut('termYears', fmtNum(term));
+  setOut('svcLabel', fmtMoney(services));
+  setOut('baseFee', fmtMoney(PRICING.baseFee));
+  setOut('userFee', fmtMoney(userFee));
+  setOut('acv', fmtMoney(acv));
+  setOut('swTcv', fmtMoney(swTcv));
+  setOut('svc', fmtMoney(services));
+  setOut('tcv', fmtMoney(tcv));
+  setOut('tcv2', fmtMoney(tcv));
+  setOut('perUser', new Intl.NumberFormat(LANGS[lang].locale,
+    {style:'currency', currency: PRICING.currency, maximumFractionDigits:2}).format(perUserMonth));
+  const termUnit = lang === 'ar' ? 'سنوات' : 'yrs';
+  setOut('termLabel', `${fmtNum(term)} ${termUnit}`);
+  // explanatory line labels with live numbers (the transparency promise)
+  const x = '×';
+  outs('userLine').forEach(el => { el.textContent =
+    lang === 'ar'
+      ? `رسوم المستخدمين: ${fmtNum(users)} ${x} ${fmtRate(tier.rate)}`
+      : `User fee: ${fmtNum(users)} ${x} ${fmtRate(tier.rate)} /user/yr`; });
+  outs('swLine').forEach(el => { el.textContent =
+    lang === 'ar'
+      ? `البرمجيات: القيمة السنوية ${x} ${fmtNum(term)} سنوات`
+      : `Software: ACV ${x} ${fmtNum(term)} yrs`; });
+  // tier table with the active tier highlighted
+  const tt = $('tierTable');
+  tt.innerHTML = '';
+  let lo = 0;
+  PRICING.tiers.forEach(t => {
+    const row = document.createElement('tr');
+    const bandTop = (t.upTo === Infinity) ? (lang==='ar' ? `أكثر من ${fmtNum(lo)}` : `${fmtNum(lo)}+`)
+      : `${fmtNum(lo)} – ${fmtNum(t.upTo)}`;
+    row.innerHTML = `<td>${bandTop}</td><td>${fmtRate(t.rate)}</td>`;
+    if (t === tier) row.className = 'on';
+    tt.appendChild(row);
+    lo = t.upTo === Infinity ? lo : t.upTo;
+  });
+  // readout mirrors current state
+  setOut('roTcv', fmtMoney(tcv));
+  setOut('roAcv', fmtMoney(acv));
+  setOut('roUsers', fmtNum(users));
+  setOut('roTerm', `${fmtNum(term)} ${termUnit}`);
+  outs('roConfig').forEach(el => { el.textContent =
+    lang === 'ar'
+      ? `${fmtNum(users)} مستخدمًا نشطًا · ${fmtNum(term)} سنوات · خدمات ${fmtMoney(services)} · شريحة السعر ${fmtRate(tier.rate)}/مستخدم/سنة`
+      : `${fmtNum(users)} active users · ${fmtNum(term)}-year term · ${fmtMoney(services)} services · ${fmtRate(tier.rate)}/user/yr tier`; });
+  // clear preset highlight if drivers moved off a preset
+  const match = Object.entries(PRICING.presets).find(([,p]) =>
+    p.users === users && p.term === term && p.services === services);
+  document.querySelectorAll('#presets button').forEach(b =>
+    b.classList.toggle('active', !!match && b.dataset.preset === match[0]));
+}
+['drv-users','drv-term','drv-services'].forEach(id =>
+  $(id).addEventListener('input', recompute));
+document.querySelectorAll('#presets button').forEach(b =>
+  b.addEventListener('click', () => {
+    const p = PRICING.presets[b.dataset.preset];
+    $('drv-users').value = p.users;
+    $('drv-term').value = p.term;
+    $('drv-services').value = p.services;
+    recompute();
+  }));
+
+/* ════════ [3] EXECUTIVE READOUT → PDF ════════ */
+$('btnReadout').addEventListener('click', () => {
+  recompute();                                   // snapshot current state
+  const d = new Date();
+  const ds = new Intl.DateTimeFormat(LANGS[lang].locale, {dateStyle:'long'}).format(d);
+  setOut('roDate', ds);
+  document.body.classList.add('print-readout');
+  window.print();
+});
+window.addEventListener('afterprint', () =>
+  document.body.classList.remove('print-readout'));
+
+/* ════════ sidebar active state + footer date ════════ */
+const secs = [...document.querySelectorAll('section[id]')];
+const links = [...document.querySelectorAll('.sidebar a')];
+window.addEventListener('scroll', () => {
+  let cur = secs[0];
+  for (const s of secs) if (s.getBoundingClientRect().top < 140) cur = s;
+  links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + cur.id));
+}, {passive:true});
+/* footer dates: each language's span formats in its own locale */
+setOut('today', new Intl.DateTimeFormat(LANGS.en.locale, {dateStyle:'long'}).format(new Date()));
+setOut('today2', new Intl.DateTimeFormat(LANGS.ar.locale, {dateStyle:'long'}).format(new Date()));
+
+setLang(lang);   // initial paint (also runs recompute)
+
+/* headless/automation hook: opening the file with ?readout=1 (optionally &lang=ar)
+   pre-arms readout print mode, so `chrome --headless --print-to-pdf` yields the
+   executive readout without clicking the button */
+const qs = new URLSearchParams(location.search);
+if (qs.get('lang')) setLang(qs.get('lang'));
+if (qs.has('readout')) {
+  const ds = new Intl.DateTimeFormat(LANGS[lang].locale, {dateStyle:'long'}).format(new Date());
+  setOut('roDate', ds);
+  document.body.classList.add('print-readout');
+}
+</script>
+</body>
+</html>

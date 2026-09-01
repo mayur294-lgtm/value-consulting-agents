@@ -39,6 +39,7 @@ OUTPUT = ROOT / "docs/rollout/cortex-cheat-sheet.html"
 ASSETS = ROOT / "docs/rollout/assets"
 COMMANDS_DIR = ROOT / ".claude/commands"
 AGENTS_DIR = ROOT / ".claude/agents"
+SKILLS_DIR = ROOT / ".claude/skills"
 
 
 # ---------------------------------------------------------------- drift check
@@ -50,11 +51,18 @@ def all_entries(cat: dict) -> list[dict]:
     return rows
 
 
-def on_disk() -> tuple[set[str], set[str]]:
-    """Commands and agents actually present, excluding deprecated/ subdirs."""
+def on_disk() -> tuple[set[str], set[str], set[str]]:
+    """Commands, agents and packaged skills present, excluding deprecated/ subdirs.
+
+    .claude/skills/ has to be looked at as well as .claude/commands/: a skill can
+    be shipped either way, and a sheet that only knows about one of them goes
+    stale silently, which is the whole thing this check exists to prevent.
+    """
     cmds = {p.stem for p in COMMANDS_DIR.glob("*.md")}
     agents = {p.stem for p in AGENTS_DIR.glob("*.md")}
-    return cmds, agents
+    skills = {d.name for d in SKILLS_DIR.glob("*/") if (d / "SKILL.md").exists()} \
+        if SKILLS_DIR.exists() else set()
+    return cmds, agents, skills
 
 
 def catalog_names(cat: dict) -> tuple[dict[str, str], dict[str, str]]:
@@ -71,16 +79,17 @@ def catalog_names(cat: dict) -> tuple[dict[str, str], dict[str, str]]:
 
 
 def check(cat: dict) -> int:
-    disk_cmds, disk_agents = on_disk()
+    disk_cmds, disk_agents, disk_skills = on_disk()
     cat_cmds, cat_agents = catalog_names(cat)
     excl_a = set(cat.get("excluded_agents") or [])
     excl_c = set(cat.get("excluded_commands") or [])
+    excl_s = set(cat.get("excluded_skills") or [])
 
     problems: list[str] = []
     pending: list[str] = []
 
     for name, status in sorted(cat_cmds.items()):
-        if name in disk_cmds:
+        if name in disk_cmds or name in disk_skills:
             continue
         line = f"catalog lists /{name} but .claude/commands/{name}.md does not exist"
         (pending if status == "pending" else problems).append(line)
@@ -92,6 +101,21 @@ def check(cat: dict) -> int:
 
     for name in sorted(disk_cmds - set(cat_cmds) - excl_c):
         problems.append(f"/{name} exists in the repo but is missing from the catalog")
+    for name in sorted(disk_skills - set(cat_cmds) - excl_s):
+        problems.append(f"skill {name} exists in .claude/skills/ but is missing "
+                        f"from the catalog")
+
+    # A `pending` entry that has since landed keeps showing a "Coming" badge on
+    # something people can already run. Nothing else catches that, because a
+    # pending item is only ever checked for being absent.
+    for name, status in sorted(cat_cmds.items()):
+        if status == "pending" and (name in disk_cmds or name in disk_skills):
+            problems.append(f"/{name} is marked `pending` but has landed — drop "
+                            f"its status/pending_ref so it stops showing as Coming")
+    for name, status in sorted(cat_agents.items()):
+        if status == "pending" and name in disk_agents:
+            problems.append(f"agent {name} is marked `pending` but has landed — "
+                            f"drop its status/pending_ref")
     for name in sorted(disk_agents - set(cat_agents) - excl_a):
         problems.append(f"agent {name} exists in the repo but is missing from the catalog")
 
@@ -116,7 +140,7 @@ def check(cat: dict) -> int:
         print("\nFix docs/rollout/catalog.yaml, then rerun `python3 tools/build_cheatsheet.py`.")
         return 1
     print(f"Catalog is in sync ({len(cat_cmds)} commands, {len(cat_agents)} agents, "
-          f"{len(pending)} pending)")
+          f"{len(disk_skills)} packaged skills, {len(pending)} pending)")
     return 0
 
 
@@ -136,6 +160,8 @@ def tag(status: str) -> str:
         return '<span class="cs-new">New</span>'
     if status == "pending":
         return '<span class="cs-pending">Coming</span>'
+    if status == "beta":
+        return '<span class="cs-beta">Beta</span>'
     return ""
 
 
@@ -163,8 +189,26 @@ def how_cell(e: dict) -> str:
     return out
 
 
+def kind(e: dict) -> str:
+    """Skill or agent. A skill is a slash command you type; an agent you ask for."""
+    if e.get("cmd"):
+        return '<span class="cs-kind cs-kind--skill">Skill</span>'
+    return '<span class="cs-kind cs-kind--agent">Agent</span>'
+
+
+def keywords(e: dict) -> str:
+    """Hidden synonyms so the search box finds a row by the word people reach for.
+
+    The filter matches on row text, so searching "plan" used to return nothing
+    even though the Roadmap row was right there. These are never displayed but
+    textContent still sees them.
+    """
+    return f'<span class="cs-kw">{esc(e["also"])}</span>' if e.get("also") else ""
+
+
 def row(e: dict) -> str:
-    return (f'          <tr><td><strong>{esc(e["name"])}</strong></td>'
+    return (f'          <tr><td><strong>{esc(e["name"])}</strong>{keywords(e)}</td>'
+            f'<td>{kind(e)}</td>'
             f'<td>{how_cell(e)}</td>'
             f'<td>{esc(e["does"])}</td>'
             f'<td class="cs-eg">{esc(e["eg"])}</td></tr>')
@@ -188,7 +232,7 @@ def render_group(g: dict, n: int) -> str:
     </div>
     <div class="table-wrap">
       <table class="dt">
-        <thead><tr><th style="width:15%">Name</th><th style="width:20%">Type this</th><th style="width:33%">What it does</th><th>Example</th></tr></thead>
+        <thead><tr><th style="width:14%">Name</th><th style="width:7%">Kind</th><th style="width:18%">Type this</th><th style="width:30%">What it does</th><th>Example</th></tr></thead>
         <tbody>
 {rows}
         </tbody>
@@ -207,7 +251,8 @@ def render_pipelines(cat: dict, n: int) -> str:
         cast = "".join(f'<img class="cs-chip" src="{data_uri(c)}" alt="" title="{c}">'
                        for c in (e.get("cast") or []) if data_uri(c))
         cast = f'<div class="cs-cast">{cast}</div>' if cast else ""
-        rows.append(f'          <tr><td><strong>{esc(e["name"])}</strong>{cast}</td>'
+        rows.append(f'          <tr><td><strong>{esc(e["name"])}</strong>{keywords(e)}{cast}</td>'
+                    f'<td><span class="cs-kind cs-kind--pipe">Pipeline</span></td>'
                     f'<td>{how_cell(e)}</td>'
                     f'<td>{esc(e["does"]).strip()}</td>'
                     f'<td class="cs-eg">{esc(e["eg"])}</td></tr>')
@@ -221,7 +266,7 @@ def render_pipelines(cat: dict, n: int) -> str:
     </div>
     <div class="table-wrap">
       <table class="dt">
-        <thead><tr><th style="width:19%">Name</th><th style="width:18%">Type this</th><th style="width:31%">What it does</th><th>Example</th></tr></thead>
+        <thead><tr><th style="width:17%">Name</th><th style="width:9%">Kind</th><th style="width:16%">Type this</th><th style="width:28%">What it does</th><th>Example</th></tr></thead>
         <tbody>
 {chr(10).join(rows)}
         </tbody>
@@ -338,9 +383,15 @@ def render(cat: dict) -> str:
 .cs-auto{{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}}
 .cs-sub{{display:block;margin-top:5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:var(--muted);word-break:normal;overflow-wrap:break-word;hyphens:none}}
 .cs-eg{{font-size:13.5px;color:var(--muted)}}
-.cs-new,.cs-pending{{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#fff;padding:2px 7px;margin-left:8px;vertical-align:2px}}
+.cs-kw{{display:none}}
+.cs-kind{{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:3px 8px;border-radius:3px;white-space:nowrap}}
+.cs-kind--skill{{background:var(--blue-l);color:var(--blue)}}
+.cs-kind--agent{{background:#EFE9FB;color:#6B4FC4}}
+.cs-kind--pipe{{background:var(--navy);color:#fff}}
+.cs-new,.cs-pending,.cs-beta{{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#fff;padding:2px 7px;margin-left:8px;vertical-align:2px}}
 .cs-new{{background:var(--blue)}}
 .cs-pending{{background:var(--amber)}}
+.cs-beta{{background:var(--navy)}}
 .cs-head{{display:flex;gap:26px;align-items:flex-end;margin-bottom:var(--sp-4)}}
 .cs-icon{{height:122px;width:auto;flex:0 0 auto;align-self:flex-end}}
 .cs-blurb{{margin:0;font-size:16px;line-height:1.55;color:var(--muted);max-width:60ch}}

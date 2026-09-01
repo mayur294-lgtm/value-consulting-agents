@@ -1,0 +1,24 @@
+{
+  "_synthetic": "SYNTHETIC NEGATIVE FIXTURE — fictional deal, eval use only.",
+  "_negative": "evals/goldens/deal_config_golden.json with the entire `deal` block removed — the block that carries every pricing input (software_tcv / lines, thirdparty_tcv, term_years, currency, region_list_pct, ramp_schedule). tools/proposal_builder.py MUST hard-error (non-zero exit) on this rather than default the missing numbers to zero and emit a strategy anyway. Scored by evals/rubrics/component/proposal_engine.py :: hard_error_on_missing_pricing_inputs.",
+  "economics": {
+    "gm_arr_pct": 86,
+    "floor_gm_pct": 70
+  },
+  "scenarios": {
+    "good": 5000,
+    "better": 8000,
+    "best": 10000
+  },
+  "strategy": {
+    "anchor": "best",
+    "alt": "better",
+    "target_bafo_discount_pct": 8
+  },
+  "levers": {
+    "1": {"used": ["Good/Better/Best anchored on Best"], "extract": ["reference rights"]}
+  },
+  "context": {
+    "switching_cost": "high"
+  }
+}

@@ -68,6 +68,50 @@ deliverables:
     monitor:
       - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_report.md
 
+  # proposal (#150) — the CLIENT-facing proposal HTML that /proposal-longform
+  # renders from the client-safe contract /proposal-builder hands it. Deterministic
+  # checks only (voice is header/register heuristics, not a judge — see the rubric
+  # docstring for why an uncalibrated judge would degrade a blocking gate).
+  # Golden = the fictional Meridian Bank demo rewritten to the RENEWAL story model.
+  # Each negative carries exactly ONE defect, so a failure names the regressed check.
+  # Calibrated 2026-08-19 (measured, threshold 0.85):
+  #   proposal_valid.html                  1.000  PASS
+  #   proposal_challenger_on_renewal.html  0.889  FAIL (hard-fail: story_model_matches_deal_type)
+  #   proposal_internal_leak.html          0.889  FAIL (hard-fail: zero_internal_content)
+  #   proposal_three_scenarios.html        0.889  FAIL (hard-fail: exactly_2_scenarios)
+  #   proposal_unsourced_roi.html          0.944  FAIL (hard-fail: no_unsourced_financial_claims)
+  #   proposal_missing_meta.html           0.889  FAIL (hard-fail: story_model_matches_deal_type)
+  #   proposal_comment_leak.html           0.889  FAIL (hard-fail: zero_internal_content)
+  #   proposal_binding_ar.html             0.944  FAIL (hard-fail: disclaimer_present)
+  # Negatives are blocked by HARD-FAIL, not by mean score: a single-defect fixture
+  # should not have to fail eight unrelated checks to be rejected, and each of the
+  # five integrity checks is declared hard_fail so it can never be averaged away.
+  # HARD-FAIL IS LOAD-BEARING BY DESIGN — every negative above scores 0.889-0.944,
+  # i.e. ABOVE the 0.85 threshold; on mean score alone all seven would pass. The
+  # threshold stays 0.85 (raising it to catch one defect out of nine checks would
+  # demand near-perfection of the golden and turn any cosmetic drift into a block).
+  # The last three were added 2026-08-19 with the review fixes they pin:
+  #   missing_meta  — deal type must be DECLARED; inferring it from the prose the
+  #                   check scores let a renewal-with-challenger self-certify.
+  #   comment_leak  — leak patterns now scan HTML-comment bodies too (_strip_tags
+  #                   deleted `<!-- … -->` whole, so view-source leaks passed).
+  #   binding_ar    — the Arabic disclaimer alternation carried a bare `ملزم`
+  #                   ("binding"), so a doc asserting the pricing IS binding passed.
+  proposal:
+    altitude: deliverable
+    evaluator: rubrics.deliverable.proposal
+    threshold: 0.85
+    goldens:
+      - evals/goldens/proposal_valid.html               # synthetic (Meridian Bank) — renewal story model
+    negatives:
+      - evals/goldens/negatives/proposal_challenger_on_renewal.html
+      - evals/goldens/negatives/proposal_unsourced_roi.html
+      - evals/goldens/negatives/proposal_three_scenarios.html
+      - evals/goldens/negatives/proposal_internal_leak.html
+      - evals/goldens/negatives/proposal_missing_meta.html
+      - evals/goldens/negatives/proposal_comment_leak.html
+      - evals/goldens/negatives/proposal_binding_ar.html
+
 # =============================================================================
 # rubric_calibration — the CALIBRATION tier (#201, design D3/D7/D10)
 # =============================================================================
@@ -1450,6 +1494,40 @@ components:
     moved_to: workshop-synthesis-rubric
     evaluator: rubrics.component.moved_to_rubric_calibration
     threshold: 1.00
+
+  # proposal-engine (#150) — the canonical deal engine tools/proposal_builder.py,
+  # exercised through its CLI on a committed synthetic config (fictional Meridian
+  # Bank, round numbers so the arithmetic is hand-checkable). Deterministic only:
+  # the engine is the "no LLM in the numbers" boundary, so every figure it emits is
+  # recomputed here independently rather than compared to a stored expectation.
+  # threshold 1.00 — a deterministic engine has no partial credit.
+  # Measured 2026-08-19: 1.000 (8/8 checks). The two hard-error checks score the
+  # negative fixtures evals/goldens/negatives/deal_config_missing_pricing.json (the
+  # whole `deal` block removed) and .../deal_config_missing_term.json (one required
+  # money field removed), both loaded by the evaluator — the components altitude
+  # wires only one `input:`.
+  proposal-engine:
+    altitude: component
+    threshold: 1.00
+    input: evals/goldens/deal_config_golden.json
+    code: [engine_runs_clean, selftest_passes, exit_arr_flag_recomputed, buffer_arithmetic_correct,
+           pricing_provenance_passthrough, deterministic_output, hard_error_on_missing_pricing_inputs,
+           hard_error_on_missing_required_deal_field]
+
+  # proposal-loop (#150) — the round-N negotiation loop. It has no binary: it is a
+  # command driving two artifacts, so what the gate checks is the CONTRACT between
+  # them — the round record carries what the next round re-plans from, and the deal
+  # notes carry the signals it must pick up in a machine-detectable shape.
+  # The paired notes fixture (evals/goldens/meeting_notes_golden.md) is loaded by
+  # the evaluator. threshold 1.00 — measured 2026-08-19: 1.000 (9/9 checks).
+  proposal-loop:
+    altitude: component
+    threshold: 1.00
+    input: evals/goldens/deal_state_golden.json
+    code: [deal_state_parses, rounds_schema_present, current_block_schema,
+           pending_meeting_notes_stub_shape, open_levers_snapshot_per_lever,
+           state_notes_cross_reference, meeting_notes_schema_headings,
+           meeting_notes_telemetry_block, planted_signals_detectable]
 
   # critty (#95) — verifies `.claude/commands/critty.md` (tickets #93/#94's
   # on-demand CTP escalation skill) force-loads the full protocol (with a

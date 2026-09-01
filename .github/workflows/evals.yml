@@ -318,6 +318,12 @@ jobs:
               "${deliverable_cmds[@]}"
               "--component mcp-query-guard"
               "--component pii-anonymizer"
+              # Proposal Builder (v5, PR #153). FIXED for the same reason as
+              # the CTP rows below: both are pure-code rows over tools/, and
+              # the deliverable `proposal` row is derived from the registry
+              # above, so only these two need naming here.
+              "--component proposal-engine --altitude unit"
+              "--component proposal-loop --altitude unit"
               # CTP (#95). FIXED rather than derived: the derive step maps a
               # CHANGED FILE to a component, and these two rows' subjects are a
               # knowledge standard and CLAUDE.md, which map to no component
