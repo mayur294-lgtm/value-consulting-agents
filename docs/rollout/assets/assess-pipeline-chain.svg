@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1712" viewBox="0 0 1240 1712" font-family="Libre Franklin, Helvetica Neue, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6B7786"/>
+    </marker>
+    <marker id="arwb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3367FF"/>
+    </marker>
+  </defs>
+  <rect width="1240" height="1712" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="10" height="1712" fill="#3367FF"/>
+
+  <text x="62" y="56" font-size="30" font-weight="700" fill="#041326">Ignite Assess — the pipeline chain</text>
+  <text x="62" y="82" font-size="14" fill="#6B7786">scripts/orchestrate.py · agents run by the script, not hand-orchestrated · Cortex</text>
+
+  <!-- input -->
+  <rect x="450" y="116" width="340" height="42" rx="16" fill="#FFFFFF" stroke="#6B7786" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="620" y="143" font-size="14" fill="#6B7786" text-anchor="middle">inputs/ — raw transcripts</text>
+  <line x1="620" y1="158" x2="620" y2="180" stroke="#6B7786" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- anonymise gate -->
+  <rect x="170" y="184" width="900" height="52" rx="16" fill="#F3F6F9" stroke="#6B7786" stroke-width="1.5"/>
+  <text x="200" y="209" font-size="15" font-weight="700" fill="#041326">▣  Anonymise gate — Presidio, fails closed</text>
+  <text x="200" y="228" font-size="13" fill="#6B7786">orchestrator-owned, never agent-run · output is a neutral per-run workspace; agents never see inputs/</text>
+  <line x1="620" y1="236" x2="620" y2="258" stroke="#6B7786" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- 1 discovery -->
+  <rect x="170" y="262" width="900" height="150" rx="16" fill="#FFFFFF" stroke="#041326" stroke-width="1.5"/>
+  <path d="M170,278 a16,16 0 0 1 16,-16 h868 a16,16 0 0 1 16,16 v18 h-900 z" fill="#041326"/>
+  <text x="190" y="288" font-size="13" font-weight="700" fill="#FFFFFF" letter-spacing="1">1 · DISCOVERY</text>
+  <rect x="190" y="310" width="860" height="38" rx="12" fill="#F3F6F9"/>
+  <text x="208" y="334" font-size="15" fill="#041326">discovery-transcript-interpreter <tspan fill="#3367FF" font-weight="700">×N in parallel</tspan> — one run per transcript → interim_transcript_*.md</text>
+  <rect x="190" y="356" width="860" height="38" rx="12" fill="#F3F6F9"/>
+  <text x="208" y="380" font-size="15" fill="#041326">discovery-transcript-interpreter <tspan fill="#3367FF" font-weight="700">(finalize)</tspan> — merges interims → evidence / pain-point / metric registers</text>
+  <line x1="620" y1="412" x2="620" y2="434" stroke="#6B7786" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- checkpoint -->
+  <rect x="360" y="438" width="520" height="40" rx="20" fill="#FFFFFF" stroke="#FF503C" stroke-width="1.5"/>
+  <text x="620" y="464" font-size="14" font-weight="700" fill="#FF503C" text-anchor="middle">◆ CONSULTANT CHECKPOINT — built in Python, no LLM</text>
+  <line x1="620" y1="478" x2="620" y2="500" stroke="#6B7786" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- 2A -->
+  <rect x="170" y="504" width="900" height="248" rx="16" fill="#FFFFFF" stroke="#041326" stroke-width="1.5"/>
+  <path d="M170,520 a16,16 0 0 1 16,-16 h868 a16,16 0 0 1 16,16 v18 h-900 z" fill="#041326"/>
+  <text x="190" y="530" font-size="13" font-weight="700" fill="#FFFFFF" letter-spacing="1">2A · BLOCK A — FIVE AGENTS IN PARALLEL</text>
+  <rect x="190" y="548" width="860" height="34" rx="11" fill="#F3F6F9"/><text x="208" y="570" font-size="14" fill="#041326">journey-builder<tspan fill="#6B7786">  ·  journeys + quantified value leakage</tspan></text>
+  <rect x="190" y="588" width="860" height="34" rx="11" fill="#F3F6F9"/><text x="208" y="610" font-size="14" fill="#041326">market-context-researcher<tspan fill="#6B7786">  ·  outside-in market + peer context</tspan></text>
+  <rect x="190" y="628" width="860" height="34" rx="11" fill="#F3F6F9"/><text x="208" y="650" font-size="14" fill="#041326">capability-assessment<tspan fill="#6B7786">  ·  maturity scoring + gaps</tspan></text>
+  <rect x="190" y="668" width="860" height="34" rx="11" fill="#EAF0FF" stroke="#3367FF" stroke-width="1.5"/><text x="208" y="690" font-size="14" font-weight="700" fill="#041326">roi-hypothesis-builder<tspan font-weight="400" fill="#6B7786">  ·  MECE tree → names the value levers  (opus)</tspan></text>
+  <rect x="190" y="708" width="860" height="34" rx="11" fill="#F3F6F9"/><text x="208" y="730" font-size="14" fill="#041326">benchmark-librarian<tspan fill="#6B7786">  ·  sourced, confidence-rated reference points</tspan></text>
+  <line x1="620" y1="752" x2="620" y2="774" stroke="#6B7786" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- dependency arrow -->
+  <path d="M1050,685 C1140,685 1140,1025 1058,1025" fill="none" stroke="#3367FF" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arwb)"/>
+  <text x="1152" y="855" font-size="12" font-weight="700" fill="#3367FF" text-anchor="middle" transform="rotate(90 1152 855)">the only real dependency in the block</text>
+
+  <!-- checkpoint x5 -->
+  <rect x="330" y="778" width="580" height="40" rx="20" fill="#FFFFFF" stroke="#FF503C" stroke-width="1.5"/>
+  <text x="620" y="804" font-size="14" font-weight="700" fill="#FF503C" text-anchor="middle">◆ CHECKPOINT ×5 — “approve all”, or feedback per agent</text>
+  <line x1="620" y1="818" x2="620" y2="840" stroke="#6B7786" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- 2B -->
+  <rect x="170" y="844" width="900" height="248" rx="16" fill="#FFFFFF" stroke="#041326" stroke-width="1.5"/>
+  <path d="M170,860 a16,16 0 0 1 16,-16 h868 a16,16 0 0 1 16,16 v18 h-900 z" fill="#041326"/>
+  <text x="190" y="870" font-size="13" font-weight="700" fill="#FFFFFF" letter-spacing="1">2B · BLOCK A — PHASE 2</text>
+  <rect x="190" y="888" width="860" height="34" rx="11" fill="#F3F6F9"/><text x="208" y="910" font-size="14" fill="#041326">journey-builder</text>
+  <rect x="190" y="928" width="860" height="34" rx="11" fill="#F3F6F9"/><text x="208" y="950" font-size="14" fill="#041326">market-context-researcher</text>
+  <rect x="190" y="968" width="860" height="34" rx="11" fill="#F3F6F9"/><text x="208" y="990" font-size="14" fill="#041326">capability-assessment</text>
+  <rect x="190" y="1008" width="860" height="34" rx="11" fill="#EAF0FF" stroke="#3367FF" stroke-width="1.5"/><text x="208" y="1030" font-size="14" font-weight="700" fill="#041326">roi-financial-modeler<tspan font-weight="400" fill="#6B7786">  ·  quantifies the levers 2A named</tspan></text>
+  <rect x="190" y="1048" width="860" height="34" rx="11" fill="#F3F6F9"/><text x="208" y="1070" font-size="14" fill="#041326">benchmark-librarian</text>
+  <line x1="620" y1="1092" x2="620" y2="1114" stroke="#6B7786" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- 3 roadmap -->
+  <rect x="170" y="1118" width="900" height="80" rx="16" fill="#FFFFFF" stroke="#041326" stroke-width="1.5"/>
+  <text x="190" y="1146" font-size="13" font-weight="700" fill="#041326" letter-spacing="1">3 · ROADMAP</text>
+  <text x="190" y="1176" font-size="15" fill="#041326">roadmap-prioritization<tspan fill="#6B7786">   phase 1 </tspan><tspan fill="#FF503C" font-weight="700">→ ◆ →</tspan><tspan fill="#6B7786"> phase 2   ·   sequences initiatives by value + dependency</tspan></text>
+  <line x1="620" y1="1198" x2="620" y2="1220" stroke="#6B7786" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- 4 assembly -->
+  <rect x="170" y="1224" width="900" height="70" rx="16" fill="#FFFFFF" stroke="#041326" stroke-width="1.5"/>
+  <text x="190" y="1252" font-size="13" font-weight="700" fill="#041326" letter-spacing="1">4 · ASSEMBLY</text>
+  <text x="190" y="1279" font-size="15" fill="#041326">narrative-assembler<tspan fill="#6B7786">  ·  mode: pipeline-report  ·  shards when the source pack is large</tspan></text>
+  <line x1="620" y1="1294" x2="620" y2="1310" stroke="#6B7786" stroke-width="2"/>
+  <path d="M620,1310 h-230 v10" fill="none" stroke="#6B7786" stroke-width="2" marker-end="url(#arw)"/>
+  <path d="M620,1310 h230 v10" fill="none" stroke="#6B7786" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- 5 outputs -->
+  <rect x="170" y="1330" width="440" height="104" rx="16" fill="#FFFFFF" stroke="#041326" stroke-width="1.5"/>
+  <text x="190" y="1356" font-size="13" font-weight="700" fill="#041326" letter-spacing="1">5a · HTML DASHBOARD</text>
+  <text x="190" y="1382" font-size="14" fill="#041326">narrative-assembler<tspan fill="#6B7786"> · mode: html-partial</tspan></text>
+  <text x="190" y="1408" font-size="13" fill="#6B7786">▣ Python assembles template + partials → final .html</text>
+
+  <rect x="630" y="1330" width="440" height="104" rx="16" fill="#FFFFFF" stroke="#041326" stroke-width="1.5"/>
+  <text x="650" y="1356" font-size="13" font-weight="700" fill="#041326" letter-spacing="1">5b · ROI WORKBOOK</text>
+  <text x="650" y="1382" font-size="14" fill="#041326">roi-financial-modeler<tspan fill="#6B7786"> · mode: excel-source</tspan></text>
+  <text x="650" y="1408" font-size="13" fill="#6B7786">→ .xlsx  (express mode overlaps this with step 3)</text>
+
+  <path d="M390,1434 v18 h230" fill="none" stroke="#6B7786" stroke-width="2"/>
+  <path d="M850,1434 v18 h-230" fill="none" stroke="#6B7786" stroke-width="2"/>
+  <line x1="620" y1="1452" x2="620" y2="1472" stroke="#6B7786" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- 6 validation -->
+  <rect x="170" y="1476" width="900" height="56" rx="16" fill="#F3F6F9" stroke="#6B7786" stroke-width="1.5"/>
+  <text x="200" y="1500" font-size="15" font-weight="700" fill="#041326">6 · ▣ VALIDATION GATE — validate_outputs()</text>
+  <text x="200" y="1520" font-size="13" fill="#6B7786">pass / fail on the output contracts · pure Python, no agent, no cost</text>
+  <line x1="620" y1="1532" x2="620" y2="1554" stroke="#6B7786" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- 7 harvest -->
+  <rect x="170" y="1558" width="900" height="56" rx="16" fill="#FFFFFF" stroke="#2ECC71" stroke-width="1.5"/>
+  <text x="200" y="1582" font-size="15" font-weight="700" fill="#041326">7 · knowledge-harvester</text>
+  <text x="200" y="1602" font-size="13" fill="#6B7786">anonymised learnings → knowledge/learnings/ · runs automatically, never call it by hand</text>
+
+  <!-- legend -->
+  <line x1="170" y1="1642" x2="1070" y2="1642" stroke="#F3F6F9" stroke-width="2"/>
+  <text x="170" y="1668" font-size="13" fill="#6B7786"><tspan font-weight="700" fill="#041326">▣</tspan> Python step, no LLM   ·   <tspan font-weight="700" fill="#FF503C">◆</tspan> consultant checkpoint   ·   <tspan font-weight="700" fill="#3367FF">blue</tspan> the one real dependency inside Block A</text>
+  <text x="170" y="1690" font-size="13" fill="#6B7786">--express collapses the checkpoints and overlaps 3 with 5b   ·   --non-interactive removes them entirely — same chain, three shapes</text>
+</svg>

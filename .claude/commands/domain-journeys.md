@@ -24,6 +24,8 @@ When this skill is invoked:
 
 1. **Load the journey maps file** from `knowledge/domains/[domain]/journey_maps.md`
 
+   > **Synthetic-data exclusion:** exclude any `[Synthetic-Test]`-tagged entry and anything sourced from a `tests/` path (see `knowledge/standards/benchmark_evolution.md`). If ≥1 entry was excluded, append that standard's canonical excluded-count note; if nothing was excluded, add no note.
+
 2. **Filter by journey type** if specified
 
 3. **Present journeys** with:

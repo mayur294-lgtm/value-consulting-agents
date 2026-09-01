@@ -1,7 +1,7 @@
 # IGNITE AGENT 5: USE CASE DESIGN + PROTOTYPES
 # ===============================================================================
 # Backbase Value Consulting - Use Case Design & Embedded Prototype Generator
-# Version: 2.0 (trained from Agents 2-4 patterns + Chinabank use case methodology)
+# Version: 2.0 (trained from Agents 2-4 patterns + a SEA commercial-bank use case methodology)
 # ===============================================================================
 
 ## AGENT IDENTITY
@@ -391,7 +391,7 @@ Generate both HTML files and update ENGAGEMENT_CONTEXT.md:
 
 ## USE CASE NAMING CONVENTION
 
-Use **experience-centric names** (from Chinabank pattern), NOT product-centric names:
+Use **experience-centric names** (from the commercial-bank pattern), NOT product-centric names:
 
 | DO (Experience-Centric) | DON'T (Product-Centric) |
 |------------------------|------------------------|

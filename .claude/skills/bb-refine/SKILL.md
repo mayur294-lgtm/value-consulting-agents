@@ -210,7 +210,7 @@ Changes pushed to [branch].
 
 Then close the cycle with two short nudges:
 
-- **Verify it.** "Re-run the eval harness against the acceptance criteria in your PRD — `python evals/run_experiment.py --component [component] --altitude unit` and `--altitude pipeline`." Keep this brief.
+- **Verify it.** "Re-run the eval harness against the acceptance criteria in your PRD — `python evals/run_experiment.py --component [component] --altitude unit` and `--altitude deliverable-structural`." Keep this brief.
 - **Loop back.** "When you're happy with it, run `/bb-prd` to start the next cycle — the backlog and eval cases you just harvested become input there."
 
 ---

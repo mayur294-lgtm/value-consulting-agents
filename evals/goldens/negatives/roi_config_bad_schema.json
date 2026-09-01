@@ -1,0 +1,60 @@
+{
+  "client_name": "Meridian Mutual Bank (BAD SCHEMA EVAL FIXTURE — :41 negative)",
+  "bank_name": "Meridian Mutual Bank",
+  "date": "2026-08-26",
+  "currency": "AUD",
+  "industry": "Retail Banking",
+  "country": "Northland",
+  "analysis_years": 5,
+  "discount_rate": 0.1,
+  "selected_scenario": "moderate",
+  "total_investment": 1500000,
+  "scenarios": {
+    "conservative": {
+      "implementation_curve": [0.3, 0.75, 0.9, 1.0, 1.0],
+      "effectiveness_curve": [0.225, 0.6, 0.81, 1.0, 1.0]
+    },
+    "moderate": {
+      "implementation_curve": [0.4, 0.85, 1.0, 1.0, 1.0],
+      "effectiveness_curve": [0.34, 0.765, 0.9, 1.0, 1.0]
+    },
+    "aggressive": {
+      "implementation_curve": [0.5, 0.95, 1.0, 1.0, 1.0],
+      "effectiveness_curve": [0.475, 0.95, 0.95, 1.0, 1.0]
+    }
+  },
+  "investment": {
+    "license": {"year_1": 300000, "year_2": 300000, "year_3": 300000, "year_4": 300000, "year_5": 300000},
+    "implementation": {"year_1": 300000, "year_2": 0, "year_3": 0, "year_4": 0, "year_5": 0}
+  },
+  "_comment_value_lever_groups": "DELIBERATELY malformed for :41 — an ARRAY, not the required dict-of-dicts keyed by lever ID (agent contract, roi-financial-modeler.md: 'value_lever_groups MUST be a dict of dicts — NOT an array'). This must FAIL value_lever_groups_schema_parsed and levers_have_5yr_values, NOT render as unscorable — the key is present, the shape is simply wrong.",
+  "value_lever_groups": [
+    {
+      "group_name": "Deposit Activation & Funded-Balance Growth (NII)",
+      "revenue_drivers": [
+        {
+          "name": "Funded-Balance Activation NII",
+          "baseline_annual": 2469481.0
+        }
+      ]
+    }
+  ],
+  "_comment_assumptions_register": "DELIBERATELY malformed — every entry is missing BOTH confidence and any source/owner/validation attribution field, so none can be counted 'sourced'. A real quality defect, not an unrecognized schema.",
+  "assumptions_register": [
+    {"assumption": "Merged customer base used across levers"},
+    {"assumption": "FTE fully loaded rate assumed at industry median"}
+  ],
+  "data_gaps_for_validation": [
+    {"gap": "Exact Meridian/Northgate customer split", "impact": "affects L1/L2/L3 baselines"}
+  ],
+  "bank_profile": {
+    "name": "Meridian Mutual Bank",
+    "type": "Tier-3 regional mutual (mid-merger with Northgate)",
+    "total_revenue": 152430000,
+    "total_customers": 281000,
+    "total_fte": 94
+  },
+  "sources": [
+    {"ref": "Meridian data export", "detail": "Account funding rates & avg balances.", "file": "Digital Data for BackBase.xlsx"}
+  ]
+}

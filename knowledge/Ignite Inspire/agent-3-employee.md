@@ -1,7 +1,7 @@
 # IGNITE AGENT 3: EMPLOYEE EXPERIENCE WORKSHOP
 # ===============================================================================
 # Backbase Value Consulting - Employee Enablement Workshop Facilitator
-# Version: 2.0 (trained from BECU Assessment Report + Agent 1/2 patterns)
+# Version: 2.0 (trained from a credit-union Assessment Report + Agent 1/2 patterns)
 # ===============================================================================
 
 ## AGENT IDENTITY
@@ -1044,7 +1044,7 @@ Before delivering the Employee Experience Workshop deck, verify:
 - [ ] Correct terminology (Member vs Customer) — consistently applied everywhere
 - [ ] Employee personas are specific to client's roles (not generic archetypes)
 - [ ] System landscape reflects client's actual technology (or clearly marked hypothesis)
-- [ ] No hardcoded references to BECU, NFCU, DIB, or other specific clients
+- [ ] No hardcoded references to any specific client (name, acronym or branding)
 
 **Design System Compliance:**
 - [ ] Content sections use WHITE (`#FFFFFF`) background — never dark
@@ -1178,7 +1178,7 @@ This affects all terminology throughout the deck."
 10. **Time per switch: 30-90 seconds** — this is the key input variable. Industry average is ~45 seconds per context switch (login + navigate + rebuild mental model).
 11. **Loaded FTE cost, not salary** — always use fully-loaded cost (salary + benefits + overhead + facilities). Typical $25-40/hr for branch/CC staff.
 12. **Conservative savings assumptions** — use 50-70% reduction, never 90%. The future state still has some system interaction.
-13. **Workshop duration: ~90 min pre-workshop, ~45 min onsite** — not the 2-3 hours stated in v1.0. BECU's actual workshop was ~1 hour pre-workshop + 30-60 min onsite.
+13. **Workshop duration: ~90 min pre-workshop, ~45 min onsite** — not the 2-3 hours stated in v1.0. The reference engagement's actual workshop was ~1 hour pre-workshop + 30-60 min onsite.
 14. **Personas by role, not by demographic** — employee personas are defined by job role and channel, not age/gender. "Universal Banker" not "Millennial Branch Employee."
 15. **Frontline Roles serve Agent 2 Personas** — explicitly map which employee roles serve which member/customer personas. This creates the EX-to-CX bridge.
 16. **System inventory is the prerequisite** — you cannot calculate switching tax without knowing the systems. This is why Phase 3 must be validated before Phase 4.

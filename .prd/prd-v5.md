@@ -12,11 +12,11 @@ previous: prd-v4.md
 
 Commercial proposals are Cortex's most-repeated deliverable, and the tooling behind them is split across three unmanaged places, none governed, none merged:
 
-- **The client-facing renderer lives outside the repo.** `proposal-longform` — the skill credited in every HDFC journal entry — is a real, working portable skill (single-file Frontline HTML, EN/AR toggle with RTL, live pricing-transparency sliders, `?readout=1` executive readout PDF) that produced HDFC v1–v7. It sits in a personal folder, distributed by zip, currently installed nowhere, not harness-governed, not eval-gated, free to drift per consultant copy.
+- **The client-facing renderer lives outside the repo.** `proposal-longform` — the skill credited in every journal entry on the renewal engagement — is a real, working portable skill (single-file Frontline HTML, EN/AR toggle with RTL, live pricing-transparency sliders, `?readout=1` executive readout PDF) that produced that engagement's v1–v7. It sits in a personal folder, distributed by zip, currently installed nowhere, not harness-governed, not eval-gated, free to drift per consultant copy.
 - **The strategy layer exists only on Shyam's fork, unmerged and ungoverned.** His fork (last push 2026-08-06) carries `/proposal-builder` (gated truth-teller interview + plan-then-accept-then-build loop), `/deal-notes`, `/pricing-model`, two deterministic engines (`tools/proposal_builder.py`, `tools/pricing_model.py`), and the codified methodology (`knowledge/domains/negotiation/negotiation-tactics.md` — Aniket's playbook incl. Martini/concession shapes, lever families, floor discipline, Deal Desk governance; `knowledge/domains/pricing/pricing-methodology.md` — pricing by solution × LOB). None of it has been reviewed, merged, or eval-gated, and it references `proposal-longform` as its output sibling without either living in the same repo.
-- **A third prototype (`~/deal-pricing-system`) built the real HNB proposals** with its own deterministic financial engine (~1,500 lines incl. tests) — a second engine computing overlapping things.
+- **A third prototype (`~/deal-pricing-system`) built the real proposals for a live retention deal** with its own deterministic financial engine (~1,500 lines incl. tests) — a second engine computing overlapping things.
 
-Beyond fragmentation, the method has known content gaps confirmed on the 19-Aug call: the strategy layer doesn't adjust when new information arrives mid-negotiation, doesn't re-surface the originally agreed strategy each round ("we forget what we decided and why"), has no lifecycle-aware story logic (nothing anywhere distinguishes renewal messaging from new-logo messaging — the Corporate Visions research shows challenging an existing customer measurably reduces renewal intent, and most current deals are retention-side), no elasticity view for procurement's inevitable what-if-volumes-move test, and no exit-ARR guard on ramped structures (the HNB lesson: 1.4 reported ARR, 1.8 exit exposure).
+Beyond fragmentation, the method has known content gaps confirmed on the 19-Aug call: the strategy layer doesn't adjust when new information arrives mid-negotiation, doesn't re-surface the originally agreed strategy each round ("we forget what we decided and why"), has no lifecycle-aware story logic (nothing anywhere distinguishes renewal messaging from new-logo messaging — the Corporate Visions research shows challenging an existing customer measurably reduces renewal intent, and most current deals are retention-side), no elasticity view for procurement's inevitable what-if-volumes-move test, and no exit-ARR guard on ramped structures (the lesson from one ramped deal: 1.4 reported ARR, 1.8 exit exposure).
 
 If we don't solve it: proposals keep being built from divergent personal copies with no method enforcement, three engines drift apart (the SparD "reactivity tax": parallel forks left two "current" docs €114K apart), and the highest-stakes client-facing artifacts Cortex produces remain the least governed.
 
@@ -52,9 +52,9 @@ Design philosophy (inherited from the vision phase, binding for `/bb-design`): g
 | Elasticity generalization + exposure dial in the renderer (late phase) | Fully open elasticity by default (exposure is a deliberate dial) |
 | Deal Desk feed: internal output structured with the fields Cortex has inputs for (ARR/PS/MS breakdown, threshold check, approval-tier flag per negotiation-tactics governance) | Full "Thursday-ready" Deal Desk pack automation incl. GM by component (needs cost data Cortex doesn't hold — roadmap); any deal-desk approval authority |
 | `INTERNAL_` convention for all internal artifacts, excluded from client packaging and `/publish` | — |
-| New `proposal` deliverable eval + engine unit eval + CI wiring | Committing real-deal fixtures (Schroders, SparD) to the repo — parity checks run locally, uncommitted |
+| New `proposal` deliverable eval + engine unit eval + CI wiring | Committing real-deal fixtures to the repo — parity checks run locally, uncommitted |
 | Pricing as fresh consultant input every run | Storing pricing/rate cards/floors in knowledge or memory |
-| Test on the live BDO proposal; pressure-test with Aniket | Retro-fitting past engagements; Excel options-model deliverable; PPTX output; audience-cuts render model; consortium module; battlecard/legal-anticipation library (all roadmap — not designed out) |
+| Test on a live proposal; pressure-test with a senior reviewer | Retro-fitting past engagements; Excel options-model deliverable; PPTX output; audience-cuts render model; consortium module; battlecard/legal-anticipation library (all roadmap — not designed out) |
 
 ## 4. Success Metrics
 
@@ -69,7 +69,7 @@ Design philosophy (inherited from the vision phase, binding for `/bb-design`): g
 | Plan-first behavior | Summarizes known context before asking; gap-only questions (pricing always fresh); no deliverable before the deal brief is approved as a whole (hook-enforced) |
 | Governance compliance | ≥2 checkpoints, journal + telemetry, assumptions register, provenance — every run |
 | Versioning discipline | Every round a new `v{N}`; prior versions byte-unchanged; one live file per deliverable |
-| Adoption | The live BDO proposal is built through the system; Aniket pressure-test passes with findings folded back |
+| Adoption | A live proposal is built through the system; the pressure-test passes with findings folded back |
 
 ## 5. Eval Acceptance Criteria
 
@@ -80,7 +80,7 @@ Design philosophy (inherited from the vision phase, binding for `/bb-design`): g
 | `proposal` deliverable (NEW) | New `deliverables.proposal` row → new rubric: deterministic checks (exactly-2-scenarios, zero-`INTERNAL_`-content, story-model-matches-deal-type, assumptions-section-present, no-unsourced-financial-claims, self-contained HTML, non-binding disclaimer present) + judge check (plain declarative voice) | Golden ≥0.85, negatives ≤0.5 (calibrated at build) | deliverable |
 | Canonical engine (NEW/adopted) | New `components.proposal-engine` row: synthetic deal-input goldens → deterministic checks (scenario math, exit-ARR flag on ramps, hard error on missing inputs — never defaults, buffer-play computed as price hold) + adopted test suites green | 1.00 deterministic | unit |
 | Negotiation loop (NEW) | Delta-report case: golden deal state + meeting-notes fixture → checks (delta vs. plan present, newly-active levers listed, original strategy re-surfaced, concession history shown) | 1.00 deterministic | unit |
-| Fixtures (NEW) | Synthetic only, derived from the fictional "Meridian Bank" demo + authored deal-state fixtures; negatives: challenger-opening-on-renewal, unsourced-ROI-claims, 3-scenarios, `INTERNAL_` leak. **Real-deal parity (Schroders Q-06367, SparD) runs locally, never committed** — repo history must stay free of real client pricing | Golden PASS, all negatives FAIL | deliverable |
+| Fixtures (NEW) | Synthetic only, derived from the fictional "Meridian Bank" demo + authored deal-state fixtures; negatives: challenger-opening-on-renewal, unsourced-ROI-claims, 3-scenarios, `INTERNAL_` leak. **Real-deal parity runs locally against uncommitted fixtures, never committed** — repo history must stay free of real client pricing | Golden PASS, all negatives FAIL | deliverable |
 | CI wiring (NEW) | `evals.yml` gains `--deliverable proposal --negatives` + engine/loop component runs; `check_registry.py` green | Gate actually executes the new cases | — |
 | Existing gates | `deck` (+negatives), `roi`, `assessment`, `pipeline` stay green | Current thresholds | deliverable / pipeline |
 
@@ -178,4 +178,4 @@ Consultant: "/proposal-builder for <client>"
 3. **C** — buffer play + exit-ARR guard in the canonical engine.
 4. **B + F + G** — elasticity variables + exposure dial, lever discovery question bank, script/language generalization.
 
-Tested throughout on the live BDO proposal; pressure-tested with Aniket before release.
+Tested throughout on a live proposal; pressure-tested with a senior reviewer before release.

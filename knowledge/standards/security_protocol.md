@@ -100,15 +100,24 @@ Stakeholder intelligence (ownership signals, sensitivity flags, communication pr
 
 ## 5. MCP Query Anonymization
 
-When querying the Backbase Infobank MCP server (`mcp__backbase-infobank__*`):
+When querying the Backbase Infobank MCP server (`mcp__backbase-infobank__*`), this rule is **enforced, not advisory**: `.claude/hooks/mcp-query-guard.py` runs as a PreToolUse hook on every `mcp__.*` call, scans the full tool input against a deny-list of client and stakeholder identifiers resolved from the active engagement, and denies the call outright on a match. The hook **fails closed** — if the deny-list cannot be resolved or the scan itself errors, the query is denied rather than allowed through unverified. See `knowledge/platforms/backbase-mcp-integration.md` for the copy-paste agent-prompt snippet that carries this constraint into every new agent.
 
 - **Never include the client's name** in MCP queries. Use generic descriptors instead:
-  - Bad: "What capabilities support NFCU digital investor onboarding?"
+  - Bad: "What capabilities support [Client Name]'s digital investor onboarding?"
   - Good: "What capabilities support digital investor onboarding for a large US credit union?"
 - **Never include specific financial figures** from the client in MCP queries
 - **Never include stakeholder names or quotes** in MCP queries
 - MCP queries should ask about **Backbase capabilities in general**, not about a specific client's situation
 - If you need client-specific context to formulate the query, keep that context local and only send the generic capability question to MCP
+
+### If a Query Is Denied
+
+The hook's denial message names the matched term, but the fix is always the same:
+
+1. **Rephrase generically** — remove the client name, stakeholder name, quote, or figure and describe the capability need in category terms (e.g., "a Tier-2 retail bank in South Asia" instead of the client's name)
+2. **Do not retry with the same terms** — a repeated denial on identical wording is not a bug to work around
+3. **Do not attempt to bypass the gate** — do not split the client name across multiple calls, encode it, or route the query through a different tool to evade the scan
+4. If the denial looks wrong (e.g., a generic word was flagged incorrectly), continue with a fully generic query and flag the false positive to the consultant at the next checkpoint rather than working around the block
 
 ---
 

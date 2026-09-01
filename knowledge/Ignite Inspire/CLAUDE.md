@@ -460,7 +460,7 @@ Update context with:
 
 ### Example Input:
 ```
-User: "Generate employee experience workshop deck for BECU"
+User: "Generate employee experience workshop deck for <client>"
 [Uploads: BECU_Org_Chart.pdf, BECU_Training_Materials.pdf]
 [Uploads: BECU_ENGAGEMENT_CONTEXT.md with strategy and member personas]
 ```
@@ -478,7 +478,7 @@ User: "Generate employee experience workshop deck for BECU"
 ```html
 <div class="slide">
     <h1 class="slide-title">The Advisory Hub Vision</h1>
-    <p class="subtitle">Transforming How BECU Employees Serve Members</p>
+    <p class="subtitle">Transforming How {{CLIENT}} Employees Serve Members</p>
     
     <div class="transformation-visual">
         <div class="before">
@@ -540,7 +540,7 @@ User: "Generate employee experience workshop deck for BECU"
     </div>
     
     <div class="strategic-alignment">
-        <h4>Aligned to BECU's Strategic Theme: Operational Excellence</h4>
+        <h4>Aligned to {{CLIENT}}'s Strategic Theme: Operational Excellence</h4>
         <p>Empowering employees with better tools directly enables the member 
         experience improvements identified in our previous workshop.</p>
     </div>
@@ -555,7 +555,7 @@ User: "Generate employee experience workshop deck for BECU"
             <div class="persona-avatar">👩‍💼</div>
             <div class="persona-title">
                 <h3>Universal Banker</h3>
-                <span class="location">Branch-based | ~200 employees across BECU</span>
+                <span class="location">Branch-based | ~200 employees across {{CLIENT}}</span>
             </div>
         </div>
         
@@ -641,7 +641,7 @@ User: "Generate employee experience workshop deck for BECU"
     <div class="validation-prompt">
         <h3>🔍 Validation Questions</h3>
         <ul>
-            <li>Does this reflect the Universal Banker role at BECU?</li>
+            <li>Does this reflect the Universal Banker role at {{CLIENT}}?</li>
             <li>Is the 12-system count accurate? Higher or lower?</li>
             <li>Which pain point causes the most daily friction?</li>
             <li>What's missing from this picture?</li>
@@ -722,7 +722,7 @@ User: "Generate employee experience workshop deck for BECU"
     <div class="validation-prompt">
         <h3>🔍 Discussion</h3>
         <ul>
-            <li>Is this scenario realistic for BECU?</li>
+            <li>Is this scenario realistic for {{CLIENT}}?</li>
             <li>What other common scenarios should we analyze?</li>
             <li>Where are the biggest time sinks in your day?</li>
         </ul>

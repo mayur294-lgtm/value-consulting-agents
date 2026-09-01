@@ -55,3 +55,7 @@ appropriately.
   center analytics before use in a client-facing deliverable.
 - Regulator-sourced attrition data (row 5) is sector-wide, not segmented by
   asset size — treat as directional only.
+- One candidate metric from the initial search was excluded as synthetic
+  pipeline-test data before this shortlist was compiled.
+
+Note: 1 synthetic-test entry excluded — fabricated pipeline-test data, never citable in client work (see knowledge/standards/benchmark_evolution.md).

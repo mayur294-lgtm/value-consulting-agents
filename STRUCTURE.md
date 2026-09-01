@@ -29,7 +29,9 @@ cortex/
 │           └── ...
 │
 ├── scripts/                           # Utilities and automation
-│   ├── init_engagement.sh             # Bootstrap new engagement (creates hierarchy)
+│   ├── init_engagement.sh             # Bootstrap new engagement (opaque ID + map entry)
+│   ├── find_engagement.sh             # Resolve a client name to its engagement path
+│   ├── migrate_engagement_ids.sh      # One-time migration to opaque IDs (dry run by default)
 │   ├── extract_telemetry.py           # Telemetry extraction
 │   └── ...
 │
@@ -78,24 +80,32 @@ cortex/
 
 The primary working directory for all engagement work. Organized as a two-level hierarchy:
 
-**Level 1: Client** (`engagements/[client_short_name]/`)
-- One directory per bank/organization
-- Contains `CLIENT_PROFILE.md` — persistent memory that survives across engagements
+**Level 1: Engagement ID** (`engagements/[opaque_id]/`)
+- One opaque, randomly generated directory per engagement (e.g. `engagements/e7f3a2c1/`)
+- Contains `CLIENT_PROFILE.md` — persistent memory, carried forward into each new engagement for the same client
 - Tracks strategic context, tech landscape, relationship history, cumulative insights
 
-**Level 2: Engagement** (`engagements/[client_short_name]/[YYYY-MM_domain_type]/`)
-- One directory per engagement/initiative
+**Level 2: Engagement** (`engagements/[opaque_id]/[YYYY-MM_domain_type]/`)
 - Naming convention: `YYYY-MM_domain_type` (e.g., `2026-01_investing_assessment`, `2026-03_retail_ignite`)
 - Contains inputs/, outputs/, journal, and session ID
-- Fully self-contained but references the parent CLIENT_PROFILE.md
+- Everything *inside* an engagement directory is unchanged — only the top-level name is opaque
 
-**Why this structure:**
-A single bank often has multiple engagements across different domains (retail, wealth, investing) and different types (assessment, ignite, hybrid). The client-level directory ensures:
+**Why the top level is an opaque ID:**
+`scripts/orchestrate.py`'s `compose_prompt` renders `engagement_dir` into every agent invocation as a value, and `run_agent` sets `cwd` to it. A directory named after the client therefore tells the model who the client is on every single call, no matter how well the file contents are scrubbed. The ID → client binding lives only in `.engagement_map.json` (repo root, chmod 600, gitignored) and never leaves the machine. See `.design/solution-design-v6.md` D6.
+
+**You never type an ID.** `./scripts/find_engagement.sh <client>` resolves a client name — partial and case-insensitive — to its engagement path(s).
+
+**Why the hierarchy:**
+A single bank often has multiple engagements across different domains (retail, wealth, investing) and different types (assessment, ignite, hybrid). Each gets its own ID — deliberately, so one ID never becomes a stable pseudonym for a client across months of unrelated work. `CLIENT_PROFILE.md` is what carries context between them:
 - Prior discovery insights carry forward (don't re-discover known context)
 - Cross-engagement patterns surface (themes visible only when comparing across domains)
 - Relationship history accumulates (stakeholder contacts, communication styles)
 
+`CLIENT_PROFILE.md` also carries the client's written identifier forms, which is what keeps the client's name on the deny-list now that the directory name no longer supplies it.
+
 **Bootstrap:** `./scripts/init_engagement.sh navy_federal 2026-02_retail_assessment assessment`
+**Find:** `./scripts/find_engagement.sh navy_federal`
+**Migrate existing client-named directories (one time, dry run by default):** `./scripts/migrate_engagement_ids.sh`
 
 ### /knowledge/ - Consulting Knowledge Base
 

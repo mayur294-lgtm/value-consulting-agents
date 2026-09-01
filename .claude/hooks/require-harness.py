@@ -14,9 +14,14 @@ evals/, .github/, and the .prd/.design planning dirs) so the harness can be buil
 and maintained without self-deadlock, and EXEMPTS engagement deliverables (those
 are gated by require-checkpoint.py instead).
 
-Active-change signal (any one):
-  - a PRD exists:    .prd/prd-v*.md   or   .sprint/sprint-v*.md
-  - an explicit marker: .prd/ACTIVE_CHANGE
+Active-change signal — exactly one, deliberately:
+  - .prd/ACTIVE_CHANGE exists. Gitignored, per-machine, never committed.
+
+  A committed PRD is NOT a signal, at any status. Two earlier versions tried to
+  make it one and both left the gate open for everybody: first `any(prd-v*.md)`,
+  then "any PRD still in flight" — which a committed DRAFT satisfies, so
+  shipping a draft re-opened the gate on every clone. Committed state cannot
+  express "this machine is mid-cycle"; only a gitignored marker can.
 
 Fail-OPEN on any error — never wedge a session on a hook bug.
 
@@ -41,6 +46,7 @@ PROTECTED_PREFIXES = (
 # Pipeline code (the orchestration engine and its scripts).
 PROTECTED_PIPELINE_DIR = "scripts/"
 PIPELINE_EXTS = {".py"}
+
 
 # Harness infra + planning dirs + deliverables — always allowed past THIS hook.
 EXEMPT_PREFIXES = (
@@ -95,11 +101,35 @@ def _change_active() -> bool:
     # bb-* uses .prd/ as the planning dir. (The legacy .sprint/ from the prior
     # development-advanced experiment is intentionally NOT a signal — it would
     # leave the gate permanently open; it is retired in the cleanup step.)
-    if (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists():
-        return True
-    if list((PROJECT_DIR / ".prd").glob("prd-v*.md")):
-        return True
-    return False
+    # `.prd/ACTIVE_CHANGE` is the ONLY signal, and it is gitignored on purpose.
+    #
+    # Two earlier versions of this test were both wrong, in the same direction:
+    #
+    #   `any(prd-v*.md)`            — every PRD counted, so the gate was open on
+    #                                 every clone from the moment the first PRD
+    #                                 landed. Measured 2026-08-28: 6 shipped
+    #                                 PRDs, gate unable to deny for anyone.
+    #   `any(_prd_is_in_flight(p))` — the v7 fix. Better, and still wrong: a
+    #                                 DRAFT PRD is committed, so shipping one
+    #                                 re-opened the gate for everybody. Measured
+    #                                 2026-08-30 on a clean clone containing only
+    #                                 `prd-v10.md` (status: draft): an Edit to
+    #                                 scripts/orchestrate.py was ALLOWED. Remove
+    #                                 that one file and the same Edit was denied.
+    #                                 (Mayur's review, finding 1.)
+    #
+    # The root problem is not which statuses count. It is that COMMITTED STATE
+    # CANNOT EXPRESS "this machine is mid-cycle". A draft PRD in the repo says
+    # somebody, somewhere, is working — which is not the question this gate asks.
+    # Only a gitignored, per-machine marker can answer it, which is precisely
+    # what ACTIVE_CHANGE was introduced to be. So the PRD signal is gone rather
+    # than re-tuned: any committed artifact used this way reintroduces the same
+    # hole the next time one is committed.
+    #
+    # `/bb-prd` writes ACTIVE_CHANGE when a cycle starts; `/bb-pr-review` clears
+    # it. A developer working outside a cycle creates it by hand and deletes it
+    # after — which is the acknowledgement, not a loophole.
+    return (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()
 
 
 def main():

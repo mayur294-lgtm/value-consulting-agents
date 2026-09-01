@@ -9,8 +9,17 @@ the registry; the semantic judges run through the agent-style path.
 from __future__ import annotations
 
 from rubrics.base import CheckResult  # noqa: F401  (re-exported type for callers)
+from rubrics.component._calibration import RUBRIC_ROW_DOC, calibration_banner
 from rubrics.component.specifics import _read, _capability
 
 
+# --- rubric_calibration tier (#201) ---------------------------------------
+RUBRIC_ROW = 'capability-maturity-rubric'          # the registry key; `--calibration capability-maturity-rubric`
+COVERS_AGENT = 'capability-assessment'   # INERT DOCUMENTATION — not a verification claim
+GOLDEN = 'evals/goldens/capability_assessment_golden.md'
+__doc__ = (__doc__ or "") + RUBRIC_ROW_DOC.format(row=RUBRIC_ROW, agent=COVERS_AGENT)
+
+
 def evaluate(target: str) -> list[CheckResult]:
+    calibration_banner(RUBRIC_ROW, COVERS_AGENT, GOLDEN)
     return _capability(_read(target))

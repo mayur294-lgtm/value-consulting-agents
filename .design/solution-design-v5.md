@@ -135,9 +135,9 @@ Downstream consumers: none in the pipeline chain (net-new paths); `orchestrate.p
 ## Technical Decisions
 
 **Decision:** Canonical engine = Shyam's pair; `proposal_builder.py` is the single entry point, `pricing_model.py` its pricing-math library; `~/deal-pricing-system` fully retired.
-**Alternatives:** Port the HNB-proven deal-pricing-system engine and graft the strategy rules on; or bridge both.
+**Alternatives:** Port the field-proven deal-pricing-system engine and graft the strategy rules on; or bridge both.
 **Rationale:** The fork pair has determinism selftests, §-traced rules, and the Deal Desk/lever logic already encoded; deal-pricing-system's only unique requirement (exit-ARR on ramps) is a ~40-line fresh addition. Bridging two engines recreates the SparD reactivity tax.
-**Trade-offs:** The HNB deal files stay reproducible only via the retired repo (reference); accepted.
+**Trade-offs:** Those deal files stay reproducible only via the retired repo (reference); accepted.
 
 **Decision:** Exit-ARR + buffer play are computed in the engine (new config/output blocks), not by the skill.
 **Rationale:** "No LLM in the numbers" — both produce numbers a client or Deal Desk may see; selftest asserts them.
@@ -162,6 +162,6 @@ Downstream consumers: none in the pipeline chain (net-new paths); `orchestrate.p
 **Rationale:** Each artifact serves a different reader (engine vs consultant); duplication would drift.
 **Trade-offs:** Two files to keep consistent; the verify checkpoint reconciles them.
 
-**Decision:** Repo goldens are synthetic only (Meridian-derived + authored fixtures); Schroders/SparD parity runs locally, uncommitted. His `northgate_wealth.json` sample (de-personalised Schroders shape) is reviewed before adoption — if genuinely de-personalised it may serve as an engine golden; otherwise it stays local too.
+**Decision:** Repo goldens are synthetic only (Meridian-derived + authored fixtures); real-deal parity runs locally, uncommitted. His `northgate_wealth.json` sample (a de-personalised real-deal shape) is reviewed before adoption — if genuinely de-personalised it may serve as an engine golden; otherwise it stays local too.
 **Rationale:** No real client pricing in git history; synthetic-quarantine rules.
 **Trade-offs:** CI never exercises real-deal shapes directly; the local parity step is documented in the build tickets.

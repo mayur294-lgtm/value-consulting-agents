@@ -6,41 +6,41 @@
 |--------|------|---------|------|---------------|--------|
 | Digital Active Rate | <20% | 20-40% | 40-60% | >60% | Backbase WM Engagements |
 | Mobile App Adoption | <15% | 15-30% | 30-50% | >50% | Industry Analysis |
-| Digital Onboarding Completion | <50% | 50-70% | 70-85% | >85% | Goodbody/HNB Data |
+| Digital Onboarding Completion | <50% | 50-70% | 70-85% | >85% | [Client-wealth-EMEA-2025]/[Client-wealth-APAC-2025] Data |
 | Self-Service Transaction Rate | <25% | 25-45% | 45-65% | >65% | Backbase Benchmarks |
-| Digital Document Signing Rate | <30% | 30-55% | 55-75% | >75% | Goodbody Analysis |
+| Digital Document Signing Rate | <30% | 30-55% | 55-75% | >75% | [Client-wealth-EMEA-2025] Analysis |
 
 ### Reference Data Points
-- **Goodbody (Ireland):** 44% paperless adoption, 18% online-only completion
-- **Weatherbys (UK):** Digital transformation in progress, legacy paper-based processes
-- **HNB Wealth (Sri Lanka):** 15% initial digital adoption, targeting 100% by Year 5
+- **[Client-wealth-EMEA-2025] (Ireland):** 44% paperless adoption, 18% online-only completion
+- **[Client-wealth-EMEA-2022] (UK):** Digital transformation in progress, legacy paper-based processes
+- **[Client-wealth-APAC-2025] (Sri Lanka):** 15% initial digital adoption, targeting 100% by Year 5
 
 ## Advisor Productivity
 
 | Metric | Poor | Average | Good | Best-in-Class | Source |
 |--------|------|---------|------|---------------|--------|
 | AUM per Advisor | <$30M | $30-75M | $75-150M | >$150M | Industry Benchmarks |
-| Clients per Advisor | >150 | 100-150 | 60-100 | <60 | HNB Workshop Data |
-| Time on Admin vs Client-Facing | >60% admin | 50-60% | 40-50% | <40% admin | Goodbody Discovery |
+| Clients per Advisor | >150 | 100-150 | 60-100 | <60 | [Client-wealth-APAC-2025] Workshop Data |
+| Time on Admin vs Client-Facing | >60% admin | 50-60% | 40-50% | <40% admin | [Client-wealth-EMEA-2025] Discovery |
 | Client Meeting Prep Time | >2 hours | 1-2 hours | 30-60 min | <30 min | Backbase Analysis |
-| Proposal Generation Time | >4 hours | 2-4 hours | 1-2 hours | <1 hour | Goodbody Data |
+| Proposal Generation Time | >4 hours | 2-4 hours | 1-2 hours | <1 hour | [Client-wealth-EMEA-2025] Data |
 
 ### Reference Data Points
-- **HNB Wealth:** RMs spend 5.4 hours/day on non-value-adding tasks (~68% of day)
-- **Goodbody:** 40 min/client on fact finding, 20 min on application processing
+- **[Client-wealth-APAC-2025]:** RMs spend 5.4 hours/day on non-value-adding tasks (~68% of day)
+- **[Client-wealth-EMEA-2025]:** 40 min/client on fact finding, 20 min on application processing
 - **Target:** 40% reduction in admin time through digital enablement
 
 ## Onboarding Journey Metrics
 
 | Metric | Poor | Average | Good | Best-in-Class | Source |
 |--------|------|---------|------|---------------|--------|
-| Total Onboarding Time | >30 days | 14-30 days | 5-14 days | <5 days | Goodbody Data |
-| Document Submission Time | >21 days | 10-21 days | 3-10 days | <3 days | Goodbody Analysis |
+| Total Onboarding Time | >30 days | 14-30 days | 5-14 days | <5 days | [Client-wealth-EMEA-2025] Data |
+| Document Submission Time | >21 days | 10-21 days | 3-10 days | <3 days | [Client-wealth-EMEA-2025] Analysis |
 | Application Drop-off Rate | >50% | 30-50% | 15-30% | <15% | Multi-client Analysis |
 | STP Rate (End-to-End) | <10% | 10-30% | 30-50% | >50% | Backbase Benchmarks |
-| Time per Onboarding (RM) | >5 hours | 3-5 hours | 1-3 hours | <1 hour | HNB Workshop |
+| Time per Onboarding (RM) | >5 hours | 3-5 hours | 1-3 hours | <1 hour | [Client-wealth-APAC-2025] Workshop |
 
-### Leakage Benchmarks (Goodbody Ireland)
+### Leakage Benchmarks ([Client-wealth-EMEA-2025] Ireland)
 
 | Channel | Current | Target | Best-in-Class |
 |---------|---------|--------|---------------|
@@ -50,7 +50,7 @@
 
 ### Journey Time Comparison
 
-| Journey Stage | Current (Goodbody) | Best-in-Class | Gap |
+| Journey Stage | Current ([Client-wealth-EMEA-2025]) | Best-in-Class | Gap |
 |---------------|-------------------|---------------|-----|
 | Fact Finding & Financial Planning | 3 days | 1 day | 3x |
 | Application | 21 days | 2 days | 10x |
@@ -65,11 +65,11 @@
 |--------|------|---------|------|---------------|--------|
 | Client NPS | <20 | 20-40 | 40-60 | >60 | Industry Benchmarks |
 | Client Retention Rate | <85% | 85-92% | 92-96% | >96% | Backbase Analysis |
-| Referral Rate | <10% | 10-20% | 20-35% | >35% | HNB Data |
+| Referral Rate | <10% | 10-20% | 20-35% | >35% | [Client-wealth-APAC-2025] Data |
 | Response Time to Client | >48 hours | 24-48 hours | 4-24 hours | <4 hours | Best Practice |
 | App Store Rating | <3.5 | 3.5-4.0 | 4.0-4.5 | >4.5 | Public Data |
 
-### Client Acquisition Metrics (HNB Reference)
+### Client Acquisition Metrics ([Client-wealth-APAC-2025] Reference)
 - **Events Conversion:** 20% (base), 24% (with digital engagement)
 - **Referral Conversion:** 30% (current), 34.5% (with Backbase)
 - **Internal Upgrade Conversion:** 15% (Mass Affluent → Affluent), 18% (with digital)
@@ -82,9 +82,9 @@
 | Revenue per Client | <$5K | $5-15K | $15-30K | >$30K | Segment Dependent |
 | Cost-to-Income Ratio | >80% | 65-80% | 50-65% | <50% | Industry Benchmarks |
 | Client Acquisition Cost | >$3K | $1.5-3K | $800-1.5K | <$800 | Multi-client Data |
-| Share of Wallet | <25% | 25-40% | 40-60% | >60% | HNB Analysis |
+| Share of Wallet | <25% | 25-40% | 40-60% | >60% | [Client-wealth-APAC-2025] Analysis |
 
-### Revenue Benchmarks (Goodbody Segments)
+### Revenue Benchmarks ([Client-wealth-EMEA-2025] Segments)
 
 | Segment | Revenue per Client | Target Growth |
 |---------|-------------------|---------------|
@@ -93,8 +93,8 @@
 | **Blended Average** | ~€3,500/year | - |
 
 ### Fee Structures
-- **Blended Fee on AUM:** Typically 0.8-1.2% (HNB: 1%)
-- **New NNA per Customer:** LKR 1.5M (~$5K) for HNB Wealth
+- **Blended Fee on AUM:** Typically 0.8-1.2% ([Client-wealth-APAC-2025]: 1%)
+- **New NNA per Customer:** LKR 1.5M (~$5K) for [Client-wealth-APAC-2025]
 
 ## Next-Gen & Wealth Transfer
 
@@ -117,7 +117,7 @@
 
 ## RM Productivity Value Levers
 
-### Capacity Freed Calculation (HNB Model)
+### Capacity Freed Calculation ([Client-wealth-APAC-2025] Model)
 
 | Activity | Current Time | Backbase Impact | Time Saved |
 |----------|--------------|-----------------|------------|
@@ -182,10 +182,10 @@ Retention Revenue = (# Clients) × (Retention Improvement %) × (Avg AUM) × (Re
 
 ## Sources
 
-1. **Goodbody Stockbrokers** - Value Consulting Engagement (July 2022)
-2. **HNB Wealth Management** - ROI Model V12 (December 2024)
-3. **Weatherbys Bank** - Value Consulting Final (2022)
-4. **TriState Capital** - Value Assessment (2025) - NAM Wealth
+1. **[Client-wealth-EMEA-2025] Stockbrokers** - Value Consulting Engagement (July 2022)
+2. **[Client-wealth-APAC-2025]** - ROI Model V12 (December 2024)
+3. **[Client-wealth-EMEA-2022] Bank** - Value Consulting Final (2022)
+4. **[Client-wealth-NAM-2023]** - Value Assessment (2025) - NAM Wealth
 5. **Backbase Consulting Playbook** - Metrics Benchmark Master
 6. **Industry Reports** - GlobalData, Capgemini World Wealth Report
 
@@ -193,7 +193,7 @@ Retention Revenue = (# Clients) × (Retention Improvement %) × (Avg AUM) × (Re
 
 ## Wealth ROI Value Levers (APAC/Emerging Markets)
 
-### HNB Sri Lanka Business Case Reference
+### [Client-wealth-APAC-2025] Business Case Reference
 
 **Context:** Mass Affluent to HNW wealth management, 13K WM customers, 2.8M retail base
 
@@ -215,7 +215,7 @@ Retention Revenue = (# Clients) × (Retention Improvement %) × (Avg AUM) × (Re
 | Onboarding Effort Reduction | 30% | 40% | 50% |
 | Servicing Cost Avoidance | 20% | 30-40% | 50% |
 
-**Source:** HNB Assessment and Solutioning Report (December 2025)
+**Source:** [Client-wealth-APAC-2025] Assessment and Solutioning Report (December 2025)
 
 ### Sri Lanka Market Context
 
@@ -230,16 +230,16 @@ Retention Revenue = (# Clients) × (Retention Improvement %) × (Avg AUM) × (Re
 
 ## Digital Wealth ROI (Canada)
 
-### Tangerine/Scotiabank Reference (2025)
+### [Client-wealth-NAM-2024]/Scotiabank Reference (2025)
 
 **Context:** Canadian Digital Bank, Mass Affluent wealth management, ~2M clients, $7.3B AUM
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| Total Tangerine Clients | 2,000,000 | Full client base |
+| Total [Client-wealth-NAM-2024] Clients | 2,000,000 | Full client base |
 | Mass Affluent % (Canada) | 23% | Market proportion |
 | Estimated Mass Affluent Clients | 460,000 | Calculated |
-| Tangerine Mass Affluent (Active Wealth) | 138,000 | 30% using for wealth |
+| [Client-wealth-NAM-2024] Mass Affluent (Active Wealth) | 138,000 | 30% using for wealth |
 | Total AUM | $7.3B CAD | Estimated 2025 |
 | Average AUM per Client | $52,899 CAD | Calculated |
 | Number of Advisors | 200 | Wealth advisors |
@@ -255,7 +255,7 @@ Retention Revenue = (# Clients) × (Retention Improvement %) × (Avg AUM) × (Re
 | Attrition Improvement | 3% reduction | Backbase Estimate |
 | AUM Uplift (Engagement) | 15% | Conservative vs McKinsey 1.5-2.5x |
 
-#### Value Levers (Tangerine)
+#### Value Levers ([Client-wealth-NAM-2024])
 
 | Value Lever | Mechanism | Annual Value (CAD) |
 |-------------|-----------|-------------------|
@@ -264,7 +264,7 @@ Retention Revenue = (# Clients) × (Retention Improvement %) × (Avg AUM) × (Re
 | AUM Growth (Engagement) | 15% uplift on existing AUM | $8.4M |
 | **Total Annual Impact** | | **$28.1M** |
 
-#### 5-Year Business Case (Tangerine)
+#### 5-Year Business Case ([Client-wealth-NAM-2024])
 
 | Year | Annual Value (CAD) | Cumulative (CAD) |
 |------|-------------------|------------------|
@@ -274,7 +274,7 @@ Retention Revenue = (# Clients) × (Retention Improvement %) × (Avg AUM) × (Re
 | Year 4 | $28.7M | $77.9M |
 | Year 5 | $29.2M | $107.1M |
 
-**Source:** Tangerine Digital Wealth Business Case (August 2025)
+**Source:** [Client-wealth-NAM-2024] Digital Wealth Business Case (August 2025)
 
 ---
 

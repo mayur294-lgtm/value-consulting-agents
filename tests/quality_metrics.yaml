@@ -176,6 +176,26 @@ consulting_agent_definitions:
       pattern: "Consultant Checkpoint.*MANDATORY|Consultant Checkpoint"
       min_matches: 1
 
+# Skill-first mode contracts (ticket #103, .design/solution-design-v3.md).
+# Expected `## Modes` set per pipeline agent, enforced ONLY once that agent
+# has actually been extracted — i.e., its .md file contains a `## Modes`
+# section (scripts/test_agent.py::check_agent_modes no-ops otherwise, so
+# unextracted agents never fail CI on this). A renamed/missing declared mode
+# fails the check, naming the agent and the missing/unexpected mode(s).
+# Inspire-only agents and .claude/agents/deprecated/ are excluded — they are
+# not expected to ever carry a `## Modes` section.
+agent_modes:
+  discovery-transcript-interpreter: [standalone, pipeline]
+  journey-builder: [standalone, pipeline]
+  market-context-researcher: [standalone, pipeline]
+  capability-assessment: [standalone, pipeline]
+  roi-hypothesis-builder: [standalone, pipeline]
+  benchmark-librarian: [standalone, pipeline]
+  roi-financial-modeler: [standalone, pipeline, excel-source]
+  roadmap-prioritization: [standalone, pipeline]
+  narrative-assembler: [standalone, pipeline-shard, pipeline-report, html-partial]
+  knowledge-harvester: [pipeline, backfill, quarantine]
+
 # Knowledge file checks
 knowledge_files:
   structural:
@@ -183,6 +203,17 @@ knowledge_files:
       pattern: "\\b(Bank of|First National|Wells|Chase|HSBC|Barclays)\\b"
       max_matches: 0
       description: "Knowledge files should use anonymized references"
+
+    - name: "No [Synthetic-Test] data in domain knowledge"
+      pattern: "\\[Synthetic-Test\\]"
+      max_matches: 0
+      applies_to: "knowledge/domains/**"
+      description: "Fabricated data from synthetic pipeline-test engagements must never reach domain knowledge — see tests/engagements/README.md"
+
+    - name: "No fictional test-bank names in knowledge"
+      pattern: "\\bHarborlight\\b"
+      max_matches: 0
+      description: "Harborlight is a fictional synthetic-test bank invented to exercise the pipeline; it must never be cited as a real client — see tests/engagements/README.md"
 
     - name: "Has confidence levels for benchmarks"
       pattern: "[Hh]igh|[Mm]edium|[Ll]ow"

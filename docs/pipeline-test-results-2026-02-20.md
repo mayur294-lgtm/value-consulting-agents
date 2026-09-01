@@ -1,8 +1,8 @@
-# Pipeline Test Results — NFIS Digital Investor (Feb 20, 2026)
+# Pipeline Test Results — [Client-investing-NAM-2026] Digital Investor (Feb 20, 2026)
 
 ## Test Setup
 
-- **Client:** NFIS (Navy Federal Investment Services)
+- **Client:** [Client-investing-NAM-2026] ([Client-investing-NAM-2026])
 - **Transcripts:** 4 PDFs converted to markdown (310KB / 5,397 lines total)
 - **Orchestrator:** `scripts/orchestrate.py` v1 (Python + claude-agent-sdk)
 - **Mode:** `--non-interactive` (auto-approve checkpoints)

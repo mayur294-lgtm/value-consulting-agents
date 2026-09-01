@@ -70,7 +70,7 @@ This document provides reference ROI models from actual Backbase engagements, de
 
 ---
 
-## Example 2: HNB Wealth Management (Sri Lanka)
+## Example 2: [Client-wealth-APAC-2025] (Sri Lanka)
 
 **Engagement Date:** December 2024
 **Region:** South Asia
@@ -164,7 +164,7 @@ The model includes three scenarios with the "Moderate" case as the base:
 
 ---
 
-## Example 3: Goodbody Stockbrokers (Ireland) - Wealth
+## Example 3: [Client-wealth-EMEA-2025] Stockbrokers (Ireland) - Wealth
 
 **Engagement Date:** July 2022
 **Region:** Europe (Ireland)
@@ -247,15 +247,15 @@ The model includes three scenarios with the "Moderate" case as the base:
 
 ---
 
-## Example 4: MSB (Vietnam) - Retail Banking, Retention & Cross-sell Focus
+## Example 4: [Client-retail-EMEA-2023] (Vietnam) - Retail Banking, Retention & Cross-sell Focus
 
 **Engagement Date:** August 2023
 **Region:** Southeast Asia (Vietnam)
 **Segment:** Retail Banking
 **Primary Focus:** Customer Retention, Product Cross-sell, CC Origination, Servicing
-**Reference File:** `knowledge/MSB - RB ROI Assessment.xlsx`
+**Reference File:** `knowledge/[Client-retail-EMEA-2023] - RB ROI Assessment.xlsx`
 
-> **Why this example matters:** Unlike Examples 1-3, MSB leads with retention and cross-sell levers — not onboarding. This demonstrates that high-ROI models can be built around the Expand and Retain lifecycle stages.
+> **Why this example matters:** Unlike Examples 1-3, [Client-retail-EMEA-2023] leads with retention and cross-sell levers — not onboarding. This demonstrates that high-ROI models can be built around the Expand and Retain lifecycle stages.
 
 ### Executive Summary
 
@@ -342,7 +342,7 @@ The model includes three scenarios with the "Moderate" case as the base:
 | Servicing — Implementation | 0% | 60% | 75% | 90% | 100% |
 | Servicing — Effectiveness | 0% | 50% | 60% | 70% | 80% |
 
-**Note:** All curves start at 0% Y1 — MSB has an implementation-first year with no benefit realization until Y2.
+**Note:** All curves start at 0% Y1 — [Client-retail-EMEA-2023] has an implementation-first year with no benefit realization until Y2.
 
 ### Key Assumptions
 
@@ -368,10 +368,10 @@ The model includes three scenarios with the "Moderate" case as the base:
 
 ## Example 5: Wealth Management — RM Productivity & Share of Wallet Focus
 
-**Region:** Composite (based on HNB Sri Lanka + Goodbody Ireland patterns)
+**Region:** Composite (based on [Client-wealth-APAC-2025] + [Client-wealth-EMEA-2025] Ireland patterns)
 **Segment:** Wealth Management
 **Primary Focus:** RM Productivity, Share of Wallet, Product Penetration
-**Reference Files:** `knowledge/learnings/roi_models/wealth_entitlements_roi.md`, `knowledge/MSB - RB ROI Assessment.xlsx` (methodology), `knowledge/domains/investing/roi_levers.md`
+**Reference Files:** `knowledge/learnings/roi_models/wealth_entitlements_roi.md`, `knowledge/[Client-retail-EMEA-2023] - RB ROI Assessment.xlsx` (methodology), `knowledge/domains/investing/roi_levers.md`
 
 > **Why this example matters:** Demonstrates a wealth engagement where the dominant value levers are RM time freed and AUM growth — NOT client onboarding volume. Onboarding is a minor lever here; the ROI is driven by expanding existing relationships.
 
@@ -507,7 +507,7 @@ This is typically the largest lever in wealth engagements.
 
 **Churn Reduction** — revenue retained by preventing customer attrition:
 
-| Input | Description | Example (Bank A) | Example (MSB) |
+| Input | Description | Example (Bank A) | Example ([Client-retail-EMEA-2023]) |
 |-------|-------------|-------------------|---------------|
 | Total active customers | Current customer base | 86,000 | 2,896,296 |
 | Current churn rate | Annual attrition % | 28% | 6% |
@@ -516,7 +516,7 @@ This is typically the largest lever in wealth engagements.
 
 **Formula:** `Annual benefit = Total customers × Churn rate × BB impact × Avg income`
 - Bank A: 86,000 × 0.28 × 0.10 × $707 = **$1.70M/year at full effectiveness**
-- MSB: 2,896,296 × 0.06 × 0.10 × $61.50 = **$1.07M/year at full effectiveness**
+- [Client-retail-EMEA-2023]: 2,896,296 × 0.06 × 0.10 × $61.50 = **$1.07M/year at full effectiveness**
 
 **Loading curve:** Delayed — typically 0% Y1, ramps from Y2 as digital engagement builds trust and habit.
 
@@ -530,7 +530,7 @@ This is typically the largest lever in wealth engagements.
 
 **Product Penetration / Cross-sell** — revenue from activating inactive digital customers:
 
-| Input | Description | Example (Bank A) | Example (MSB) |
+| Input | Description | Example (Bank A) | Example ([Client-retail-EMEA-2023]) |
 |-------|-------------|-------------------|---------------|
 | Digitally inactive customers | Customers not using digital | 55,000 | 2,146,296 |
 | Avg income per additional product | Revenue from cross-sell | $100 | $36.90 |
@@ -538,7 +538,7 @@ This is typically the largest lever in wealth engagements.
 
 **Formula:** `Annual benefit = Inactive customers × BB impact × Avg income per product`
 - Bank A: 55,000 × 0.10 × $100 = **$550K/year at full effectiveness**
-- MSB: 2,146,296 × 0.05 × $36.90 = **$3.96M/year at full effectiveness**
+- [Client-retail-EMEA-2023]: 2,146,296 × 0.05 × $36.90 = **$3.96M/year at full effectiveness**
 
 **Loading curve:** Same as churn — 0% Y1, builds with digital adoption.
 
@@ -573,7 +573,7 @@ This is typically the largest lever in wealth engagements.
 - Parallel-run period costs (3-6 months overlap before full decommission)
 - Termination penalties (one-time; deduct from savings)
 
-**Reference:** See `knowledge/learnings/roi_models/tech_rationalization_decommission.md` for the OneAZ/Lumin case study ($6.65M annual legacy spend, 80%+ savings potential).
+**Reference:** See `knowledge/learnings/roi_models/tech_rationalization_decommission.md` for the [Client-creditunion-NAM-2026]/Lumin case study ($6.65M annual legacy spend, 80%+ savings potential).
 
 ### Calculation Methodology
 

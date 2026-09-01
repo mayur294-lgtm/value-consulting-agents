@@ -392,7 +392,7 @@ ROI Financial Modeler output enables:
 
 **Tech Rationalization / Decommissioning Projects:**
 Reference: `knowledge/learnings/roi_models/tech_rationalization_decommission.md`
-- Document full legacy platform cost stack (see OneAZ pattern)
+- Document full legacy platform cost stack (see [Client-creditunion-NAM-2026] pattern)
 - Include marketplace partner per-transaction costs
 - Model parallel-run period costs (3-6 months overlap)
 - Account for contract termination penalties

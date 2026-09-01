@@ -73,7 +73,7 @@ After every engagement, the system should extract reusable knowledge:
 Engagement Complete
   → Orchestrator Step 9: Knowledge Harvest (automatic)
   → Extracts: benchmarks, pain points, maturity scores, ROI patterns
-  → Anonymizes: client names → [Client-{domain}-{region}-{YYYY}]
+  → Anonymizes via the shared tool (`scripts/anonymize_transcript.py`), then relabels descriptively: client names → [Client-{domain}-{region}-{YYYY}]
   → Writes to: knowledge/learnings/{category}/
   → Updates: EXTRACTION_REGISTRY.md
   → /publish enforces: no engagement outputs without harvest entries

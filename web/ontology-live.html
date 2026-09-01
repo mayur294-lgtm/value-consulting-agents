@@ -79,7 +79,7 @@ body{font-family:'Libre Franklin',system-ui,sans-serif;background:var(--bg);colo
   <h1>Cortex <span>Live Graph</span></h1>
   <select class="eng-select" id="eng-select">
     <option value="all">All Engagements</option>
-    <option value="nfis" selected>Navy Federal — Wealth Assessment</option>
+    <option value="clienta" selected>Client B — Wealth Assessment</option>
     <option value="schoolsfirst">SchoolsFirst — CLO Engagement</option>
     <option value="aib">Allied Irish Banks — Retail Assessment</option>
   </select>
@@ -117,10 +117,10 @@ const CAT_COLORS = {
 
 // ─── ENGAGEMENT DATA ─────────────────────────────
 const engagements = {
-nfis: {
+clienta: {
   nodes: [
     // Client
-    { id:'navy_federal', type:'client', label:'Navy Federal CU', cat:'client',
+    { id:'navy_federal', type:'client', label:'Client B CU', cat:'client',
       props:{industry:'Credit Union',geography:'North America',asset_size:'$170B+',members:'15M+',tech_stack:'Pershing, FIS, Custom CRM',core_banking:'Symitar',salesforce_id:'001XX000003DHIA'} },
 
     // Consultant
@@ -128,7 +128,7 @@ nfis: {
       props:{region:'Global',specializations:'Wealth, Investing, Retail'} },
 
     // Engagement
-    { id:'nfis_assess', type:'engagement', label:'NFIS Wealth Assessment', cat:'engagement',
+    { id:'nfis_assess', type:'engagement', label:'CLIENT-A Wealth Assessment', cat:'engagement',
       props:{domain:'investing',type:'Value Assessment',journey_stage:'Why Change',decision_maker:'CDO + CTO',forcing_function:'Board presentation Q2',deal_value:'$2.8M',stage:'Delivery',started:'2026-02-10',status:'Active'} },
 
     // Workshops
@@ -137,7 +137,7 @@ nfis: {
     { id:'ws2', type:'workshop', label:'Capability Assessment', cat:'workshop',
       props:{date:'2026-02-18',duration_planned:'90 min',duration_actual:'95 min',status:'Completed',attendees:'CTO, Enterprise Architect, Product Owners, Ops Lead',facilitation:'Mirror moment: scored capabilities then showed peer benchmarks',key_moment:'Client shocked by 1.8 vs 2.8 self-assessment gap. Room went silent when activation score (0.8) was shown.'} },
     { id:'ws3', type:'workshop', label:'CX Deep Dive', cat:'workshop',
-      props:{date:'2026-02-20',duration_planned:'90 min',duration_actual:'105 min',status:'Completed',attendees:'Head of CX, Channel Managers, UX Lead',facilitation:'Evidence-led: used capability gaps to frame CX discussion',key_moment:'Mapped the funding journey — discovered NFCU→NFIS external ACH pattern. Balance sheet risk flagged.'} },
+      props:{date:'2026-02-20',duration_planned:'90 min',duration_actual:'105 min',status:'Completed',attendees:'Head of CX, Channel Managers, UX Lead',facilitation:'Evidence-led: used capability gaps to frame CX discussion',key_moment:'Mapped the funding journey — discovered CLIENT-B→CLIENT-A external ACH pattern. Balance sheet risk flagged.'} },
     { id:'ws4', type:'workshop', label:'Architecture Review', cat:'workshop',
       props:{date:'2026-02-22',duration_planned:'90 min',duration_actual:'90 min',status:'Completed',attendees:'CTO, Enterprise Architect, DevOps Lead',facilitation:'Feasibility-first: addressed CTO skepticism with integration proof points',key_moment:'CTO convinced after seeing Pershing API integration pattern from Pentagon FCU. Agreed on 6-month Phase 1.'} },
     { id:'ws5', type:'workshop', label:'Use Case Validation', cat:'workshop',
@@ -148,12 +148,12 @@ nfis: {
     // Discoveries
     { id:'d1', type:'discovery', label:'50% accounts never funded', cat:'discovery',
       props:{category:'Pain Point',severity:'Critical',confidence:'0.95',source:'Transcript — Feb 9 discovery session',stakeholder:'Head of Digital',detail:'Half of Digital Investor accounts are opened but never receive initial funding. Members start the process, hit friction at the ACH linking step, and abandon.',impact:'$8.2M annual revenue leakage (estimated from avg account value × abandonment rate)'} },
-    { id:'d2', type:'discovery', label:'36% member awareness of NFIS', cat:'discovery',
-      props:{category:'Pain Point',severity:'Critical',confidence:'0.90',source:'Transcript — Feb 13 session',stakeholder:'CDO',detail:'Only 36% of NFCU members know that investment services exist through NFIS. NFIS is invisible inside the NFCU digital experience.',impact:'15M members × 36% awareness × <1% investing = massive untapped market'} },
+    { id:'d2', type:'discovery', label:'36% member awareness of CLIENT-A', cat:'discovery',
+      props:{category:'Pain Point',severity:'Critical',confidence:'0.90',source:'Transcript — Feb 13 session',stakeholder:'CDO',detail:'Only 36% of CLIENT-B members know that investment services exist through CLIENT-A. CLIENT-A is invisible inside the CLIENT-B digital experience.',impact:'15M members × 36% awareness × <1% investing = massive untapped market'} },
     { id:'d3', type:'discovery', label:'51% advisor referrals go cold', cat:'discovery',
-      props:{category:'Pain Point',severity:'High',confidence:'0.88',source:'Transcript — Feb 9 session',stakeholder:'VP Advisory',detail:'36K annual referrals from NFCU branches to NFIS advisors. 51% are never contacted within the first 48 hours.',impact:'~18K potential advisory clients lost annually. At $2K avg first-year revenue = $36M opportunity'} },
-    { id:'d4', type:'discovery', label:'NFCU→NFIS via external ACH', cat:'discovery',
-      props:{category:'Evidence',severity:'High',confidence:'0.95',source:'Architecture Workshop — Feb 22',stakeholder:'CTO',detail:'Funding flows from NFCU to NFIS through external ACH — NFIS fronts the money during settlement. This creates balance sheet risk and 2-3 day delays.',impact:'Architectural risk. Not regulatory — "a design choice, not a compliance requirement" (client\'s own words)'} },
+      props:{category:'Pain Point',severity:'High',confidence:'0.88',source:'Transcript — Feb 9 session',stakeholder:'VP Advisory',detail:'36K annual referrals from CLIENT-B branches to CLIENT-A advisors. 51% are never contacted within the first 48 hours.',impact:'~18K potential advisory clients lost annually. At $2K avg first-year revenue = $36M opportunity'} },
+    { id:'d4', type:'discovery', label:'CLIENT-B→CLIENT-A via external ACH', cat:'discovery',
+      props:{category:'Evidence',severity:'High',confidence:'0.95',source:'Architecture Workshop — Feb 22',stakeholder:'CTO',detail:'Funding flows from CLIENT-B to CLIENT-A through external ACH — CLIENT-A fronts the money during settlement. This creates balance sheet risk and 2-3 day delays.',impact:'Architectural risk. Not regulatory — "a design choice, not a compliance requirement" (client\'s own words)'} },
     { id:'d5', type:'discovery', label:'5-7 day IRA withdrawal', cat:'discovery',
       props:{category:'Pain Point',severity:'Medium',confidence:'0.85',source:'Transcript — Feb 13 session',stakeholder:'Ops Lead',detail:'IRA withdrawals take 5-7 business days due to manual form processing. 50% of forms are rejected on first submission.',impact:'Member satisfaction impact. Competitive disadvantage vs Schwab/Fidelity (same-day).'} },
     { id:'d6', type:'discovery', label:'CTO skeptical on timeline', cat:'discovery',
@@ -169,19 +169,19 @@ nfis: {
     { id:'cap3', type:'capability', label:'Advisor Enablement: 1.2', cat:'capability',
       props:{code:'CAP-I-AE-01',capability:'Advisor Enablement',layer:'Middle',current:'1.2',target:'3.0',gap:'1.8',evidence:'No CRM integration, manual referral tracking, no member context at point of advice'} },
     { id:'cap4', type:'capability', label:'Data Integration: 1.4', cat:'capability',
-      props:{code:'CAP-I-DI-01',capability:'Cross-Entity Data Integration',layer:'Back',current:'1.4',target:'3.5',gap:'2.1',evidence:'NFCU and NFIS data completely siloed. No shared member truth.'} },
+      props:{code:'CAP-I-DI-01',capability:'Cross-Entity Data Integration',layer:'Back',current:'1.4',target:'3.5',gap:'2.1',evidence:'CLIENT-B and CLIENT-A data completely siloed. No shared member truth.'} },
     { id:'cap5', type:'capability', label:'Overall Maturity: 1.8', cat:'capability',
       props:{code:'OVERALL',capability:'Overall Maturity',layer:'All',current:'1.8',target:'3.2',gap:'1.4',evidence:'Front: 2.1, Middle: 1.6, Back: 1.4. Chain breaks at weakest link (Back layer).'} },
 
     // Use Cases
     { id:'uc1', type:'usecase', label:'Guided Account Funding', cat:'usecase',
-      props:{code:'NFIS-UC-01',status:'Validated — Lighthouse',priority:'Must Have',priority_score:'$34 (of $100)',effort:'8 weeks',problem:'50% of DI accounts never funded',solution:'Pre-linked NFCU accounts, real-time balance verification, exit-intent capture for incomplete funding',backbase:'Flow Orchestration, Payment Initiation',phase:'Phase 1'} },
+      props:{code:'CLIENT-A-UC-01',status:'Validated — Lighthouse',priority:'Must Have',priority_score:'$34 (of $100)',effort:'8 weeks',problem:'50% of DI accounts never funded',solution:'Pre-linked CLIENT-B accounts, real-time balance verification, exit-intent capture for incomplete funding',backbase:'Flow Orchestration, Payment Initiation',phase:'Phase 1'} },
     { id:'uc2', type:'usecase', label:'Advisor Referral Engine', cat:'usecase',
-      props:{code:'NFIS-UC-02',status:'Validated',priority:'Should Have',priority_score:'$28',effort:'12 weeks',problem:'51% of referrals go cold',solution:'Real-time referral with member context, SLA tracking, automated follow-up',backbase:'Engagement Banking, Notifications',phase:'Phase 1'} },
+      props:{code:'CLIENT-A-UC-02',status:'Validated',priority:'Should Have',priority_score:'$28',effort:'12 weeks',problem:'51% of referrals go cold',solution:'Real-time referral with member context, SLA tracking, automated follow-up',backbase:'Engagement Banking, Notifications',phase:'Phase 1'} },
     { id:'uc3', type:'usecase', label:'Unified Member Dashboard', cat:'usecase',
-      props:{code:'NFIS-UC-03',status:'Validated',priority:'Should Have',priority_score:'$22',effort:'16 weeks',problem:'NFIS invisible inside NFCU — 36% awareness',solution:'Consolidated view of banking + investing in single NFCU app',backbase:'Widget Architecture, Portfolio View',phase:'Phase 2'} },
+      props:{code:'CLIENT-A-UC-03',status:'Validated',priority:'Should Have',priority_score:'$22',effort:'16 weeks',problem:'CLIENT-A invisible inside CLIENT-B — 36% awareness',solution:'Consolidated view of banking + investing in single CLIENT-B app',backbase:'Widget Architecture, Portfolio View',phase:'Phase 2'} },
     { id:'uc4', type:'usecase', label:'Automated IRA Processing', cat:'usecase',
-      props:{code:'NFIS-UC-04',status:'Validated',priority:'Nice to Have',priority_score:'$16',effort:'10 weeks',problem:'5-7 day IRA withdrawal, 50% form rejection',solution:'Digital IRA forms with pre-validation, straight-through processing',backbase:'Document Management, Flow Orchestration',phase:'Phase 2'} },
+      props:{code:'CLIENT-A-UC-04',status:'Validated',priority:'Nice to Have',priority_score:'$16',effort:'10 weeks',problem:'5-7 day IRA withdrawal, 50% form rejection',solution:'Digital IRA forms with pre-validation, straight-through processing',backbase:'Document Management, Flow Orchestration',phase:'Phase 2'} },
 
     // Value Levers
     { id:'vl1', type:'value_lever', label:'Funded Account Increase: $3.2M/yr', cat:'financial',
@@ -189,7 +189,7 @@ nfis: {
     { id:'vl2', type:'value_lever', label:'Referral Conversion: $1.8M/yr', cat:'financial',
       props:{group:'Advisory',lever:'Referral Contact Rate Improvement',type:'Revenue',baseline:'49%',target:'80%',annual_value:'$1.8M',confidence:'0.75',source:'Client data (36K referrals × conversion delta)'} },
     { id:'vl3', type:'value_lever', label:'Member Awareness: $2.1M/yr', cat:'financial',
-      props:{group:'Acquisition',lever:'NFIS Awareness & Cross-sell',type:'Revenue',baseline:'36%',target:'60%',annual_value:'$2.1M',confidence:'0.65',source:'Benchmark estimate (awareness → conversion model)'} },
+      props:{group:'Acquisition',lever:'CLIENT-A Awareness & Cross-sell',type:'Revenue',baseline:'36%',target:'60%',annual_value:'$2.1M',confidence:'0.65',source:'Benchmark estimate (awareness → conversion model)'} },
     { id:'vl4', type:'value_lever', label:'Servicing Efficiency: $0.9M/yr', cat:'financial',
       props:{group:'Servicing',lever:'IRA Processing Automation',type:'Cost Reduction',baseline:'Manual',target:'85% STP',annual_value:'$0.9M',confidence:'0.70',source:'FTE reduction + error rate improvement'} },
 
@@ -219,9 +219,9 @@ nfis: {
 
     // Pain Patterns (cross-engagement)
     { id:'pp1', type:'pain_pattern', label:'Account Activation Failure', cat:'pattern',
-      props:{frequency:'23 engagements',severity:'Critical',industries:'Credit Union, Retail Bank, Digital Bank',avg_impact:'$8-15M annual revenue leakage',instances:'Navy Federal (50% unfunded), Pentagon FCU (45% dormant), BECU (38% inactive), First Tech (42% unfunded)'} },
+      props:{frequency:'23 engagements',severity:'Critical',industries:'Credit Union, Retail Bank, Digital Bank',avg_impact:'$8-15M annual revenue leakage',instances:'Client B (50% unfunded), Pentagon FCU (45% dormant), CLIENT-C (38% inactive), First Tech (42% unfunded)'} },
     { id:'pp2', type:'pain_pattern', label:'Advisor Referral Leakage', cat:'pattern',
-      props:{frequency:'18 engagements',severity:'High',industries:'Credit Union, Wealth Manager',avg_impact:'40-55% of referrals go cold',instances:'Navy Federal (51% cold), Pentagon FCU (48% cold), BECU (44% cold)'} },
+      props:{frequency:'18 engagements',severity:'High',industries:'Credit Union, Wealth Manager',avg_impact:'40-55% of referrals go cold',instances:'Client B (51% cold), Pentagon FCU (48% cold), CLIENT-C (44% cold)'} },
   ],
   links: [
     // Client → Engagement
@@ -319,7 +319,7 @@ const g = svg.append('g');
 const zoom = d3.zoom().scaleExtent([0.15,5]).on('zoom', e => g.attr('transform', e.transform));
 svg.call(zoom);
 
-let currentData = engagements.nfis;
+let currentData = engagements.clienta;
 let simulation, linkSel, linkLabelSel, nodeSel;
 let showLabels = false;
 
@@ -540,7 +540,7 @@ document.getElementById('eng-select').addEventListener('change',function(){
 });
 
 // Initial render
-render(engagements.nfis);
+render(engagements.clienta);
 </script>
 </body>
 </html>

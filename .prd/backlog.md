@@ -1,6 +1,732 @@
-# Findings Backlog
+# Backlog — parked findings
 
 Small issues parked by reviews and audits; `/bb-prd` Phase 0.2 offers these at the start of each cycle. Mark `[done vN]` when folded into a PRD.
+
+---
+
+## STATE AS OF 2026-08-30 — read before offering anything from this file
+
+A long privacy/merge session closed a lot of this file. **Do not re-offer the
+following; it is done and living in `mariamt/20260826-eval-gate-v7-pr6`** (PR #211,
+all checks green, awaiting a code-owner approval to reach `main`):
+
+- **Repo-wide client-name scrub.** 1,584 hits across tracked files -> 138. The
+  138 are code examples (deliberate exception, recorded below) and
+  Backbase-published reference customers (deliberate keep).
+- **Raw client material deleted** from `knowledge/` and `tests/` — three
+  assessment reports, four discovery-call transcript PDFs, an evidence register
+  naming six identifiable individuals, and 32 files of engagement validation runs.
+- **All 132 client-named FILENAMES renamed** across the whole `engagements/`
+  tree (46 in the seven engagements + 86 in the shared staging trees), reversibly.
+- **Build-script output paths fixed** — no script recreates a client-named file.
+- **The engagement migration is unblocked** — all 7 pass their dry run. It has
+  NOT been run; that is a deliberate consultant step, tracked as **#225**.
+- **D1 label discriminator built** (`identity.client_label`), mutation-proven.
+- **Eval rows authored** for three previously ungated agents, 11/11
+  mutation-proven, and those agents then scrubbed.
+- **CTP (#97) merged into the stack**, which forced a real fix to
+  `SHADOW_SUBTREES` (nested subtrees now supported).
+
+**Still genuinely open and worth the next cycle:** #223 (widened — see the
+blind-spot entries below), the retraction decision, the ~12 client deliverable
+binaries in `knowledge/`, and archive/binary CONTENT which no filename work touched.
+
+---
+
+## PRIORITY ORDER — 2026-08-30. Read this before the severity headings below.
+
+The severity headings further down no longer sort: "High severity — client-facing
+correctness" sits above four sections of hygiene, and the 2026-08-30 privacy work
+appended seven sections that are mostly NOTES ABOUT LIMITS rather than work. At 80
+open items this file has become a log rather than a queue. This block is the queue.
+
+### TIER 1 — the pipeline can produce a deliverable built on nothing (do next)
+
+Five items, one coherent cycle, one theme: **a step fails and the pipeline carries
+on and bills for a deliverable anyway.** Four of the five are cheap.
+
+1. `step_discovery` has no failure gate — every extraction can fail, an empty
+   checkpoint is auto-generated and auto-approved, and a finalize agent runs on
+   zero interims. The empty checkpoint satisfies `require-checkpoint` and
+   `enforce-journal` VACUOUSLY, which is the sharpest part.
+2. `step_assembly` continues past total shard failure — observed live: three shard
+   writers refused, the step merged anyway and spent $1.09 on an exec summary of
+   nothing.
+3. Post-Assembly Cross-Deliverable Review lost — 61 lines of numeric-consistency
+   and orphan-audit checks deleted and re-homed nowhere, so numbers can disagree
+   across deliverables with nothing looking.
+4. Scenario label drift — four surfaces disagree (conservative/moderate/aggressive
+   vs conservative/base/aspirational). A deck can name a scenario never computed.
+5. Act 7 phase→lever contract broken — the assembler mandates output whose
+   producing spec lives only in the DEPRECATED agent, so the live modeler is never
+   told to emit it.
+
+### TIER 2 — small and bleeding — **3 of 4 DONE 2026-08-30**; the fourth is #218
+
+- `journal_path` still carries the client's directory name in the telemetry
+  payload. The label was anonymised in #169; this field was not, and telemetry
+  LEAVES THE MACHINE to a shared GitHub issue. Two lines.
+- The reopened unbalanced deny term — live in BOTH the hook and the module;
+  `drift_check` passes because the two copies are consistently wrong.
+- Hardcoded `/Users/<name>/...` paths in three component docs — broken for every
+  consultant who is not their author. Pure adoption tax.
+- `VERSION` is behind `CHANGELOG`; `version-release.yml` parses the changelog, so
+  this breaks the next `v*` tag.
+
+### TIER 3 — the gate means what it says
+
+`MUTATION_PROOF_REQUIRED_ROWS` has no independent guard (marked High severity in
+this file); `declared_checks_all_executed` is a structural NO-OP for all four
+deliverable rows; 17 path classes trigger evals and silently continue; both
+governance hooks document fail-open and actually fail by RAISING;
+`roi-calibrator` + `frontline-builders` are hand-proven only.
+
+### THEN v8 — #223 widened first
+
+#223 must gate FILENAMES repo-wide, not just `knowledge/**` content, and
+`SKIPPED_NO_MAP` must be loud — see the blind-spot entries below for why. Then
+#218, then the output-naming cluster.
+
+### DELIBERATELY NOT NEXT
+
+- #219 / #222 (mutations for 19 + 21 checks) — the largest v8 tickets, buying
+  proof for gates that already pass.
+- The OCR/PDF ingest refinements — real, but refinements to a path that works for
+  the common case.
+- The #186 canary misdiagnosis — latent, has never fired on a real run.
+- Retraction, the ~12 client binaries, archive interiors — these are DECISIONS,
+  not builds. They belong in a conversation, not a cycle.
+
+---
+
+## From the 2026-07-28 post-extraction full-system audit (47-item history verification + live tests)
+
+### High severity — client-facing correctness
+- [done v6] **PII round-trip is lossy and silently corrupting for multi-value categories** (`scripts/anonymize_transcript.py:174-176` — one mapping key per category, last value wins: three emails in → the last email restored to ALL three occurrences on de-anonymization). Also: generated `.xlsx` is never de-anonymized (`deanonymize_dir` filters to .md/.html/.json/.txt, non-recursive); `.anon_mapping_*.json` files carry the same PII as `.pii_mapping.json` but get no chmod 600 and are never cleaned up; single-word client short forms leak (`[CLIENT-SHORT]` requires ≥2 words); name scrubbing is 100% intake-list-driven with NO warning when the entity list is empty (live test: person names + client name passed through in plaintext). Pre-existing (identical on main).
+- [ ] **step_discovery has no failure gate** — both/all transcript extractions can fail (e.g. auth error) and the pipeline logs, auto-generates an empty checkpoint, auto-approves it, and burns a finalize agent run on zero interims (`orchestrate.py:667-707`). The empty checkpoint also satisfies require-checkpoint + enforce-journal vacuously. Add a threshold gate (e.g. abort if >50% of extractions failed) + make `_generate_discovery_checkpoint` refuse on zero interims. Pre-existing.
+- [ ] **Post-Assembly Cross-Deliverable Review (Step 7) lost** — 61 lines of numeric-consistency/orphan-audit/authority-resolution checks added by 36fcce8 were deleted when the orchestrator agent was slimmed to a thin router (a85212f) and re-homed NOWHERE. Restore as a narrative-assembler mode or a Python validation step. Pre-existing.
+- [ ] **Act 7 phase→lever activation contract broken** — narrative-assembler mandates "Progressive Value Realization" but the producing spec lives only in the DEPRECATED roi-business-case-builder; the live roi-financial-modeler is never told to emit it. Pre-existing.
+- [ ] **Scenario label drift** — roi-financial-modeler + roi_calibrator say conservative/moderate/**aggressive**; narrative-assembler dashboard spec says conservative/**base**/**aspirational**; roi deliverable rubric says conservative/moderate/**aspirational**. Pick one triplet, align all four surfaces. Pre-existing.
+
+### Medium — gates and coverage
+- [in v7] **CI evals gate runs no component-altitude evals and no `report` deliverable** (`evals.yml` runs deck+negatives/roi/assessment/pipeline only) — the ROI cap parity checks pass locally but are never enforced in CI. Add `--component` runs for changed components or at least the report deliverable.
+- [done v7] `evals/rubrics/deliverable/visual_render.py` was dead code — wired to no registry row; deck calibration figures (golden 1.000 / negative 0.364) recorded nowhere in-tree. **Resolution: deleted (:16)**, not wired. **Correction (v7 PR3):** the deletion stands, but an earlier record of this resolution wrongly claimed reproduction "was not possible in this environment (no `ANTHROPIC_API_KEY`)". That is false — a reviewer reproduced the figures at $0 with `python3 evals/run_experiment.py --deliverable deck --negatives`: golden `evals/goldens/deck_valid_min.html` -> 1.000, negative `evals/goldens/negatives/deck_offpalette.html` -> 0.364 HARD-FAIL. The 0.364 is arithmetically **`decks.py`'s** 7-check mean on the negative fixture — `(0 + 0.90 + 0 + 0 + 0.80 + 0 + 0.85) / 7 = 0.3642857...` with three hard-fails (`no_deprecated_hexes`, `no_gradient_text`, `self_contained_no_cdn`) — not a vision-judge score (a single-check vision judge returns one raw float; only a 7-check code rubric produces exactly that mean). So the figures this entry originally referred to were never `visual_render.py`'s at all: the module had no calibration of its own anywhere in-tree, and there was nothing to reproduce or fail to reproduce. The deletion itself is independently correct on four grounds: D9 forbids a blocking CI row that needs a metered vision-API key; the registry has no non-gating judge slot at `deliverable` altitude (`path1_judge:` is `components:`-only, tied to `path1.py --agent` regeneration, not to scoring an already-rendered file); the module's own skip paths used the vacuous `passed=True, skipped=True` shape `#181` eliminated everywhere else; and `decks.py` already covers the deck deliverable at $0 with a working negative. The deck calibration figures are now recorded in-tree in `evals/rubrics/deliverable/decks.py`'s module docstring, next to the checks that produce them (they were previously undocumented, which was `:16`'s original, still-valid complaint). Deleted along with the now-orphaned `evals/rubrics/judge/prompts/visual_render.md`; `design-system-frozen.md` is kept (shared by `assessment.py`/`roi.py`). Full-tree reachability audit confirms `visual_render.py` was the only orphan under `evals/rubrics/`.
+- [ ] **`_backbase_impact_values` (`evals/rubrics/component/specifics.py:181-206`) has a key-collision false-flag on real engagement output.** It walks `scenarios.*.backbase_impacts.*` treating every numeric value there as a 0-1 percentage impact subject to the 60% cap. But in `engagements/outputs/2602_HNB_Sri_Lanka/roi_config.json` and `roi_config_calibrated.json`, a dollar figure (`rm_revenue_uplift_per_rm: 5000` / `8000` / `12000`) sits under that same `scenarios.*.backbase_impacts` path alongside genuine percentage impacts — the scan flags these as "OVER" the cap when they are not percentages at all. Today this costs the `backbase_impact_within_cap` check 1/9 of the `roi-financial-modeler` mean, which still clears the (now 0.90) threshold, so it passes silently. Pre-existing, unrelated to #180 — surfaced only because #180's review re-scored `specifics.py` against a real past engagement per D10's HIGH-risk `runtime.py` requirement. Exactly the kind of false-flag that re-scoring rule exists to catch. Do not fix inline; needs either a schema-level rename (dollar drivers should not live under `backbase_impacts`) or a value-range heuristic in the scan itself.
+- [ ] **Stale pre-retune chunking thresholds** — context protocol Rule 9 Step 3 still says 500/1500 (Rule 1 was retuned to 1500/3000); roi-hypothesis-builder/roi-financial-modeler core text still says "chunk files over 500 lines" (live standalone test hit this conflict and had to pick). Align all to Rule 1.
+- [ ] **Rule 10 contradictions** — narrative-assembler (its own :71 forbids what :477 instructs), upgrade-analysis, capability-gap-analyzer still point at the full Product Directory CSV; journey-builder + capability-gap-analyzer at the full taxonomy master. Pre-existing.
+- [done v4] **Phantom `benchmarks/` registry paths** — benchmark-librarian body + whitelists reference `benchmarks/benchmark_registry.md`, `benchmarks/regions/*`, `benchmarks/domains/*` which have never existed. Create the structure or repoint to `knowledge/domains/*/benchmarks.md` + `knowledge/learnings/benchmarks/`.
+- [x] **[done 2026-08-30 — bumped to 1.3.0]** **VERSION (1.2.0) is BEHIND CHANGELOG (1.3.0)** — version-release.yml parses the changelog; reconcile before the next `v*` tag.
+- [ ] Telemetry "Layer 1" (orchestrator direct `gh issue create` after Step 7/8c) is documented in FLYWHEEL.md but was never implemented — implement or correct the docs.
+- [ ] knowledge conflicts: `retail/roi_levers.md` claims NBA/churn-prediction capabilities absent from the Product Directory; one client's call volume stated as 25K/mo in one knowledge file and ~239K/mo implied in another; `value_lever_framework.md` states the gap formula in ratio form but its worked example uses percentage-points (production configs use ratio).
+- [ ] **`declared_checks_all_executed` (#182) is a structural no-op for all four deliverable rows** — deck, roi, assessment, and report declare no `code:`/`judge:` lists in `registry.yaml` at all (their checks live inside the evaluator modules, `evals/rubrics/deliverable/*.py`), so `_assert_declared_checks_executed` (`run_experiment.py`, ~line 143) returns early on an empty declared set and those four rows get zero benefit from the new assertion. Not a defect in #182 — a scoped gap: closing it means declaring `code:`/`judge:` lists for deliverable rows, which belongs to the three-tier registry restructuring in #188/#201. In the gate-that-measures-nothing epic's own terms: a tier where the coverage assertion is structurally inert is exactly where the next false green would live.
+
+### Low — docs, hygiene, prompts
+- [ ] FLYWHEEL.md: five sections below the deprecation banner still describe the killed auto-dev loop as live (File Map, labels, cost model, triggers).
+- [ ] CLAUDE.md: `.claude/skills/` claim wrong (holds bb-* six, not coding-standards); anti-patterns 8-10 (experience map, bullet narratives, silent checkpoint skip) referenced in agent files but never added; CHANGELOG unlogged since 1.3.0 (PRs #70-#123).
+- [x] **[done 2026-08-30 — repo-root-relative, and the interpreter corrected to `.venv/bin/python`; the examples were wrong twice]** Hardcoded `/Users/mayur@backbase.com/...` paths in value-consulting-orchestrator.md (4 command examples), run-pipeline.md, scan-engagement.md — broken for every other consultant. (Also queued for skill-first Phase 3.)
+- [ ] `/executive-briefing` referenced from CLAUDE.md:415 + frontline-long-form.md:32 but no such command exists.
+- [done v6] anonymize-guard deny message tells consultants to run `python3 scripts/anonymize_transcript.py <file>` — actual CLI requires `--file`/`--engagement-dir`.
+- [ ] `ACTIONS_STEP_DEBUG: false` exists only as a CHANGELOG claim, in no workflow (default is off — cosmetic).
+- [ ] Deprecated roi-business-case-builder still in the LIVE agents dir (56KB) with off-palette color instructions (#3366FF/#091C35, purple rotation) below its DEPRECATED banner — move to deprecated/ or truncate to a tombstone. (Also queued for Phase 3 pruning.)
+- [ ] eval-case: Decision-4 log convention — benchmark-librarian + knowledge-harvester carry no divergence log (absent log vs "no divergence existed" indistinguishable); add explicit "no contradictions found" notes; capability-assessment's log unlabelled.
+- [ ] journey-builder quality checklist still demands CP2 "NOT SKIPPED" which pipeline mode can never satisfy (reconciled by the Decision-4 note but self-contradictory on its face).
+- [ ] roi-hypothesis-builder prompt's capability-ID examples use a nonexistent range convention ("DOL.1-5", "Flow Foundation") — fabrication-prone; correct to real `PREFIX.Journey.Feature` IDs.
+- [ ] Standalone journal/telemetry ambiguity: no engagement dir → nowhere to append; mode blocks should state the fallback explicitly (input for Phase 2 governance tiering).
+- [ ] Root `.gitignore` doesn't cover `.env.shared` (only evals/.gitignore does) — brittle if the file moves; test-agents.yml directory filter isn't strictly .md-only; step_assembly docstring still describes the superseded 2-way shard split.
+- [ ] roi-hypothesis-builder opus model gap at the non-interactive Block A call site (flagged in #109; spawned task exists) — confirm frontmatter fallback or fix call site.
+- [ ] **Journey Builder exceeds 32K output-token ceiling in SDK runs** (live test 2026-07-28): writing journey_maps.json in one response overflowed CLAUDE_CODE_MAX_OUTPUT_TOKENS default. Fix both sides: orchestrate.py should set CLAUDE_CODE_MAX_OUTPUT_TOKENS in the agent env, AND journey-builder's pipeline mode should mandate incremental writes (one journey section per Write, like /generate-assessment-html's protocol).
+- [ ] **step_assembly continues past total shard failure** (live test run 5): all three shard writers failed (preflight refusal) yet the step proceeded to merge + a $1.09 exec-summary pass before crashing on the missing report. Same continue-past-failure family as the discovery gate gap — add a shard-failure gate before merge/exec-summary.
+- [ ] **Live dashboard violated design hard-gates** (Harborlight run 7, scored 0.36): 16 gradient-text occurrences — the audit's "assembler bans gradient text then shows a gradient-text code example" contradiction manifested in production; PLUS 1 external Unsplash image URL (self-contained rule) and 1 unfilled {{PLACEHOLDER}}. Fix the assembler's html-partial example block (remove the -webkit-text-fill-color example), add an explicit no-external-images rule, and have the Python assembler fail on leftover {{...}} markers.
+- [in v7] **eval-on-run rubric drift** (Harborlight run 7): roi deliverable rubric scored the produced roi_config.json 0/0 on levers_have_5yr_values + assumptions_sourced — its parser doesn't recognize the current value_lever_groups schema (config demonstrably has 22 impact values; Excel built fine). Also runtime applies the full discovery rubric to EACH discovery output file, so evidence_register.md fails "pain_points_present" even though pain_points.md exists. Fix rubric schema parsing + per-file check scoping.
+
+## From the 2026-08-25 Presidio PII cycle (v6, PR 1)
+
+- [ ] **`step_harvest` now reads placeholder-form outputs, not de-anonymised ones.** Unavoidable once its `cwd` is the neutral workspace (#167), and arguably strictly better — the harvester's own contract requires anonymised knowledge, and #169 made it defer to the shared tool. But it is a behaviour change beyond pure path plumbing: the harvester previously saw real client names (post-`deanonymize_dir`) and now sees `<CLIENT_1>`. Its eval row still scores 1.000, but that row tests the synthetic-quarantine gate, not what the harvester does with placeholder input. Worth a targeted case (from #167)
+
+
+- [done v6] ~~**Sequencing: #167 must land before or with #168.**~~ — DONE. #167 landed first and #168 built on it. **But this note's live-data claim was the exact inverse of the truth, and #168 measured it before writing anything.** It said one specific engagement was the risk and "the other six engagements have filled profiles". Measured on all seven live directories: **only ONE of the seven has a CLIENT_PROFILE.md at all**, and even that one is unfilled (`- **Name:** [Full legal name]` → zero terms). Its identifier terms come from `inputs/engagement_intake.md`, which travels *inside* the engagement and survives migration — so that one is the only one that loses nothing. **The other six have no deny-list source file whatsoever**: no profile, no ENGAGEMENT_CONTEXT.md, no intake. Their entire client deny-list is the directory slug, and a rename-only migration would have zeroed it for six of seven live engagements while reporting success. The fix: `migrate_engagement_ids.sh` resolves the deny-list before and after every move and refuses unless the after-set still *matches* everything the before-set did, with `identity.render_client_profile()` writing the client's identifier forms into a CLIENT_PROFILE.md inside the opaque directory. `denylist.py` is untouched — `drift_check.py` still passes, so D14's hook parity holds (from #166, resolved in #168)
+
+- [ ] **ACTION — run the live engagement migration → tracked as #225. UNBLOCKED 2026-08-30 — it now passes its own dry run; it just has not been RUN.** *Filed as its own issue because #168 (the tooling) closes when PR #211 merges, at which point this action would have survived only as this backlog line — where it had already been deferred once.* Was 6-of-7 refused for want of client names; each engagement now carries a CLIENT_PROFILE.md supplying them, and all 7 pass the deny-list superset check with zero filename warnings. The remaining step is a consultant running `--apply`, deliberately: it moves live working directories and `engagements/` is gitignored, so there is no git history to fall back on. Take a copy first. Original note follows — #168 shipped the tooling but all seven live directories are still client-named (two of them two engagements for the same client). Until this runs, `compose_prompt` still renders the client's name into every agent invocation, which is the whole leak D6 exists to close. It was deliberately deferred, not forgotten — `engagements/` is gitignored, so there is no git history to fall back on and the consultant wanted to choose the moment.
+
+  It needs each client's REAL legal name, because a slug is not a name: `bdo_apa` yields no prose deny-list terms at all, and migration refuses rather than guessing (title-casing it to "Bdo Apa" would put a wrong term on the deny-list while looking like it had solved the problem). Write them into a names file and rehearse first:
+
+  ```
+  # names.txt — slug=Client Name
+  client-a-slug=<real name>
+  client-b-slug=<real name>
+  client-b-slug-2=<real name>
+  client-c-slug=<real name>
+  client-d-slug=<real name>
+  client-e-slug=<real name>
+  client-f-slug=<real name>
+  ```
+
+  ```
+  ./scripts/migrate_engagement_ids.sh --names-file names.txt          # dry run, changes nothing
+  ./scripts/migrate_engagement_ids.sh --names-file names.txt --apply  # prints the plan, then asks
+  ```
+
+  Take a copy of `engagements/` first. Paste the dry-run output into PR 4's description — build order #170 requires it. Afterwards, `./scripts/find_engagement.sh <client>` is how you reach any of them (from #168)
+
+- [ ] **Deny-list coverage is a MATCHING question, not a set-subset one — and the naive version of the check is wrong in both directions.** #168's first cut compared term strings and produced two false results at once: it reported a lower-case slug as lost when its upper-case form covers it (the gate matches case-insensitively), and it would have accepted a spaced two-word name as covering its concatenated form in a variant where only the joined form mattered — the gate's alphanumeric boundaries mean the spaced form never fires on the concatenated one. `identity.uncovered()` now answers the real question by running the gate's own `_term_pattern` matcher. **Nothing in the eval suite would have caught either error** — the `pii-anonymizer` row scored 1.000 throughout. Worth a case that asserts on coverage rather than set membership (from #168)
+
+- [ ] **The concatenated slug form has no prose equivalent, and this is now load-bearing.** `denylist.extract_terms_from_slug` adds the joined form (`two_word_slug` → `twowordslug`) — the shape that appears in email domains, subdomains and handles — and *nothing* in the text-extraction path can produce it. Once the directory is an opaque ID there is no slug left to mine, so #168 writes those forms into CLIENT_PROFILE.md under `- **Client Name:**` (a label `denylist.LABEL_LINE_RE` actually matches) in an "Identifier Forms (deny-list)" section. It works and is verified, but it is a convention held together by a comment: delete that section and the gate silently weakens. Consider making it a first-class field the resolver looks for by name (from #168)
+
+- [ ] **`engagements/inputs/` and `engagements/outputs/` still carry client names in their paths.** Shared legacy staging holding `2602_BSP_Pacific`, `2602_HNB_Sri_Lanka`, `2602_Seabank_Vietnam`, `2605_Mystate_Ignite`, `cortex_ontology_Mariam`. They are in `denylist.SKIP_CLIENT_DIRS`, so they contribute nothing to any deny-list *and* are excluded from #168's migration — the dry run reports them as out of scope rather than silently skipping them. Migrating them is a separate decision: they are staging, not engagements, and nothing resolves them through the map (from #168)
+
+- [done v8] **Client names survive in FILENAMES that no directory rename touches.** Measured on the live directories: questionnaire spreadsheets, demo transcripts and value-engagement pitch decks all carry the client's short name in the FILENAME. `materialise_workspace` (#167) neutralises these for pipeline runs by renaming every copied artifact, but an *interactive* Read of `engagements/<id>/…/<ClientShortName>_Pitch.html` still puts the client's name in the path envelope. #168 reports them per engagement in the dry run rather than renaming a consultant's deliverables behind their back. Closing it needs a rename-with-mapping decision (from #168)
+
+- [ ] **The map's `client` field is a snapshot, not a live view.** `init_engagement.sh` records the client's real name when a prior CLIENT_PROFILE.md already holds one, and the slug otherwise; filling the profile in later does not update the map. So `find_engagement.sh` can show the bare slug for an older engagement and the full legal name for a newer one for the same client — both resolve, but the listing looks inconsistent. A `--refresh` that re-reads profiles into the map would close it (from #168)
+
+
+- [ ] `.claude/agents/discovery-transcript-interpreter.md:112` — the PII Boundary contract still describes the legacy `[CLIENT]`/`[PERSON-1]`/`[REDACTED-*]` placeholder form, stale since #160 moved the convention to `<ENTITY_N>`. Not one of #169's 11 surfaces so it was left untouched, but it is the canonical agent-facing PII contract and now contradicts the code (from #169)
+- [x] **[done 2026-08-30 — now basename-only]** `scripts/extract_telemetry.py` — the client label is now anonymised (#169), but `journal_path` in the same payload still contains the client's directory name, so telemetry synced to a GitHub Issue still carries the client identity via the path. Closing this is the path-anonymisation work in PRD v6 §2 (#166–#168), not a telemetry fix (from #169)
+
+
+- [done v6] **Internal-domain email addresses leaked in cleartext** — FIXED in `2c8a6a8`. Presidio's built-in `EMAIL_ADDRESS` recognizer validates the domain against real registered TLDs via `tldextract`, so `.internal`, `.corp`, `.local`, `.lan`, `.intranet` — the standard internal domains at essentially every bank — were not recognised as emails at all and passed through untouched, along with RFC 2606 `.test`/`.example`/`.invalid`. Fixed with a shape-based second `EMAIL_ADDRESS` recognizer that reuses the built-in's own regex and accepts on final-label shape rather than TLD registration. **Worth remembering how this was found:** fourteen eval checks at 1.00 and four gate-bites proofs all passed while it leaked, because every fixture used real-looking TLDs. It surfaced only from running the guard's printed command verbatim against a real DOCX and reading the output. **A green gate is evidence about the fixtures, not about reality** — periodically exercise the real path by hand (from #164 verification)
+
+
+- [done v6] **~~HIGH: a non-Latin-script name stays legible in the redacted image copy~~ — LEAK CLOSED in #173.** Only the `eng` language pack is installed. #163 measured it: Sinhala "නිමල් පෙරේරා" OCRs as `HO: 8OE Gs5ebd)`, Tamil as `Quwj: ona Gwny`, Devanagari as `ava: ftrar rat`. The garbage was not detected, so the pixels were never blanked and the real name remained fully readable in `.anon_X.png` — an artifact an agent may open. #173 FIX: `ingest.py` now measures tesseract's own per-word confidence (`_mean_confidence`, from the same `image_to_data` call already parsed for bounding boxes) and REFUSES the whole image — no sidecar, no redacted copy, typed `OCRLowConfidenceError` — when mean confidence falls below `_MIN_OCR_CONFIDENCE` (60.0, calibrated: worst passing fixture 82.6, worst refusing fixture 38.6). A direct image ingest raises and refuses; an image embedded in a DOCX/PPTX degrades to `IMAGE_SEAM_MARKER` and withholds its own redacted copy, matching how a missing OCR binary already degrades an embedded picture without refusing the whole host document. Verified: all four Latin layouts (table/form/cards/prose) and both Latin names (`Nimal Perera`, `Maria Clara Santos`) still ingest and detect normally; Sinhala/Tamil/Devanagari fixtures now refuse with zero artifacts; a genuinely textless image (chart/logo) still takes the ordinary `EmptyExtractionError` path, not this refusal. Gated by the new `pii-anonymizer` eval check `image_unreadable_script_refuses_and_writes_nothing` (13th check, still 1.00). **Explicitly NOT the fix:** `brew install tesseract-lang` was considered and rejected — it would transcribe the name CORRECTLY into the sidecar in cleartext, where `en_core_web_lg` still cannot detect it (non-English NER is out of scope for v6, PRD §6), while the image would STILL be unredacted (detection, not OCR, drives which pixels get boxed). That trade turns a hidden leak into a plainer one. **REMAINING GAP, NOT CLOSED:** a non-Latin-script screenshot is now safely refused, but still unusable — the live engagement set includes Sinhala-, Devanagari- and Tagalog-script markets, where a consultant may need to describe or transcribe such a screenshot manually. Closing that needs multilingual OCR AND multilingual NER landing TOGETHER (installing language packs alone would make things worse, as above) — a system-dependency and design decision, not a drive-by. Documented in `scripts/pii/ingest.py`'s "NON-LATIN SCRIPT IN IMAGES" section (from #163, fixed in #173)
+- [ ] `scripts/pii/ingest.py` over-redacts short capitalised COLUMN HEADERS in a screenshot. Comma-joining a header row makes `Name, Role, Email, Account.` read as a list of people and spaCy tags "Email" (and, in context, "Account") PERSON, so the header is replaced by a placeholder and boxed in the image. Fails SAFE — a label is lost, never a value — and each value's own placeholder still names its entity type. The fix is adding generic column-header words to the engine allow-list, which lives in `engine.py`/`denylist.py`; #163 was forbidden from touching either (from #163)
+- [ ] A scanned PDF is still `EmptyExtractionError`. #163 wired OCR into direct images and into pictures embedded in DOCX/PPTX, but not into PDF page images — a PDF has no `related_parts` picture list to walk and would need a rasterise-per-page pass (`pdf2image`/`pypdfium2`, another system dependency). PDFs are 43 of the 77 real input files, so a scanned annual report is currently refused rather than read (from #163)
+- [ ] `_ocr_rows` groups words into visual rows by y-centroid across the WHOLE page, which is right for screenshots and forms and wrong for a genuinely two-column page (a two-column report scan interleaves). The text is still fully scrubbed; only its reading order suffers. Revisit if real inputs turn out to include multi-column scans (from #163)
+- [ ] `presidio-image-redactor` 0.0.60 was installed and measured head-to-head in #163 and REJECTED (see `ingest.py`'s "D5b DECISION"): its analysis text is a flat space-join with no injection point (6/8 person names to our reflow's 8/8), it cannot produce the placeholder sidecar, and it hard-depends on `azure-ai-formrecognizer`. Re-evaluate only if upstream makes `get_text_from_ocr_dict` injectable AND drops the Azure client from its required dependencies (from #163)
+
+- [ ] **PDF tables keep the undetectable shape.** #162 chose a record-per-row label-line rendering for DOCX/PPTX/XLSX/CSV because it detects 30/30 person names vs 28/30 for pipe tables. A PDF has no table structure to rebuild, so a pipe-formatted table inside a PDF stays pipe-formatted and carries that detection risk. Reflowing a PDF's visual layout into records is a guess, and a wrong guess scrambles the document. PDFs are 43 of the 77 real input files, so this is the largest residual surface. Needs either a layout-aware extractor or an explicit accepted-risk decision (from #162)
+- [done v8] `scripts/pii/engine.py` — a US account number (`Account No.: 8834021177`) is typed as `<UK_NHS_1>`, because `UK_NHS` is in `DEFAULT_ENTITIES`. **Not a privacy defect** — redaction and restore are both correct — but the placeholder label misleads any downstream agent reading the anonymised text. Consider entity-set tuning or a label-normalisation pass (from #162)
+- [ ] **`scripts/pii/engine.py` — entity TYPING is nondeterministic across processes.** Found while verifying #209, and PRE-EXISTING (reproduces on the client-only deny list, with #209 reverted). Running the committed fixture through `PIISession.anonymize` in six fresh interpreters gives two stable outcomes: `(555) 201-4477` is typed `PHONE_NUMBER` in some runs and `US_BANK_NUMBER` in others, changing the output length (2257 vs 2259 bytes) and the placeholder labels. Two recognisers propose the same span at the same score and the tie is broken by unordered iteration (`PYTHONHASHSEED`). **Not a privacy defect** — the value is redacted and restores byte-identically in both outcomes, and `round_trip_byte_identical` passes either way — but it is the same misleading-label class as the `<UK_NHS_1>` entry above, and it means any future check that asserts on a specific placeholder LABEL or on an exact anonymised byte-length will be flaky. Fix is a deterministic tie-break in overlap resolution (from #209 verification) **NOT REPRODUCED 2026-08-27** (v8 discovery): three separate processes on a fixture carrying attendee bullets, a markdown table row, a vendor name and an account number produced byte-identical output. Needs its original input before it is ticketed — do not carry the claim forward unverified.
+- [done v8] **A vendor name is over-redacted by the PERSON recogniser: `Temenos T24` -> `<PERSON_1>`.** Found while running #209's vendor-survival probe, and PRE-EXISTING (reproduces with #209 reverted; unrelated to the deny-list). "Backbase", "Salesforce" and "nCino" survive everywhere tested, but "Temenos" is redacted as PERSON in two shapes: the product form "Temenos T24", and bare "Temenos" as the first token of a speaker turn (`Aisha Rahman: Temenos and nCino are both contracted...`). It survives in ordinary prose and in a table cell. Verified pre-existing by running the identical document through the client-only deny list: vendor handling is byte-for-byte the same before and after #209 (2 of 3 "Temenos" occurrences kept in both). Fails safe (a vendor label is lost, never a client value) and round-trips cleanly, but README standards explicitly KEEP vendor and product names, and a core-banking system name is load-bearing in an architecture deliverable. Likely fix is a vendor/product allow-list alongside `denylist.GENERIC_STOPLIST` — which is also what the `ingest.py` column-header over-redaction entry above needs (from #209 verification)
+- [ ] For #164 (guard rewrite): the ingest naming contract is `.anon_<full original filename>.md` (`report.pdf` → `.anon_report.pdf.md`), **not** `.anon_report.md` as the PRD ASCII diagram sketches. Dropping the source extension would let `Pricing.pdf` and `Pricing.xlsx` silently overwrite each other's artifact. Plain-text inputs stay on `anonymize_transcript_file` and keep `.anon_<name>`. The PRD diagram should be corrected to match (from #162)
+
+
+- [done v7] ~~**CONFIRMED IN THE GATE: a person name in a markdown table cell is not redacted.**~~ — **LEAK CLOSED in #209**, and the reason recorded here was measurably wrong. Original note: the #161 fixture carries "Aisha Rahman" in a `| Name | Role |` row, prose/attendee-bullet/speaker-label all detect and the table shape does not, and `no_raw_pii_in_anonymized_output` reported the miss in its `detail` rather than asserting on it. **The correction:** this entry (and `engine.py:72`, `engine.py:222`, `evals/rubrics/component/pii_anonymizer.py`) all claimed spaCy tags the name ORGANIZATION, so catching it would mean enabling ORGANIZATION and stripping Backbase/Temenos. Measured on the fixture with `en_core_web_lg`: the name is tagged **EVENT**; enabling ORGANIZATION catches it **not at all** and DOES strip "Backbase" and "Salesforce" (Temenos survives either way). Full cost, zero benefit — there was never a trade-off to weigh, and the belief that there was is what kept the exclusion alive for three tickets. **The fix:** `denylist.extract_stakeholder_terms` mines stakeholder names from the engagement's own CLIENT_PROFILE.md / engagement_intake.md / ENGAGEMENT_CONTEXT.md into the existing deny-list recogniser (`CLIENT`, score 1.0), which is model- and shape-independent and therefore fires in a table cell, a bullet, prose and a speaker label alike. Hand-copied into `.claude/hooks/mcp-query-guard.py` for `drift_check.py` parity. Phrase-only by design (a person contributes their full name, never its individual words) so a surname can never become a bare deny term — see that function's rationale. `MUST_NOT_LEAK` now carries "Aisha Rahman" and the rubric resolves its deny terms through `denylist.resolve_engagement_deny_list` instead of hard-coding them, so reverting the extraction turns the check red (mutation-proved both directions). Detail line now reads `table=DETECTED via CLIENT`. ORGANIZATION stays disabled (from #161, fixed in #209)
+- [done v6] ~~PRD v6 §9 claims "per-transcript mappings are deleted once the combined mapping is written", but `scripts/orchestrate.py` `step_discovery` never unlinks `.anon_mapping_*.json`~~ — DONE in #167: `step_discovery` unlinks them immediately after (and only after) `.pii_mapping.json` is written, and `_sweep_stray_mappings` handles residue from an interrupted earlier run. Original note: `mapping_files_chmod_600_and_cleaned` was scoped to what exists (the facade's chmod 600) with the gap called out in its docstring rather than silently asserted (from #161)
+- [done v6] CI re-downloaded `en_core_web_lg` (~380 MB) every run, and the model was **unpinned everywhere** — FIXED in `be63a88`: the model is now a pinned direct-wheel-URL dependency in `requirements.txt` (3.8.0, the version #159's D10 numbers were measured against), so it installs via ordinary pip and caches through `actions/setup-python`'s pip cache. The bespoke `spacy download` step is gone from both `setup_pii.sh` and `evals.yml`. The pin was the real fix; caching was the side effect.
+
+
+- [done v7] ~~**MEASURED: spaCy misses ~9% of person names even on `en_core_web_lg`**~~ — the measurement stands (137/150 across five realistic document shapes, #159 D10; worst on the attendee-bullet form at 26/30), but the **mitigation landed in #209** and the stated CAUSE was wrong. This entry said names inside markdown table cells are "tagged ORGANIZATION rather than PERSON" and that enabling ORGANIZATION "would catch them and simultaneously strip Backbase/Temenos". Measured: spaCy tags "Aisha Rahman" in that row **EVENT**, enabling ORGANIZATION does **not** catch it, and it strips "Backbase" and "Salesforce" while "Temenos" survives regardless. ORGANIZATION was never a trade — it is full cost, zero benefit, and stays disabled for that reason. The real mitigation this entry always named — stakeholder names on the engagement deny-list, as the empty-list warning copy already promised — is implemented in `denylist.extract_stakeholder_terms`, with hook parity preserved (`scripts/pii/drift_check.py` passes, 17/17 identical terms). **Residual, not closed:** the NER gap itself is unchanged; the deny-list covers only stakeholders an engagement document actually names, and only in Latin script (`_PERSON_TOKEN_RE` is ASCII). A person who appears in a transcript but in no intake document is still detected by NER alone (from #159, mitigated in #209)
+- [done v7] eval-case: the `pii-anonymizer` fixture authored in #161 MUST include a markdown-table row and an attendee-bullet list carrying person names. Without those shapes the gate will certify the 9% PERSON gap above as passing, because prose-only fixtures score 30/30 (from #159) — VERIFIED (#195/:107): `evals/goldens/pii_roundtrip_fixture.md` already carries both shapes (the Stakeholder Directory `| Name | Role | Phone |` row with "Aisha Rahman", and the "## Attendees" bullet list with "Marcus Chen"/"Priya Iyer"), and `no_raw_pii_in_anonymized_output` already measures per-shape PERSON detection (the inline `per_shape` dict built from `PERSON_BY_SHAPE`, `evals/rubrics/component/pii_anonymizer.py:433`) and reports it in `detail` every run: `prose=DETECTED, attendee_bullet=DETECTED, speaker_label=DETECTED, table=MISSED ('Aisha Rahman')`. Re-ran the full row (`.venv/bin/python evals/run_experiment.py --component pii-anonymizer`): 1.000/19, unchanged — the table-shape PERSON miss was the known gap filed at :101/:108 above, not newly exposed, and the threshold was not touched to accommodate it. **Superseded by #209:** the miss is now CLOSED via the stakeholder deny-list, `MUST_NOT_LEAK` asserts the name, and the detail line reads `table=DETECTED via CLIENT` — so this fixture requirement now gates a passing shape rather than documenting a failing one. The per-shape report also names the DETECTOR for each shape, so a future NER regression cannot hide behind deny-list coverage.
+- [done] `.claude/hooks/anonymize-guard.py:115` — the deny message tells consultants to run `python3 scripts/anonymize_transcript.py`, which is system 3.9 and cannot import Presidio once #160's facade delegates to the engine. Must use `_resolve_python.sh` (D12) or an explicit `.venv/bin/python`. **Belongs to #160** (from #159)
+
+
+- [done v6] `_LABEL_LINE_RE` did not match `- **Name:**` (the label `templates/client_profile.md:9` actually uses) — FIXED in `7b91758`: a CLIENT_PROFILE-scoped label pattern plus `[...]` placeholder skipping, with two mutation-proved checks. The placeholder skipping was essential — without it the live unfilled `- **Name:** [Full legal name]` in the one populated `CLIENT_PROFILE.md` would have injected `name` into the deny-list and blocked every query containing that word (a repeat of finding 1).
+- [ ] **REOPENED 2026-08-30 — this was marked `[done v8]` and is NOT done.** Measured against the live engagements: BOTH `.claude/hooks/mcp-query-guard.py` AND `scripts/pii/denylist.py` still emit an unbalanced term today. `drift_check.py` PASSES, because the two copies are consistently wrong — parity is not correctness, and this is the first case where drift-check's green has masked a live defect. Original entry follows.
+  .claude/hooks/mcp-query-guard.py `_add_term` — the strip set removes a trailing `)` from a phrase containing a mid-string `(`, producing an unbalanced term like `'Example Bank (Example Savings Fund Society'` that can never match a query. Over-inclusive rather than under-matching, and masked today by the acronym path, but the multi-word phrase heuristic is effectively dead for any client name written with a parenthetical (found during PR #171 refine, out of scope for the three findings fixed)
+
+- [in v7] .github/workflows/evals.yml:11 — `paths:` omits `.claude/hooks/**`, so a PR editing only a hook skips the blocking eval gate entirely; the mcp-query-guard gate ran only because the PR also touched `evals/` (PR #171 review finding 7, score 85 — deferred) (from PR #171 refine)
+- [done v8] .claude/hooks/mcp-query-guard.py:274 — `_iter_strings` recurses into dict values but not keys, so `{"filters":{"Acmeco":true}}` is allowed while `{"filters":{"x":"Acmeco"}}` is denied (PR #171 review finding 8, score 65 — deferred) (from PR #171 refine)
+- [in v7] evals/rubrics/component/mcp_query_guard.py:73 — rubric invokes the hook via `sys.executable` (3.11 in CI) while `.claude/settings.json` registers bare `python3` (3.9.6 locally); the gate can certify under an interpreter consultants never run (PR #171 review finding 9, score 40) (from PR #171 refine)
+- [in v7] eval-case: no coverage that the fail-closed contract holds when `MAX_FILES_SCANNED` is hit. `711b56c` made a scan-limit hit raise `_ScanLimitExceeded` (fail closed) rather than silently truncating the deny-list — a deliberate, defensible choice, but nothing in the 13-check rubric exercises it (from PR #171 refine)
+- [ ] Decision to revisit: `711b56c` added `fund` and `society` to `GENERIC_STOPLIST` to stop them being extracted as standalone terms from a "<Place> Savings Fund Society" style name. Correct for that case, but it means a client whose name is literally one of those words is only caught via slug/label/acronym paths, never standalone (from PR #171 refine)
+
+- [ ] knowledge/standards/security_protocol.md:103 — §5 and the MCP snippet describe the deny-list as "resolved from the active engagement", omit the empty-deny-list allow case, and claim stakeholder/financial coverage the hook does not implement (from PR #171 review)
+- [done v6] ~~paren-acronym extraction is dead code~~ — RESOLVED by `711b56c`: the whole-document ALL-CAPS sweep was removed, so the paren-acronym paths (label value + heading) are now load-bearing and must not be deleted. Recorded so nobody removes them as dead code later (from PR #171 review)
+
+### High severity — the gate that certifies our work measures nothing
+
+- [in v7] **`--altitude pipeline` does not run the pipeline.** Measured during v6 PR 1: `python3 evals/run_experiment.py --altitude pipeline` returns **1.000 in ~5 seconds** against `Target: evals/goldens/pipeline_engagement/outputs`. It scores pre-existing golden fixture files on disk; it never executes an agent, never invokes a model, and never reads the changed component. It returned green for three consecutive tickets whose bytes it had not read — a new PreToolUse hook, a security-standard rewrite, and edits to seven agent prompts. This is the measured confirmation of the previously-suspected "path-2 only" problem (PRs #118–#123 were certified the same way). Component-altitude rows with deterministic `code:` checks DO exercise real modules and do bite (proven by the deliberate break/restore on `mcp-query-guard`) — so the fix is not "distrust all evals", it is: (a) never treat a pipeline-altitude green as evidence about a change, (b) require a gate-bites proof for every new component row, (c) decide whether the altitude should actually run the pipeline or be renamed to something honest like `deliverable-structural`, because the current name is what makes it misleading.
+- [done v7] ~~`proven: false` conflates an inert check with an unreached mutation~~ — RESOLVED by #186: `run_experiment.py`'s `_reachability_canary()` deletes the shadow copy of `Mutation.file` from a fresh, otherwise-unmutated shadow (via `mutations.shadow_root`/`mutations.score`/`mutations.shadow_target`, promoted public by #184 for this) and rescores. A check whose state moves is REACHABLE (confirmed against a deliberately staled `run-experiment-runner` mutation — `--mutate` reports INERT, canary confirms REACHABLE); a check unmoved by the deletion is UNREACHABLE and is printed as a distinct `[HARNESS ERROR]` line, never folded into the ordinary unproven-check message (confirmed against a synthetic hardcoded-absolute-path rubric in scratchpad, never committed). `check_registry.py` additionally now enforces the mutation proof itself at preflight — staged: hard FAIL for any row on `MUTATION_PROOF_REQUIRED_ROWS` or that currently declares `mutations:`/dict-`negatives:`, DEBT (loud, counted) for the rest until migrated. (from #184)
+- [ ] **`MUTATION_PROOF_REQUIRED_ROWS` has no independent guard** (`evals/check_registry.py`) — a row is hard-enforced if it's on this allow-list OR currently declares a `mutations:`/dict-`negatives:` key; the allow-list exists specifically so removing the key alone can't dodge the gate. But nothing stops a single PR from deleting BOTH the row's name from `MUTATION_PROOF_REQUIRED_ROWS` and its `mutations:` key in the same diff — preflight would not notice, and the row would silently fall back to DEBT. "Never remove a name once added" (the docstring's own rule) is a code-review convention, not an enforced invariant. Considered and deferred during #186's spec-review pass (two-improvements follow-up) — fix would need e.g. a checked-in append-only ledger or a CI diff check on `MUTATION_PROOF_REQUIRED_ROWS` removals, not attempted here.
+
+### Medium — client identity already committed to shared knowledge
+- [done v8] **A real client's acronym appears in four `knowledge/Ignite Inspire/` files** (`agent-0-engagement-plan.md`, `agent-2-member.md`, `agent-3-employee.md`, `agent-4-architecture.md`). Two occurrences are checklist items reading "No hardcoded references to <client>, <client>…" — the rule stated in the file that breaks it. A second client acronym is named alongside and has the same footprint. This is the read-side mirror of v6: v6 stops client names reaching the model from *engagement inputs*, but names already committed to `knowledge/**` are shipped on every retrieval, and are in git history. Found during v6 #156; out of scope for that ticket.
+
+### From #167 (neutral pipeline workspace)
+
+- [ ] **The eight pipeline agents lost their intake context.** `engagement_intake.md` is a deny-list source and must not enter the workspace, so #167 puts its scrubbed content in as an `.anon_` artifact instead — but no prompt points at that artifact, and every mode contract still names `{engagement_dir}/inputs/engagement_intake.md`, which now resolves to nothing. It is listed under `optional:` in all eight contracts, so preflight does not fire and every prompt still composes — the agents simply skip it, exactly as their own contracts instruct. Recovering the context needs a prompt/contract edit (point them at the `.anon_` artifact, or add a param carrying its path), which #167 was explicitly scoped out of. Domain detection is unaffected: `run_pipeline` still derives `domain` host-side from the raw intake and passes it as a param.
+- [ ] **`require-checkpoint.py` no longer covers pipeline agent writes.** The hook gates paths containing both `engagements` and `outputs`; pipeline agents now write into `<workspace>/outputs/`. The gate was already satisfied trivially in the pipeline (the orchestrator writes `CHECKPOINT_discovery.md` before any deliverable) and `present_checkpoint` remains the real enforcement, but the hook-level backstop is gone for pipeline runs. Interactive sessions are unaffected. Decide whether the hook should also recognise a workspace, or whether the orchestrator-owned checkpoint gate is sufficient and the hook should say so.
+- [in v7] **No eval case covers the workspace wiring.** #167's guarantee — no composed prompt and no `cwd` names the client — is enforced at runtime by `_assert_neutral_invocation` and was verified by a harness that stubs `_resilient_query` and walks all 19 non-interactive / 21 interactive call sites. Nothing in `evals/` re-runs that. `--altitude deliverable-structural` (renamed from `pipeline` in #188) scores fixtures and never executes an agent, so it cannot catch a regression here. A `pipeline-workspace` component row with a `code:` check (build a synthetic engagement, run the traversal, assert zero identifier hits) would make the guarantee durable rather than point-in-time.
+
+### Low — hygiene
+- [ ] `test_results.json` (written by the documented `scripts/test_agent.py --output` invocation in CLAUDE.md) is not in `.gitignore`, so every structural run leaves an untracked artifact in the tree.
+
+## From the 2026-08-18 synthetic-data contamination incident (Harborlight/Zenith quarantine)
+
+### High severity — knowledge integrity
+- [done v4] **Harvester has no synthetic-engagement gate** — knowledge-harvester (called automatically by orchestrate.py Step 9 after EVERY run, including pipeline tests) wrote Harborlight's fabricated metrics into shared knowledge, and its anonymization rule made them look MORE real ("Harborlight" → `[Client-retail-NAM-2026]`, tier `[Client-Validated]`, HIGH confidence). Fix: harvester + orchestrate.py must detect a `.synthetic` marker file (or any engagement path under `tests/`) and redirect ALL harvest output to `<engagement>/outputs/knowledge_harvest/` (quarantine), never `knowledge/domains/` or `knowledge/learnings/`; `harvest_policy: never` in the marker (for the test engagement that holds real client docs) must skip harvest entirely. Convention + markers already in place (`tests/engagements/README.md`, 2026-08-18); this item is the ENFORCEMENT in component code/prompts.
+- [done v4] **Retrieval is provenance-blind** — `/domain-benchmarks`, `/domain-pain-points`, other `domain-*` skills and benchmark-librarian read `knowledge/domains/*` + `knowledge/learnings/**` with no source-tier filter; nothing excludes `[Synthetic-Test]`-tagged entries or `tests/` paths. Add an explicit exclusion rule to each retrieval surface: never serve `[Synthetic-Test]` values or anything sourced from `tests/engagements/` in client work.
+- [done v4] **Zenith baked into a live agent prompt as a real-looking client** — `.claude/agents/roi-business-case-builder.md:445-448` uses `2602_Zenith_Nigeria_ROI_Model.xlsx` as the canonical output-naming example (Zenith is a fictional test bank). Replace with a neutral placeholder (`2602_Client_Country_ROI_Model.xlsx`). Note file is deprecated-in-place (see Phase 3 pruning item) — fixing the example matters only if it survives pruning.
+- [done v4] **No structural backstop against future contamination** — consider a hook/CI check: block writes to `knowledge/**` whose content or registry row traces to an engagement carrying a `.synthetic` marker (belt-and-braces behind the harvester gate).
+
+## From the 2026-08-26 eval-gate v7 PR 3 spec review (#191 / #192 / #193)
+
+### Medium — the gate's own coverage and diagnostics
+- [ ] **The uncovered-path inconsistency in `.github/workflows/evals.yml`.** 17 path classes trigger the workflow but map to no row in the derive step and silently `continue` — every `.claude/commands/**` (~28), `.claude/skills/**`, `templates/**`, `presentations/**`, most `scripts/*.py` and `tools/*.py`, **five of the seven Python hooks** (`require-harness.py`, `require-checkpoint.py`, `synthetic-knowledge-guard.py`, `enforce-journal.py`, `eval-on-stop.py`), both shell hooks, and `evals/rubrics/_harness.py` itself. Meanwhile a changed agent with no row hard-fails. Same gate, opposite policies — change `require-harness.py` (the hook enforcing this whole harness) and CI silently skips. The right direction is extending fail-loud to those paths, not weakening the agent rule (from PR 3 spec review)
+- [ ] **`working_tree_unchanged_after_run` mis-attributes.** It reports "the harness leaked into the working tree" when the true cause was a concurrent writer — likelier locally, where multiple agents share one checkout. CI is safe (ephemeral runner, sequential steps, single job), so this is diagnostics only: also snapshot `git rev-parse HEAD` around the probe and say "HEAD moved" when it did (from PR 3 spec review)
+- [ ] **`declare -A` fails open.** `.github/workflows/evals.yml:185` needs bash 4+; `ubuntu-latest` is bash 5 so it works, but on bash 3.2 the changed-component loop silently ran nothing and still reported PASS. In a workflow whose purpose is "never silently skip", guard it (from PR 3 spec review)
+- [ ] **`deliverable_structural` is preflight-blind.** The mutate derivation in `.github/workflows/evals.yml` iterates `components` + `deliverables` only, so a `mutations:` block on the top-level `deliverable_structural` key would never run; symmetrically `evals/check_registry.py:466` applies mutation coverage to `components` only, so `deliverables` rows are run-but-not-preflighted (from PR 3 spec review)
+- [ ] **No PR comment on derive failure.** When the derive step hard-fails, `/tmp/eval_report.md` doesn't exist, so the comment step throws and the PR gets only `::error::` annotations (from PR 3 spec review)
+
+## From #197 (executable rows for the six ungated hooks)
+
+Surfaced by writing the eval rows, and deliberately NOT fixed there — #197 is
+test-only and must not change hook behaviour. Each item is pinned by a check
+that asserts today's behaviour, so closing it means updating that check in the
+same change.
+
+### Medium — fail-open is real but achieved by crashing
+- [ ] **`require-harness.py` and `require-checkpoint.py` fail open by raising, not by allowing.** Both document "Fail-OPEN on any error — never wedge a session on a hook bug", and both have `main()` bodies with no outer `try/except` (unlike `anonymize-guard.py` and `synthetic-knowledge-guard.py`, which do). Measured under python3 3.9.6: with `.prd/` chmod 000, `require-harness.py` raises `PermissionError` out of `_change_active()` → exit 1 + full traceback on stderr, no stdout; with the engagement directory chmod 000, `require-checkpoint.py` raises out of `_engagement_dir()`'s `(cand / "ENGAGEMENT_JOURNAL.md").exists()` → same shape. The tool call does proceed (Claude Code only blocks on exit 2 or an explicit deny envelope), so the SAFETY property holds — but every such session gets a Python stack trace in front of the consultant, and the two hooks' behaviour differs from the two that wrap `main()`. Fix is the same three lines the other two already have. Pinned by `fails_open_under_injected_fault` on the `require-harness` and `require-checkpoint` rows, which assert "does not block" and record `crashed=True` in their detail rather than asserting a clean exit 0.
+
+### Low — dead error handling
+- [ ] **`eval-on-stop.py`'s `except OSError: touched = False` is unreachable.** It guards `any((now - p.stat().st_mtime) < WINDOW_S for p in outputs.glob("*") if p.is_file())`, but `Path.glob` swallows `PermissionError` internally (measured under 3.9.6: `chmod 000` on the outputs directory makes the glob yield nothing rather than raise), so an unreadable outputs directory degrades into an ordinary "nothing recent" early exit and the handler never runs. Harmless today — both paths do the same thing — but it reads as coverage that is not there, and the same shape appears in `require-checkpoint.py`'s `outputs.glob("CHECKPOINT_*.md")`. The reachable fail-open handler in `eval-on-stop.py` is the `except Exception: pass` around `score_engagement`/`write_report`, which is what the `eval-on-stop` row's `fails_open_under_injected_fault` exercises (via a read-only engagement directory, `chmod 0o555`).
+
+### Low — harness gaps #197 worked around locally
+- [ ] **`rubrics/_harness.inject_fault` has only `kind="unreadable"`.** #197 needed a read-only fault (`chmod 0o555`: reads succeed, writes fail) for `eval-on-stop`, and added it as `inject_readonly` in `evals/rubrics/component/hooks/_common.py` rather than editing `_harness.py` while #198-#200 were in flight on the same branch. If a second row needs it, promote it to `inject_fault(kind="readonly")`.
+- [ ] **`rubrics/_harness` has no Stop-hook payload builder.** Only `pretooluse_payload()` exists; `enforce-journal.py` and `eval-on-stop.py` are Stop hooks with a different stdin shape and a different decision envelope (`{"decision": "block", "reason": ...}`). #197 added `stop_payload()` / `stop_blocked()` / `block_reason()` in `evals/rubrics/component/hooks/_common.py`. Promote to `_harness.py` if another row needs them.
+
+## From #201 (wiring the eight new component rows into the registry)
+
+### Closed in #201 — a silent-breakage class in the gate itself
+- [done v7] ~~**A gating `input:` outside `SHADOW_SUBTREES` silently breaks the mutation harness's self-proof.**~~ — FOUND and CLOSED in #201. `frontline-builders` gates on `presentations/frontline-2026/design-tokens.json`, and `evals/mutations.py` did not copy `presentations/` into the mutation shadow. The real working tree resolved the golden fine, so `check_registry.py` passed and every row scored 1.000 — but `check_registry.py` run from INSIDE a shadow hard-errored on the missing file, which broke `mutation-harness`'s `every_registered_check_has_a_mutation` (it runs the real preflight and requires rc=0) BEFORE its own mutation was applied, taking `--mutate mutation-harness` from 5/5 to 4/5. A defect on one keyless row broke a different row's proof from three rows away, and nothing local was red. **Two-part fix:** (1) `presentations` added to `SHADOW_SUBTREES`; (2) `_shadow_containment_error` in `check_registry.py` makes ANY gating golden outside the shadow subtrees a hard ERROR at authoring time, naming the row, the path and the fix. It reads `mutations.SHADOW_SUBTREES` live rather than re-declaring it, so preflight and harness cannot drift. **Deliberately NOT scoped to rows declaring `mutations:`** — `frontline-builders` carries no `mutations:` key, so a check scoped that way would have missed the very bug it was written for; the shadow's preflight validates the whole registry, so one unshadowed golden on any row breaks it. Bite-proved three ways: a mutation-carrying row pointed outside → ERROR; a keyless row pointed outside → ERROR; and `presentations` removed from `SHADOW_SUBTREES` against the real registry → ERROR naming `frontline-builders` (the exact historical defect, caught at authoring time).
+
+### Medium — two rows are counted DEBT, not machine-enforced
+- [ ] **`roi-calibrator` and `frontline-builders` need `mutations:` entries authored** (`evals/registry.yaml`). #200 wrote both rubrics and proved their 10 checks **by hand**, but authored no registry mutation declarations, so #201 wired the rows in with **no `mutations:` key** and deliberately did NOT add either name to `MUTATION_PROOF_REQUIRED_ROWS` in `evals/check_registry.py` (that list's rule is "add a name in the SAME change as its first `mutations:` entry" — adding them now would assert a machine proof that does not exist). Consequence, stated plainly: these are the only two of the eight new rows whose checks are **not** mutation-proven — they sit in the counted, non-gating DEBT list under #186's staged policy, so a rubric that silently stopped asserting anything would still report 1.000 and preflight would still PASS. Closing this means authoring a `mutations:` entry per check for `roi-calibrator` (4: `assess_report_well_formed`, `scenario_curve_shape_valid`, `cap_parity_with_artifact_boundary`, `conservative_anchor_invariant`) and `frontline-builders` (6: the four pptx checks plus `html_self_contained_no_cdn`, `html_brand_tokens_root_match`), running `--mutate` on both to confirm each named check goes red and restores green, and adding **both names** to `MUTATION_PROOF_REQUIRED_ROWS` in that same change. Until then, treat any green from these two rows as hand-verified evidence only.
+
+## From #204 / the eval-gate v7 closing pass (path-1 wiring, calibration dispatch)
+
+### Low — a canary diagnosis that is wrong for one mutation kind
+- [ ] **#186's reachability canary reports `UNREACHABLE` for FIXTURE-kind mutations, with advice that does not apply.** When a fixture mutation (`negatives: {check: {strip: ...}}` / `{find, replace}` — `mutations.Mutation.kind == "fixture"`) comes back not-proven, `run_experiment._reachability_canary` deletes the mutation's file from a fresh shadow and rescores. For a fixture that file IS the golden, and `mutations.shadow_target()` then falls back to the REAL path (`if candidate.exists()` fails → `return str(real) if real.exists() else target`, `evals/mutations.py`), so the rubric reads the untouched golden out of the working tree, the check legitimately still passes, and the canary reads "state unchanged" as "the check never reads the shadow copy". It then prints the source-kind diagnosis — *fix the rubric to resolve via `repo_root()`* — which is wrong advice here: the rubric's path resolution is fine, the canary's own target resolution is what broke. **Not observed in practice:** the canary only runs on a mutation that failed to prove, and all 38 fixture mutations across the eleven `rubric_calibration:` rows prove first time, as do the 91 source-kind proofs on the PR-5 rows — so this has never fired on a real run. It is latent, and it fires exactly when someone is already confused. **The fix belongs in `evals/mutations.py`, not in the canary:** `shadow_target()` needs to distinguish "this target was deliberately removed from the shadow" from "this target was never shadowed", instead of silently healing the first case by reaching outside. Until then the canary should not be trusted to classify a fixture-kind mutation, and no mutation should be weakened on its say-so.
+
+## From the v8 discovery pass (2026-08-27) — repo-level exposure
+
+### High severity — the PII tooling has never been pointed at this repo's own documents
+
+- [~] **PARTLY DONE 2026-08-30 — the SCRUB is done, the RETRACTION is not. Do not redo the scrub.** Measured across all tracked text files: **1,584 client-name hits -> 138**, the remainder being code examples (a documented deliberate exception) and Backbase-published reference customers. `.prd/`, `.design/`, `docs/rollout/`, `knowledge/**`, the benchmark master CSV, the `web/` ontology graphs and the agents/commands/templates surface are all scrubbed; raw client deliverables, four discovery-call transcript PDFs and an evidence register naming six identifiable individuals were DELETED from `knowledge/` and `tests/`.
+
+  **What remains under this heading is the RETRACTION question only** — deleting from HEAD does not remove any of it from git history or from `refs/pull/N/head`. That is a GitHub Support purge plus four fork owners, and it is a decision, not a build. The transcripts and the named-individuals register make that case materially stronger than the client roster the entry was originally weighing. Original note follows.
+
+- [ ] ACTION — scrub the public repo's planning documents with the PII tooling we built for engagements. Every gate built in v6/v7/v8 protects `engagements/` and `knowledge/`. **None of it has ever run over `.prd/`, `.design/`, or GitHub issue bodies** — and those are the files that carry the most identifying prose in the repo. Deliberately deferred at the end of the v8 cycle (2026-08-27) rather than fixed in flight, because the remedy is a rewrite of published history and that is a decision with a blast radius, not a ticket.
+
+  **What is exposed, measured 2026-08-27** (deliberately not enumerated here — this file is itself published; resolve the terms with `scripts/pii/denylist.py`, do not paste them into a public document):
+  - `.prd/backlog.md` on pushed branches carries close to the full client roster in prose.
+  - One branch pair carries a client paired with that deal's real quote ID — the single sharpest item, and one this backlog had already flagged as elevated-sensitivity while the file recording the flag was itself published.
+  - `origin/main` is **CLEAN**. Contamination begins at `76bf39f` (2026-07-28) and lives entirely in unmerged feature branches: the v7 stack, the Presidio branch, and the two proposal-builder refs.
+
+  **Why a force-push does NOT solve it — demonstrated, not assumed.** GitHub keeps every PR's head under `refs/pull/N/head`, and a force-push does not touch those refs. Verified by fetching one directly and reading the contaminated file straight out of it, without knowing the branch name. Only a GitHub Support purge removes them. Any plan that begins "force-push and it's gone" is wrong.
+
+  **What a rewrite would cost, if chosen anyway:** 192 commits on the v7 branch alone; ~13 open PRs in the affected lineage, whose review threads detach; a six-deep stack that must be rebased in strict order; **10 real commit SHAs referenced inside committed docs and eval/PII code become dangling** — several are the provenance trail for privacy decisions (a stoplist change, the CLIENT_PROFILE label fix, the spaCy model pin), so the audit trail is what breaks first.
+
+  **Four forks**, two pushed after contamination began, hold their own copies. Making the repo private does not delete or privatise them — public forks split into their own network. Private also costs the consultant contribution flow: only 3 collaborators exist (the Architect tier), and consultants contribute by fork → PR today. And Actions minutes stop being free, on a repo whose blocking eval gate installs the pinned ~380 MB spaCy model per run.
+
+  **The actual work, when it is picked up:**
+  1. Extend the PII tooling to a repo-document mode — `.prd/`, `.design/`, `.github` issue bodies — reusing `scripts/pii/denylist.py` rather than inventing a second detector. It is a new *application* of the tooling, not a new detector.
+  2. Decide retraction separately from prevention. Prevention is cheap and mostly done; retraction is a GitHub Support ticket plus four fork owners, and is a people problem, not a git one.
+  3. Keep the proportion honest: what is exposed is which banks are clients, plus some engagement specifics. The client+quote-ID pairing may justify a support ticket on its own; the roster probably does not.
+
+- [ ] **The v8 structural client-name check does not cover the files that actually leaked.** `#223` makes the check resolve real client terms instead of six hardcoded foreign banks — but it scans `knowledge/**`. The exposure measured above is in `.prd/` and `.design/`. Extend the same check to planning documents, and to PR/issue bodies at creation time, or v8 closes the smaller half of this class and leaves the larger half open. **Cheap, and it is the prevention half — do this one before the retraction question is settled, not after.**
+
+## From the 2026-08-28 consultant raise — conversational banking coverage
+
+### Medium — the use-case design path cannot see a whole Banking OS solution
+
+- [ ] **Update the use-case design surfaces with the conversational banking use cases.** `knowledge/conversational_banking.md` (⭐ CURRENT, June 2026) carries the solution's use-case material — the four customer-side modes (**Assist / Transact / Resolve / Grow**) with ~20 named example intents ("Freeze my card", "Start a dispute", "Provide missing onboarding documents", "Finish an application"), the employee surface, the 3-stage Understand → Orchestrate → Assure flow, and the Banking-OS linkages (Nexus, Sentinel, Grand Central). **None of it reaches the use-case design path.** Measured 2026-08-28:
+  - `.claude/agents/usecase-designer.md:59-61` reads exactly three sources — the Product Directory CSV, `value_propositions.md`, `personas.md`. It never reads `knowledge/conversational_banking.md`.
+  - `/domain-usecases` (`.claude/commands/domain-usecases.md:25`) serves `knowledge/domains/<domain>/use_cases.md`, and **all six of those libraries return zero hits** for `conversational|voice ai|chat ai|kasisto|agentic` (retail 83 lines, commercial 89, sme 77, corporate 87, wealth 85, investing 85).
+  - `/usecase-doc` names no knowledge source for the solution at all.
+  - The only `conversational` string in `knowledge/Ignite Inspire/agent-5-usecase.md:186` is the English word in a phase heading, not the solution.
+
+  Consequence: a consultant designing use cases post-workshop gets a portfolio that silently predates the June-2026 Kasisto acquisition. The gap is *invisible* rather than wrong — nothing errors, the deck just has no conversational use cases in it, and the Product-Directory validation step will classify any that a consultant adds by hand as **Custom** (they are not in the 3,117-line CSV), which is the inverse of the truth.
+
+  **The work:** (1) add a conversational-banking use-case block to each `knowledge/domains/*/use_cases.md`, phrased per domain rather than copy-pasted retail intents — the four modes read very differently for corporate/commercial than for retail; (2) add `knowledge/conversational_banking.md` to `usecase-designer`'s source list and give it a classification rule for capabilities that exist in the solution but not in the Product Directory CSV (today they fall through to "Custom"); (3) carry the file's own attribution discipline through — the BMO/Nedbank/First Financial figures are **customer-cited, not Cortex-validated**, and its "Acceptance criteria for Cortex agents producing Conversational Banking content" section (:361) is the rule set to enforce, so these must not become load-bearing ROI inputs.
+
+  **Open before this is PRD-able:** confirm whether the intended source is `knowledge/conversational_banking.md` as it stands, or a newer use-case list that has not landed in the repo yet. If the latter, that list has to be committed first — the harness cannot gate against a source that only exists in a deck.
+
+## From the 2026-08-30 repo scrub — what was done, and what is deliberately left
+
+The prevention half of the exposure item above was executed across five commits.
+Measured across all tracked text files with `denylist.py` plus a widened
+institution list: **1,584 hits before, 138 after.** Scrubbed: `.prd/`,
+`.design/`, `docs/rollout/`, `knowledge/**`, the benchmark master CSV, the
+`web/` ontology graphs, and the agents/commands/templates/docs surface.
+Deleted: three raw client reports and 32 files of engagement validation runs.
+
+### DELIBERATE EXCEPTION — client slugs in code are not scrubbed
+
+- [x] **~120 hits remain in `scripts/`, `evals/rubrics/`, `tools/` and
+  `.claude/hooks/`, and this is intentional.** These are engineering examples and
+  regression cases, not disclosure-shaped prose: `identity.uncovered({"<slug>"},
+  {"<SLUG>"})` in `evals/rubrics/component/engagement_migration.py` is a
+  *reproduction of a real false-negative* the migration gate once produced, and
+  the surrounding comments explain which historical defect each one pins. Rewriting
+  them to synthetic slugs is possible but would (a) risk silently weakening
+  assertions whose whole value is that they encode a bug that actually happened,
+  and (b) detach the comments from the cases they document. **Decision: leave, and
+  record the reason here so the next audit does not re-litigate it.** If this is
+  ever revisited, the work is mechanical but must be done with `--mutate` proof on
+  every affected row, not by find/replace.
+
+### REMAINING ACTION — client deliverables still committed as BINARIES
+
+- [ ] **~12 client deliverable PDFs/XLSX are still tracked under `knowledge/`,
+  with the client named in the filename.** Business cases, ROI models, assessment
+  reports and Ignite engagement plans for eight or so institutions. The `tests/`
+  equivalents were deleted in this cycle; these were left because several sit in
+  `knowledge/methodologies/` where they may be serving as reference exemplars, and
+  that is a judgement about their usefulness, not about the exposure. The exposure
+  is not in doubt: **the filenames alone publish the client roster.** The other ~13
+  binaries in the same directories are internal Backbase material (battlecards,
+  product plan, POV, master template, SOP) and are fine.
+
+### THE BLIND SPOT THIS CYCLE FOUND — and what #223 must do about it
+
+- [ ] **Every text scan run in this cycle, including the ones written for it,
+  missed binaries entirely.** The sharpest single item found — four raw
+  discovery-call transcript PDFs, plus an evidence register naming six
+  identifiable individuals with roles and employer — was invisible to a check that
+  globs text extensions. The repo has 41 tracked binaries. **A FILENAME check
+  would have caught all four transcripts instantly and costs nothing.** `#223`
+  currently specifies content scanning of `knowledge/**`; it should gate
+  **filenames repo-wide** as well as content, and its scope must include `.prd/`,
+  `.design/`, `docs/`, `tests/` and `web/` — every surface that turned out to be
+  contaminated. A `.txt` extension was also missing from the first sweep, which is
+  where two of the three raw client reports were hiding.
+
+- [ ] **The term list is the binding constraint, and it cannot be completed from
+  inside the repo.** `denylist.py` resolves from `engagements/`, which is
+  gitignored — on the machine this scrub ran on it resolved **12 terms for one
+  client**, while the actual roster is 40+. The rest were found by eye, and the
+  single best inventory turned out to be the `Customer` column of the benchmark
+  master CSV. This is exactly why the check must resolve at RUN TIME on a machine
+  that has the engagements, and why `SKIPPED_NO_MAP` must be loud: a scrub done
+  from inside a clean clone is structurally incapable of being complete, and any
+  future green from this check on a map-less machine means nothing.
+
+- [ ] **`#223` itself is still unbuilt.** All eleven v8 tickets (#212-#224) remain
+  OPEN; "PRD v8 built" recorded that the tickets were created, not implemented.
+  Everything above is cleanup, which is the half that does not prevent recurrence.
+
+### Blocked on eval coverage — three agents keep their client names for now
+
+- [x] **CLOSED 2026-08-30 — rows authored, then scrubbed, in that order.** `capability-gap-analyzer`, `upgrade-analysis` and `value-consulting-orchestrator` now have mutation-proven rows (`rubrics/component/agent_prompt_contract.py`, 11 checks, 11/11 proven) and their client names are scrubbed. Retargeting the stack PR to `main` forced the issue: against `main` these three are changed by the v6 stack regardless of the scrub, so the gate demanded rows either way and there was nothing left to defer. Original entry follows.
+
+- [ ] ~~`capability-gap-analyzer`, `upgrade-analysis` and `value-consulting-orchestrator`
+  carry client names that were NOT scrubbed, because scrubbing them fails the
+  eval gate.~~ All three are edited-then-reverted in the 2026-08-30 scrub. The
+  gate is right and was not softened: `evals.yml`'s changed-component derivation
+  hard-fails when a changed `.claude/agents/<name>.md` has no `components.<name>`
+  row, and these three have **neither a registry row nor a rubric module** — they
+  are simply ungated agents, which the privacy edit surfaced by touching them.
+
+  What they still contain: two client short names used as document-FORMAT labels
+  ("<Client>-style Ignite Day presentation", "<Client>-style narrative use case
+  documents") in `capability-gap-analyzer`, a real bank as the worked example in
+  `upgrade-analysis`'s description, and a client acronym in
+  `value-consulting-orchestrator`'s usage example. Low volume — 7 hits — and all
+  in illustrative prose rather than data.
+
+  **Why this was not just pushed through:** the workflow's own comment states the
+  intended direction is "extending fail-loud to [uncovered paths], not softening
+  the agent rule", so adding these to a skip list would be the wrong fix. And
+  authoring three genuine rubrics — with `mutations:` proof per check, which the
+  registry requires — is a real piece of work that belongs in its own ticket, not
+  smuggled into a prose scrub where the mutation proofs would get no scrutiny.
+
+  **The work:** author `evals/rubrics/component/{capability_gap_analyzer,
+  upgrade_analysis,value_consulting_orchestrator}.py` plus their registry rows and
+  mutation entries, add the three names to the coverage expectations, THEN apply
+  the same `[Client-…]` scrub. Ordering matters: rows first, scrub second, because
+  the scrub is what trips the gate.
+
+### Blocked on the engagement migration — historical knowledge labels stay undiscriminated
+
+- [ ] **Blocked on #225.** **The ~200 labels already committed in `knowledge/**` cannot be given a D1
+  discriminator yet, because there is nothing to derive one FROM.** Measured
+  2026-08-30: **zero** engagements have an opaque ID — all seven live directories
+  are still client-named and `.engagement_map.json` does not exist on any machine
+  that has been checked. `identity.engagement_id_for_path()` therefore returns
+  `None` for every engagement in the repo.
+
+  The prerequisite is the already-open **"ACTION — run the live engagement
+  migration"** item above. Until it runs, D1 protects NEW harvests only; the
+  existing corpus keeps two label shapes and the older ones stay ambiguous.
+
+  **Deliberately not worked around.** Minting arbitrary discriminators now would
+  look complete and be worse: re-harvesting the same engagement after the real
+  migration would produce a DIFFERENT label from its historical one, splitting one
+  client's knowledge across two labels. A wrong binding is more expensive than a
+  missing one.
+
+  **The tool is written and tested** — `scripts/migrate_knowledge_labels.py`,
+  dry-run by default. It takes an explicit `{label: engagement-id}` binding file
+  and REFUSES to guess: matching on domain/region/year is precisely what collides,
+  so a guess would silently bind two engagements to one ID and cement the defect.
+  Both sides of the binding file are shape-validated, so a client name cannot be
+  passed in either position. Unresolved labels are reported and left untouched.
+
+  **When the engagement migration lands, the remaining work is:** produce the
+  binding file on a machine holding `.engagement_map.json` (labels and IDs only —
+  never client names), run the script dry, then `--apply`. The two hand-assigned
+  stopgap pairs (`-a`/`-b`, from the two genuine collisions the scrub found) are
+  replaced by real discriminators in the same pass.
+
+## From the 2026-08-30 engagement-migration dry run
+
+### High — four clients are invisible to the outbound MCP gate
+
+- [x] **FIXED 2026-08-30 (code), PARTLY OPEN (data — see below).** `engagements/inputs/` and `engagements/outputs/` hold four clients' staging
+  material, and `denylist.SKIP_CLIENT_DIRS = {"inputs", "outputs"}` excludes them
+  from EVERY deny-list scan.** Verified by resolving the deny-list repo-wide: it
+  returns 12 terms, and not one of the four staging clients contributes anything.
+  So `mcp-query-guard.py` would not block an outbound Infobank query naming any of
+  them — the §5 control is simply absent for those four.
+
+  The exclusion is not a bug in itself; those directories really are shared legacy
+  staging rather than client directories, and the skip stops `inputs`/`outputs`
+  being mined as if they were client slugs. The gap is that nothing else covers
+  them: they have no `CLIENT_PROFILE.md`, so there is no other deny-list source.
+
+  **The fix is not to remove the skip** — that would put the words "inputs" and
+  "outputs" on the deny-list and block most ordinary queries. It is either to give
+  the four staging engagements real client directories (which the migration tool
+  already reports as out of scope, deliberately), or to have `resolve_deny_list`
+  descend INTO those two directories and treat their per-client subdirectories as
+  client dirs, which is what they actually are.
+
+### Medium — the migration is blocked on names nobody has supplied
+
+- [x] **[done 2026-08-30] UNBLOCKED — all 7 now pass the deny-list superset check.** Each engagement gained a CLIENT_PROFILE.md carrying an "Identifier Forms (deny-list)" section recording the terms it already resolves to, so they survive the slug being replaced by an opaque ID. Profiles are under gitignored `engagements/`, so this is true of ONE machine — any other needs its own before its dry run passes. Original note follows.
+
+- [x] 6 of 7 live engagements REFUSE to migrate, correctly: for each, the
+  directory slug is the ONLY thing putting that client on its deny-list, and an
+  opaque directory would remove it — silently disarming the outbound gate for that
+  client. The tool refuses the whole run rather than migrating the safe ones, which
+  is the right call. Unblocking it needs one `--name <slug>="<Client Name>"` per
+  engagement, supplied by the consultant; nothing in the repo can infer them.
+
+  The seventh would migrate, but with a warning worth heeding: no
+  `CLIENT_PROFILE.md` would be written for it, making `.engagement_map.json` the
+  single record of who it belongs to, with no `rebuild_map()` recovery path.
+  Supply its name too.
+
+  Also reported by the dry run and still open above: three files in that
+  engagement carry the client's name in the FILENAME, which renaming the directory
+  does not touch.
+
+### Follow-on from that fix — the code ships, the data does not
+
+- [ ] **The staging-directory deny-list fix is only half-portable, and the half
+  that matters on a colleague's machine is the half that does not travel.** The
+  resolver change (descend one level into `engagements/inputs|outputs`, read
+  DOCUMENTS only, never the directory name) is committed and applies everywhere.
+  The `CLIENT_PROFILE.md` files that give it something to read are under
+  `engagements/`, which `.gitignore:29` excludes as a whole tree — correctly, since
+  they carry client identifiers.
+
+  So on any other machine those four clients remain uncovered until someone writes
+  the profiles there. That is inherent to engagements being machine-local and is
+  not a defect in the fix, but it means "the gate covers these four" is true of ONE
+  machine, not of the system. Anyone auditing this should re-resolve the deny-list
+  locally rather than trusting this entry.
+
+  **Why the directory names are not mined, recorded so it is not "simplified" later:**
+  measured on the live tree, mining them yields NOTHING for the two acronym clients
+  (`_single_word_ok` has a four-character floor, so three-letter acronyms are
+  dropped) while harvesting `Ignite` — a Backbase programme name — plus geography,
+  `cortex`, `ontology`, a datecode and a consultant's own first name. The eval check
+  `staging_directory_names_do_not_become_deny_terms` pins this: under a mutation
+  that mines the names, two ordinary product queries are denied.
+
+- [ ] **Two new checks on `mcp-query-guard` are hand-proven, not mutation-proven.**
+  `denies_client_from_staging_subdirectory` and
+  `staging_directory_names_do_not_become_deny_terms` join the row's existing 17 in
+  the counted DEBT list. A `mutations:` entry could not be added for them alone:
+  `check_registry._row_claims_mutation_proof` makes a row hard-enforced as soon as
+  it declares ANY `mutations:` key, so adding one would have turned the other 17
+  into hard errors in a change about something else. Both were proven by hand
+  instead — removing the descent takes the first to HARD-FAIL, and mining the
+  directory names takes the second to HARD-FAIL with two legitimate queries denied.
+  Treat their green as hand-verified evidence until the row is migrated wholesale.
+
+## From writing the seven engagement profiles (2026-08-30)
+
+- [x] **The engagement migration is UNBLOCKED.** Was 6-of-7 refused; now **all 7
+  pass the deny-list superset check**. Each engagement's `CLIENT_PROFILE.md` now
+  carries an "Identifier Forms (deny-list)" section recording the terms that
+  engagement already resolves to, so the terms survive the slug being replaced by
+  an opaque ID. Nothing was invented: the forms are what `_scan_client_dir`
+  already derives, written down rather than guessed. Every engagement's after-set
+  is a superset of its before-set plus the new opaque ID.
+
+  The profiles live under `engagements/`, gitignored — so this is TRUE OF ONE
+  MACHINE. Any other machine needs its own profiles before its migration will
+  pass. Re-run the dry run locally rather than trusting this entry.
+
+  Still requires a consultant to run `--apply`, and still deliberately so: it
+  moves live working directories, `engagements/` is gitignored, and there is no
+  git history to fall back on.
+
+- [x] **[done 2026-08-30] The filename leak is 46 files, not the 3 first reported.** ALL 46 RENAMED; residual 0 across the seven engagements. `scripts/rename_engagement_files.py`, dry-run default, reversible via `.filename_map.json`. Original note follows. The first dry
+  run only reached the filename check for the single engagement that was not
+  refused. With all seven passing, the real count is **46 files across the seven**
+  carrying a client's name in the FILENAME — proposals, transcripts,
+  questionnaires and pitch decks. Renaming the directory does not touch any of
+  them, and `materialise_workspace` (#167) only neutralises them for PIPELINE
+  runs; an interactive Read still puts the name in the path envelope. This
+  enlarges the already-open filename item above with a measured number.
+
+- [ ] **`wsfs`'s unbalanced deny term is still produced, from its intake
+  document.** The profile added for it deliberately writes the long form as
+  SEPARATE balanced lines rather than one "Name (Longer Name)" phrase, so this
+  change does not feed the defect a second instance — but the original instance
+  remains, and it comes from a file this work did not touch. See the reopened
+  unbalanced-term entry above.
+
+## From the 2026-08-30 filename scrub
+
+- [x] **The 46 client-named FILENAMES are renamed — residual is 0.** Done with
+  `scripts/rename_engagement_files.py` (new; dry-run by default, `--revert`
+  undoes it). Verified: `migrate_engagement_ids.sh` now reports the filename
+  warning for ZERO engagements, all 7 still pass the deny-list superset check,
+  and all 46 renamed files were confirmed present afterwards.
+
+  It uses `migrate_engagements._client_named_files` as its definition of a leak,
+  deliberately — the tool that REPORTS a leak and the tool that FIXES it sharing
+  one definition is what stops a gap opening between the warning and the remedy.
+
+  Reversibility was the precondition for running it at all: `engagements/` is
+  gitignored, so there is no git history to recover from. `.filename_map.json`
+  (chmod 600, one per engagement) records old→new, and `--revert` restores BOTH
+  the filenames and the references that were rewritten with them. That second
+  half was a defect found by testing the round trip on a fixture rather than by
+  reading the code: reverting names alone left every journal entry citing a file
+  that no longer existed, which is worse than either end state.
+
+### What renaming did NOT fix, and must not be reported as fixed
+
+- [ ] **14 archives were renamed on the OUTSIDE only.** A `.zip` holding a
+  client-named `.html` still holds that name internally. The directory listing is
+  clean and whoever opens the archive still sees the client. Closing this means
+  repacking each archive with its inner file renamed — mechanical, but it
+  rewrites deliverables that may already have been sent, so it is a separate
+  decision.
+
+- [x] **[done 2026-08-30] Build-script OUTPUT paths fixed — zero client-named output literals remain in any build script.** Five scripts existed, not two; three were already corrected by the rename pass's reference rewrite, two were not. Both now derive paths from `__file__`, which also fixes a hardcoded client-named absolute path that would have BROKEN after the engagement migration. Original note follows. They still
+  write client-named `.pptx` files, so the next run recreates exactly what this
+  scrub removed. A rename that undoes itself on next use is not a fix; the output
+  paths in those scripts need editing, and they live inside an engagement rather
+  than in a component the harness gates.
+
+- [ ] **Binary CONTENT still carries the name.** `.pptx`, `.xlsx` and `.pdf`
+  deliverables have the client's name inside them — that was never in scope for a
+  filename tool, and is only worth recording so "the filename leak is closed" is
+  not read as "the engagement is scrubbed".
+
+- [ ] **`.filename_map.json` binds old filenames to new, so it carries client
+  identifiers.** Same trade as `.pii_mapping.json` and `.engagement_map.json`:
+  chmod 600, inside gitignored `engagements/`, never committed. Worth knowing it
+  travels with the engagement if the directory is later migrated or copied.
+
+## From fixing the build scripts (2026-08-30)
+
+- [x] **Build scripts no longer regenerate client-named outputs.** Five build
+  scripts exist across the engagements, not the two the rename tool flagged —
+  the other three had clean FILENAMES and were never suspected. Three had already
+  been corrected as a side effect of the rename pass rewriting references; two
+  had not:
+
+  - one wrote `<Client>_Exec_Workshop_v2.html`. The rename pass missed it because
+    the file ON DISK was `..._v2.1.html` and the script writes `..._v2.html` — a
+    different string, so the reference rewrite never matched. **A reference
+    rewrite only fixes references that already point at something real.**
+  - one wrote a deck named after the client AND a named STAKEHOLDER, from a
+    hardcoded absolute path, and the script itself carried both names. Renamed;
+    output is now neutral.
+
+  Both now derive paths from `__file__` instead of a hardcoded absolute path.
+  That fixes a second, unrelated defect nobody had filed: a hardcoded
+  `engagements/<client-slug>/...` path **breaks the moment
+  `migrate_engagement_ids.sh` runs**, because the directory it names ceases to
+  exist. Every such script would have silently stopped working after the
+  migration. Verified: both scripts parse, and their derived REPO / template /
+  output directories all resolve.
+
+  Zero client-named output literals remain in any build script.
+
+### CORRECTION — "46 renamed, residual 0" was scoped, and I did not say so
+
+- [x] **[done 2026-08-30] ALL 86 RENAMED; residual 0 across the WHOLE `engagements/` tree** (134 renames recorded, 0 missing targets). The tool now covers the staging trees, with needles from each subdirectory's CLIENT_PROFILE.md rather than its slug. Original note follows.
+
+- [x] 86 further files under `engagements/inputs/` and `engagements/outputs/`
+  carry a client or stakeholder name in the FILENAME, and nothing has touched
+  them.** The residual-0 result reported for the filename scrub is true of the
+  SEVEN client engagements only. Both `migrate_engagements._client_named_files`
+  and `rename_engagement_files.py` skip `denylist.SKIP_CLIENT_DIRS`, so the two
+  shared staging trees were never in scope for either — the measurement inherited
+  the reporting tool's blind spot, which is exactly the failure mode this cycle
+  keeps finding.
+
+  Measured: 19 under `inputs/`, 67 under `outputs/`. Business cases, transcripts,
+  engagement plans, research reports and customer-segmentation decks.
+
+  **At least one filename contains a named individual**, not just an institution
+  — a sharper category than client identity and the reason this should not sit
+  behind the "shared staging is a separate decision" note indefinitely.
+
+  The rename tool can do this work: it needs `--only` to accept the staging
+  subdirectories, or the staging trees added to its scan. The reason it does not
+  already is that those subdirectories are not engagements and have no
+  `CLIENT_PROFILE.md`-derived slug to strip — the needles would have to come from
+  the profiles added on 2026-08-30 instead.
+
+- [ ] **Deck CONTENT still names the client and its competitors.** One build
+  script's slide copy carries the client in a cover label and names three other
+  named institutions in a market-context slide. That is client-facing deliverable
+  copy rather than a path or a filename, was never in scope for a filename tool,
+  and is recorded only so "the filenames are clean" is not read as "the deck is
+  anonymous".
+
+## Staging filenames (2026-08-30) — closed, and two defects the tool had
+
+- [x] **All 86 staging filenames done; residual across the WHOLE `engagements/`
+  tree is 0.** 134 renames recorded across every reversal map, 0 missing targets.
+  `rename_engagement_files.py` now covers the shared staging trees, with needles
+  taken from each subdirectory's `CLIENT_PROFILE.md` rather than its directory
+  name — mining `<datecode>_<Client>_<Programme>` would have stripped `Ignite`
+  and the geography out of filenames that exist to carry them.
+
+  Three scan gaps closed while doing it, each found by re-measuring rather than
+  by reading code: files sitting LOOSE in a staging root outside any client
+  subfolder; subdirectories with no profile of their own (an ontology output
+  folder still held a client-named file), now covered by the union of all
+  clients' needles; and `--extra-needle` for terms no profile carries.
+
+### Two defects in the tool itself, both caught by verification
+
+- [x] **It wanted to rewrite `.filename_map.json`.** The map is `.json`, so it
+  matched the text-file reference sweep — and it exists precisely to hold the OLD
+  names. "Updating" it would have erased the only way back, on a tree with no git
+  history. Caught in a dry run BEFORE it ran; the map is now excluded explicitly.
+
+- [x] **The map did not compose across successive passes.** With `{B: A}`
+  recorded and `B -> C` then applied, it stored `{C: B}` alongside a now-dangling
+  `{B: A}`, leaving revert dependent on dictionary ordering to walk the chain.
+  Found by an integrity check reporting 3 missing targets, not by the tool
+  itself. `save_map` now collapses chains so every key is a file on disk and
+  every value is the TRUE original. Existing maps repaired; verified end to end —
+  two passes then one revert returns the original name.
+
+### Remaining, and it is a detection limit rather than a backlog of work
+
+- [ ] **Stakeholder names in filenames are only caught if an engagement document
+  records that person.** `extract_stakeholder_terms` found 6 stakeholder terms
+  across all engagement docs, and NONE of them appeared in a filename. Two files
+  nonetheless carried a person's first name, because nothing records them as a
+  stakeholder anywhere — they were renamed via `--extra-needle`, which means the
+  fix was a human noticing, not the system detecting. Any other such name is
+  still there and neither this tool nor the deny-list can see it. Closing this
+  needs the stakeholder register populated per engagement, not more tooling.
+
+- [ ] **Binary CONTENT and archive INTERIORS are unchanged** by all of the above —
+  see the earlier entry. Filenames being clean is not the same as the files being
+  clean, and should not be reported as if it were.
+
+## From the PR #97 review (CTP governance + /critty)
+
+> Carried in on the 2026-08-30 merge of `feat/ctp-critty`. Both are that
+> PR's own review findings; neither is recorded anywhere else.
+
+- [ ] evals/registry.yaml:critty,critical-thought-partner — No negative/stripped fixture proves the checks discriminate; add a WITH/WITHOUT fixture pair (like roi-excel-generator) or an inline assertion that evaluate() on a stripped copy scores <0.80 (from PR #97 review)
+- [ ] CLAUDE.md:142 — CTP suppression summary drops "low confidence AND" from standard rule S4 ("Low confidence AND low impact"); the self-sufficient CLAUDE.md section applies a looser suppression rule than the standard (from PR #97 review)
 
 ## From the PR #153 review (2026-08-19)
 

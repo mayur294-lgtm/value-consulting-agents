@@ -1121,7 +1121,7 @@ Before delivering the IT Architecture & Operations Workshop deck, verify:
 - [ ] Correct terminology (Member vs Customer) — consistently applied
 - [ ] Core banking system correctly identified by name and vendor
 - [ ] System inventory reflects client's actual technology (or clearly marked hypothesis)
-- [ ] No hardcoded references to BECU, NFCU, DIB, or other specific clients
+- [ ] No hardcoded references to any specific client (name, acronym or branding)
 
 **Design System Compliance:**
 - [ ] Content sections use WHITE (`#FFFFFF`) background — never dark

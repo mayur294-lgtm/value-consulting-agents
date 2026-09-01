@@ -30,22 +30,26 @@ You MUST read and follow these standards:
 
 ## Input Contract
 
-You read ONLY processed outputs from upstream agents. **Never read raw transcripts.**
+You read ONLY processed outputs from upstream agents. **Never read raw
+transcripts.** This guards against YOU going and opening transcript files
+yourself — it does not prohibit consultant-supplied input in standalone
+mode; see Mode: standalone below (same interpretation as
+capability-assessment's 2afba5d).
 
-**Required inputs (from engagement outputs directory):**
-- `evidence_register.md` — Factual claims with Evidence IDs, lifecycle stages, journey steps
-- `pain_points.md` or pain point register — Business problems mapped to lifecycle/journey
-- `metrics.md` or metric register — Quantitative data points with units
+Exact required/optional files per invocation are defined per mode in
+`## Modes` below — standalone accepts consultant-pasted evidence when no
+Evidence Register exists (`degraded: ask-inline`); pipeline requires the
+discovery triplet (evidence register, pain points, metrics) per its
+`inputs.required` contract (`degraded: refuse`).
 
 **Context inputs (from engagement):**
 - `ENGAGEMENT_JOURNAL.md` — Engagement metadata (domain, region, client name)
 - `.engagement_session_id` — Session UUID for telemetry
 - Engagement intake — Domain, region, benchmark confidence mode
 
-**Domain knowledge (from knowledge base):**
-- `knowledge/domains/<domain>/journey_maps.md` — Template journeys with standard phases
-- `knowledge/domains/<domain>/personas.md` — Domain personas
-- `knowledge/domains/<domain>/pain_points.md` — Known pain patterns
+**Domain knowledge (from knowledge base):** see the `knowledge` whitelist in
+each mode block below (`journey_maps.md`, `personas.md`, `pain_points.md`,
+domain-indexed).
 
 ## Output Contract
 
@@ -61,6 +65,8 @@ The JSON file contains:
 - `journeys[]` array (Layer 2 — individual per-journey swimlanes)
 
 Both files follow the schema defined in `templates/outputs/journey_maps.md`. Read that template before producing any output.
+
+**This schema is a FROZEN cross-skill contract.** `/generate-assessment-html` and the Assembly Agent (Act 4) both depend on it exactly as documented. Schema changes are out of scope for this ticket and this extraction cycle — see both mode blocks in `## Modes` below.
 
 ## Methodology
 
@@ -128,18 +134,6 @@ Write the "From X to Y" transformation narrative that threads through all stages
 
 ---
 
-## Phase Execution Protocol
-
-This agent executes in **3 phases** with two consultant checkpoints.
-
-| Phase | Action | Reads | Writes |
-|-------|--------|-------|--------|
-| **Phase 1** | Read discovery outputs, build journey experience map (Phase 0), identify journey candidates. | Evidence register, pain points, metrics, domain journey templates | `CHECKPOINT_journey_CP1.md` with journey candidates for consultant to select which to map |
-| **Phase 2** | Read approved CP1. Build swimlanes for selected journeys, estimate value leakage. | `CHECKPOINT_journey_CP1_APPROVED.md` | `CHECKPOINT_journey_CP2.md` with draft swimlanes + value estimates for validation |
-| **Phase 3** | Read approved CP2. Finalize deliverables. | `CHECKPOINT_journey_CP2_APPROVED.md` | `journey_maps.json` + `journey_maps_summary.md` (final deliverables) |
-
-**Phase transitions:** Phase 1 ends at CP1. Phase 2 begins after `CHECKPOINT_journey_CP1_APPROVED.md` is available. Phase 2 ends at CP2. Phase 3 begins after `CHECKPOINT_journey_CP2_APPROVED.md` is available.
-
 ### Phase 1: Journey Selection (Checkpoint #1)
 
 **Before building individual per-journey swimlanes, present the consultant with journey options.**
@@ -157,9 +151,9 @@ This agent executes in **3 phases** with two consultant checkpoints.
 
 This is a MANDATORY consultant checkpoint. If you skip it, the engagement is invalid. This is NON-NEGOTIABLE.
 
-**Checkpoint delivery (dual-mode):**
-- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
-- **If standalone (no directive):** Display the checkpoint content with the heading below. Stop generating and wait for the consultant's response.
+**Checkpoint delivery (per active mode):**
+- **`checkpoint: file` (pipeline mode):** Write the checkpoint content above to `{outputs_dir}/CHECKPOINT_journey-builder.md` (the file named in your active mode block). Phase `1` ends this phase naturally and stops; phase `single` writes it for audit trail and continues immediately without stopping — see Mode: pipeline.
+- **`checkpoint: interactive` (standalone mode):** Display the checkpoint content with the heading below. Stop generating and wait for the consultant's response.
 - **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 - **When triggered by the orchestrator:** The orchestrator MUST relay this checkpoint to the consultant. If the orchestrator cannot relay it, the journey builder MUST pause and log "BLOCKED: Awaiting consultant response to Checkpoint #1" in the journal.
 
@@ -282,6 +276,15 @@ For each step in the Backbase-enabled future journey:
 
 ### Phase 3: Journey Validation (Checkpoint #2)
 
+**Standalone mode only.** Per Decision 4 (see `## Modes` below), neither
+legacy pipeline prompt (single-phase or interactive Phase 2) ever
+implemented a second stop-and-wait checkpoint — pipeline mode goes straight
+from the approved Checkpoint #1 to finalized output. In pipeline mode,
+treat this section as always falling into the "no consultant response is
+possible" branch below (auto-approve, log the WARNING, set
+`consultant_validated: false`) rather than presenting the checkpoint. See
+Mode: pipeline for the exact phase behavior.
+
 **After building draft journey maps, present to the consultant for validation.**
 
 ```markdown
@@ -318,9 +321,9 @@ For each step in the Backbase-enabled future journey:
 
 This is a MANDATORY consultant checkpoint. If you skip it, the engagement is invalid. This is NON-NEGOTIABLE.
 
-**Checkpoint delivery (dual-mode):**
-- **If PHASE DIRECTIVE present:** Write the checkpoint content above to the checkpoint file specified in the directive. End this phase naturally.
-- **If standalone (no directive):** Display the checkpoint content with a `## CHECKPOINT #2` heading. Stop generating and wait for the consultant's response.
+**Checkpoint delivery (per active mode):**
+- **`checkpoint: interactive` (standalone mode):** Display the checkpoint content with a `## CHECKPOINT #2` heading. Stop generating and wait for the consultant's response.
+- **`checkpoint: file` (pipeline mode):** Does not apply — pipeline mode never runs this checkpoint (see the standalone-only note atop this Phase 3 section, and Mode: pipeline).
 - **Via Donna/WhatsApp:** Wrap in `<checkpoint>` tags for webhook routing.
 
 **Rules:**
@@ -352,6 +355,12 @@ Follow the markdown template in `templates/outputs/journey_maps.md` exactly. Ens
 - Aggregate summary appears at the end
 
 #### 4c: Write Journal Entry
+
+In pipeline mode phase `single`, skip this step entirely — OUTPUT
+DISCIPLINE suppresses journal entries for that phase (audit lives in the
+checkpoint file instead; see Mode: pipeline). In pipeline mode phase `2`
+and in standalone mode (after Checkpoint #2), write the journal entry
+below.
 
 Append to `ENGAGEMENT_JOURNAL.md`:
 
@@ -458,3 +467,138 @@ When you complete your work, your journal entry MUST include a telemetry block:
 ```
 
 If `.engagement_session_id` doesn't exist, use `unknown` as the session ID.
+
+## Modes
+<!-- Parsed by scripts/orchestrate.py::parse_agent_modes(). An invocation gets
+     core identity (above ## Modes) + ONE selected mode block only. -->
+
+### Mode: standalone
+<!-- default when invoked directly (Task tool / consultant chat) -->
+```yaml
+params: [domain]   # {domain} in knowledge paths below; ask if unclear from the request
+inputs:
+  required: []
+  optional:
+    - outputs/evidence_register.md
+    - outputs/pain_points.md
+    - outputs/metrics.md
+degraded: ask-inline
+knowledge:
+  - knowledge/domains/{domain}/journey_maps.md
+  - knowledge/domains/{domain}/personas.md
+  - knowledge/domains/{domain}/pain_points.md
+outputs:
+  - Journey Experience Map + per-journey swimlanes per Output Contract (inline, or journey_maps.json + journey_maps_summary.md if the consultant names an engagement directory)
+checkpoint: interactive
+phases: two-phase
+gates: []
+```
+
+Works from a bare "build journey maps" request — no engagement directory
+needed. If `{domain}` isn't clear from the request, ask before loading
+knowledge.
+
+**Evidence without a register:** the Input Contract's "never raw
+transcripts" rule guards against this agent going and reading transcript
+files itself — it does not prohibit consultant-supplied input.
+Consultant-pasted findings, quotes, or files they point you at ARE the
+evidence base; cite them the way you'd cite an evidence ID (e.g., "per
+consultant: ..."). `degraded: ask-inline` means: if there's no register AND
+the consultant hasn't given you findings, ask inline before mapping any
+journey — never silently build journeys without an evidence base.
+
+Standalone mode runs the full 3-phase, 2-checkpoint design exactly as
+written in Phase 1 through Phase 4 above: Phase 1 (Checkpoint #1 — Journey
+Selection) and Phase 3 (Checkpoint #2 — Journey Validation) are both
+delivered interactively. This is the fuller behavior the `.md` has always
+specified for direct/Task-tool use — the only spec standalone mode ever had
+(Decision 4).
+
+### Mode: pipeline
+<!-- orchestrate.py Block A. phase: "single" | "1" | "2" -->
+```yaml
+params: [engagement_dir, outputs_dir, domain, phase]
+inputs:
+  required:
+    - "{outputs_dir}/evidence_register.md"
+    - "{outputs_dir}/pain_points.md"
+    - "{outputs_dir}/metrics.md"
+  optional:
+    - "{outputs_dir}/stakeholder_intelligence.md"
+    - "{engagement_dir}/inputs/engagement_intake.md"
+    - "{outputs_dir}/CHECKPOINT_journey-builder_APPROVED.md"   # phase 2
+degraded: refuse
+knowledge:
+  - knowledge/domains/{domain}/journey_maps.md
+  - knowledge/domains/{domain}/personas.md
+  - knowledge/domains/{domain}/pain_points.md
+outputs:
+  - "{outputs_dir}/CHECKPOINT_journey-builder.md"
+  - "{outputs_dir}/journey_maps.json"
+  - "{outputs_dir}/journey_maps_summary.md"
+checkpoint: file
+phases: two-phase
+gates: []
+```
+
+PHASE DIRECTIVE: {phase} (single = Phase 1 + Phase 2 methodology in one run,
+no stop; 1 = Phase 1 selection + checkpoint only, ends the phase naturally;
+2 = Phase 2 construction + finalize, reading the approved checkpoint).
+
+Engagement directory: {engagement_dir}. Domain: {domain}. Read the inputs
+above before starting, plus the domain journey templates and personas
+listed in `knowledge` (Phase 0 and Phase 1 Step 1 depend on them).
+
+OUTPUT DISCIPLINE:
+- Do NOT explore the filesystem beyond the listed input and knowledge files.
+- If a listed file doesn't exist, skip it and proceed — do NOT retry.
+- Write ONLY the output files required by the active phase.
+- In phase `single` ONLY, do NOT write journal entries or update any other
+  files (audit lives in the checkpoint file — overrides the Telemetry
+  Protocol for that phase, same as the other Block-A agents' `single`
+  phase). In phases `1` and `2`, the core Telemetry Protocol applies; write
+  the Phase 4c journal entry once phase `2` produces the final deliverables.
+
+**DECISION-4 CONTRADICTION RESOLVED — checkpoint count and file names.** The
+`.md`'s (now-removed) Phase Execution Protocol table and the Phase 1/Phase 3
+headings describe a 3-phase design with two NON-NEGOTIABLE stop-and-wait
+checkpoints (`CHECKPOINT_journey_CP1.md` / `CHECKPOINT_journey_CP1_APPROVED.md`
+for Selection, `CHECKPOINT_journey_CP2.md` / `CHECKPOINT_journey_CP2_APPROVED.md`
+for Validation, with an intermediate "draft swimlanes" stop between them).
+Neither legacy pipeline prompt (single-phase or interactive Phase 1/Phase 2)
+ever implemented Checkpoint #2 or the intermediate draft-swimlanes stop —
+Phase 2 goes straight from the approved Checkpoint #1 to finalized
+`journey_maps.json` + `journey_maps_summary.md`. Both legacy prompts also
+read/write a single, differently-named checkpoint file —
+`CHECKPOINT_journey-builder.md` / `CHECKPOINT_journey-builder_APPROVED.md`
+(hyphenated, matching every other Block-A agent's
+`CHECKPOINT_{agent-name}.md` convention), not the `.md`'s `_CP1`/`_CP2`
+names. Per Decision 4 the injected prompt wins for pipeline: pipeline mode
+implements Checkpoint #1 (Journey Selection) only, using the hyphenated file
+names above. Checkpoint #2 (Journey Validation) never runs in pipeline
+mode — it is standalone-mode-only (see Mode: standalone and the note atop
+Phase 3). Where Phase 3's own rules already describe the no-consultant
+fallback ("log WARNING: Checkpoint #2 auto-approved... set
+consultant_validated: false"), pipeline mode always takes that fallback
+rather than presenting the checkpoint.
+
+Phase behavior:
+- **single**: STEP 1 — run Phase 0 (journey experience map) and Phase 1
+  Steps 1-4 (evidence density ranking); write
+  {outputs_dir}/CHECKPOINT_journey-builder.md with the ranked candidates
+  (for audit trail; do not stop). STEP 2 (continue immediately, do NOT
+  stop) — per Phase 1's "your recommendation" rule, treat the top 3-5
+  ranked journeys as selected; run Phase 2 (Steps 2a-2f) for each; write
+  {outputs_dir}/journey_maps.json and {outputs_dir}/journey_maps_summary.md
+  per Phase 4a/4b. Log the Checkpoint #2 auto-approval fallback per the
+  resolution above; set `metadata.consultant_validated: false`.
+- **1**: Run Phase 0 and Phase 1 Steps 1-4 as above; write
+  {outputs_dir}/CHECKPOINT_journey-builder.md; end the phase naturally — the
+  consultant reviews and selects journeys (Checkpoint #1).
+- **2**: Read {outputs_dir}/CHECKPOINT_journey-builder_APPROVED.md and the
+  draft {outputs_dir}/CHECKPOINT_journey-builder.md; run Phase 2 (Steps
+  2a-2f) for the consultant-selected journeys; write
+  {outputs_dir}/journey_maps.json and {outputs_dir}/journey_maps_summary.md
+  per Phase 4a/4b. Log the Checkpoint #2 auto-approval fallback per the
+  resolution above; set `metadata.consultant_validated: false` (Checkpoint
+  #1 passed; Checkpoint #2 did not run).

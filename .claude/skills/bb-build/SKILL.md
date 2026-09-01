@@ -160,19 +160,21 @@ If spec review reports FAIL:
 
 ### Step 6: Verify the ticket via the eval harness
 
-After spec review passes and BEFORE closing the ticket, confirm the change is actually correct. In cortex, **verify = run the eval experiment**, not a build/typecheck. There is no `package.json`, `tsc`, or `pnpm` — quality is proven by the eval harness and the structural agent checks. You do NOT run the commands yourself — dispatch a subagent for it (the orchestrator-not-implementer rule still holds).
+After spec review passes and BEFORE closing the ticket, confirm what actually got proven — no more, no less. In cortex, **verify = run the eval harness**, not a build/typecheck. There is no `package.json`, `tsc`, or `pnpm`. But the harness proves different things depending on what changed, and this step exists to say which, honestly, every time — a score always carries its tier. You do NOT run the commands yourself — dispatch a subagent for it (the orchestrator-not-implementer rule still holds).
 
-Cortex agents form a chain (Discovery → Block-A agents → Roadmap → Assembly → …), so a change to one component can break a downstream consumer. Verify therefore runs **three** checks, in order:
+**First, classify the changed component's tier.** `evals/registry.yaml`'s `components:` section currently holds two kinds of row, both still filed under the same `components:` key (re-filing the rubric-scoring ones into an explicit `rubric_calibration:` section is tracked separately and hasn't landed yet, so don't describe that split as already real):
 
-1. **Structural** — `python scripts/test_agent.py` validates the changed agent/knowledge/template against `tests/quality_metrics.yaml` ($0, no LLM).
-2. **Unit experiment** — `python evals/run_experiment.py --component <changed-component> --altitude unit` scores the changed component against its rubric cases in `evals/registry.yaml` via Langfuse. `<changed-component>` is the agent/skill/command/template the ticket modified.
-3. **Pipeline experiment** — `python evals/run_experiment.py --altitude pipeline` runs the end-to-end pipeline on a golden engagement and checks the change didn't break downstream consumers.
+- **Executable** — five rows today: `mcp-query-guard`, `pii-anonymizer`, `run-experiment-runner`, `mutation-harness`, `roi-excel-generator`. Each builds a fixture at runtime and runs real code against it — `roi-excel-generator`'s evaluator (`evals/rubrics/component/roi_excel_generator.py`) generates a real `.xlsx` from a golden config via `tools/roi_excel_generator.py`'s `ROIModelGenerator.generate()`, then reopens it with `openpyxl` and inspects the actual cells/sheets (Sources sheet presence, formula rendering, confidence precedence). A green `--component <row>` here is real evidence about that code — including for `roi-excel-generator`, even though it's a Python tool rather than an agent `.md` prompt.
+- **Rubric-calibration** — every other component row that is a `.claude/agents/*.md` prompt (market-context-researcher, roi-financial-modeler, discovery-transcript-interpreter, capability-assessment, roadmap-prioritization, narrative-assembler, journey-builder, benchmark-librarian, usecase-designer, workshop-preparation, ignite-workshop-synthesizer, roi-hypothesis-builder, and more). These score a **frozen golden fixture** in `evals/goldens/` that does not change when you edit the agent's prompt. A green here proves the rubric still accepts a well-formed artifact — **it is not evidence about the prompt you just edited.** (Measured: replacing the entire 45KB `market-context-researcher` prompt with one line of garbage still scored this row 1.000 PASS.)
+- **`knowledge-harvester` — a mixed case, described precisely rather than lumped into either bucket above.** Its evaluator (`evals/rubrics/component/knowledge_harvester.py`) does execute real code: 3 of its 4 checks call `scripts/artifact_boundary.py`'s `synthetic_policy()` directly, deterministically, against committed fixtures — that part is genuinely executable, not a frozen-golden text score. But `synthetic_policy()` is a shared gate function, not the agent's prompt, and the one check that DOES read `.claude/agents/knowledge-harvester.md` (`quarantine_mode_outputs_local`, which parses for a `### Mode: quarantine` block) currently SKIPs pending #131 — so its PASS carries no signal about the prompt either. Net for Step 6: a green `--component knowledge-harvester` is still not evidence an edit to that agent's `.md` was verified, but for a different reason than the twelve rows above (an unrelated-but-real gate plus one still-skipped prompt check, not a frozen golden fixture).
 
-`run_experiment.py` exits non-zero when a score falls below its threshold, so a non-zero exit is a FAIL.
+**Branch A — the ticket changed a `.claude/agents/*.md` prompt, or any other component whose row is rubric-calibration (i.e. not one of the five executable names above): do NOT run `--component` on it and report that as verification.** There is no executable gate for this kind of change. Have the subagent run structural only (it's real evidence — it re-parses the file you actually changed, not a frozen golden), then stop and report the uncovered-prose message verbatim instead of a score:
 
-Determine `<changed-component>` from the ticket's target file(s) (e.g. a ticket editing `.claude/agents/roi-financial-modeler.md` → `--component roi-financial-modeler`). For a ticket that introduces a NEW component, the ticket should already have authored its eval cases (enforced by `/bb-prd`); if `evals/registry.yaml` has no cases for it, that is a FAIL — escalate.
+> "No executable gate covers `.claude/agents/<name>.md`. A component-altitude score against a frozen golden does **not** verify a prompt change — it scores the rubric. Either run `evals/path1.py --agent <name>` locally (uses your Claude subscription, not an API key), or record in the PR that this change is unverified."
 
-Dispatch a **haiku** subagent to run all three:
+`evals/path1.py` requires `--agent <name> --input <golden-or-text>`. It is currently **orphaned** — nothing in CI or this build loop invokes it (wiring it in is tracked separately and hasn't landed), so the only way to actually exercise it today is to run it yourself, locally, outside the subagent. The ticket can still proceed to Step 7, but the PR body and the report to the user MUST say the prompt change is unverified by the automated gate (or paste the local path-1 output if you ran it) — never "verified."
+
+**Branch B — the ticket changed a component whose row IS executable-tier, or touched an output template covered by the deliverable-structural contract check.** Dispatch a **haiku** subagent to run, in order, only the checks that apply, and require the tier to be reported alongside every score:
 
 ```
 Agent tool call:
@@ -180,16 +182,34 @@ Agent tool call:
   model: "haiku"
   prompt: "Run exactly these at the repo root, in order, and stop at the first failure:
     1. python scripts/test_agent.py
-    2. python evals/run_experiment.py --component <changed-component> --altitude unit
-    3. python evals/run_experiment.py --altitude pipeline
-  On all three passing (exit 0 and at/above threshold), report PASS. On any failure, report FAIL, name which step failed, and paste that command's raw output verbatim — do not summarise, and do not fix anything."
+    2. python evals/run_experiment.py --component <changed-component>
+    3. python evals/run_experiment.py --mutate <changed-component>
+  (Only if the ticket ALSO touched an output template or the cross-agent assembly
+  contract — templates/**, presentations/**, or the assembler's output shape —
+  add a 4th check:)
+    4. python evals/run_experiment.py --altitude deliverable-structural
+  For step 2, report the row's tier from registry.yaml alongside the score —
+  'executable' or 'rubric-calibration' — never state a score without its tier.
+  For step 4, report it plainly as a frozen-fixture structural lint: it does
+  NOT run the pipeline and never invokes the changed agent, so a green there
+  proves the downstream file-shape contract still holds, not that the changed
+  component works. On all applicable steps passing, report PASS with each
+  score + tier + (for step 2 on an executable row) 'exercised: <module> via
+  <interpreter>'. On any failure, report FAIL, name which step failed, and
+  paste that command's raw output verbatim — do not summarise, and do not fix
+  anything."
 ```
 
-A ticket is NOT done until **all three** pass: structural passes AND the unit experiment scores at/above its threshold AND the pipeline experiment is green.
+Do not add `--altitude unit` to step 2 — `--component <row>` already runs at `unit` altitude implicitly, and `--altitude unit` passed on its own (without `--component`) does nothing and falls through to the help text.
+
+`run_experiment.py` exits non-zero when a score falls below its threshold, so a non-zero exit is a FAIL. For a ticket that introduces a NEW executable-tier component, the ticket should already have authored its eval cases (enforced by `/bb-prd`); if `evals/registry.yaml` has no row for it, that is a FAIL — escalate.
+
+A ticket is NOT done until every check that actually applies to it passes — but "done" is bounded by what those checks can see. An executable-tier PASS is real evidence about the code that changed. A rubric-calibration or deliverable-structural PASS is real evidence about the rubric or the downstream file contract, never a substitute for verifying the prompt itself.
 
 Handle the result:
-- **PASS** → proceed to Step 7.
-- **FAIL** → re-dispatch the implementer via the Agent tool with the raw failure output (same dispatch as Step 2), then re-dispatch a single haiku verify subagent. Max 2 re-dispatches. If it still fails after the 2nd retry, escalate to the user. The ticket is not done until verify PASSes.
+- **Branch A (uncovered prose)** → proceed to Step 7. The report to the user and the PR body state the change is unverified by the automated gate, and name the `evals/path1.py` alternative — never assert the prompt was verified.
+- **Branch B, PASS** → proceed to Step 7, carrying forward the score, tier, and what was exercised.
+- **Branch B, FAIL** → re-dispatch the implementer via the Agent tool with the raw failure output (same dispatch as Step 2), then re-dispatch a single haiku verify subagent. Max 2 re-dispatches. If it still fails after the 2nd retry, escalate to the user. The ticket is not done until verify PASSes.
 
 ### Step 7: Mark done and track size
 
@@ -287,7 +307,7 @@ If no build-order issue was used (fallback sequencing), skip this step.
 - **Fresh context per implementer** — each subagent gets a clean context window via the Agent tool. The orchestrator ensures the working tree is clean between tickets.
 - **Prompt enrichment over file reading** — front-load codebase context into the Agent prompt. The subagent should rarely need to explore the codebase itself.
 - **Spec compliance between tickets** — catch missing requirements before the next ticket builds on top. The full quality review happens against the PR.
-- **Verify before closing** — each ticket runs the eval harness (`python scripts/test_agent.py` structural + `python evals/run_experiment.py --component <component> --altitude unit` + `python evals/run_experiment.py --altitude pipeline`) inside a cheap subagent before it's marked done. A ticket whose change fails structural, scores below its unit threshold, or breaks the pipeline isn't done.
+- **Verify honestly, not reflexively** — each ticket runs whatever the eval harness can actually prove about it, inside a cheap subagent, before it's marked done: `python scripts/test_agent.py` (real structural check on the changed file) always, plus — only when the changed component is one of the five executable-tier rows (`mcp-query-guard`, `pii-anonymizer`, `run-experiment-runner`, `mutation-harness`, `roi-excel-generator`) — `python evals/run_experiment.py --component <component>` and `--mutate <component>`. A ticket that only edited a `.claude/agents/*.md` prompt (or any other rubric-calibration row, scored against a frozen golden) gets no executable score to claim: the report states it's unverified by the automated gate and names the `evals/path1.py --agent <name>` alternative, instead of citing a frozen-golden score as proof the prompt was verified. A ticket whose change fails structural, fails an applicable executable-tier score or mutation proof, or breaks the downstream `deliverable-structural` file contracts isn't done.
 - **Autonomous between tickets** — don't ask the user between every ticket. Only pause for blockers or PR splits.
 - **Escalate, don't guess** — if an implementer is stuck, escalate rather than proceeding with uncertainty.
 - **Size-aware PRs** — split at ~400 lines for reviewability.

@@ -4,7 +4,7 @@ This document provides detailed case studies from Backbase Wealth Management eng
 
 ---
 
-## Case Study 1: Intesa San Paolo Wealth Management (ISPWM)
+## Case Study 1: Intesa San Paolo Wealth Management ([Client-wealth-EMEA-2023])
 
 **Region:** Europe (Luxembourg)
 **Engagement Date:** October 2024
@@ -81,7 +81,7 @@ This document provides detailed case studies from Backbase Wealth Management eng
 
 ---
 
-## Case Study 2: Schroders Personal Wealth
+## Case Study 2: [Client-wealth-EMEA-2024]
 
 **Region:** Europe (UK)
 **Engagement Date:** September 2025
@@ -186,7 +186,7 @@ This document provides detailed case studies from Backbase Wealth Management eng
 
 ---
 
-## Case Study 3: Goodbody Stockbrokers
+## Case Study 3: [Client-wealth-EMEA-2025] Stockbrokers
 
 **Region:** Europe (Ireland)
 **Engagement Date:** July 2022
@@ -271,7 +271,7 @@ This document provides detailed case studies from Backbase Wealth Management eng
 
 ---
 
-## Case Study 4: HNB Wealth Management
+## Case Study 4: [Client-wealth-APAC-2025]
 
 **Region:** South Asia (Sri Lanka)
 **Engagement Date:** December 2024
@@ -316,9 +316,9 @@ This document provides detailed case studies from Backbase Wealth Management eng
 
 | Engagement | Investment | Benefits (5yr) | ROI | Payback |
 |------------|------------|----------------|-----|---------|
-| ISPWM (Luxembourg) | €9.1M | €28.5M | 224% | ~2 years |
-| Schroders (UK) | ~£19M | £153M | 8x | ~1.5 years |
-| HNB Wealth (Sri Lanka) | $9.6M | $25.7M | 167% | ~2 years |
+| [Client-wealth-EMEA-2023] (Luxembourg) | €9.1M | €28.5M | 224% | ~2 years |
+| [Client-wealth-EMEA-2024] (UK) | ~£19M | £153M | 8x | ~1.5 years |
+| [Client-wealth-APAC-2025] (Sri Lanka) | $9.6M | $25.7M | 167% | ~2 years |
 | Seabank (Philippines) | $11M | $18.3M | 66% | 1.7 years |
 
 ---

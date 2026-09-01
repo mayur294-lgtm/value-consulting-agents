@@ -30,6 +30,8 @@ When this skill is invoked:
 
 1. **Read the master benchmark file**: `knowledge/Consulting Playbook Metrics Benchmark [Master] - Benchmarks.csv`
 
+   > **Synthetic-data exclusion:** exclude any `[Synthetic-Test]`-tagged entry and anything sourced from a `tests/` path (see `knowledge/standards/benchmark_evolution.md`). If ≥1 entry was excluded, append that standard's canonical excluded-count note; if nothing was excluded, add no note.
+
 2. **Filter by domain-relevant journeys**:
    - **Retail/SME:** General, Digital Onboarding, Loan Origination, Cards, Online Registration, Payments, Deposits & Loans, Transaction Dispute, Loan Servicing
    - **Investing:** Account Opening, Digital Adoption, Revenue & AUM, Operational Efficiency, Customer Experience (benchmarks use confidence tiers: `[Industry]`/`[Proxy]`/`[Estimated]`/`[Client-Validated]`)
@@ -89,13 +91,13 @@ Assistant: Loading Retail Banking onboarding benchmarks from Consulting Playbook
 
 | KPI | Sample Data Points | Range |
 |-----|-------------------|-------|
-| Time to complete onboarding (digital) | Pichincha: 1:10:00, BSF: varies | 5 min - 70 min |
-| Time for branch-assisted onboarding | Pichincha: 0:10:00 | 5-30 min |
+| Time to complete onboarding (digital) | [Client-retail-LATAM-2022]: 1:10:00, BSF: varies | 5 min - 70 min |
+| Time for branch-assisted onboarding | [Client-retail-LATAM-2022]: 0:10:00 | 5-30 min |
 | Digital Leakage Rate | Multiple: 20-60% | <20% best |
 | Auto ID & Validation Rate | Varies by region | 60-95% |
 | First Time Right Application | Target: >80% | 50-90% |
 
-**Customers with data:** Tech CU, Sandy Spring, EWB, Banco Pichincha, BSF, CIH, Letshego, ABK, etc.
+**Customers with data:** [Client-creditunion-NAM-2021], [Client-retail-NAM-2021], [Client-commercial-NAM-2021], Banco [Client-retail-LATAM-2022], BSF, [Client-retail-EMEA-2022], [Client-retail-AFRICA-2022], [Client-retail-MENA-2022b], etc.
 ```
 
 ## Notes

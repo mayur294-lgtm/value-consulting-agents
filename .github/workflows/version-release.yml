@@ -32,7 +32,7 @@ jobs:
           python evals/run_experiment.py --deliverable deck --negatives
           python evals/run_experiment.py --deliverable roi
           python evals/run_experiment.py --deliverable assessment
-          python evals/run_experiment.py --altitude pipeline
+          python evals/run_experiment.py --altitude deliverable-structural
 
   release:
     needs: evals
