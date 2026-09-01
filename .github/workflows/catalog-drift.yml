@@ -22,6 +22,9 @@ on:
       - 'docs/rollout/assets/**'
       - 'docs/rollout/cortex-cheat-sheet.html'
       - 'tools/build_cheatsheet.py'
+      # The gate must be exercised by a change to the gate itself, or an
+      # edit to this file ships without ever having run.
+      - '.github/workflows/catalog-drift.yml'
 
 permissions:
   contents: read
@@ -43,8 +46,16 @@ jobs:
         run: pip install pyyaml
 
       # 1. Does the catalog match what is actually in the repo?
+      #
+      # `shell: bash` is LOAD-BEARING, not style. Without it a `run:` step uses
+      # Actions' default `bash -e {0}`, which does NOT set pipefail, so the exit
+      # status of `script | tee` is TEE's — always 0. This step therefore passed
+      # on real drift for as long as the pipe has been here. Measured 2026-09-01:
+      # injecting a catalog entry for a command that does not exist made the
+      # script exit 1 and the step exit 0. `shell: bash` gives `-eo pipefail`.
       - name: Catalog matches the repo
         id: check
+        shell: bash
         run: |
           python3 tools/build_cheatsheet.py --check 2>&1 | tee drift.log
 
@@ -52,7 +63,9 @@ jobs:
       #    Compare checksums rather than `git diff` — git diff only sees TRACKED
       #    files, so a newly added cheat sheet would pass silently.
       - name: Cheat sheet is regenerated
+        id: regen
         if: success()
+        shell: bash
         run: |
           SHEET=docs/rollout/cortex-cheat-sheet.html
           BEFORE=$(sha256sum "$SHEET" | cut -d' ' -f1)
@@ -72,33 +85,69 @@ jobs:
           fi
           echo "Cheat sheet is up to date with the catalog."
 
-      - name: Explain the failure on the PR
-        if: failure()
+      # 3. Report on the PR — and, crucially, RETRACT the report when the drift
+      #    is fixed.
+      #
+      #    The previous version ran only `if: failure()`. Nothing ever cleared a
+      #    failure comment, so a PR that failed once and was then fixed still
+      #    READ red on the page while its check-run was green. That is not
+      #    cosmetic: on 2026-08-30 a stale comment on #211 was mistaken for the
+      #    PR's live state, and the merge was briefly reported as having gone
+      #    through red when all four checks were in fact green.
+      #
+      #    `if: always()` so the pass path can run at all. The comment is found
+      #    by a hidden MARKER rather than by matching prose, because the prose
+      #    now changes between the two states — matching on it would fail to
+      #    find the comment it just rewrote and post a duplicate instead.
+      - name: Report drift, and clear the report once it is fixed
+        if: always()
         uses: actions/github-script@v7
+        env:
+          CHECK_OUTCOME: ${{ steps.check.outcome }}
+          REGEN_OUTCOME: ${{ steps.regen.outcome }}
         with:
           script: |
             const fs = require('fs');
-            let log = '';
-            try { log = fs.readFileSync('drift.log', 'utf8'); } catch (e) {}
-
-            let body = '## :x: Cheat sheet is out of sync\n\n';
-            body += 'The Cortex cheat sheet is generated from `docs/rollout/catalog.yaml`, ';
-            body += 'so it stays accurate only if the catalog is updated in the same PR ';
-            body += 'as the skill or agent it describes.\n\n';
-            if (log.trim()) {
-              body += '```\n' + log.trim().slice(0, 4000) + '\n```\n\n';
-            }
-            body += '**To fix:** add or remove the entry in `docs/rollout/catalog.yaml`, then run\n\n';
-            body += '```bash\npython3 tools/build_cheatsheet.py\n```\n\n';
-            body += 'and commit both files. If the code is not merged yet, mark the entry ';
-            body += '`status: pending` with a `pending_ref` and it will be reported without failing.\n';
+            const MARKER = '<!-- cortex-catalog-drift -->';
+            const failed = process.env.CHECK_OUTCOME === 'failure'
+                        || process.env.REGEN_OUTCOME === 'failure';
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-            const prev = comments.find(c => c.body.includes('Cheat sheet is out of sync'));
+            // Match the marker first. Fall back to the old prose so comments
+            // posted by the previous version are ADOPTED and cleared, rather
+            // than orphaned on the page forever alongside a new marked one.
+            const prev = comments.find(c => c.body.includes(MARKER))
+                      || comments.find(c => c.body.includes('Cheat sheet is out of sync'));
+
+            let body = MARKER + '\n';
+            if (failed) {
+              let log = '';
+              try { log = fs.readFileSync('drift.log', 'utf8'); } catch (e) {}
+              body += '## :x: Cheat sheet is out of sync\n\n';
+              body += 'The Cortex cheat sheet is generated from `docs/rollout/catalog.yaml`, ';
+              body += 'so it stays accurate only if the catalog is updated in the same PR ';
+              body += 'as the skill or agent it describes.\n\n';
+              if (log.trim()) {
+                body += '```\n' + log.trim().slice(0, 4000) + '\n```\n\n';
+              }
+              body += '**To fix:** add or remove the entry in `docs/rollout/catalog.yaml`, then run\n\n';
+              body += '```bash\npython3 tools/build_cheatsheet.py\n```\n\n';
+              body += 'and commit both files. If the code is not merged yet, mark the entry ';
+              body += '`status: pending` with a `pending_ref` and it will be reported without failing.\n';
+            } else {
+              // Only speak on a pass if there is a previous complaint to retract.
+              // Posting a green comment on a PR that was never red is noise.
+              if (!prev) return;
+              body += '## :white_check_mark: Cheat sheet is back in sync\n\n';
+              body += 'The drift reported earlier on this PR is resolved as of ';
+              body += '`' + context.sha.substring(0, 7) + '`. The catalog matches the repo ';
+              body += 'and the published sheet is regenerated from it.\n';
+            }
+
             if (prev) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner, repo: context.repo.repo,
