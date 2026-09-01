@@ -8,15 +8,26 @@
 # repo disagree, so the sheet cannot quietly go stale.
 #
 # status:  new         arrived this release, expect rough edges
+#          beta        landed and usable, but still settling — the shape may
+#                      change on the next cycle. Say so on the sheet rather
+#                      than presenting it as finished.
 #          pending     documented ahead of the code landing; set `pending_ref`
 #
 # Every entry needs: name, does, eg. Skills also need `cmd`; agents need
 # `agent` + `ask` (the words that summon it).
 
-version: "2.0"
-updated: "2026-08-28"
+version: "2.1"
+updated: "2026-09-01"
 
 changelog:
+  - version: "2.1"
+    date: "2026-09-01"
+    note: >-
+      The four proposal commands land and move from Coming to Beta — usable on
+      a real deal, but still settling, so the sheet says so rather than
+      presenting them as finished. Every row also gains search terms, so the
+      sheet finds a capability by the words a consultant would actually type
+      rather than by its name.
   - version: "2.0"
     date: "2026-08-28"
     note: >-
@@ -50,19 +61,23 @@ groups:
     blurb: "Getting client material into a shape everything else can read."
     entries:
       - name: "Folder scan"
+        also: "intake inventory files folder what have we got"
         cmd: "/scan-engagement"
         does: "Reads a folder of client material and tells you what's in it, what's usable and what's missing"
         eg: "/scan-engagement — then paste the engagement folder path when it asks"
       - name: "Transcript reader"
+        also: "discovery interview notes calls evidence register extract"
         agent: "discovery-transcript-interpreter"
         ask: "interpret the transcripts in this engagement"
         does: "Pulls pain points, metrics, constraints and stakeholder priorities out of calls and notes, tagging each with an evidence ID"
         eg: "\"Read the three discovery calls in inputs/ and give me the evidence register.\""
       - name: "Bank profiler"
+        also: "financials annual report public data baseline"
         cmd: "/profile-bank"
         does: "Pulls a bank's public financials — annual reports, investor decks — and turns them into numbers you can model with"
         eg: "/profile-bank Acme Bank, Sri Lanka"
       - name: "Document splitter"
+        also: "large file pdf too big chunk split"
         cmd: "/chunk-document"
         does: "Breaks a file too big to read in one pass into ordered pieces"
         eg: "/chunk-document — then point it at the 200-page annual report"
@@ -73,21 +88,25 @@ groups:
     blurb: "Current state, scored against evidence rather than impressions."
     entries:
       - name: "Capability scoring"
+        also: "maturity assessment gaps heatmap current state scoring"
         agent: "capability-assessment"
         ask: "assess their capabilities"
         does: "Scores current-state maturity against the evidence, names the gaps and what each one costs"
         eg: "\"Score their retail capabilities from the evidence register and show me the gaps.\""
       - name: "Journey mapping"
+        also: "customer journey cx swimlane process map friction leakage"
         cmd: "/build-journey"
         agent: "journey-builder"
         does: "Maps a journey end to end with the value leaking at each step quantified, and the future state beside it"
         eg: "/build-journey — ask for account opening, or let it pick by where the evidence is thickest"
       - name: "Outside-in research"
+        also: "market competitor peer annual report research"
         agent: "market-context-researcher"
         ask: "get me the market context"
         does: "Annual-report metrics, peer comparison and public CX data — the case for change from outside the building"
         eg: "\"What does the market context look like for a mid-tier retail bank in Indonesia?\""
       - name: "Benchmark librarian"
+        also: "kpi industry data reference figures sourced"
         agent: "benchmark-librarian"
         ask: "find me a defensible benchmark for…"
         does: "Finds reference figures with a source and a confidence rating on every one"
@@ -99,24 +118,29 @@ groups:
     blurb: "Two moves: work out what to model, then work out how much."
     entries:
       - name: "ROI model"
+        also: "business case payback npv savings benefit value case money"
         cmd: "/build-roi"
         does: "The standalone ROI run — finds the value levers, then quantifies them, without the full assessment around it"
         eg: "/build-roi — \"Acme Bank, Sri Lanka, retail. Onboarding takes six weeks and half of them drop out.\""
       - name: "Value levers"
+        also: "hypothesis tree driver mece decomposition problem"
         agent: "roi-hypothesis-builder"
         ask: "what are the levers here?"
         does: "Breaks the problem down and derives the levers, each one traced from root cause to financial impact"
         eg: "\"What are the value levers for digital onboarding at a tier-2 bank in Vietnam?\""
       - name: "Financial model"
+        also: "scenarios sensitivity projection forecast three case"
         agent: "roi-financial-modeler"
         ask: "model these levers"
         does: "Turns approved levers into best / likely / worst projections with the Backbase impact computed from the gap"
         eg: "\"The levers are approved — build the three-scenario model.\""
       - name: "Client data request"
+        also: "questionnaire excel data request client inputs"
         cmd: "/generate-roi-questionnaire"
         does: "Builds the Excel data request already filled in with everything Cortex knows, so the client verifies instead of authors"
         eg: "/generate-roi-questionnaire — green cells are ours to check, yellow are theirs to fill"
       - name: "ROI workbook"
+        also: "excel spreadsheet xlsx workbook cashflow"
         cmd: "/generate-roi-excel"
         does: "The client-ready Excel — dashboard, cashflows, three scenarios, servicing analysis, assumptions"
         eg: "/generate-roi-excel — run it once the ROI config is settled"
@@ -127,24 +151,29 @@ groups:
     blurb: "Where an opportunity becomes specific enough to cost and sequence."
     entries:
       - name: "Use case design"
+        also: "usecase design architecture validated"
         agent: "usecase-designer"
         ask: "design these use cases"
         does: "Designs use cases that are architecturally grounded and checked against what the platform actually does"
         eg: "\"Design the P1 use cases from the workshops — instant card issuance and mobile wallet.\""
       - name: "OOTB or custom?"
+        also: "gap analysis fit gap build vs buy product directory coverage"
         agent: "capability-gap-analyzer"
         ask: "is this out of the box or custom?"
         does: "Checks every capability your use cases need against the product directory and the live Infobank"
         eg: "\"Here are our eight use cases — which capabilities are OOTB, config, or a custom build?\""
       - name: "Use case document"
+        also: "spec specification requirements ten section"
         cmd: "/usecase-doc"
         does: "Writes the full ten-section specification an implementation team can work from"
         eg: "/usecase-doc — \"Digital account opening for SME.\""
       - name: "Clickable prototype"
+        also: "mockup wireframe demo ui screens clickable"
         cmd: "/prototype"
         does: "Builds an interactive HTML mockup following the happy path of a use case"
         eg: "/prototype — \"Show the onboarding flow we just designed.\""
       - name: "Roadmap"
+        also: "plan planning sequence sequencing phasing phases timeline waves dependencies milestones"
         agent: "roadmap-prioritization"
         ask: "sequence this into a roadmap"
         does: "Phases the initiatives by value, dependency and capacity, with decision gates and value milestones"
@@ -156,26 +185,32 @@ groups:
     blurb: "Anything the client actually sees. Start at the router; it picks the format with you."
     entries:
       - name: "Deck & document router"
+        also: "presentation slides document start here which builder"
         cmd: "/frontline"
         does: "Asks what you're making, explains the options, sends you to the right builder. Always start here"
         eg: "/frontline — then answer \"a deck for the CFO\""
       - name: "HTML deck"
+        also: "slides presentation deck preview draft"
         cmd: "/frontline-slides-html"
         does: "A deck as one HTML file — 17 layouts, presenter mode, overview grid. Fast to regenerate while the story is still moving"
         eg: "/frontline-slides-html — \"Six slides on why onboarding is the first thing to fix.\""
       - name: "PowerPoint deck"
+        also: "pptx powerpoint google slides shareable final"
         cmd: "/frontline-slides-pptx"
         does: "The same deck as a real .pptx that imports cleanly into Google Slides. Use it once the argument is settled"
         eg: "/frontline-slides-pptx — converts the HTML draft you already like"
       - name: "Long-form document"
+        also: "report document briefing whitepaper pdf write-up"
         cmd: "/frontline-long-form"
         does: "A scrolling document with sidebar navigation — value cases, ROI summaries, executive briefings. This page is one"
         eg: "/frontline-long-form — \"Turn the ROI report into a document for the exec committee.\""
       - name: "Assessment dashboard"
+        also: "dashboard html heatmap interactive deliverable"
         cmd: "/generate-assessment-html"
         does: "The full assessment dashboard — capability heatmaps, ROI scenario toggles, phone-frame prototypes"
         eg: "/generate-assessment-html — run it after the assessment outputs exist"
       - name: "Narrative assembly"
+        also: "package assemble final report storyline thread"
         agent: "narrative-assembler"
         ask: "package this into the final deliverable"
         does: "Takes everything upstream and threads it into one argument rather than four stapled reports"
@@ -189,11 +224,13 @@ groups:
       hypotheses before a deck gets built on top of them.
     entries:
       - name: "Workshop prep"
+        also: "ignite inspire facilitation strategy member employee architecture deck"
         agent: "workshop-preparation"
         ask: "prepare the strategy workshop for…"
         does: "Researches the client and builds a pre-populated facilitation deck with hypotheses for the room to challenge. Four modes: strategy, member, employee, architecture"
         eg: "\"Prepare the member experience workshop for Pacific Credit Union.\""
       - name: "Workshop synthesis"
+        also: "ignite day hypotheses prioritise synthesise workshops"
         agent: "ignite-workshop-synthesizer"
         ask: "synthesise the workshops"
         does: "Reads all four workshop outputs, works out which hypotheses held, and ranks the use-case candidates"
@@ -204,26 +241,32 @@ groups:
     blurb: "Every engagement feeds these. Check here before researching something the team already did."
     entries:
       - name: "Domain orientation"
+        also: "industry sector vertical retail commercial sme wealth investing corporate orientation"
         cmd: "/domain-context"
         does: "How a line of business works, start to finish. Best first stop in an unfamiliar domain"
         eg: "/domain-context wealth"
       - name: "Benchmarks"
+        also: "industry sector kpi reference figures anchor"
         cmd: "/domain-benchmarks"
         does: "Sourced reference figures and KPIs to anchor an assessment or an ROI case"
         eg: "/domain-benchmarks retail — onboarding"
       - name: "Known pain points"
+        also: "problems issues recurring themes industry sector"
         cmd: "/domain-pain-points"
         does: "The problems that show up again and again in this domain, with the evidence behind them"
         eg: "/domain-pain-points sme"
       - name: "Reference journeys"
+        also: "journey map industry sector starting point"
         cmd: "/domain-journeys"
         does: "Journey maps you can start from instead of inventing"
         eg: "/domain-journeys commercial"
       - name: "Proven use cases"
+        also: "use cases industry sector examples what worked"
         cmd: "/domain-usecases"
         does: "Use cases that have already worked elsewhere, with the context they worked in"
         eg: "/domain-usecases investing"
       - name: "Value propositions"
+        also: "positioning messaging value prop industry sector"
         cmd: "/domain-value-props"
         does: "The positioning that lands with this audience, already tested"
         eg: "/domain-value-props corporate"
@@ -236,30 +279,31 @@ groups:
       Anything prefixed INTERNAL_ never leaves the building.
     entries:
       - name: "Proposal builder"
+        also: "pricing deal negotiation commercial quote cockpit good better best"
         cmd: "/proposal-builder"
-        status: pending
-        pending_ref: "#153"
+        status: beta
         does: "The deal cockpit — story model, anchor, lever families, Good/Better/Best, the concession ladder and the Deal Desk gate"
         eg: "/proposal-builder — it asks only about the gaps it can't already answer"
       - name: "Client proposal"
+        also: "rfp proposal document sow client facing"
         cmd: "/proposal-longform"
-        status: pending
-        pending_ref: "#153"
+        status: beta
         does: "The client-facing document — branded, navigable, language toggle including Arabic, live pricing sliders"
         eg: "/proposal-longform — run it once the commercial shape is agreed"
       - name: "Meeting feedback"
+        also: "notes debrief meeting call deal update delta"
         cmd: "/deal-notes"
-        status: pending
-        pending_ref: "#153"
+        status: beta
         does: "Feeds the last client meeting back into the deal and reports what moved against the plan"
         eg: "/deal-notes — paste your bullets from the pricing call"
       - name: "Pricing engine"
+        also: "price rate card discount pricing calculation"
         cmd: "/pricing-model"
-        status: pending
-        pending_ref: "#153"
+        status: beta
         does: "The deterministic engine underneath the other three. Every number in every render reconciles to it"
         eg: "/pricing-model — you rarely call this directly"
       - name: "Upgrade case"
+        also: "migration packaging tier renewal upsell essential premium signature"
         cmd: "/upgrade-analysis"
         agent: "upgrade-analysis"
         does: "Works out a client's packaging migration path and builds the case for the tier move"
@@ -270,28 +314,33 @@ groups:
     blurb: "The last mile. One of these makes the work better; the rest make the next engagement start further ahead."
     entries:
       - name: "Tear it apart"
+        also: "critique challenge review red team pressure test devils advocate"
         cmd: "/critty"
-        status: pending
-        pending_ref: "#97"
+        status: new
         does: "Turns the critical dial to maximum and attacks the work — assumptions, thin evidence, unearned conclusions. It's meant to sting"
         eg: "/critty — run it the day before anything important goes out"
       - name: "Publish"
+        also: "git commit pull request share save send ship"
         cmd: "/publish"
         does: "Commits, pushes and opens a pull request. You never touch git"
         eg: "/publish — or just say \"publish my changes\""
       - name: "Tidy the queue"
+        also: "merge conflicts pull requests reconcile"
         cmd: "/reconcile"
         does: "Checks every open pull request for conflicts, merges the clean ones, resolves the rest"
         eg: "/reconcile — when reviews are piling up"
       - name: "Bank the learning"
+        also: "knowledge harvest lessons learned reuse"
         cmd: "/extract-learnings"
         does: "Pulls the reusable knowledge out of a finished engagement and files it, anonymised"
         eg: "/extract-learnings — point it at the closed engagement"
       - name: "Log a fix"
+        also: "feedback improve telemetry flywheel correction"
         cmd: "/log-modification"
         does: "Records that you had to fix an output by hand, and why. Thirty seconds that decides what gets improved next"
         eg: "/log-modification — \"Rewrote the ROI summary again; it buries the headline number.\""
       - name: "Knowledge harvest"
+        also: "automatic anonymised learnings"
         agent: "knowledge-harvester"
         ask: "runs on its own"
         auto: true
@@ -306,6 +355,7 @@ pipelines:
     table above.
   entries:
     - name: "Ignite Assess"
+      also: "full assessment end to end complete pipeline everything"
       cmd: "/run-pipeline"
       does: >-
         The full evidence-driven assessment: discovery, five analyses in
@@ -314,6 +364,7 @@ pipelines:
       eg: "/run-pipeline — point it at an engagement folder with transcripts in inputs/"
       cast: [fox, owl, badger, hare, crow]
     - name: "Ignite Inspire"
+      also: "workshops ignite day facilitation inspire"
       agent: "workshop-preparation"
       ask: "we're running an Ignite with…"
       does: >-
@@ -322,6 +373,7 @@ pipelines:
         assessment pipeline; it's driven by the room, not by transcripts
       eg: "\"We're running an Ignite with Pacific Credit Union. Start with the strategy workshop.\""
     - name: "Hybrid"
+      also: "both assess and inspire combined routing orchestrator"
       agent: "value-consulting-orchestrator"
       ask: "describe the engagement and let it route"
       does: >-
@@ -330,6 +382,7 @@ pipelines:
         routes you, so you don't have to pick
       eg: "\"We've got transcripts and we're running workshops in March — what should we do first?\""
     - name: "ROI run"
+      also: "business case money value case standalone roi"
       cmd: "/build-roi"
       does: >-
         Levers, then model, then workbook — the money case on its own, without
@@ -441,3 +494,15 @@ excluded_agents:
 excluded_commands:
   - sync-telemetry          # core team plumbing
   - process-meeting         # core team standup
+
+# Packaged skills under .claude/skills/. The bb-* harness is how Cortex itself
+# gets built; this sheet is for people using Cortex, so it stays off. Listed
+# explicitly rather than ignored, so a NEW skill dropped in here still fails the
+# check until someone decides whether users need to know about it.
+excluded_skills:
+  - bb-prd
+  - bb-design
+  - bb-tickets
+  - bb-build
+  - bb-pr-review
+  - bb-refine
