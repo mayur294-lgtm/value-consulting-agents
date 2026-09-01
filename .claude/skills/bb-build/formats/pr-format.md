@@ -36,7 +36,7 @@ Use this template when `/bb-build` creates a pull request. Optimized for AI revi
 ## CI Coverage
 [What automated checks already handle]
 - Structural agent checks (`scripts/test_agent.py` against `tests/quality_metrics.yaml`)
-- Eval harness (`evals/run_experiment.py` — unit + pipeline altitudes via Langfuse)
+- Eval harness (`evals/run_experiment.py` — unit + deliverable-structural altitudes via Langfuse)
 - Governance hooks (anonymize-guard, checkpoint, journal)
 
 ## Testing

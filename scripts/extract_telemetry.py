@@ -67,7 +67,17 @@ def extract_modification_logs(content: str) -> list:
 
 
 def extract_engagement_metadata(content: str) -> dict:
-    """Extract engagement summary metadata from journal."""
+    """Extract engagement summary metadata from journal.
+
+    `client` is captured here (from the journal's `**Client:**` line) only
+    long enough for `_client_label` below to turn it into the same
+    descriptive, non-identifying label `knowledge-harvester.md` Core Rule 2
+    uses — `[Client-{domain}-{REGION}-{year}-{disc}]`. The raw value returned by
+    this function must never itself be written to `.telemetry_cache.jsonl`
+    or a GitHub Issue; see `extract_telemetry()`, which does that
+    replacement before the payload is returned (ticket #169 — this backs
+    sync-telemetry.md's "telemetry is anonymized" claim, which previously
+    had nothing enforcing it)."""
     metadata = {}
 
     patterns = {
@@ -87,6 +97,61 @@ def extract_engagement_metadata(content: str) -> dict:
     return metadata
 
 
+def _client_label(metadata: dict, extracted_at_iso: str,
+                  engagement_dir: str = "") -> str:
+    """Build the descriptive, non-identifying replacement for a raw client
+    name. Delegates to `pii.identity.client_label` — the SINGLE definition of
+    this convention, shared with `.claude/agents/knowledge-harvester.md` Core
+    Rule 2. Telemetry leaves this machine (synced to a shared GitHub issue via
+    `/sync-telemetry` or the `post-commit`/`pre-push` git hooks), so the raw
+    client string must never reach the payload this function's caller writes.
+
+    `domain`/`region` come from the same journal metadata already extracted
+    (never PII on their own). `year` is parsed from `**Started:**` when
+    present (`YYYY-...`), falling back to the extraction timestamp's year so
+    this never raises on a journal missing that field.
+
+    D1 (`.design/knowledge-identity-resolution.md`): the label now carries a
+    DISCRIMINATOR taken from the engagement's opaque ID, because
+    domain+region+year alone is many-to-one and silently merged two banks into
+    one apparent peer. `engagement_dir` is how the ID is resolved; when it
+    cannot be (a legacy client-named directory), the label is emitted
+    undiscriminated and a warning goes to stderr. It is NEVER derived from the
+    client's name — see `identity.client_label`.
+
+    Fails soft: if `pii.identity` cannot be imported at all, this still
+    returns a name-free label rather than raising inside a git hook. The
+    privacy property holds either way; only the discriminator is lost.
+    """
+    domain = metadata.get('domain') or 'unknown'
+    region = metadata.get('region') or 'unknown'
+    started = metadata.get('started') or ''
+    year_match = re.match(r'(20\d{2})', started)
+    year = year_match.group(1) if year_match else extracted_at_iso[:4]
+
+    try:
+        from pii import identity
+    except ImportError as exc:  # pragma: no cover - defensive, hook path
+        print("warning: pii.identity unavailable (%s); emitting an "
+              "UNDISCRIMINATED client label, which may collide with another "
+              "engagement in the same domain/region/year." % exc,
+              file=sys.stderr)
+        return '[Client-%s-%s-%s]' % (
+            re.sub(r'[^A-Za-z0-9]+', '', domain).lower() or 'unknown',
+            re.sub(r'[^A-Za-z0-9]+', '', region).upper() or 'UNKNOWN',
+            year,
+        )
+
+    engagement_id = identity.engagement_id_for_path(engagement_dir) if engagement_dir else None
+    if engagement_id is None:
+        print("warning: no opaque engagement ID resolved from %r — emitting an "
+              "UNDISCRIMINATED client label, which may collide with another "
+              "engagement in the same domain/region/year. Migrate the "
+              "engagement with scripts/migrate_engagement_ids.sh to fix."
+              % (engagement_dir or "<no path>"), file=sys.stderr)
+    return identity.client_label(domain, region, year, engagement_id)
+
+
 def extract_session_id(engagement_dir: str) -> str:
     """Read session ID from .engagement_session_id file."""
     session_file = os.path.join(engagement_dir, '.engagement_session_id')
@@ -102,12 +167,28 @@ def extract_telemetry(journal_path: str) -> dict:
         content = f.read()
 
     engagement_dir = os.path.dirname(journal_path)
+    extracted_at = datetime.utcnow().isoformat() + 'Z'
+    engagement_metadata = extract_engagement_metadata(content)
+
+    # Never let the raw client name leave this machine in the telemetry
+    # payload — replace it with the same descriptive label the knowledge
+    # harvester uses. See `_client_label` above and PRD v6 §3.1 /
+    # sync-telemetry.md.
+    if engagement_metadata.get('client'):
+        engagement_metadata['client'] = _client_label(
+            engagement_metadata, extracted_at, engagement_dir)
 
     payload = {
-        'extracted_at': datetime.utcnow().isoformat() + 'Z',
-        'journal_path': journal_path,
+        'extracted_at': extracted_at,
+        # BASENAME ONLY. The full path contains the engagement directory, which
+        # is client-named until the migration (#225) runs — and this payload
+        # LEAVES THE MACHINE, synced to a shared GitHub issue by /sync-telemetry
+        # and the post-commit/pre-push hooks. #169 anonymised the `client` field
+        # and missed this one. The engagement is still identifiable from the
+        # anonymised client label and session_id already in this payload.
+        'journal_path': os.path.basename(journal_path),
         'session_id': extract_session_id(engagement_dir),
-        'engagement': extract_engagement_metadata(content),
+        'engagement': engagement_metadata,
         'telemetry_entries': extract_telemetry_blocks(content),
         'modifications': extract_modification_logs(content),
     }

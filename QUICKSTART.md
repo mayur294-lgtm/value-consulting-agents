@@ -11,10 +11,13 @@ You need **two things** installed:
    - **Option B:** Install the CLI: `npm install -g @anthropic-ai/claude-code`
    - You need access via Anthropic API key or your organization's SSO
 
-2. **Python 3.9+** (only if you need Excel ROI exports)
+2. **Python 3.10–3.13**, set up with one command from the repo root:
    ```bash
-   pip install -r requirements.txt
+   bash scripts/setup_pii.sh
    ```
+   This builds the `.venv` that runs the pipeline, the ROI Excel export, and the
+   PII gate. Don't `pip install -r requirements.txt` by hand — on the system
+   `python3` (usually 3.9) it fails outright. See [README.md](README.md#installation).
 
 That's it. No other dependencies.
 
@@ -478,9 +481,9 @@ Make sure you opened Claude Code from the `claudevc/` directory. The `CLAUDE.md`
 Slash commands come from `.claude/commands/`. Ensure you're in the repo root and using Claude Code (not regular Claude chat).
 
 ### "Excel generation fails"
-Install the Python dependencies:
+Set up the environment (this is the same command as step 2 above, and safe to re-run):
 ```bash
-pip install -r requirements.txt
+bash scripts/setup_pii.sh
 ```
 
 ### "I want to add a new domain vertical"

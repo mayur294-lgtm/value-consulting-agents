@@ -10,7 +10,7 @@ Use this when building **Google Slides-native presentations** in the 2026 Backba
 
 **Do NOT use this for:**
 - Interactive HTML previews for brainstorming → use `/frontline-html`
-- Presentations in the older Schroders/SEB style → use `/executive-briefing-slides`
+- Presentations in the older executive-briefing style → use `/executive-briefing-slides`
 - Assessment dashboards → use `/generate-assessment-html`
 
 ## Design System
@@ -128,7 +128,7 @@ These rules are already enforced by the `Frontline2026Presenter` class:
 
 ```python
 import sys
-sys.path.insert(0, '/Users/mayur@backbase.com/Documents/cortex')
+sys.path.insert(0, '<cortex-repo-root>')
 from tools.frontline_2026_presenter import Frontline2026Presenter
 
 p = Frontline2026Presenter()

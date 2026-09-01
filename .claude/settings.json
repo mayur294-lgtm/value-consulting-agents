@@ -7,13 +7,17 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/auto-branch.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pii-preflight.sh"
           }
         ]
       }
     ],
     "PreToolUse": [
       {
-        "matcher": "Read|Bash",
+        "matcher": "Read|Bash|Grep|Glob",
         "hooks": [
           {
             "type": "command",
@@ -36,6 +40,24 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/require-harness.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/synthetic-knowledge-guard.py"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/mcp-query-guard.py"
           }
         ]
       }

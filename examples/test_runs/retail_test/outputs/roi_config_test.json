@@ -1,5 +1,5 @@
 {
-  "client_name": "SeABank Vietnam",
+  "client_name": "[Client-retail-APAC-2026] Vietnam",
   "date": "2026-02-06",
   "currency": "USD",
   "industry": "Retail Banking",
@@ -9,7 +9,7 @@
 
   "bank_profile": {
     "bank_identity": {
-      "name": "Southeast Asia Commercial Joint Stock Bank (SeABank)",
+      "name": "Southeast Asia Commercial Joint Stock Bank ([Client-retail-APAC-2026])",
       "country": "Vietnam",
       "currency": "VND",
       "ticker": "SSB (Ho Chi Minh Stock Exchange / HoSE)",
@@ -19,7 +19,7 @@
     "basic_information": {
       "total_customers": {
         "value": 3000000,
-        "source": "SeABank Best Workplace 2024 — '3M+ customers'",
+        "source": "[Client-retail-APAC-2026] Best Workplace 2024 — '3M+ customers'",
         "confidence": "HIGH"
       },
       "annual_revenue": {
@@ -39,7 +39,7 @@
       },
       "total_fte": {
         "value": 5500,
-        "source": "SeABank Best Workplace 2024 — 'over 5,500 official employees'",
+        "source": "[Client-retail-APAC-2026] Best Workplace 2024 — 'over 5,500 official employees'",
         "confidence": "HIGH"
       },
       "staff_costs": {
@@ -75,7 +75,7 @@
       },
       "num_branches": {
         "value": 181,
-        "source": "SeABank Best Workplace 2024 — 181 transaction points nationwide"
+        "source": "[Client-retail-APAC-2026] Best Workplace 2024 — 181 transaction points nationwide"
       },
       "digital_active_users": {
         "value": 4000000,

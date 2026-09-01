@@ -1,6 +1,6 @@
 ---
 name: value-consulting-orchestrator
-description: "Use this agent when coordinating a full Value Consulting engagement. It routes to the correct pipeline based on engagement type: Ignite Assess (evidence-based), Ignite Inspire (workshop-driven), or Hybrid.\n\n<example>\nContext: User wants to run an assessment.\nuser: \"Run the assessment for NFIS — transcripts are in engagements/nfis/2026-02_investing_assessment/inputs/\"\nassistant: \"I'll use the Task tool to launch the value-consulting-orchestrator agent to run the Ignite Assess pipeline.\"\n<commentary>\nUser said 'assessment' and provided a directory with transcripts. Route to Ignite Assess via orchestrate.py.\n</commentary>\n</example>\n\n<example>\nContext: User wants to prepare workshop decks.\nuser: \"We need to prepare for an Ignite engagement with Pacific Credit Union. Strategy, member, employee, and architecture workshops.\"\nassistant: \"I'll use the Task tool to launch the value-consulting-orchestrator agent in Ignite Inspire mode.\"\n<commentary>\nUser said 'Ignite' and 'workshops'. Route to Ignite Inspire workshop agents.\n</commentary>\n</example>"
+description: "Use this agent when coordinating a full Value Consulting engagement. It routes to the correct pipeline based on engagement type: Ignite Assess (evidence-based), Ignite Inspire (workshop-driven), or Hybrid.\n\n<example>\nContext: User wants to run an assessment.\nuser: \"Run the assessment for [Client-investing-NAM-2026] — transcripts are in engagements/nfis/2026-02_investing_assessment/inputs/\"\nassistant: \"I'll use the Task tool to launch the value-consulting-orchestrator agent to run the Ignite Assess pipeline.\"\n<commentary>\nUser said 'assessment' and provided a directory with transcripts. Route to Ignite Assess via orchestrate.py.\n</commentary>\n</example>\n\n<example>\nContext: User wants to prepare workshop decks.\nuser: \"We need to prepare for an Ignite engagement with Pacific Credit Union. Strategy, member, employee, and architecture workshops.\"\nassistant: \"I'll use the Task tool to launch the value-consulting-orchestrator agent in Ignite Inspire mode.\"\n<commentary>\nUser said 'Ignite' and 'workshops'. Route to Ignite Inspire workshop agents.\n</commentary>\n</example>"
 model: sonnet
 color: blue
 ---
@@ -43,22 +43,22 @@ Run the Python orchestrator. It handles everything: Discovery → Block A (5 par
 
 **Interactive mode** (consultant checkpoints — use when user is actively working):
 ```bash
-cd /Users/mayur@backbase.com/Documents/cortex && CLAUDECODE= python3 scripts/orchestrate.py {engagement_dir}
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py {engagement_dir}
 ```
 
 **Non-interactive mode** (fully automated, no checkpoints):
 ```bash
-cd /Users/mayur@backbase.com/Documents/cortex && CLAUDECODE= python3 scripts/orchestrate.py --non-interactive {engagement_dir}
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --non-interactive {engagement_dir}
 ```
 
 **Express mode** (fewer checkpoints):
 ```bash
-cd /Users/mayur@backbase.com/Documents/cortex && CLAUDECODE= python3 scripts/orchestrate.py --express {engagement_dir}
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --express {engagement_dir}
 ```
 
 **Resume from a specific stage** (if pipeline was interrupted):
 ```bash
-cd /Users/mayur@backbase.com/Documents/cortex && CLAUDECODE= python3 scripts/orchestrate.py --resume-from {step} {engagement_dir}
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --resume-from {step} {engagement_dir}
 ```
 
 Valid resume steps: `discovery`, `block_a`, `roadmap`, `assembly`, `html`, `validate`
@@ -123,13 +123,13 @@ Read `engagements/[client]/CLIENT_PROFILE.md` and update:
 
 ### 4b. Knowledge Harvest
 
-Extract anonymized learnings from outputs → write to `knowledge/learnings/`:
+Launch the `knowledge-harvester` agent (Task tool) to extract learnings from outputs → written to `knowledge/learnings/`:
 - Benchmarks → `knowledge/learnings/benchmarks/{domain}_{region}_{YYYY}.md`
 - Pain Points → `knowledge/learnings/pain_points/{domain}_patterns.md`
 - Capability Maturity → `knowledge/learnings/capability_frameworks/{domain}_maturity.md`
 - ROI Patterns → `knowledge/learnings/roi_models/{domain}_{lever_type}.md`
 
-**Anonymization:** Replace client name with `[Client-{domain}-{region}-{YYYY}]`. Strip stakeholder names.
+Anonymization is the harvester's own job, not yours — it runs the shared tool (`scripts/anonymize_transcript.py`) and applies the descriptive `[Client-{domain}-{region}-{YYYY}]` label; see `.claude/agents/knowledge-harvester.md` Core Rule 2 for the mechanism. Do not anonymize here yourself, and do not extract directly from outputs — delegate to the agent.
 
 Check `knowledge/learnings/EXTRACTION_REGISTRY.md` first — skip if already harvested.
 
@@ -140,6 +140,31 @@ touch {engagement_dir}/.complete
 ```
 
 Update engagement journal: `Current Status: Complete`
+
+## Journal Entry & Telemetry Protocol
+
+When you finish Step 4 (Post-Completion) for any engagement type, append a
+journal entry to that engagement's `ENGAGEMENT_JOURNAL.md` (create it from
+`templates/outputs/engagement_journal.md` if it doesn't exist yet) with a
+telemetry block:
+
+```
+<!-- TELEMETRY_START -->
+- Agent: value-consulting-orchestrator
+- Engagement Type: [Assess | Inspire | Hybrid]
+- Session ID: [read from .engagement_session_id in the engagement directory; "unknown" if absent]
+- Start Time: [ISO timestamp] | End Time: [ISO timestamp] | Duration: [seconds]
+- Steps Completed: [Detect Type / Route / Post-Completion — whichever actually ran]
+- Errors Encountered: [none | description]
+<!-- TELEMETRY_END -->
+```
+
+For **Ignite Assess**, `scripts/orchestrate.py` already writes its own per-agent
+telemetry blocks during the pipeline run — this entry is IN ADDITION, covering
+the orchestrator's own routing and post-completion work, not a duplicate of
+the pipeline's. For **Ignite Inspire** and **Hybrid**, this may be the only
+journal entry for the session unless the workshop agents you launched wrote
+their own.
 
 ## Hard Rules
 

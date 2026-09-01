@@ -3,3 +3,65 @@
 
 # ROI Excel model generation (tools/roi_excel_generator.py)
 openpyxl>=3.1.0
+
+# Agent SDK used by scripts/orchestrate.py. PINNED (==, not >=) — deliberately,
+# not stale. orchestrate.py's ClaudeAgentOptions never set setting_sources, so
+# the SDK defaulted it to None, which subprocess_cli.py serializes as the same
+# "--setting-sources ''" the CLI sees for an explicit empty list. In 0.1.59 and
+# earlier that empty value is treated as "omitted" (user + project + local
+# settings load, so project .claude/settings.json hooks fire — including
+# anonymize-guard.py and mcp-query-guard.py). The SDK docs state this behavior
+# flips after 0.1.59: an empty setting_sources then DISABLES filesystem
+# settings instead. Because None and [] serialize identically, bumping past
+# that boundary would silently stop every project hook firing in pipeline
+# runs, with no error. orchestrate.py now also passes setting_sources
+# explicitly (see run_agent()'s ClaudeAgentOptions), which makes hook loading
+# independent of this default — but keep this pin as the second line of
+# defense: do not remove it without re-verifying the setting_sources fix is
+# still in place and hooks still fire end-to-end.
+claude-agent-sdk==0.1.39
+
+# --- PII gate (Presidio) — requires Python 3.10-3.13, installed into .venv
+# by scripts/setup_pii.sh (see README "Installation" and .design/solution-
+# design-v6.md D8). Not importable under the system python3 (3.9.6) — that
+# is why these live in a venv rather than as a flat repo dependency.
+
+# Detects PII (names, emails, IDs, ...) via NER + validated patterns.
+presidio-analyzer==2.2.364
+# Reversible pseudonymisation (instance-counter operator) on top of analyzer output.
+presidio-anonymizer==2.2.364
+# spaCy NER model Presidio's analyzer loads for name/entity detection. PINNED
+# (direct wheel URL, not `spacy download`, which always fetches whatever
+# version is current) — detection quality is version-dependent, and ticket
+# #159's D10 measurement (137/150 person names detected on `lg` vs 108/150 on
+# `sm`) was taken against exactly this version. An unpinned upgrade would
+# silently invalidate that recorded number and could pass or fail the
+# pii-anonymizer eval gate (threshold 1.00) differently machine to machine.
+# Do not change the model tier (`lg`) here — only re-pin the version, and only
+# after re-running the D10 measurement.
+en_core_web_lg @ https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl
+# Structured-data (xlsx/csv) analysis/anonymization built on the above two.
+presidio-structured==0.0.8
+# PDF text extraction for inputs/*.pdf ingest.
+pdfminer.six==20260107
+# Word (.docx) text extraction for inputs/*.docx ingest.
+python-docx==1.2.0
+# PowerPoint (.pptx) text extraction for inputs/*.pptx ingest.
+python-pptx==1.0.2
+# OCR binding (Tesseract) for image ingest — the `tesseract` binary itself
+# is a separate system-level install; see scripts/setup_pii.sh.
+pytesseract==0.3.13
+# Image decoding and the redaction drawing itself (#163). pytesseract already
+# pulls Pillow in transitively, but `scripts/pii/ingest.py` imports it DIRECTLY
+# — it opens the image, draws the fill rectangles and writes the redacted PNG —
+# so it is pinned here as the direct dependency it actually is. A transitive
+# pin would let a pytesseract bump silently move the library that decides
+# whether a redaction box lands on the right pixels.
+#
+# NOTE: `presidio-image-redactor` is deliberately ABSENT. It was installed and
+# measured head-to-head (see ingest.py's "D5b DECISION"): its analysis text is
+# a flat space-join that detects 6/8 person names to our reflow's 8/8, it
+# cannot produce the placeholder sidecar at all, and it hard-depends on
+# `azure-ai-formrecognizer` — a cloud OCR client this local-only privacy
+# control must not ship.
+Pillow==12.3.0

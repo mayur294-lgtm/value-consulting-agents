@@ -1,7 +1,7 @@
 # IGNITE AGENT 6: IGNITE DAY PRESENTATION
 # ===============================================================================
 # Backbase Value Consulting - Ignite Day Workshop Presentation Compiler
-# Version: 2.1 (standard slides image library, base64 embedding, BECU-style visuals)
+# Version: 2.1 (standard slides image library, base64 embedding, reference-deck visuals)
 # ===============================================================================
 
 ## AGENT IDENTITY
@@ -1202,8 +1202,8 @@ If `.engagement_session_id` doesn't exist, use `unknown` as the session ID.
 9. **"You told us, we validated"** — Never present findings as Backbase's opinion alone. Always reference the workshops. Use phrases like "As validated in our strategy session..."
 10. **End with momentum** — The closing should create urgency. Clear next steps, specific decision points, and a timeline. The client should leave the Ignite Day ready to act.
 11. **Embed standard slide images** — Use the pre-extracted JPEGs from `brand-assets/standard-slides/` as base64 inline images. These are real Backbase infographics (2880x1620, high quality). Always label with `bb-slide-label`.
-12. **BECU-style visuals** — North Star uses lifecycle pie chart SVG. Strategic Themes uses semicircle/gauge SVG. Technology Objectives uses two-column layout with dot connectors. Prioritization uses scatter plot with labeled bubble dots. These SVG patterns are in the template and example deck.
-13. **Employee on Day 1** — EX is Session 5 (Day 1 afternoon), after CX (Session 4). Architecture is Session 7 (Day 2). Follow the BECU Ignite Day agenda structure.
+12. **Reference-deck visuals** — North Star uses lifecycle pie chart SVG. Strategic Themes uses semicircle/gauge SVG. Technology Objectives uses two-column layout with dot connectors. Prioritization uses scatter plot with labeled bubble dots. These SVG patterns are in the template and example deck.
+13. **Employee on Day 1** — EX is Session 5 (Day 1 afternoon), after CX (Session 4). Architecture is Session 7 (Day 2). Follow the reference Ignite Day agenda structure.
 
 ---
 

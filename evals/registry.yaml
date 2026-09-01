@@ -32,7 +32,20 @@ deliverables:
     evaluator: rubrics.deliverable.roi
     threshold: 0.80
     goldens:
-      - evals/goldens/roi_report_valid.md        # synthetic (Meridian Mutual) — exercises the rubric
+      - evals/goldens/roi_report_valid.md        # synthetic (Meridian Mutual) — exercises the rubric (markdown path)
+      # :41 — the JSON path (_eval_json / value_lever_groups schema) had NO
+      # golden coverage at all before this fix: the parser bug that scored a
+      # correct current-schema roi_config.json 0/0 on Harborlight run 7 could
+      # ship because nothing in this gate ever exercised evaluate() on a
+      # .json target. Reusing the already-committed provenance golden (also
+      # the wired `components.roi-financial-modeler` input) rather than
+      # minting a new fixture.
+      - evals/goldens/roi_config_provenance.json  # synthetic — current value_lever_groups schema (JSON path)
+    negatives:
+      # :41 — value_lever_groups present but the WRONG shape (an array, not
+      # the contract's dict-of-dicts) must FAIL, not render unscorable —
+      # that distinction is the whole point of the fix.
+      - evals/goldens/negatives/roi_config_bad_schema.json
     monitor:
       - engagements/nfis/2026-02_digital_investor_assessment_v2/outputs/roi_report.md
 
@@ -55,29 +68,350 @@ deliverables:
     monitor:
       - engagements/nfis/2026-02_digital_investor_assessment_v6/outputs/assessment_report.md
 
+# =============================================================================
+# rubric_calibration — the CALIBRATION tier (#201, design D3/D7/D10)
+# =============================================================================
+# Eleven rows below score a frozen synthetic prose golden with a deterministic
+# rubric. Until #201 they lived under `components:` KEYED BY AGENT NAME, which
+# reads — in CI output, in a PR body, in a reviewer's head — as "this row gates
+# that agent". It never did:
+#
+#     replacing the ENTIRE 45 KB `market-context-researcher` prompt with one
+#     line of garbage left `--component market-context-researcher` at 1.000 PASS.
+#
+# The rubric does not execute a prompt. It reads a committed `.md` fixture that
+# no agent run produced. What the score genuinely certifies is that the RUBRIC
+# still parses that fixture the way it did when the threshold was set. That is
+# worth keeping and was pressure-tested for deletion and KEPT: `evals/runtime.py`
+# (wired at `scripts/orchestrate.py:2242` and `.claude/settings.json:74`) routes
+# LIVE engagement outputs through the same `specifics.py` check functions on
+# every pipeline run and every consultant session, so the golden is the
+# calibration anchor that keeps that threshold falsifiable — and the only
+# regression test on rubric code, which changed in all six of the last eval PRs.
+# What was wrong was never the file. It was the CLAIM attached to it.
+#
+# THE RULES OF THIS TIER
+# ----------------------
+# 1. Keyed by RUBRIC, never by an agent name (enforced: check_registry.py's
+#    `check_rubric_calibration`). `--component <agent-name>` does not resolve to
+#    a calibration row; the retired agent names keep a REDIRECT row at the end of
+#    `components:` that always hard-fails with the mapping.
+# 2. `covers_agent:` is INERT DOCUMENTATION. No runner, preflight or harness
+#    reads it as a verification claim, and check_registry.py asserts the agent it
+#    names cannot be reached as a gate.
+# 3. Every `code:` check carries its own per-check FIXTURE-MUTATION negative
+#    (design D3) under `negatives:` as a MAPPING — `{check: {strip: <regex>}}`,
+#    or `{check: {find: ..., replace: ...}}` where the fault has to be ADDED
+#    rather than removed. `evals/mutations.py` reads that shape as
+#    `kind: "fixture"` and `--mutate <row>` proves each one makes THAT NAMED
+#    check go red. A whole-artifact negative could not do this: at threshold
+#    0.80 it only has to break a fifth of the checks to drop below the line, so
+#    an individually inert check still hides.
+# 4. GOLDEN BYTES ARE FROZEN (design D7). Editing a golden while adding its
+#    first negative confounds the calibration — a new red could not be
+#    attributed to the better negative rather than the changed fixture. The weak
+#    cross-scoring discrimination (`market-context-researcher` scores 0.833
+#    against the BENCHMARK golden; `benchmark-librarian` 0.889 against the
+#    MARKET-CONTEXT one) is a recorded follow-up, not this ticket.
+# 5. `rubrics/component/specifics.py` is FROZEN this cycle (design D10) —
+#    `runtime.py` scores live client engagements with it. Every negative below is
+#    a fixture mutation for that reason: it changes a shadow copy of the golden,
+#    never the rubric.
+#
+# DISPATCH
+# ---------------------------------------------------------------------
+#   python evals/run_experiment.py --calibration market-context-rubric
+#   python evals/run_experiment.py --mutate      market-context-rubric
+#
+# A DEDICATED FLAG, not `--component`. #201 shipped these rows YAML-aliased back
+# into `components:` because `run_experiment.py` was owned by a concurrent ticket
+# (#204) and had no branch for this section. #204 landed; the runner now reads
+# this section directly (`_CALIBRATION_KEY`), and the alias block is deleted.
+#
+# The separate flag is the point, not a detail of the migration: a row that
+# answers to `--component` reads as a component gate to every reader and every
+# quoted number, and these rows gate no component — replacing the whole 45 KB
+# `market-context-researcher` prompt with one line of garbage left its old
+# agent-keyed row at 1.000 PASS. `--component <rubric>` now prints that redirect
+# instead of scoring, `--component <agent>` hits the hard-failing `retired:`
+# redirect row, and every run here prints the tier banner.
+#
+# Two preflight assertions hold the shape (check_registry.check_rubric_calibration):
+# a calibration row must NOT appear in `components:` (the shim cannot grow back),
+# and `run_experiment.py` must still carry a `--calibration` dispatch reading this
+# section (an unrunnable row is a gate nobody can run, which reads as "nothing
+# failed"). CI derives its `--mutate` row list from this section too
+# (.github/workflows/evals.yml).
+rubric_calibration:
+
+  market-context-rubric:
+    tier: rubric_calibration
+    altitude: component          # the runner's dispatch altitude, NOT this row's tier
+    threshold: 0.80
+    evaluator: rubrics.component.market_context_researcher
+    covers_agent: market-context-researcher    # INERT DOCUMENTATION — not a verification claim
+    input: evals/goldens/market_context_golden.md
+    code: [annual_report_attempted, module1_metrics_present, competitor_benchmark_section]
+    path1_judge: [sources_credible_not_hallucinated]
+    negatives:
+      annual_report_attempted:
+        strip: '(?i)annual report|statement of income|10-k|call report|ncua|top-down|revenue bridge|financial metrics'
+      module1_metrics_present:
+        strip: '(?i)module\s*1|bottom-up|correlation'
+      competitor_benchmark_section:
+        strip: '(?i)competitor|benchmark|peer|module\s*3'
+
+  roi-hypothesis-rubric:
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.roi_hypothesis_builder
+    covers_agent: roi-hypothesis-builder        # INERT DOCUMENTATION
+    input: evals/goldens/roi_hypothesis_golden.md
+    code: [lever_ids_present, four_link_chain_present, problem_statement_present]
+    path1_judge: [levers_grounded_in_evidence]
+    negatives:
+      lever_ids_present:
+        strip: '(?im)\bL\d+\b'
+      four_link_chain_present:
+        strip: '(?i)root driver|operational change|volume|financial impact'
+      problem_statement_present:
+        strip: '(?i)problem\s+statement|problem\s+type'
+
+  discovery-evidence-rubric:
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.discovery_transcript_interpreter
+    covers_agent: discovery-transcript-interpreter    # INERT DOCUMENTATION
+    input: evals/goldens/discovery_evidence_register_golden.md
+    code: [evidence_ids_wellformed, evidence_register_present, lifecycle_tags_present, pain_points_present]
+    path1_judge: [faithful_extraction_no_invention]
+    negatives:
+      evidence_ids_wellformed:
+        strip: '\bE\d+\b'
+      evidence_register_present:
+        strip: '(?im)evidence\s+register|^##\s*evidence'
+      lifecycle_tags_present:
+        strip: '(?i)\b(?:acquire|activate|expand|retain)\b'
+      pain_points_present:
+        strip: '(?im)pain\s*point|^##\s*pain'
+
+  capability-maturity-rubric:
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.capability_assessment
+    covers_agent: capability-assessment         # INERT DOCUMENTATION
+    input: evals/goldens/capability_assessment_golden.md
+    code: [maturity_scale_0_4, executive_summary_present, front_middle_back_layers, unconsidered_needs_present, scores_have_evidence_refs]
+    path1_judge: [scores_justified_by_evidence]
+    negatives:
+      # Lookahead so the shared table pipe is not consumed: `| 2 | 3 |` must
+      # lose BOTH cells, not just the first non-overlapping match.
+      maturity_scale_0_4:
+        strip: '\|\s*[0-4]\s*(?=\|)'
+      executive_summary_present:
+        strip: '(?im)^##\s*\d*\.?\s*executive summary.*$'
+      # Drops one of the three layer words: 2/3 scores 0.67 and FAILS the >=3
+      # target — the most surgical mutation that reddens this check alone.
+      front_middle_back_layers:
+        strip: '(?i)\bfront\b'
+      unconsidered_needs_present:
+        strip: '(?i)unconsidered'
+      scores_have_evidence_refs:
+        strip: '(?i)\bCAP-[A-Z0-9-]+\b|\bE\d+\b'
+
+  roadmap-rubric:
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.roadmap_prioritization
+    covers_agent: roadmap-prioritization        # INERT DOCUMENTATION
+    input: evals/goldens/roadmap_golden.md
+    code: [phases_present, initiatives_sequenced, dependencies_present, gates_or_milestones_present]
+    path1_judge: [initiatives_traced_to_gaps_and_levers]
+    negatives:
+      phases_present:
+        strip: '(?i)phase\s*[1-3]|wave\s*[1-3]|now.*next.*later'
+      initiatives_sequenced:
+        strip: '(?i)\bRI-\d+\b|initiative'
+      dependencies_present:
+        strip: '(?i)dependenc'
+      gates_or_milestones_present:
+        strip: '(?i)decision gate|\bDG-\d|milestone|value\s*realization'
+
+  narrative-arc-rubric:
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.narrative_assembler
+    covers_agent: narrative-assembler           # INERT DOCUMENTATION
+    input: evals/goldens/narrative_golden.md
+    code: [seven_acts_present, executive_summary_present, transformation_arc_present]
+    path1_judge: [transformation_arc_threaded_7_acts]   # the documented assembler weakness
+    negatives:
+      # One act removed: 6/7 distinct acts scores 0.857 and fails the >=7 bar.
+      seven_acts_present:
+        strip: '(?i)\bact\s*7\b'
+      executive_summary_present:
+        strip: '(?i)executive summary'
+      transformation_arc_present:
+        strip: '(?i)transformation|from\b.*?\bto\b'
+
+  journey-map-rubric:
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.journey_builder
+    covers_agent: journey-builder               # INERT DOCUMENTATION
+    input: evals/goldens/journey_maps_golden.md
+    code: [lifecycle_stages_present, friction_or_leakage_present, as_is_and_future_state]
+    path1_judge: [value_leakage_quantified]
+    negatives:
+      lifecycle_stages_present:
+        strip: '(?i)\b(?:acquire|activate|expand|retain)\b'
+      friction_or_leakage_present:
+        strip: '(?i)friction|value\s*leakage|leakage\s*waterfall'
+      # Removes only the FUTURE half of the As-Is/Future-State conjunction.
+      as_is_and_future_state:
+        strip: '(?i)future[- ]state'
+
+  benchmark-shortlist-rubric:
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.benchmark_librarian
+    covers_agent: benchmark-librarian           # INERT DOCUMENTATION
+    input: evals/goldens/benchmark_golden.md
+    code: [confidence_levels_present, source_attribution_present, no_synthetic_citations]
+    path1_judge: [benchmarks_defensible_not_hallucinated]
+    negatives:
+      confidence_levels_present:
+        strip: '(?i)confidence\s*level|(?:high|medium|low)\s*confidence|confidence:\s*(?:high|medium|low)'
+      source_attribution_present:
+        strip: '(?i)source\s*:|\[(?:annual report|investor presentation|regulator|not available|consultant-provided|industry|proxy|estimated)[^\]]*\]'
+      # INVERTED CHECK — it passes on the ABSENCE of stray [Synthetic-Test]
+      # citations, so a `strip:` can never redden it. The fixture mutation has to
+      # ADD the fault: `{find, replace}` under `negatives:` is still read as
+      # kind "fixture" (mutations.Mutation.from_entry), so this stays a
+      # golden-side mutation and specifics.py is untouched (D10).
+      no_synthetic_citations:
+        find: '## Gaps and validation asks'
+        replace: "## Gaps and validation asks\n\n- Contact-centre deflection benchmark carried over from [Synthetic-Test] pipeline data.\n"
+
+  usecase-design-rubric:
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.usecase_designer
+    covers_agent: usecase-designer              # INERT DOCUMENTATION
+    input: evals/goldens/usecase_golden.md
+    code: [usecase_ids_present, product_directory_mapping, ootb_config_custom_classification, priority_tiers_present]
+    path1_judge: [usecases_grounded_in_product_directory]
+    negatives:
+      usecase_ids_present:
+        strip: '(?i)\bUC-\d{2,}\b'
+      product_directory_mapping:
+        strip: '(?i)product directory|\bRB\.\d|\bWB\.\d'
+      ootb_config_custom_classification:
+        strip: '(?i)OOTB|out-of-the-box|config(?:ure|uration)?|custom'
+      priority_tiers_present:
+        strip: '(?i)tablestakes|differentiating|\bP[123]\b'
+
+  workshop-prep-rubric:
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.workshop_preparation
+    covers_agent: workshop-preparation          # INERT DOCUMENTATION
+    input: evals/goldens/workshop_prep_golden.md
+    code: [hypotheses_present, validation_questions_present, checkpoint_present]
+    path1_judge: [hypotheses_specific_and_quantified]
+    negatives:
+      hypotheses_present:
+        strip: '(?i)hypothes[ie]s'
+      validation_questions_present:
+        strip: '(?i)validation question|questions? to validate|validate'
+      checkpoint_present:
+        strip: '(?i)checkpoint'
+
+  workshop-synthesis-rubric:
+    tier: rubric_calibration
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.ignite_workshop_synthesizer
+    covers_agent: ignite-workshop-synthesizer   # INERT DOCUMENTATION
+    input: evals/goldens/ignite_synthesis_golden.md
+    code: [hypothesis_validation_statuses, usecase_candidates_present, usecase_classification_present]
+    path1_judge: [synthesis_faithful_to_workshops]
+    negatives:
+      # "partially confirmed" / "not confirmed" both contain "confirmed", so one
+      # strip takes 3 of the 4 status labels; "needs more data" survives at 1/2.
+      hypothesis_validation_statuses:
+        strip: '(?i)confirmed'
+      usecase_candidates_present:
+        strip: '(?i)use\s*case'
+      usecase_classification_present:
+        strip: '(?i)quick win|foundational|transformational|defer'
+
 # Component (unit) altitude — score an agent's direct output on a fixed input.
-# code: objective Python checks. judge: LLM-as-judge rubrics (semantic).
+#
+# Two declaration keys, two different contracts (#182, D5 — "declared means
+# required"):
+#   code:         GATES. Deterministic Python checks that
+#                 `run_experiment.py --component <name>` actually executes on
+#                 every run; `declared_checks_all_executed` asserts every name
+#                 listed here produced a CheckResult, or the run fails naming it.
+#   path1_judge:  Does NOT gate. Semantic LLM-as-judge checks that apply only
+#                 when the component is regenerated via path-1
+#                 (evals/path1.py --agent <name>, #204) — the component gate's
+#                 thin adapters (rubrics/component/<name>.py) call only
+#                 specifics._<fn> and never reach these, by design (a metered
+#                 judge must never sit on a gating path — CI stays key-free).
+# A row may still legitimately declare a gating `judge:` (none do post-migration,
+# but the key remains meaningful) — if it does, that name is asserted executed
+# too, exactly like `code:`.
+#
 # All `code` checks below are implemented in rubrics.component.specifics (which
 # runs on top of the rubrics.component.governance baseline that every agent
-# inherits); `judge` checks are the semantic LLM rubrics in rubrics.judge.
+# inherits); `path1_judge` checks are the semantic LLM rubrics in rubrics.judge.
 components:
-  market-context-researcher:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/market_context_golden.md   # scores specifics._market_context via rubrics.component.market_context_researcher
-    code: [annual_report_attempted, module1_metrics_present, competitor_benchmark_section]   # incl. the documented miss
-    judge: [sources_credible_not_hallucinated]
-
   roi-financial-modeler:
     altitude: component
-    threshold: 0.80
+    # threshold raised 0.80 -> 0.90 (#180): backbase_impact_within_cap stays a
+    # plain mean-contributor (no hard_fail — see D10, specifics.py frozen this
+    # cycle). At 0.90 the overcap negative (scores 0.889, 8/9 checks) correctly
+    # FAILS via ordinary mean scoring, while the positive golden (1.000) still
+    # clears it comfortably. Per D3, a per-check hard_fail fix is deferred to #201.
+    threshold: 0.90
     # Fixture: the committed anonymized provenance golden (the basis the provenance
     # fix was built on). Re-pointed from a never-created `nfis` golden — see PRD v1.
     input: evals/goldens/roi_config_provenance.json
+    negatives:
+      - evals/goldens/roi_config_overcap.json
     code: [three_scenarios, npv_payback_present, assumptions_register_present, sensitivity_analysis_present,
-           basic_information_has_sources_list, basic_fields_have_source_and_confidence, operating_costs_emitted_as_formula]
-    judge: [conservative_bias, topdown_bottomup_correlation]
+           basic_information_has_sources_list, basic_fields_have_source_and_confidence, operating_costs_emitted_as_formula,
+           backbase_impact_within_cap, overcap_negative_gate_witness]
+    path1_judge: [conservative_bias, topdown_bottomup_correlation]
+    # #104 parity case (standalone /build-roi + /generate-roi-excel now run the
+    # same artifact_boundary.py cap_roi_config gate the pipeline runs, #102):
+    #   - goldens: roi_config_provenance.json above (the wired `input:`) is
+    #     already capped — `backbase_impact_within_cap` must PASS on it.
+    #   - negatives: evals/goldens/roi_config_overcap.json — a >0.60 backbase_impact
+    #     (driver-level + scenario-level) with scenario numbers that push the
+    #     curve-adjusted 5-yr ROI (279%) outside the Retail Banking benchmark
+    #     (100-150%). As of #180, `components:` altitude DOES wire a `negatives:`
+    #     list the same way `deliverables:` does (see run_experiment.py) — `--negatives`
+    #     runs this fixture through the same evaluator with expect_pass=False, so
+    #     the gate only passes if `backbase_impact_within_cap` (hard_fail, see
+    #     rubrics/component/specifics.py) correctly fails on it. The
+    #     `overcap_negative_gate_witness` check below predates #180 and is kept as
+    #     an additional, self-contained witness: it loads this same fixture directly
+    #     and proves it FAILS `backbase_impact_within_cap` pre-gate, then gates a
+    #     /tmp COPY of it (scripts/artifact_boundary.py cap_roi_config — never
+    #     mutates the committed fixture) and proves the capped copy PASSES the
+    #     same invariant.
 
   # roi-excel-generator (#85) — verifies the GENERATOR actually renders the
   # provenance contract the roi-financial-modeler agent emits (#83 generator,
@@ -94,94 +428,1154 @@ components:
     code: [sources_sheet_present, sources_sheet_absent_when_unset, no_confidence_row_leak,
            explicit_confidence_wins, operating_costs_is_formula, derived_input_formula_renders]
 
+  # knowledge-harvester (#130) — pins the shared synthetic-engagement gate
+  # (scripts.artifact_boundary.synthetic_policy) and the quarantine-mode
+  # output contract deterministically. No judge, threshold 1.0 — this is a
+  # negative-gate / contract-shape case, not a "does the prose read well"
+  # case (same pattern as roi-financial-modeler's overcap_negative_gate_witness).
+  # quarantine_mode_outputs_local SKIPs gracefully until the "### Mode:
+  # quarantine" block lands in #131 — RubricResult.score averages only
+  # non-skipped checks, so the SKIP doesn't drag the mean below 1.0.
+  knowledge-harvester:
+    altitude: component
+    threshold: 1.0
+    input: evals/goldens/synthetic_gate
+    code: [quarantine_policy_detected, never_policy_detected, bare_tests_fails_safe, quarantine_mode_outputs_local]
+
+  # mcp-query-guard (PR #171 hardening) — regression coverage for the
+  # .claude/hooks/mcp-query-guard.py fail-closed outbound-query gate
+  # (security_protocol.md §5). No `input:` — the evaluator is self-contained:
+  # every check synthesizes its own fixtures in a tempdir and invokes the
+  # real hook script as a subprocess (never imports + monkeypatches it), so
+  # there is no static golden file to point at.
+  # threshold: 1.00 is a DELIBERATE deviation from the house 0.80 default —
+  # this is a privacy/security control, pass/fail, not "mostly correct." No
+  # `judge:` entries: every check is deterministic, $0, no LLM. Ticket #161
+  # may later fold this into a broader `pii-anonymizer` row; standing this
+  # up now is explicitly what #155's ticket permitted.
+  # Post-711b56c hardening: the original 7 checks ran against a two-line
+  # fixture stub that never exercised label-line extraction, ALL-CAPS
+  # scoping, per-file read failures, case-insensitivity, or the
+  # ENGAGEMENT_CONTEXT.md/engagement_intake.md scanning loop — certifying
+  # 1.000 on a hook that failed all of those. The 6 checks below close that
+  # gap; each was proven to fail against the specific mutation it targets
+  # before being accepted (see the rubric module's evaluate() and the PR
+  # description for the mutation-testing transcript).
+  # #192/backlog :116: the rubric used to invoke the hook via
+  # `[sys.executable, ...]` — CI's/this venv's interpreter — instead of the
+  # bare `python3` .claude/settings.json actually registers for it (what
+  # every consultant session runs under). Migrated to
+  # rubrics/_harness.py's `registered_interpreter()`, which parses
+  # settings.json and fails loudly if the hook isn't registered rather than
+  # falling back. `runs_under_registered_interpreter` (below) is the new
+  # check proving that resolution. No `mutations:` key added: adding one
+  # requires covering every declared check on the row (#186), which is out
+  # of scope here — this row stays in the keyless DEBT list.
+  mcp-query-guard:
+    altitude: component
+    threshold: 1.00
+    code: [denies_query_containing_client_identifier, allows_generic_query,
+           detects_identifier_nested_in_dict_or_list, fails_closed_on_unresolvable_denylist,
+           fails_closed_on_malformed_payload, allows_with_warning_when_no_denylist_configured,
+           deny_decision_shape_matches_hook_contract, allows_query_with_common_emphasis_words,
+           denies_bold_markdown_label_client_name, fails_closed_on_unreadable_profile_file,
+           matching_is_case_insensitive, denies_identifier_from_engagement_context_file,
+           denies_identifier_from_engagement_intake_file, denies_client_name_from_profile_name_label,
+           ignores_unfilled_template_placeholders, scan_limit_hit_fails_closed,
+           runs_under_registered_interpreter,
+           # 2026-08-30: engagements/inputs|outputs were skipped WHOLESALE, so four real
+           # clients sat on NO deny-list — the gate was absent for them, not weak. The
+           # resolver now descends one level and reads DOCUMENTS only. The second check
+           # pins why not the directory names: they carry a Backbase programme name and
+           # geography, which must never become deny terms.
+           denies_client_from_staging_subdirectory,
+           staging_directory_names_do_not_become_deny_terms,
+           # Mayur's 2026-08-30 review, finding 6: a domain-named engagement
+           # directory put its own name on the deny-list, so ordinary product
+           # queries were refused as 'names the client'. A false alarm trains
+           # people around the control, which is worse than the noise.
+           generic_slug_does_not_become_a_deny_term]
+
+  # pii-anonymizer (ticket #161, PRD v6 §5, solution-design-v6.md D9) — the
+  # acceptance gate for the whole v6 Presidio PII cycle. Covers
+  # scripts/pii/engine.py (Presidio detection + reversible pseudonymisation)
+  # and its scripts/anonymize_transcript.py facade against a committed
+  # synthetic fixture (evals/goldens/pii_roundtrip_fixture.md).
+  #
+  # threshold: 1.00 is a DELIBERATE deviation from the house 0.80 default —
+  # same rationale as mcp-query-guard above: a privacy control is pass/fail,
+  # not "mostly correct." No `judge:` entries — every check is deterministic
+  # and free.
+  #
+  # #161 runs 7th in the v6 build order, deliberately: this gate exists
+  # before more code lands on top of it. The PRD's original 16-check list
+  # names 6 checks whose SUBJECT does not exist yet and are therefore NOT
+  # wired here — see evals/rubrics/component/pii_anonymizer.py's module
+  # docstring "SEQUENCING" section for the full mapping to the tickets that
+  # will add them:
+  #   document_formats_converted_and_scrubbed   -> #162 — LANDED, wired below
+  #   image_input_produces_sidecar_and_redacted_copy -> #163 — LANDED, wired below
+  #   image_unreadable_script_refuses_and_writes_nothing -> #173 — LANDED, wired below
+  #   guard_fails_closed_on_inputs_path         -> #164 — LANDED, wired below
+  #   internal_domain_email_redacted_no_over_detection -> #181 — LANDED, wired below
+  #   nested_outputs_deanonymized               -> #165 — LANDED, wired below
+  #   xlsx_outputs_deanonymized                 -> #165 — LANDED, wired below
+  #   workspace_paths_contain_no_client_identifiers -> #166 — LANDED, wired
+  #                                                 below. The only PATH check
+  #                                                 in the row: content
+  #                                                 scrubbing is defeated by
+  #                                                 the client-named path
+  #                                                 compose_prompt renders on
+  #                                                 every agent call (D6).
+  #   mcp_query_client_name_blocked             -> already covered by the
+  #                                                 mcp-query-guard row above;
+  #                                                 intentionally not duplicated.
+  #
+  # Requires the Presidio-capable interpreter (scripts/pii/engine.py imports
+  # presidio_analyzer at module level, needs Python 3.10-3.13): run this row
+  # via `.venv/bin/python evals/run_experiment.py --component pii-anonymizer`
+  # locally. In CI, requirements.txt (Presidio + spaCy model) is installed
+  # under actions/setup-python's 3.11 before the suite runs, so
+  # `sys.executable` there is already Presidio-capable. Note this is about
+  # the interpreter running run_experiment.py ITSELF (needs Presidio
+  # importable in-process) — separate from check 14's own subprocess call
+  # to `.claude/hooks/anonymize-guard.py`, which #192/backlog :116 migrated
+  # to rubrics/_harness.py's `registered_interpreter()` (bare `python3`,
+  # what settings.json actually registers and every consultant session
+  # runs it under) instead of `sys.executable`. Check 19,
+  # `runs_under_registered_interpreter` below, proves that resolution. No
+  # `mutations:` key added — covering every declared check on this
+  # 19-check row is out of scope here; it stays in the keyless DEBT list.
+  pii-anonymizer:
+    altitude: component
+    threshold: 1.00
+    input: evals/goldens/pii_roundtrip_fixture.md
+    # 2026-08-30: the Unicode-Latin widening pulled forward from PRD v10 ahead of
+    # #220/#221 (design D10). Measured before it, a single-word accented CLIENT
+    # name was LOST, not mis-cased — and the client is D3's most important entity.
+    code: [accented_latin_identity_extracted_whole,
+           round_trip_byte_identical, distinct_values_distinct_placeholders,
+           repeated_value_reuses_placeholder, no_raw_pii_in_anonymized_output,
+           cross_transcript_merge_collision_free, mapping_files_chmod_600_and_cleaned,
+           client_name_redacted_via_denylist, allowlist_prevents_generic_overredaction,
+           empty_entity_list_warns, legacy_flat_mapping_still_restores,
+           document_formats_converted_and_scrubbed,
+           image_input_produces_sidecar_and_redacted_copy,
+           image_unreadable_script_refuses_and_writes_nothing,
+           guard_fails_closed_on_inputs_path,
+           internal_domain_email_redacted_no_over_detection,
+           nested_outputs_deanonymized,
+           xlsx_outputs_deanonymized,
+           workspace_paths_contain_no_client_identifiers,
+           runs_under_registered_interpreter]
+
+  # run-experiment-runner (#183, closing PR 1 of the eval-gate-v7 epic) — the
+  # SELF-GATE: this runner grades every other row in this file, so it must
+  # grade itself too. Every check invokes the real evals/run_experiment.py as
+  # a subprocess against a synthetic registry.yaml built fresh in a tempdir
+  # (via CORTEX_EVAL_REGISTRY, added by this ticket) — never the file you are
+  # reading right now, and never an in-process import-and-call.
+  #
+  # threshold: 1.00 — same rationale as mcp-query-guard/pii-anonymizer above:
+  # the thing that decides pass/fail for every other row is pass/fail itself,
+  # not "mostly correct." No `judge:`/`path1_judge:` entries — every check
+  # here is deterministic, $0, and stays green with ANTHROPIC_API_KEY unset
+  # (the "skipped judge" case simulates the no-key path; it never calls one).
+  #
+  # `path1_refuses_in_ci` (#204, wired in the epic's closing pass): path-1
+  # regeneration actually runs an agent through `claude -p` on a human's
+  # subscription. It is nondeterministic, metered, and NOT a gate, so both
+  # routes into it (`evals/path1.py` directly, and `run_experiment.py
+  # --regenerate`) hard-refuse under $CI / $GITHUB_ACTIONS. That refusal is
+  # the only thing standing between CI and a nondeterministic agent run, so
+  # it gets a check like everything else in this epic.
+  run-experiment-runner:
+    altitude: component
+    threshold: 1.00
+    code: [component_negatives_honoured, missing_target_fails_not_skips,
+           declared_checks_all_executed, skipped_judge_does_not_pass,
+           retired_altitude_flag_hard_errors, path1_refuses_in_ci]
+    # `mutations:` (#185) — the worked example for the --mutate runner mode.
+    # These four were bite-proven by hand in #183 (see that PR's closing
+    # comment and the PR #206 body for the transcript this reproduces
+    # mechanically): each `find` targets the exact line the matching check
+    # exercises, so mutating it makes ONLY that check go red.
+    mutations:
+      component_negatives_honoured:
+        file: evals/run_experiment.py
+        find: "passed if expect_pass else (not passed)"
+        replace: "passed"
+      missing_target_fails_not_skips:
+        file: evals/run_experiment.py
+        find: "f\"Failing rather than skipping — a skipped target previously left the verdict at PASS.\")\n            ok = False"
+        replace: "f\"Failing rather than skipping — a skipped target previously left the verdict at PASS.\")"
+      declared_checks_all_executed:
+        file: evals/run_experiment.py
+        find: "declared = code_names | {f\"judge:{j}\" for j in gating_judge_names}\n    if not declared:"
+        replace: "declared = code_names | {f\"judge:{j}\" for j in gating_judge_names}\n    return True\n    if not declared:"
+      skipped_judge_does_not_pass:
+        file: evals/rubrics/base.py
+        find: "mark = \"SKIP*\""
+        replace: "mark = \"SKIP\""
+      # #188 correction pass. #188 shipped the retired-altitude guard and the
+      # grep that protects it with NO check over either — the epic's own gate,
+      # unproven, in the epic that exists to stop exactly that. This mutation
+      # DELETES the three-line guard in main()'s altitude validation. The
+      # deletion is invisible to exit code (the retired name then falls through
+      # to the `_ALTITUDES` membership test and argparse's ap.error() also exits
+      # 2), which is why the check asserts on the rename rationale text.
+      retired_altitude_flag_hard_errors:
+        file: evals/run_experiment.py
+        find: "    if args.altitude == _RETIRED_ALTITUDE:\n        print(_RETIRED_ALTITUDE_ERROR, file=sys.stderr)\n        return 2\n"
+        replace: ""
+      # Disables `_in_ci()` at its SINGLE source of truth. Both refusal call
+      # sites — path1.main()'s pre-argparse guard and run_experiment.py
+      # --regenerate's delegation to path1.refuse_if_ci() — go through this one
+      # function, so the mutation reddens the check via both routes at once and
+      # cannot be dodged by a second copy of the env-var test appearing
+      # somewhere else.
+      path1_refuses_in_ci:
+        file: evals/path1.py
+        find: "    return any(os.environ.get(v) for v in _CI_ENV_VARS)"
+        replace: "    return False"
+
+  # mutation-harness (#187, closing PR 2 of the eval-gate-v7 epic) — the
+  # SECOND self-gate: run-experiment-runner (above) proves the runner that
+  # grades every row; this row proves the MUTATION machinery every row's
+  # `mutations:` proof depends on — evals/mutations.py, run_experiment.py's
+  # `--mutate` mode, and check_registry.py's mutation-coverage preflight.
+  # Every check drives those REAL modules as subprocesses against synthetic
+  # fixtures (never an import-and-call) — see
+  # evals/rubrics/component/mutation_harness.py's module docstring for the
+  # two subprocess strategies (CORTEX_EVAL_REGISTRY for run_experiment.py,
+  # a copied-check_registry.py tempdir for check_registry.py, which refuses
+  # that env var on itself) and for why every mutation below is safe to
+  # apply even though several of them target isolation/enforcement code.
+  #
+  # threshold: 1.00 — same rationale as run-experiment-runner above: this
+  # row certifies the proof mechanism itself, not "mostly correct."
+  #
+  # Added to MUTATION_PROOF_REQUIRED_ROWS in check_registry.py by this same
+  # ticket — hard-enforced from birth, no grace period.
+  mutation-harness:
+    altitude: component
+    threshold: 1.00
+    code: [every_registered_check_has_a_mutation, mutation_makes_named_check_red,
+           restore_makes_it_green, check_without_mutation_fails_preflight,
+           working_tree_unchanged_after_run]
+    mutations:
+      every_registered_check_has_a_mutation:
+        file: evals/check_registry.py
+        find: "    if name in MUTATION_PROOF_REQUIRED_ROWS:\n        return True"
+        replace: "    if False:\n        return True"
+      mutation_makes_named_check_red:
+        file: evals/mutations.py
+        find: "    return not check[\"passed\"] and not check[\"skipped\"] and not check[\"unscorable\"]"
+        replace: "    return False"
+      restore_makes_it_green:
+        file: evals/run_experiment.py
+        find: "ok = _evaluate_targets(args.component, evaluator, \"unit\", thr, [tgt], expect_pass=True, spec=spec)"
+        replace: "ok = _evaluate_targets(args.component, evaluator, \"unit\", thr, [tgt], expect_pass=True, spec=spec)\n        ok = False"
+      check_without_mutation_fails_preflight:
+        file: evals/check_registry.py
+        find: "        if hard:\n            errors.append(msg)"
+        replace: "        if False:\n            errors.append(msg)"
+      working_tree_unchanged_after_run:
+        file: evals/mutations.py
+        find: "        shadow = Path(td) / \"repo\"\n        shadow.mkdir()"
+        replace: "        shadow = src_root / \".mutation_shadow_leak\" / \"repo\"\n        shadow.mkdir(parents=True, exist_ok=True)"
+
+  # --- #197: executable rows for the six ungated `.claude/hooks/*` --------------
+  #
+  # `.claude/settings.json` registers SEVEN Python hooks. Before this block only
+  # `mcp-query-guard` had a row, and `anonymize-guard` was covered by exactly one
+  # check inside the `pii-anonymizer` row (`guard_fails_closed_on_inputs_path`,
+  # #164 — deliberately left where it is, it is that row's own acceptance
+  # criterion). Hooks are the enforcement layer for every governance rule this
+  # repo claims to hold (.design/solution-design-v6.md D7), so an ungated hook is
+  # a rule that exists only in prose.
+  #
+  # All six evaluators live in ONE package, `evals/rubrics/component/hooks/`, so
+  # each row names its module explicitly with `evaluator:` rather than relying on
+  # run_experiment.py's `rubrics.component.<row>` default. No `input:` — every
+  # evaluator is self-contained: it synthesizes fixtures in a tempdir, points
+  # `CLAUDE_PROJECT_DIR` at them, and invokes the real hook SCRIPT as a
+  # subprocess (never imports + monkeypatches it), so there is no static golden
+  # to point at. Same shape as `mcp-query-guard` above.
+  #
+  # threshold 1.00 on all six — the house 0.80 default is wrong for a
+  # privacy/governance control, which is pass/fail, not "mostly correct". No
+  # `judge:`/`path1_judge:` entries: every check is deterministic, offline, and
+  # stays green with ANTHROPIC_API_KEY unset.
+  #
+  # FAIL-CLOSED vs FAIL-OPEN IS PER-HOOK. Only `anonymize-guard` has a
+  # fail-CLOSED contract, and only inside `engagements/*/inputs/` — a globally
+  # fail-closed guard wedged every session once already (PR #82). So
+  # `fails_closed_under_injected_fault` appears on that row alone, and the other
+  # five carry `fails_open_under_injected_fault`, which asserts the contract
+  # those hooks actually document. Each is a SPLIT, never "a decision happens
+  # somewhere": the same fixture decides one way clean and the other way faulted.
+  #
+  # `mutations:` on all six, covering every declared check (66/66 proven red
+  # under mutation and green on restore). Add all six names to
+  # MUTATION_PROOF_REQUIRED_ROWS in evals/check_registry.py in the SAME change,
+  # per that list's own rule — they are hard-enforced from birth either way,
+  # since declaring a `mutations:` key removes the DEBT grace period.
+  #
+  # Several `runs_under_registered_interpreter` mutations target
+  # evals/rubrics/_harness.py's `record_hook_invocation(argv)` call rather than a
+  # hook: deleting it is the one edit that reddens ONLY that check (the harness's
+  # own docstring names this — "a capture that records nothing is itself a hard
+  # failure"). If that line moves, these six `find:` strings go stale and
+  # --mutate reports INERT, which is the intended loud failure.
+  anonymize-guard:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.hooks.anonymize_guard
+    code: [denies_unscrubbed_text_input, allows_scrubbed_anon_artifact,
+           allows_when_sibling_is_current, denies_stale_sibling_by_mtime,
+           denies_document_without_md_sidecar, denies_unsupported_format_outright,
+           allows_paths_outside_inputs_scope, gates_bash_command_reading_raw_input,
+           allows_bash_anonymizer_command_itself, fails_closed_under_injected_fault,
+           degenerate_path_fails_closed_only_inside_inputs, invoked_as_subprocess_not_import,
+           runs_under_registered_interpreter,
+           # Mayur's 2026-08-30 review, findings 2, 3 and 7 — each as a regression
+           # test. All three were the same shape: the guard checked the doors it was
+           # pointed at, and nobody had enumerated the doors.
+           anonymizer_exemption_is_per_segment,
+           gates_quoted_path_containing_spaces,
+           gates_search_tools_not_only_read_and_bash]
+    mutations:
+      anonymizer_exemption_is_per_segment:
+        file: .claude/hooks/anonymize-guard.py
+        find: 'if any(hint in segment for hint in _ANONYMIZER_HINTS):'
+        replace: 'if any(hint in command for hint in _ANONYMIZER_HINTS):'
+      gates_quoted_path_containing_spaces:
+        file: .claude/hooks/anonymize-guard.py
+        find: 'toks = shlex.split(segment, comments=False, posix=True)'
+        replace: 'toks = re.findall(r"[^\s]+", segment)'
+      gates_search_tools_not_only_read_and_bash:
+        file: .claude/hooks/anonymize-guard.py
+        find: 'elif tool in ("Grep", "Glob"):'
+        replace: 'elif tool in ("zzzNeverMatches",):'
+      denies_unscrubbed_text_input:
+        file: .claude/hooks/anonymize-guard.py
+        find: "            if kind == \"text\":\n                return _msg_unscrubbed_text(p)"
+        replace: "            if kind == \"text\":\n                return None"
+      allows_scrubbed_anon_artifact:
+        file: .claude/hooks/anonymize-guard.py
+        find: "        if p.name.startswith(ANON_PREFIX):"
+        replace: "        if False:"
+      allows_when_sibling_is_current:
+        file: .claude/hooks/anonymize-guard.py
+        find: "        if p.stat().st_mtime > sibling.stat().st_mtime:"
+        replace: "        if True:"
+      denies_stale_sibling_by_mtime:
+        file: .claude/hooks/anonymize-guard.py
+        find: "        if p.stat().st_mtime > sibling.stat().st_mtime:"
+        replace: "        if False:"
+      denies_document_without_md_sidecar:
+        file: .claude/hooks/anonymize-guard.py
+        find: "    if kind == \"text\":\n        return p.with_name(ANON_PREFIX + p.name)\n    return p.with_name(ANON_PREFIX + p.name + \".md\")"
+        replace: "    return p.with_name(ANON_PREFIX + p.name)"
+      denies_unsupported_format_outright:
+        file: .claude/hooks/anonymize-guard.py
+        find: "        if kind is None:\n            return _msg_unsupported(p)"
+        replace: "        if kind is None:\n            return None"
+      allows_paths_outside_inputs_scope:
+        file: .claude/hooks/anonymize-guard.py
+        find: "    parts = [part.lower() for part in p.parts]\n    return \"engagements\" in parts and \"inputs\" in parts"
+        replace: "    parts = [part.lower() for part in p.parts]\n    return \"engagements\" in parts"
+      gates_bash_command_reading_raw_input:
+        file: .claude/hooks/anonymize-guard.py
+        find: "        cands.append(tok)"
+        replace: "        continue"
+      allows_bash_anonymizer_command_itself:
+        file: .claude/hooks/anonymize-guard.py
+        # Follows the 2026-08-30 rename: the exemption is matched per SEGMENT
+        # now, not against the whole command line (Mayur's finding 2).
+        find: "        if any(hint in segment for hint in _ANONYMIZER_HINTS):"
+        replace: "        if False:"
+      fails_closed_under_injected_fault:
+        file: .claude/hooks/anonymize-guard.py
+        find: "    except Exception:\n        if in_scope_guess:\n            return _msg_fault(raw)\n        return None"
+        replace: "    except Exception:\n        return None"
+      degenerate_path_fails_closed_only_inside_inputs:
+        file: .claude/hooks/anonymize-guard.py
+        find: "        if in_scope_guess:\n            return _msg_fault(raw)"
+        replace: "        if True:\n            return _msg_fault(raw)"
+      invoked_as_subprocess_not_import:
+        file: .claude/hooks/anonymize-guard.py
+        find: "PROJECT_DIR = Path(os.environ.get(\"CLAUDE_PROJECT_DIR\", Path.cwd()))"
+        replace: "PROJECT_DIR = Path.cwd()"
+      runs_under_registered_interpreter:
+        file: evals/rubrics/_harness.py
+        find: "    record_hook_invocation(argv)\n    completed = subprocess.run("
+        replace: "    completed = subprocess.run("
+
+  require-checkpoint:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.hooks.require_checkpoint
+    code: [denies_deliverable_write_without_checkpoint, allows_when_checkpoint_file_present,
+           allows_when_journal_has_checkpoint_block, allows_checkpoint_file_itself,
+           allows_non_deliverable_extension, ignores_edit_tool,
+           write_outside_engagements_tree_is_not_gated, fails_open_on_malformed_payload,
+           fails_open_under_injected_fault, invoked_as_subprocess_not_import,
+           runs_under_registered_interpreter]
+    mutations:
+      denies_deliverable_write_without_checkpoint:
+        file: .claude/hooks/require-checkpoint.py
+        find: "    if _has_pre_generation_checkpoint(eng_dir):\n        _allow()"
+        replace: "    _allow()"
+      allows_when_checkpoint_file_present:
+        file: .claude/hooks/require-checkpoint.py
+        find: "    if outputs.is_dir() and any(outputs.glob(\"CHECKPOINT_*.md\")):\n        return True"
+        replace: "    if False:\n        return True"
+      allows_when_journal_has_checkpoint_block:
+        file: .claude/hooks/require-checkpoint.py
+        find: "            if \"### Checkpoint:\" in journal.read_text(encoding=\"utf-8\", errors=\"replace\"):\n                return True"
+        replace: "            if False:\n                return True"
+      allows_checkpoint_file_itself:
+        file: .claude/hooks/require-checkpoint.py
+        find: "    if name.startswith((\".\", \"interim_\", \"CHECKPOINT\")):\n        return False"
+        replace: "    if name.startswith((\".\", \"interim_\")):\n        return False"
+      allows_non_deliverable_extension:
+        file: .claude/hooks/require-checkpoint.py
+        find: "DELIVERABLE_EXTS = {\".md\", \".html\", \".xlsx\", \".pptx\", \".pdf\", \".docx\", \".csv\"}"
+        replace: "DELIVERABLE_EXTS = {\".md\", \".html\", \".xlsx\", \".pptx\", \".pdf\", \".docx\", \".csv\", \".json\"}"
+      ignores_edit_tool:
+        file: .claude/hooks/require-checkpoint.py
+        find: "    if payload.get(\"tool_name\") != \"Write\":\n        _allow()"
+        replace: "    if payload.get(\"tool_name\") not in (\"Write\", \"Edit\"):\n        _allow()"
+      write_outside_engagements_tree_is_not_gated:
+        file: .claude/hooks/require-checkpoint.py
+        find: "    return \"engagements\" in parts and \"outputs\" in parts"
+        replace: "    return \"outputs\" in parts"
+      fails_open_on_malformed_payload:
+        file: .claude/hooks/require-checkpoint.py
+        find: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _allow()"
+        replace: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _deny(\"mutated: a malformed payload must not deny\")"
+      fails_open_under_injected_fault:
+        file: .claude/hooks/require-checkpoint.py
+        find: "        except OSError:\n            return True  # can't read — fail open"
+        replace: "        except OSError:\n            return False"
+      invoked_as_subprocess_not_import:
+        file: .claude/hooks/require-checkpoint.py
+        find: "PROJECT_DIR = Path(os.environ.get(\"CLAUDE_PROJECT_DIR\", Path.cwd()))"
+        replace: "PROJECT_DIR = Path.cwd()"
+      runs_under_registered_interpreter:
+        file: evals/rubrics/_harness.py
+        find: "    record_hook_invocation(argv)\n    completed = subprocess.run("
+        replace: "    completed = subprocess.run("
+
+  require-harness:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.hooks.require_harness
+    code: [denies_component_edit_without_active_change, denies_when_prd_artifact_present,
+           denies_when_draft_prd_present,
+           committed_prd_state_does_not_affect_gate,
+           allows_when_active_change_marker_present, exempts_harness_infra_paths,
+           gates_pipeline_python_only_by_extension, gates_non_exempt_skill_but_not_bb_skill,
+           gates_root_orchestrate_py, ignores_read_tool, fails_open_on_malformed_payload,
+           fails_open_under_injected_fault, invoked_as_subprocess_not_import,
+           runs_under_registered_interpreter]
+    mutations:
+      denies_component_edit_without_active_change:
+        file: .claude/hooks/require-harness.py
+        find: "    if not _is_protected(rel):\n        _allow()"
+        replace: "    _allow()"
+      denies_when_prd_artifact_present:
+        file: .claude/hooks/require-harness.py
+        find: 'return (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
+        replace: 'return bool(list((PROJECT_DIR / ".prd").glob("prd-v*.md"))) or (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
+      # The status rule, proved from both sides. Emptying the closed set makes a
+      # shipped PRD read as in-flight (the old, broken behaviour) and must redden
+      # the deny-side check; inverting the comparison makes every PRD read as
+      # shipped and must redden the allow-side one.
+      # NOT `not in` -> `in`: that reads a SHIPPED prd as in-flight, so the
+      # fixture (archived + draft) still allows and the check stays green —
+      # caught by --mutate on first run. Collapsing the in-flight verdict to
+      # False is what actually starves this check of its signal.
+      denies_when_draft_prd_present:
+        file: .claude/hooks/require-harness.py
+        find: 'return (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
+        replace: 'return bool([p for p in (PROJECT_DIR / ".prd").glob("prd-v*.md") if "status: draft" in p.read_text(errors="replace")]) or (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
+      # Stop reading `status:` at all and every PRD looks in-flight, which is
+      # exactly the shipped-repo bug this check exists to catch.
+      committed_prd_state_does_not_affect_gate:
+        file: .claude/hooks/require-harness.py
+        find: 'return (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
+        replace: 'return bool(list((PROJECT_DIR / ".prd").glob("prd-v*.md"))) or (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
+      allows_when_active_change_marker_present:
+        file: .claude/hooks/require-harness.py
+        find: 'return (PROJECT_DIR / ".prd" / "ACTIVE_CHANGE").exists()'
+        replace: 'return False'
+      exempts_harness_infra_paths:
+        file: .claude/hooks/require-harness.py
+        find: "    \".claude/skills/coding-standards/\","
+        replace: "    \".claude/skills/zzz-no-such-exempt-skill/\","
+      gates_pipeline_python_only_by_extension:
+        file: .claude/hooks/require-harness.py
+        find: "PIPELINE_EXTS = {\".py\"}"
+        replace: "PIPELINE_EXTS = {\".py\", \".sh\"}"
+      gates_non_exempt_skill_but_not_bb_skill:
+        file: .claude/hooks/require-harness.py
+        find: "    \".claude/skills/bb-\",      # the vendored bb-* skills themselves"
+        replace: "    \".claude/skills/zzz-not-a-real-prefix/\","
+      gates_root_orchestrate_py:
+        file: .claude/hooks/require-harness.py
+        find: "    if rel == \"orchestrate.py\" or rel.endswith(\"/orchestrate.py\"):\n        return True"
+        replace: "    if False:\n        return True"
+      ignores_read_tool:
+        file: .claude/hooks/require-harness.py
+        find: "    if payload.get(\"tool_name\") not in (\"Edit\", \"Write\", \"NotebookEdit\"):\n        _allow()"
+        replace: "    if False:\n        _allow()"
+      fails_open_on_malformed_payload:
+        file: .claude/hooks/require-harness.py
+        find: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _allow()"
+        replace: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _deny(\"mutated: a malformed payload must not deny\")"
+      fails_open_under_injected_fault:
+        file: .claude/hooks/require-harness.py
+        find: "def _change_active() -> bool:"
+        replace: "def _change_active() -> bool:\n    return False"
+      invoked_as_subprocess_not_import:
+        file: .claude/hooks/require-harness.py
+        find: "PROJECT_DIR = Path(os.environ.get(\"CLAUDE_PROJECT_DIR\", Path.cwd()))"
+        replace: "PROJECT_DIR = Path.cwd()"
+      runs_under_registered_interpreter:
+        file: evals/rubrics/_harness.py
+        find: "    record_hook_invocation(argv)\n    completed = subprocess.run("
+        replace: "    completed = subprocess.run("
+
+  enforce-journal:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.hooks.enforce_journal
+    code: [blocks_stop_when_journal_is_stale, blocks_stop_when_telemetry_block_missing,
+           blocks_stop_when_fewer_than_two_checkpoints, allows_stop_when_governance_trail_complete,
+           ignores_engagement_outside_recency_window, ignores_engagement_with_no_deliverable,
+           block_decision_shape_matches_stop_contract, fails_open_on_malformed_payload,
+           fails_open_under_injected_fault, invoked_as_subprocess_not_import,
+           runs_under_registered_interpreter]
+    mutations:
+      blocks_stop_when_journal_is_stale:
+        file: .claude/hooks/enforce-journal.py
+        find: "    if newest > journal_mtime + JOURNAL_GRACE_SECONDS:"
+        replace: "    if False:"
+      blocks_stop_when_telemetry_block_missing:
+        file: .claude/hooks/enforce-journal.py
+        find: "    if TELEMETRY_MARKER not in journal_text:"
+        replace: "    if False:"
+      blocks_stop_when_fewer_than_two_checkpoints:
+        file: .claude/hooks/enforce-journal.py
+        find: "    if cp < 2:"
+        replace: "    if cp < 0:"
+      allows_stop_when_governance_trail_complete:
+        file: .claude/hooks/enforce-journal.py
+        find: "JOURNAL_GRACE_SECONDS = 120"
+        replace: "JOURNAL_GRACE_SECONDS = -100000"
+      ignores_engagement_outside_recency_window:
+        file: .claude/hooks/enforce-journal.py
+        find: "    if (time.time() - newest) > RECENCY_WINDOW_SECONDS:\n        return None  # stale engagement, not this session's work"
+        replace: "    if False:\n        return None  # stale engagement, not this session's work"
+      ignores_engagement_with_no_deliverable:
+        file: .claude/hooks/enforce-journal.py
+        find: "    if newest == 0.0:\n        return None  # no final deliverable produced yet — nothing to gate\n"
+        replace: "    if newest == 0.0:\n        newest = time.time()\n"
+      block_decision_shape_matches_stop_contract:
+        file: .claude/hooks/enforce-journal.py
+        find: "    print(json.dumps({\"decision\": \"block\", \"reason\": reason}))"
+        replace: "    print(json.dumps({\"blocked\": True, \"why\": reason}))"
+      fails_open_on_malformed_payload:
+        file: .claude/hooks/enforce-journal.py
+        find: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _allow()"
+        replace: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _block(\"mutated: a malformed payload must not block\")"
+      fails_open_under_injected_fault:
+        file: .claude/hooks/enforce-journal.py
+        find: "    except OSError:\n        return None\n\n    findings = []"
+        replace: "    except OSError:\n        return (str(journal.parent), [\"mutated: an unreadable journal must not block\"])\n\n    findings = []"
+      invoked_as_subprocess_not_import:
+        file: .claude/hooks/enforce-journal.py
+        find: "PROJECT_DIR = Path(os.environ.get(\"CLAUDE_PROJECT_DIR\", Path.cwd()))"
+        replace: "PROJECT_DIR = Path.cwd()"
+      runs_under_registered_interpreter:
+        file: evals/rubrics/_harness.py
+        find: "    record_hook_invocation(argv)\n    completed = subprocess.run("
+        replace: "    completed = subprocess.run("
+
+  synthetic-knowledge-guard:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.hooks.synthetic_knowledge_guard
+    code: [denies_fictional_name_written_under_knowledge,
+           denies_synthetic_tag_under_knowledge_domains, allows_synthetic_tag_outside_domains,
+           allows_markers_outside_knowledge_tree, inspects_edit_new_string_not_write_content,
+           ignores_tools_other_than_write_and_edit, deny_decision_shape_matches_hook_contract,
+           fails_open_on_malformed_payload, fails_open_under_injected_fault,
+           invoked_as_subprocess_not_import, runs_under_registered_interpreter]
+    mutations:
+      denies_fictional_name_written_under_knowledge:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    if FICTIONAL_NAME in content:\n        _deny(_deny_message(rel, FICTIONAL_NAME))"
+        replace: "    if False:\n        _deny(_deny_message(rel, FICTIONAL_NAME))"
+      denies_synthetic_tag_under_knowledge_domains:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    if SYNTHETIC_TAG in content and (rel == \"knowledge/domains\""
+        replace: "    if False and SYNTHETIC_TAG in content and (rel == \"knowledge/domains\""
+      allows_synthetic_tag_outside_domains:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: " and (rel == \"knowledge/domains\" or rel.startswith(\"knowledge/domains/\")):"
+        replace: ":"
+      allows_markers_outside_knowledge_tree:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    if not (rel == \"knowledge\" or rel.startswith(\"knowledge/\")):\n        _allow()"
+        replace: "    if False:\n        _allow()"
+      inspects_edit_new_string_not_write_content:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    else:  # Edit\n        content = tool_input.get(\"new_string\", \"\") or \"\""
+        replace: "    else:  # Edit\n        content = \"\""
+      ignores_tools_other_than_write_and_edit:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    if tool not in (\"Write\", \"Edit\"):\n        _allow()"
+        replace: "    if False:\n        _allow()"
+      deny_decision_shape_matches_hook_contract:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "            \"permissionDecision\": \"deny\","
+        replace: "            \"permissionDecision\": \"block\","
+      fails_open_on_malformed_payload:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _allow()"
+        replace: "    try:\n        payload = json.load(sys.stdin)\n    except Exception:\n        _deny(\"mutated: a malformed payload must not deny\")"
+      fails_open_under_injected_fault:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "    except Exception:\n        # Never wedge the session on a guard bug — fail OPEN.\n        sys.exit(0)"
+        replace: "    except Exception:\n        _deny(\"mutated: a guard bug must not deny\")"
+      invoked_as_subprocess_not_import:
+        file: .claude/hooks/synthetic-knowledge-guard.py
+        find: "PROJECT_DIR = Path(os.environ.get(\"CLAUDE_PROJECT_DIR\", Path.cwd()))"
+        replace: "PROJECT_DIR = Path.cwd()"
+      runs_under_registered_interpreter:
+        file: evals/rubrics/_harness.py
+        find: "    record_hook_invocation(argv)\n    completed = subprocess.run("
+        replace: "    completed = subprocess.run("
+
+  eval-on-stop:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.hooks.eval_on_stop
+    code: [scores_recently_touched_engagement_and_writes_report,
+           ignores_engagement_outside_window, never_blocks_the_stop,
+           fails_open_when_eval_engine_unavailable, fails_open_under_injected_fault,
+           invoked_as_subprocess_not_import, runs_under_registered_interpreter]
+    mutations:
+      scores_recently_touched_engagement_and_writes_report:
+        file: .claude/hooks/eval-on-stop.py
+        find: "            rep = score_engagement(eng)\n            write_report(eng, rep)"
+        replace: "            rep = score_engagement(eng)"
+      ignores_engagement_outside_window:
+        file: .claude/hooks/eval-on-stop.py
+        find: "WINDOW_S = 1800"
+        replace: "WINDOW_S = 10 ** 9"
+      never_blocks_the_stop:
+        file: .claude/hooks/eval-on-stop.py
+        find: "\n    sys.exit(0)\n\n\nif __name__ == \"__main__\":"
+        replace: "\n    print('{\"decision\": \"block\", \"reason\": \"mutated: eval-on-stop must never block\"}')\n    sys.exit(0)\n\n\nif __name__ == \"__main__\":"
+      fails_open_when_eval_engine_unavailable:
+        file: .claude/hooks/eval-on-stop.py
+        find: "    try:\n        from runtime import score_engagement, write_report\n    except Exception:\n        sys.exit(0)  # evals absent / import issue — never block"
+        replace: "    from runtime import score_engagement, write_report"
+      fails_open_under_injected_fault:
+        file: .claude/hooks/eval-on-stop.py
+        find: "        except Exception:\n            pass  # fail-open"
+        replace: "        except Exception:\n            raise"
+      invoked_as_subprocess_not_import:
+        file: .claude/hooks/eval-on-stop.py
+        find: "PROJECT_DIR = Path(os.environ.get(\"CLAUDE_PROJECT_DIR\", Path.cwd()))"
+        replace: "PROJECT_DIR = Path.cwd()"
+      runs_under_registered_interpreter:
+        file: evals/rubrics/_harness.py
+        find: "    record_hook_invocation(argv)\n    completed = subprocess.run("
+        replace: "    completed = subprocess.run("
+
+  # artifact-boundary (ticket #198, backlog :134) — executable coverage for the
+  # three scripts/artifact_boundary.py gates other components depend on:
+  # cap_roi_config, synthetic_policy and the deanonymize_dir exit gate.
+  # Deliberately COMPLEMENTARY, never duplicative:
+  #   * knowledge-harvester's row already scores synthetic_policy against the
+  #     three committed fixtures (quarantine_case/, never_case/,
+  #     bare_tests_case/). This row takes the branches that row cannot reach —
+  #     marker-beats-location, the parent-directory walk, the two fail-safes
+  #     for a missing/unrecognised harvest_policy, the "real" negative control,
+  #     and an unreadable marker under a real chmod fault.
+  #   * pii-anonymizer's nested_outputs_deanonymized / xlsx_outputs_deanonymized
+  #     (#165) cover deanonymize_dir's recursive walk, exclusions and .xlsx
+  #     branch. This row takes the two REFUSAL contracts they do not: a missing
+  #     .pii_mapping.json must block and modify nothing, and a file that could
+  #     not be restored must surface in `unrestored` with client_ready: false —
+  #     never the silent skip that defect was written against.
+  #   * roi-financial-modeler's backbase_impact_within_cap /
+  #     overcap_negative_gate_witness prove the cap can be applied. This row
+  #     adds the gate's own failure contract (missing / unparseable config) and
+  #     asserts the already-capped golden is left byte-identical.
+  # `input:` is the CAPPED golden; the over-cap negative is resolved as its
+  # SIBLING, so the mutation harness's shadow_target() carries both fixtures
+  # into the shadow together. cap_roi_config rewrites in place, so every check
+  # gates a /tmp COPY and asserts the committed bytes are unchanged.
+  # threshold 1.00, no judge: these are governance gates, pass/fail.
+  artifact-boundary:
+    altitude: component
+    threshold: 1.00
+    input: evals/goldens/roi_config_provenance.json
+    code: [cap_roi_config_caps_driver_and_scenario_impacts,
+           cap_roi_config_missing_or_unparseable_never_passes,
+           synthetic_policy_marker_beats_location_and_unknown_policy_fails_safe,
+           synthetic_policy_unreadable_marker_fails_safe_quarantine,
+           deanonymize_dir_missing_mapping_blocks_and_modifies_nothing,
+           deanonymize_dir_unreadable_output_reported_unrestored_not_client_ready]
+    mutations:
+      cap_roi_config_caps_driver_and_scenario_impacts:
+        file: scripts/artifact_boundary.py
+        find: "if isinstance(val, (int, float)) and val > MAX_BACKBASE_IMPACT:"
+        replace: "if False:"
+      cap_roi_config_missing_or_unparseable_never_passes:
+        file: scripts/artifact_boundary.py
+        find: "report[\"parse_error\"] = type(e).__name__"
+        replace: "report[\"parse_error\"] = None"
+      synthetic_policy_marker_beats_location_and_unknown_policy_fails_safe:
+        file: scripts/artifact_boundary.py
+        find: "if value not in _KNOWN_POLICIES:"
+        replace: "if False:"
+      synthetic_policy_unreadable_marker_fails_safe_quarantine:
+        file: scripts/artifact_boundary.py
+        find: "return (\"quarantine\",\n                            f\"marker at {marker} unreadable"
+        replace: "return (\"real\",\n                            f\"marker at {marker} unreadable"
+      deanonymize_dir_missing_mapping_blocks_and_modifies_nothing:
+        file: scripts/artifact_boundary.py
+        find: "report[\"error\"] = \"missing_pii_mapping\""
+        replace: "report[\"client_ready\"] = True"
+      deanonymize_dir_unreadable_output_reported_unrestored_not_client_ready:
+        file: scripts/artifact_boundary.py
+        find: "                        report[\"unrestored\"].append(str(out_file))\n\n            log(f\"  ✓ De-anonymized"
+        replace: "                        pass\n\n            log(f\"  ✓ De-anonymized"
+
+  # pipeline-workspace (ticket #198, backlog :134) — #167's guarantee, made
+  # executable: NO composed prompt and NO cwd names the client. That claim was
+  # verified once by a throwaway harness that stubbed _resilient_query and
+  # walked every call site, and nothing in evals/ re-ran it; the structural
+  # altitude scores fixtures and cannot see a regression here at all.
+  # No `input:` — the evaluator is self-contained: it builds three synthetic
+  # engagements in a tempdir in the PRE-MIGRATION, client-named shape (what
+  # #167 has to neutralise) and drives the real orchestrate.py steps with
+  # _resilient_query stubbed, so nothing leaves the machine. The three
+  # traversals (non-interactive x3 transcripts, interactive x3, non-interactive
+  # x1) between them execute all 26 run_agent call sites in orchestrate.py, and
+  # `traversal_covers_every_agent_call_site` proves that against an AST
+  # enumeration — a call site added later without coverage turns it red.
+  # `denylist_nonempty_asserted_first` is FIRST structurally, not by convention:
+  # evaluate() cannot launch the traversal without its return value, and an
+  # empty deny-list leaves every other check reporting NOT EVALUATED.
+  # REQUIRES the Presidio/SDK interpreter (orchestrate.py imports
+  # claude_agent_sdk at module level; step_discovery runs the real anonymiser).
+  # The rubric resolves it — `.venv/bin/python` locally, CI's sys.executable
+  # after requirements.txt — and fails loudly naming `bash scripts/setup_pii.sh`
+  # rather than skipping. The rubric itself runs fine under plain python3: the
+  # traversal is a subprocess.
+  # threshold 1.00, no judge: a privacy control is pass/fail.
+  pipeline-workspace:
+    altitude: component
+    threshold: 1.00
+    code: [denylist_nonempty_asserted_first,
+           traversal_covers_every_agent_call_site,
+           no_client_identifier_in_composed_prompt,
+           cwd_is_neutral_workspace_for_every_invocation,
+           neutral_invocation_assertion_refuses_client_named_cwd,
+           workspace_root_placement_and_resume_reattaches,
+           log_redaction_backstop_scrubs_client_paths]
+    mutations:
+      denylist_nonempty_asserted_first:
+        file: scripts/pii/denylist.py
+        find: "    engagement_dir = Path(engagement_dir)\n    terms = set()\n    budget = _ScanBudget()"
+        replace: "    engagement_dir = Path(engagement_dir)\n    return set()"
+      traversal_covers_every_agent_call_site:
+        file: scripts/orchestrate.py
+        find: "    if express or non_interactive:\n        result = await run_agent(\"roadmap-prioritization\", cwd=engagement_dir,"
+        replace: "    if True:\n        result = await run_agent(\"roadmap-prioritization\", cwd=engagement_dir,"
+      no_client_identifier_in_composed_prompt:
+        file: scripts/orchestrate.py
+        find: "        \"engagement_dir\": workspace_dir,\n        \"outputs_dir\": outputs_dir,\n        \"engagement_id\": engagement_id,"
+        replace: "        \"engagement_dir\": engagement_dir,\n        \"outputs_dir\": outputs_dir,\n        \"engagement_id\": engagement_id,"
+      cwd_is_neutral_workspace_for_every_invocation:
+        file: scripts/orchestrate.py
+        find: "    result = await run_agent(\n        \"knowledge-harvester\", cwd=workspace_dir,"
+        replace: "    result = await run_agent(\n        \"knowledge-harvester\", cwd=engagement_dir,"
+      neutral_invocation_assertion_refuses_client_named_cwd:
+        file: scripts/orchestrate.py
+        find: "    probe = str(text).replace(str(REPO_ROOT), \"\")\n    return sorted(set(_CLIENT_RE.findall(probe)))"
+        replace: "    return []"
+      workspace_root_placement_and_resume_reattaches:
+        file: scripts/orchestrate.py
+        find: "    ws = _identity.Workspace(path, engagement_dir, {})"
+        replace: "    ws = _materialise_run_workspace(engagement_dir)"
+      log_redaction_backstop_scrubs_client_paths:
+        file: scripts/orchestrate.py
+        find: "    if _REDACT_RE is None:\n        return msg\n    return _REDACT_RE.sub(\"<REDACTED>\", msg)"
+        replace: "    return msg"
+
+  # --- #199: engagement identity + migration ------------------------------------
+  # The opaque-ID scheme (solution-design-v6 D6) is a privacy control: the
+  # ID→client binding lives only in `.engagement_map.json` (chmod 600) and never
+  # in a directory path. Both rows are self-contained — they synthesize
+  # engagements in a tempdir and drive the real scripts — so no `input:`.
+  # threshold 1.00, no judge: pass/fail governance gates. 13/13 mutation-proven;
+  # both names added to MUTATION_PROOF_REQUIRED_ROWS in this same change.
+  engagement-identity:
+    altitude: component
+    threshold: 1.00
+    # The four `label_*` / `engagement_id_*` checks are D1 of
+    # .design/knowledge-identity-resolution.md — the knowledge label's
+    # discriminator. domain+region+year alone is many-to-one: three
+    # institutions in ONE EXTRACTION_REGISTRY table resolved to the identical
+    # [Client-retail-NAM-2026], merging their benchmarks into one apparent
+    # peer with nothing raising.
+    code: [mints_opaque_hex_id_not_slug_derived, map_entry_written_chmod_600,
+           client_identity_absent_from_directory_path, find_engagement_resolves_partial_match,
+           find_engagement_resolves_case_insensitive_match,
+           duplicate_engagement_refused_not_silently_recreated,
+           label_discriminated_by_opaque_engagement_id,
+           label_discriminator_never_derived_from_client_name,
+           label_well_formed_when_id_absent,
+           engagement_id_resolved_from_opaque_path_only]
+    mutations:
+      label_discriminated_by_opaque_engagement_id:
+        file: scripts/pii/identity.py
+        find: "return eid[:LABEL_DISCRIMINATOR_CHARS]"
+        replace: "return eid[:0]"
+      label_discriminator_never_derived_from_client_name:
+        file: scripts/pii/identity.py
+        find: 'if not _OPAQUE_ID_RE.match(eid):'
+        replace: 'if False:'
+      label_well_formed_when_id_absent:
+        file: scripts/pii/identity.py
+        find: 'return base + ("-%s]" % disc if disc else "]")'
+        replace: 'return base + ("-%s]" % disc if disc else "")'
+      engagement_id_resolved_from_opaque_path_only:
+        file: scripts/pii/identity.py
+        find: 'if i and parts[i - 1].lower() == "engagements" and _OPAQUE_ID_RE.match(seg):'
+        replace: 'if _OPAQUE_ID_RE.match(seg):'
+      mints_opaque_hex_id_not_slug_derived:
+        file: scripts/pii/identity.py
+        find: "engagement_id = _generate_id(set(data), client, resolved_slug)"
+        replace: "engagement_id = resolved_slug"
+      map_entry_written_chmod_600:
+        file: scripts/pii/identity.py
+        find: "MAP_MODE = 0o600"
+        replace: "MAP_MODE = 0o644"
+      client_identity_absent_from_directory_path:
+        file: scripts/init_engagement_identity.py
+        find: 'holder = root / "engagements" / engagement_id'
+        replace: 'holder = root / "engagements" / slug'
+      find_engagement_resolves_partial_match:
+        file: scripts/pii/identity.py
+        find: "if not any(needle in h for h in haystacks if h):"
+        replace: "if not any(needle == h for h in haystacks if h):"
+      find_engagement_resolves_case_insensitive_match:
+        file: scripts/pii/identity.py
+        find: 'return _ALNUM_RE.sub("", (value or "").strip().lower())'
+        replace: 'return _ALNUM_RE.sub("", (value or "").strip())'
+      duplicate_engagement_refused_not_silently_recreated:
+        file: scripts/init_engagement_identity.py
+        find: 'if (Path(record["path"]) / name).is_dir():'
+        replace: 'if False:'
+
+  engagement-migration:
+    altitude: component
+    threshold: 1.00
+    code: [dry_run_default_writes_nothing, apply_flag_required_to_move_directory,
+           refuses_and_writes_nothing_when_deny_term_would_be_lost,
+           proceeds_when_name_override_supplies_missing_coverage,
+           migration_preserves_concatenated_slug_form,
+           deny_term_coverage_case_insensitive_not_falsely_lost,
+           deny_term_coverage_concatenated_not_falsely_retained]
+    mutations:
+      dry_run_default_writes_nothing:
+        file: scripts/migrate_engagements.py
+        find: "if rc != 0 or not args.apply or not steps:"
+        replace: "if rc != 0 or not steps:"
+      apply_flag_required_to_move_directory:
+        file: scripts/migrate_engagements.py
+        find: "os.rename(str(step.source), str(target))"
+        replace: "pass"
+      refuses_and_writes_nothing_when_deny_term_would_be_lost:
+        file: scripts/migrate_engagements.py
+        find: "if step.lost:"
+        replace: "if False and step.lost:"
+      proceeds_when_name_override_supplies_missing_coverage:
+        file: scripts/migrate_engagements.py
+        find: "if override:"
+        replace: "if False and override:"
+      migration_preserves_concatenated_slug_form:
+        file: scripts/pii/identity.py
+        find: "denylist.extract_terms_from_slug(client_slug, slug_terms)"
+        replace: "pass"
+      deny_term_coverage_case_insensitive_not_falsely_lost:
+        file: scripts/pii/identity.py
+        find: "        re.IGNORECASE,"
+        replace: "        0,"
+      deny_term_coverage_concatenated_not_falsely_retained:
+        file: scripts/pii/identity.py
+        find: 'r"(?<![A-Za-z0-9])" + re.escape(term) + r"(?![A-Za-z0-9])"'
+        replace: 'r"(?<![A-Za-z0-9])" + re.escape(term.replace(" ", "")) + r"(?![A-Za-z0-9])"'
+
+  # --- #200: roi-calibrator + frontline-builders --------------------------------
+  # NO `mutations:` KEY, deliberately and visibly: #200 proved these 10 checks by
+  # hand and did not author registry mutation entries, so both rows sit in the
+  # keyless DEBT list under #186's staged policy — loud, counted, non-gating —
+  # rather than being silently exempted. Their names are therefore NOT on
+  # MUTATION_PROOF_REQUIRED_ROWS (that list's rule is "added in the same change
+  # as the row's first `mutations:` entry"). Until those entries exist, the
+  # proofs behind these two rows are hand-run, not machine-enforced. Tracked in
+  # `.prd/backlog.md` under the eval-gate-v7 epic.
+  roi-calibrator:
+    altitude: component
+    threshold: 0.80
+    input: evals/goldens/roi_config_provenance.json
+    code: [assess_report_well_formed, scenario_curve_shape_valid,
+           cap_parity_with_artifact_boundary, conservative_anchor_invariant]
+
+  frontline-builders:
+    altitude: component
+    threshold: 0.80
+    input: presentations/frontline-2026/design-tokens.json
+    code: [pptx_slides_file_opens_with_expected_slides, pptx_slides_brand_tokens_match,
+           pptx_presenter_file_opens_with_expected_slides, pptx_presenter_brand_tokens_match,
+           html_self_contained_no_cdn, html_brand_tokens_root_match]
+
+  # ===========================================================================
+  # NO rubric_calibration ROWS HERE (#201, completed in the epic's closing pass)
+  # ===========================================================================
+  # #201 shipped a YAML alias block at this spot: the eleven `rubric_calibration:`
+  # rows aliased back into `components:` so `--component <rubric>` / `--mutate
+  # <rubric>` could reach them while `run_experiment.py` was owned by a concurrent
+  # ticket (#204). #204 has landed, the runner now has a real `--calibration`
+  # branch that reads the `rubric_calibration:` section directly, and the shim is
+  # deleted.
+  #
+  # Do not put a calibration row back into this section, under either name. A row
+  # that answers to `--component` is a component gate to every reader and every
+  # quoted number, which is the exact misreading #201 exists to remove. The
+  # boundary is asserted, not just described: `check_registry.py`'s
+  # `check_rubric_calibration` fails preflight if a calibration row appears in
+  # `components:`, and separately fails if the runner has no `--calibration`
+  # dispatch (an unreachable row is a gate nobody can run, which reads as
+  # "nothing failed"). The agent NAMES keep their hard-failing `retired:` redirect
+  # rows below — those are signposts, never gates.
+
+  # ===========================================================================
+  # RETIRED AGENT-NAME ROWS (#201) — REDIRECT ONLY, never a gate
+  # ===========================================================================
+  # These eleven agent names used to key a gating row. They no longer do. Each
+  # keeps a stub here for exactly two reasons:
+  #
+  #   1. `--component market-context-researcher` would otherwise die on a bare
+  #      `KeyError` from `reg["components"][args.component]`, which teaches the
+  #      reader nothing. `rubrics.component.moved_to_rubric_calibration` always
+  #      HARD-FAILS and prints the agent -> calibration-row mapping plus the
+  #      distinction, so the old name can never be green and can never be quoted
+  #      as evidence about anything.
+  #   2. `.github/workflows/evals.yml`'s derive step maps a changed
+  #      `.claude/agents/<name>.md` to `components.<name>` and hard-errors when
+  #      the row is missing. It reads the `retired:` flag below and SKIPS these
+  #      rows with a notice rather than running them — because running a
+  #      calibration rubric on a prompt change would tell the reviewer nothing
+  #      about the prompt they changed, and CI must not imply otherwise.
+  #
+  # SHAPE IS ENFORCED (check_registry.py `check_retired_redirect_rows`): a
+  # `retired: true` row must declare no `code:`, no `input:`, no `negatives:`,
+  # this evaluator, and a `moved_to:` naming a real `rubric_calibration` row. A
+  # redirect stub cannot quietly grow back into a gate.
+  market-context-researcher:
+    retired: true
+    moved_to: market-context-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
   roi-hypothesis-builder:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/roi_hypothesis_golden.md   # scores specifics._roi_hypothesis via rubrics.component.roi_hypothesis_builder
-    code: [lever_ids_present, four_link_chain_present, problem_statement_present]
-    judge: [levers_grounded_in_evidence]
-
+    retired: true
+    moved_to: roi-hypothesis-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
   discovery-transcript-interpreter:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/discovery_evidence_register_golden.md   # scores specifics._discovery via rubrics.component.discovery_transcript_interpreter
-    code: [evidence_ids_wellformed, evidence_register_present, lifecycle_tags_present, pain_points_present]
-    judge: [faithful_extraction_no_invention]
-
+    retired: true
+    moved_to: discovery-evidence-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
   capability-assessment:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/capability_assessment_golden.md   # scores specifics._capability via rubrics.component.capability_assessment
-    code: [maturity_scale_0_4, executive_summary_present, front_middle_back_layers, unconsidered_needs_present, scores_have_evidence_refs]
-    judge: [scores_justified_by_evidence]
-
+    retired: true
+    moved_to: capability-maturity-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
   roadmap-prioritization:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/roadmap_golden.md   # scores specifics._roadmap via rubrics.component.roadmap_prioritization
-    code: [phases_present, initiatives_sequenced, dependencies_present, gates_or_milestones_present]
-    judge: [initiatives_traced_to_gaps_and_levers]
-
+    retired: true
+    moved_to: roadmap-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
   narrative-assembler:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/narrative_golden.md   # scores specifics._narrative via rubrics.component.narrative_assembler
-    code: [seven_acts_present, executive_summary_present, transformation_arc_present]
-    judge: [transformation_arc_threaded_7_acts]   # the documented assembler weakness
-
+    retired: true
+    moved_to: narrative-arc-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
   journey-builder:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/journey_maps_golden.md   # scores specifics._journey via rubrics.component.journey_builder
-    code: [lifecycle_stages_present, friction_or_leakage_present, as_is_and_future_state]
-    judge: [value_leakage_quantified]
-
+    retired: true
+    moved_to: journey-map-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
   benchmark-librarian:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/benchmark_golden.md   # scores specifics._benchmark via rubrics.component.benchmark_librarian
-    code: [confidence_levels_present, source_attribution_present]
-    judge: [benchmarks_defensible_not_hallucinated]
-
+    retired: true
+    moved_to: benchmark-shortlist-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
   usecase-designer:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/usecase_golden.md   # scores specifics._usecase via rubrics.component.usecase_designer
-    code: [usecase_ids_present, product_directory_mapping, ootb_config_custom_classification, priority_tiers_present]
-    judge: [usecases_grounded_in_product_directory]
-
+    retired: true
+    moved_to: usecase-design-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
   workshop-preparation:
-    altitude: component
-    threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/workshop_prep_golden.md   # scores specifics._workshop_prep via rubrics.component.workshop_preparation
-    code: [hypotheses_present, validation_questions_present, checkpoint_present]
-    judge: [hypotheses_specific_and_quantified]
-
+    retired: true
+    moved_to: workshop-prep-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
   ignite-workshop-synthesizer:
+    retired: true
+    moved_to: workshop-synthesis-rubric
+    evaluator: rubrics.component.moved_to_rubric_calibration
+    threshold: 1.00
+
+  # critty (#95) — verifies `.claude/commands/critty.md` (tickets #93/#94's
+  # on-demand CTP escalation skill) force-loads the full protocol (with a
+  # named fallback), scopes/aligns before critiquing, hunts all five CTP
+  # functions without waiting for a trigger, splits proactive provenance into
+  # challengeable vs. unverifiable, emits the five-field challenge-register
+  # table, flags where independence would bite harder, and states what
+  # /critty does NOT do. Deterministic code checks only — no judge this cycle.
+  critty:
     altitude: component
     threshold: 0.80
-    # Re-pointed from bare `nfis` (gitignored, vacuous) to a committed synthetic golden.
-    input: evals/goldens/ignite_synthesis_golden.md   # scores specifics._ignite_synth via rubrics.component.ignite_workshop_synthesizer
-    code: [hypothesis_validation_statuses, usecase_candidates_present, usecase_classification_present]
-    judge: [synthesis_faithful_to_workshops]
+    evaluator: rubrics.component.critty
+    input: .claude/commands/critty.md
+    code: [frontmatter_valid, protocol_load_step, fallback_when_absent, scope_target_step,
+           align_before_critique_step, five_functions_hunt, proactive_provenance_split,
+           challenge_register_table, independence_flag, not_do_section]
 
-# Pipeline (integration) altitude — the most important. When ANY component
-# changes, run orchestrate.py end-to-end on a golden engagement and check the
-# inter-agent contracts + final deliverable still hold.
-pipeline:
-  altitude: pipeline
-  evaluator: rubrics.pipeline.contracts
+  # critical-thought-partner (#95) — verifies the CTP STANDARD
+  # (knowledge/standards/critical_thought_partner_protocol.md, ticket #93) is
+  # structurally complete (governing principle, T1-T5 triggers, S1-S4
+  # suppression rules, the five functions, the five detection mechanisms, a
+  # worked example, both v1 limits) AND that CLAUDE.md is actually wired to
+  # it (core section heading, governance-table row, the "most turns need no
+  # challenge" framing, both v1 limits echoed in the core section).
+  # CLAUDE.md is resolved via rubrics.base.repo_root() — never a hardcoded
+  # path. Deterministic code checks only — no judge this cycle.
+  critical-thought-partner:
+    altitude: component
+    threshold: 0.80
+    evaluator: rubrics.component.critical_thought_partner
+    input: knowledge/standards/critical_thought_partner_protocol.md
+    code: [governing_principle, governor_triggers_t1_t5, suppression_s1_s4, five_functions,
+           five_detection_mechanisms, worked_example, v1_limits_standard,
+           claude_md_core_section_heading, claude_md_governance_table_row,
+           claude_md_zero_challenge_framing, claude_md_v1_limits_in_core]
+
+  # Three agents that had NO row and NO rubric, so `evals.yml`'s changed-component
+  # derivation hard-failed on any edit to them — blocking rather than verifying.
+  # These score the PROMPT FILE, not agent output: the honest claim is "the
+  # contracts the system depends on are still in the prompt", not "the agent
+  # behaves". rubrics/component/specifics.py (output, frozen by D10) and
+  # governance.py (output baseline) cannot serve, there being no output here.
+  capability-gap-analyzer:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.agent_prompt_contract
+    input: .claude/agents/capability-gap-analyzer.md
+    code: [frontmatter_declares_name_and_description, telemetry_block_marker_present,
+           mcp_anonymization_constraint_present]
+    mutations:
+      frontmatter_declares_name_and_description:
+        file: .claude/agents/capability-gap-analyzer.md
+        find: "description:"
+        replace: "descriptionx:"
+      telemetry_block_marker_present:
+        file: .claude/agents/capability-gap-analyzer.md
+        find: "TELEMETRY_START"
+        replace: "TELEMETRY_DISABLED"
+      mcp_anonymization_constraint_present:
+        file: .claude/agents/capability-gap-analyzer.md
+        find: "Anonymize every MCP query"
+        replace: "Query Infobank freely"
+
+  upgrade-analysis:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.agent_prompt_contract
+    input: .claude/agents/upgrade-analysis.md
+    code: [frontmatter_declares_name_and_description, telemetry_block_marker_present,
+           mcp_anonymization_constraint_present]
+    mutations:
+      frontmatter_declares_name_and_description:
+        file: .claude/agents/upgrade-analysis.md
+        find: "description:"
+        replace: "descriptionx:"
+      telemetry_block_marker_present:
+        file: .claude/agents/upgrade-analysis.md
+        find: "TELEMETRY_START"
+        replace: "TELEMETRY_DISABLED"
+      mcp_anonymization_constraint_present:
+        file: .claude/agents/upgrade-analysis.md
+        find: "Anonymize every MCP query"
+        replace: "Query Infobank freely"
+
+  value-consulting-orchestrator:
+    altitude: component
+    threshold: 1.00
+    evaluator: rubrics.component.agent_prompt_contract
+    input: .claude/agents/value-consulting-orchestrator.md
+    code: [frontmatter_declares_name_and_description, telemetry_block_marker_present,
+           journal_and_telemetry_protocol_section, routes_all_three_engagement_modes,
+           delegates_block_a_to_the_script]
+    mutations:
+      frontmatter_declares_name_and_description:
+        file: .claude/agents/value-consulting-orchestrator.md
+        find: "description:"
+        replace: "descriptionx:"
+      telemetry_block_marker_present:
+        file: .claude/agents/value-consulting-orchestrator.md
+        find: "TELEMETRY_START"
+        replace: "TELEMETRY_DISABLED"
+      journal_and_telemetry_protocol_section:
+        file: .claude/agents/value-consulting-orchestrator.md
+        find: "Journal Entry & Telemetry Protocol"
+        replace: "Journal Notes"
+      routes_all_three_engagement_modes:
+        file: .claude/agents/value-consulting-orchestrator.md
+        find: "Hybrid"
+        replace: "Combined"
+      delegates_block_a_to_the_script:
+        file: .claude/agents/value-consulting-orchestrator.md
+        find: "orchestrate.py"
+        replace: "the-pipeline"
+
+# Deliverable-structural altitude (#188 — was `pipeline:`; same checks, honest
+# name). It lints the inter-agent structural contracts across a set of output
+# FILES that already exist on disk. It does NOT run orchestrate.py, does not
+# invoke an agent, and never reads the component under change — a green here is
+# not integration evidence. The old name is what made a 1.000 look like one.
+deliverable_structural:
+  altitude: deliverable_structural
+  evaluator: rubrics.structural.contracts
   threshold: 0.90
   # Committed, anonymized golden engagement outputs (Path-2: score existing).
   # Re-pointed from a never-created `nfis` engagement — see PRD v1.
+  # NOTE: the fixture directory keeps its `pipeline_engagement` name — those are
+  # genuinely the outputs of a past pipeline run, not the altitude's name.
   golden_engagement: evals/goldens/pipeline_engagement/outputs
   orchestrate: orchestrate.py

@@ -29,6 +29,8 @@ When this skill is invoked:
    - `pain_points.md` - Common challenges
    - `value_propositions.md` - Backbase solutions
 
+   > **Synthetic-data exclusion:** exclude any `[Synthetic-Test]`-tagged entry and anything sourced from a `tests/` path (see `knowledge/standards/benchmark_evolution.md`). If ≥1 entry was excluded, append that standard's canonical excluded-count note; if nothing was excluded, add no note.
+
 3. **Summarize the domain context** for the user, highlighting:
    - Key themes and focus areas
    - Available benchmarks

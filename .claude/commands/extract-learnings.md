@@ -10,7 +10,7 @@ Extract structured knowledge from a scanned engagement folder into the knowledge
 
 Or with partial path:
 ```
-/extract-learnings 2025/38. Fifth Third --type roi_logic --priority HIGH
+/extract-learnings 2025/38. [Client-commercial-NAM-2026-b] --type roi_logic --priority HIGH
 ```
 
 ## Prerequisites
@@ -32,6 +32,31 @@ Or with partial path:
 | `external` | McKinsey/BCG/etc. reports | `knowledge/learnings/external_reports/` | Industry benchmarks, frameworks |
 
 ## Extraction Process
+
+### Step 0: Synthetic-engagement check
+
+Before touching any file, check the target engagement folder for the
+synthetic-test-engagement gate — same rule as `knowledge-harvester`'s Core
+Rule 0. Walk the engagement folder and its parents for a `.synthetic` marker
+file, and check whether the folder's path contains a `tests` segment. See
+`tests/engagements/README.md` for the marker format.
+
+- **`harvest_policy: never`** (marker found, policy is `never`): refuse
+  politely and stop — do not read, extract, or write anything. Tell the
+  consultant: "This engagement is marked harvest_policy: never in its
+  .synthetic file (it contains real source material used as test input).
+  Nothing was extracted. See tests/engagements/README.md."
+- **Quarantine** (marker says `harvest_policy: quarantine`, or no marker but
+  the path has a `tests` segment, or a marker with a missing/unparseable
+  `harvest_policy` — all fail-safe to quarantine): proceed with extraction,
+  but redirect every write from its normal `knowledge/learnings/**`
+  destination to `<engagement>/outputs/knowledge_harvest/` instead (same
+  filenames, same structure), and skip the `EXTRACTION_REGISTRY.md` update.
+  Say so in your reply: "This is a synthetic/test engagement — harvest
+  quarantined to outputs/knowledge_harvest/. Nothing was written to shared
+  knowledge."
+- **Otherwise** (no marker, no `tests` segment): proceed with the normal
+  process below.
 
 ### Step 1: Identify Extractable Files
 
@@ -58,11 +83,17 @@ Google files (.gslides, .gsheet, .gdoc) cannot be read directly by Claude. For t
 
 For each extractable file:
 
-1. **Read the content** (following context management protocol for large files)
+1. **Anonymize BEFORE reading the raw content.** Run the shared tool first — never hand-detect client or stakeholder names:
+   ```bash
+   .claude/hooks/_resolve_python.sh scripts/anonymize_transcript.py --file <file> --engagement-dir <source_engagement_dir>
+   ```
+   Then read only the `.anon_<filename>` output it produces (following the context management protocol for large files) — this is the same tool and detection every other PII-sensitive surface in Cortex uses.
 
-2. **Anonymize sensitive data:**
-   - Replace client names with `[BANK_NAME]` or bank type: `[US Regional Bank]`, `[APAC Universal Bank]`
-   - Replace specific financials with ranges: `$50M revenue` → `[$40-60M revenue range]`
+2. **Relabel for the knowledge base** (mechanical formatting, not detection — the tool already found everything identifying):
+   - Collapse every `<CLIENT_N>` placeholder to the single descriptive label `[Client-{domain}-{REGION}-{year}-{disc}]` — the same convention `.claude/agents/knowledge-harvester.md` Core Rule 2 uses — built from context you already have, never from the placeholder.
+     `{disc}` is the first 4 characters of the engagement's opaque 8-hex directory ID (`engagements/a3f2beef/...` -> `a3f2`). It is REQUIRED: without it two engagements sharing a domain, region and year produce the identical label and their data merges silently. Never derive it from the client's name; omit it and say so if the directory is not an opaque ID. See Core Rule 2 for the full rule.
+   - Drop every `<PERSON_N>`, `<EMAIL_ADDRESS_N>`, or other entity placeholder entirely — do not write stakeholder identity into shared knowledge, opaque or not.
+   - Replace specific financials with ranges: `$50M revenue` → `[$40-60M revenue range]` — a commercial-sensitivity practice, separate from PII anonymization; keep it.
    - Remove contract terms, pricing, specific dates
    - Keep patterns, structures, logic
 
@@ -207,7 +238,7 @@ Maintain a registry at `knowledge/learnings/EXTRACTION_REGISTRY.md`:
 
 | Engagement | Region | Domain | Types Extracted | Date |
 |------------|--------|--------|-----------------|------|
-| Fifth Third | NAM | Commercial | journey, competitor | 2025-02-05 |
+| [Client-commercial-NAM-2026-b] | NAM | Commercial | journey, competitor | 2025-02-05 |
 | I&M Kenya | Africa | Retail | roi_logic, journey | 2025-02-05 |
 
 ## Knowledge Inventory
@@ -245,13 +276,13 @@ Maintain a registry at `knowledge/learnings/EXTRACTION_REGISTRY.md`:
 ## Example Usage
 
 ```
-/extract-learnings 2025/38. Fifth Third --type competitor --priority HIGH
+/extract-learnings 2025/38. [Client-commercial-NAM-2026-b] --type competitor --priority HIGH
 ```
 
 This would:
 1. Look for Build vs Buy analysis and competitor comparison files
 2. Extract the comparison framework and key differentiators
-3. Anonymize as "US Universal Bank"
+3. Anonymize per Step 2 — e.g. the client collapses to `[Client-commercial-nam-2025]`
 4. Write to `knowledge/learnings/competitor_analyses/build_vs_buy_commercial_onboarding.md`
 5. Update the extraction registry
 

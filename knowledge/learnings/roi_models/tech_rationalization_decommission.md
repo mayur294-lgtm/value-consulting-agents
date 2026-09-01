@@ -6,7 +6,7 @@ This document captures patterns for building tech rationalization and platform d
 
 ---
 
-## OneAZ Credit Union Reference (NAM, 2025)
+## [Client-creditunion-NAM-2026] Reference (NAM, 2025)
 
 **Context:** Arizona Credit Union, 182K retail members, 12K business members, Lumin platform replacement
 
@@ -33,7 +33,7 @@ This document captures patterns for building tech rationalization and platform d
 
 ## Legacy Platform Cost Breakdown
 
-### Annual Platform Costs (OneAZ Lumin Stack)
+### Annual Platform Costs ([Client-creditunion-NAM-2026] Lumin Stack)
 
 | Category | Annual Cost | Notes |
 |----------|-------------|-------|
@@ -107,7 +107,7 @@ This document captures patterns for building tech rationalization and platform d
 
 ---
 
-## Backbase vs. Legacy Cost Comparison (OneAZ)
+## Backbase vs. Legacy Cost Comparison ([Client-creditunion-NAM-2026])
 
 | Scenario | Annual Cost | Notes |
 |----------|-------------|-------|
@@ -153,7 +153,7 @@ This document captures patterns for building tech rationalization and platform d
 
 ## Sources
 
-1. **OneAZ Credit Union** - Decommissioning Model V1 (2025)
+1. **[Client-creditunion-NAM-2026]** - Decommissioning Model V1 (2025)
 2. **Backbase Consulting** - Tech Rationalization Patterns
 
 ---

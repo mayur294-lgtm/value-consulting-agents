@@ -226,7 +226,7 @@ Generates a hypothesis-driven facilitation deck for the Member (CU) or Customer 
 
 ### Sample Prompt
 ```
-Generate the Member Experience Workshop deck for BECU.
+Generate the Member Experience Workshop deck for <client>.
 Use the attached ENGAGEMENT_CONTEXT.md for background.
 Here are their customer research findings: [attach file]
 ```
@@ -330,7 +330,7 @@ Creates detailed Use Case Design Documents and interactive HTML prototypes based
 
 ### Sample Prompt
 ```
-Create use case design documents and prototypes for BECU.
+Create use case design documents and prototypes for <client>.
 Use the attached ENGAGEMENT_CONTEXT.md.
 Here are the workshop transcripts: [attach files]
 
@@ -367,7 +367,7 @@ Compiles all engagement findings into a polished, client-ready presentation for 
 
 ### Sample Prompt
 ```
-Compile the Ignite Day presentation for BECU.
+Compile the Ignite Day presentation for <client>.
 Use all attached materials:
 - ENGAGEMENT_CONTEXT.md
 - Use Case Design Documents
@@ -393,7 +393,7 @@ Generates ROI analysis through two distinct phases: questionnaire creation and b
 
 **Sample Prompt**:
 ```
-Generate the ROI questionnaire for BECU.
+Generate the ROI questionnaire for <client>.
 Use the attached ENGAGEMENT_CONTEXT.md to pre-populate known data.
 Focus on: Account Opening, Lending, Self-Service use cases.
 ```
@@ -583,7 +583,7 @@ The context file has 10 sections that accumulate information:
 ### DO ✅
 
 ```
-✅ "Generate the Strategy Workshop deck for First National Bank. 
+✅ "Generate the Strategy Workshop deck for <client>. 
    They are a regional bank with 200,000 customers and $5B in assets, 
    headquartered in Ohio. Their strategic priority is digital transformation 
    of lending. Include competitive analysis against Huntington and KeyBank."
@@ -606,7 +606,7 @@ The context file has 10 sections that accumulate information:
 ```
 ❌ "Make me a deck" (too vague)
 
-❌ "Generate everything for BECU" (no specific agent/output)
+❌ "Generate everything for <client>" (no specific agent/output)
 
 ❌ "Create the business case" (without questionnaire data)
 ```

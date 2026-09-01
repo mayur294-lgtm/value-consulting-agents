@@ -14,7 +14,7 @@ Use this when the user wants to:
 
 **Do NOT use this for:**
 - Final Google Slides-compatible PPTX → use `/frontline-slides`
-- Presentations in the older Schroders/SEB style → use `/executive-briefing`
+- Presentations in the older executive-briefing style → use `/executive-briefing`
 
 ## Design System
 
@@ -114,7 +114,7 @@ layers=[
 
 ```python
 import sys
-sys.path.insert(0, '/Users/mayur@backbase.com/Documents/cortex')
+sys.path.insert(0, '<cortex-repo-root>')
 from tools.frontline_2026_html import Frontline2026HTML
 
 h = Frontline2026HTML("Backbase — AI-Native Banking OS")

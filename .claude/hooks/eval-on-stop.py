@@ -3,8 +3,8 @@
 
 When a consultant produces outputs via Claude Code (a single skill OR a full run),
 this scores the touched engagement at session end — agent outputs + deliverables +
-pipeline contracts — writes .pipeline_run_report.json, and flags anything below
-threshold. Code-only (fast) so it doesn't stall the session; the full judge pass
+deliverable-structural contracts — writes .pipeline_run_report.json, and flags
+anything below threshold. Code-only (fast) so it doesn't stall the session; the full judge pass
 runs in CI / at the CLI pipeline's end. NON-BLOCKING, fail-open: never wedges a
 session, never blocks an engagement.
 

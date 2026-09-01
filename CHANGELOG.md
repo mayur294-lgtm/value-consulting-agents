@@ -68,7 +68,7 @@ Major release covering 45 commits since v1.1.0 (Feb 3 → Apr 13). Three headlin
 
 - **ROI Pipeline v2** — two-agent architecture: `roi-hypothesis-builder` (defines problem, builds hypothesis tree, derives lever candidates) and `roi-financial-modeler` (receives validated levers, computes gap-based impacts, builds financial model). Orchestrated by new `/build-roi` skill outside the full pipeline.
 - **Hypothesis-driven lever identification** with three new methodology docs: `value_lever_framework.md`, `hypothesis_tree_decomposition.md`, `capability_driven_patterns.md`.
-- **Gap-based `backbase_impact` methodology** — replaces static ranges with capability-gap-driven calculation. Capped at 60% to prevent inflated ROI (BECU root cause).
+- **Gap-based `backbase_impact` methodology** — replaces static ranges with capability-gap-driven calculation. Capped at 60% to prevent inflated ROI ([Client-creditunion-NAM-2025] root cause).
 - **Knowledge harvest auto-runs without token** — silent post-pipeline PR flow, zero consultant setup required. Engagement-level knowledge writes back to shared knowledge base via auto-opened harvest PR.
 - **Two-phase agent protocol** — phased execution with checkpoint files, context reduction, pipeline hardening (per-agent timeouts, 3-way sharding for capability heatmap).
 - **Journey Experience Map pipeline** — two-layer pipeline with strengthened checkpoint enforcement.
@@ -76,7 +76,7 @@ Major release covering 45 commits since v1.1.0 (Feb 3 → Apr 13). Three headlin
 - **`/build-roi` skill** — standalone orchestrator for the new two-agent ROI architecture.
 - **`/generate-roi-questionnaire` skill** — Phase A questionnaire generation, separated from the calculation engine.
 - **Mariam promoted to architect** — full path access granted.
-- **NFIS, SeABank, and Managed Hosting Commercial test suites** added under `tests/` — fixture transcripts + expected outputs for ROI pipeline regression testing.
+- **[Client-investing-NAM-2026], [Client-retail-APAC-2026], and Managed Hosting Commercial test suites** added under `tests/` — fixture transcripts + expected outputs for ROI pipeline regression testing.
 - **ROI Pipeline Redesign Presentation** (`tests/roi_pipeline_v2/ROI_Pipeline_Redesign_Presentation.html`).
 
 ### Changed
@@ -110,7 +110,7 @@ Major release covering 45 commits since v1.1.0 (Feb 3 → Apr 13). Three headlin
 - **Knowledge harvest token requirement** — pipeline now runs without it; harvest is best-effort.
 - **Systemic ROI bugs:** investment lever calculation, scenario switching, calibrator integration.
 - **ROI agent ↔ assembler ↔ HTML dashboard data contracts** synced.
-- **`backbase_impact` cap at 60%** — prevents inflated ROI seen in BECU engagement.
+- **`backbase_impact` cap at 60%** — prevents inflated ROI seen in [Client-creditunion-NAM-2025] engagement.
 - **Flywheel quality check failures** — binary file skip in test agent, bash syntax error in workflow, `.md`-only filter for changed files in CI.
 - **Post-commit hook** — resolves `outputs/` subdirectory to engagement root.
 - **V4 version label** removed from orchestrator banner.

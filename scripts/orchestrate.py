@@ -25,6 +25,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -37,8 +38,16 @@ sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
 from pathlib import Path
 
-from anonymize_transcript import anonymize_transcript_file, deanonymize_text
+from anonymize_transcript import anonymize_transcript_file
+from artifact_boundary import cap_roi_config, deanonymize_dir, synthetic_policy, validate_outputs
 from typing import Optional
+
+# pii.identity and pii.denylist are STDLIB-ONLY by contract (see
+# scripts/pii/__init__.py's IMPORT CONTRACT) — importing them here does not
+# pull in Presidio or spaCy. anonymize_transcript.py already put scripts/ on
+# sys.path, so `pii` resolves regardless of how this file was reached.
+from pii import denylist as _denylist
+from pii import identity as _identity
 
 from claude_agent_sdk import (
     query,
@@ -59,6 +68,43 @@ AGENTS_DIR = REPO_ROOT / ".claude" / "agents"
 COMMANDS_DIR = REPO_ROOT / ".claude" / "commands"
 KNOWLEDGE_DIR = REPO_ROOT / "knowledge"
 
+# ─── Neutral workspace (#167 — solution-design-v6.md D6) ─────────────────────
+#
+# WHY EVERY AGENT NOW RUNS SOMEWHERE ELSE
+#   The engagement directory IS the client's identity (`engagements/hdfc/…`).
+#   `compose_prompt` renders `engagement_dir` / `outputs_dir` /
+#   `transcript_path` into the invocation prompt as VALUES (its own docstring
+#   says so), and `run_agent` sets `cwd` to that same client-named directory.
+#   So perfect content anonymisation was defeated by the path envelope on
+#   every single agent invocation. `pii.identity.materialise_workspace()`
+#   builds a directory in which every path segment is generated locally, and
+#   from #167 on that — not the engagement directory — is what agents see.
+#
+# WHY THE WORKSPACE LIVES INSIDE THE REPO, NOT IN /tmp
+#   identity.py defaults to the system temp directory. Every agent prompt
+#   also names REPO-RELATIVE knowledge files (`knowledge/standards/…`,
+#   `knowledge/domains/{domain}/…`) that carry no `{param}`, so they can only
+#   be reached relative to a cwd somewhere inside this repo. Today's cwd
+#   (`engagements/<client>/<engagement>`) is inside it; `/tmp/cortex-ws-XXXX`
+#   is not, and moving there would silently cut every agent off from its own
+#   knowledge pack. `.cortex-workspaces/` keeps the workspace at the same
+#   depth-below-repo-root as an engagement directory while contributing no
+#   client-derived path segment of its own. It is gitignored.
+#
+#   It deliberately does NOT live under `engagements/` — `denylist.py`
+#   treats every child of `engagements/` as a client directory and mines its
+#   name, so a workspace there would pollute the deny-list of every session.
+WORKSPACE_ROOT = REPO_ROOT / ".cortex-workspaces"
+
+# Written inside the REAL engagement directory (gitignored with the rest of
+# engagements/): the absolute path of the workspace this engagement's current
+# run is using, so `--resume-from` reattaches to it. See `_restore_workspace`
+# for why resume reattaches rather than re-materialising.
+WORKSPACE_POINTER = ".pipeline_workspace"
+
+# An opaque engagement ID as `pii.identity` mints it: secrets.token_hex(4).
+_OPAQUE_ID_RE = re.compile(r"^[0-9a-f]{8}$")
+
 # ─── Colors for terminal output ───────────────────────────────────────────────
 
 class C:
@@ -72,15 +118,195 @@ class C:
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
+# ─── Log redaction (#167) ────────────────────────────────────────────────────
+#
+# The pipeline's stdout is NOT a private channel. `orchestrate.py` is normally
+# launched with Bash from inside a Claude Code session, so every line printed
+# here is read back into a model's context; the journal, the telemetry
+# extractor and the consultant's scrollback all see it too. Repointing prompts
+# and `cwd` at a neutral workspace achieves nothing if the very next `log()`
+# call prints `engagements/hdfc/2026-02_retail_assessment`.
+#
+# So every line this module prints goes through `_redact` first. The terms are
+# the engagement's own deny-list (the same resolution the anonymiser uses) plus
+# the engagement/client directory paths themselves. This is a BACKSTOP, not the
+# control: the control is that no client-named path is constructed into a
+# prompt or a cwd in the first place. A backstop that fires means a real leak
+# was caught, so it is deliberately blunt — over-redacting a log line costs
+# nothing.
+# Two patterns, deliberately not one:
+#
+#   _CLIENT_RE — things that ARE the client's identity: the deny-list terms,
+#     plus the directory segment immediately below `engagements/` (which is the
+#     client directory today, and the opaque ID after #168). This is what the
+#     hard invocation assertion and the harvest-id check run against, because a
+#     match there means a real leak.
+#
+#   _REDACT_RE — the above PLUS the engagement's absolute paths and its
+#     remaining path segments (the `YYYY-MM_domain_type` slug). Blunter, and
+#     only ever used to scrub log output, where over-redacting costs nothing.
+#     Keeping the engagement slug OUT of _CLIENT_RE matters: it is not a client
+#     identifier, and folding it in made the harvest-id guard fire on every
+#     engagement and rename the knowledge files for no privacy benefit.
+_CLIENT_RE: Optional[re.Pattern] = None
+_REDACT_RE: Optional[re.Pattern] = None
+_REDACT_TERMS: list = []
+_MIN_REDACT_LEN = 3   # below this, a "term" matches half the alphabet
+
+
+def _compile_terms(terms) -> Optional[re.Pattern]:
+    """Longest-first alternation. Ordering is load-bearing: without it the term
+    `hdfc` consumes the leading segment of `/…/engagements/hdfc/2026-02_x` and
+    leaves the rest of the path exposed."""
+    kept = sorted((t for t in terms if t and len(t) >= _MIN_REDACT_LEN),
+                  key=len, reverse=True)
+    if not kept:
+        return None
+    return re.compile("|".join(re.escape(t) for t in kept), re.IGNORECASE)
+
+
+def _install_log_redactions(engagement_dir: Path, client_slug: Optional[str] = None):
+    """Build both patterns for this run. Call once, before anything that could
+    print an engagement path or compose a prompt.
+
+    Deny-list resolution can raise (denylist.py keeps fail-closed read
+    semantics on purpose). We do NOT let that abort the run here: the caller
+    that actually needs to fail closed is the anonymiser, which resolves its
+    own deny-list and will raise there. What must never happen is losing the
+    PATH redactions because the DOCUMENT scan failed — so those are installed
+    unconditionally and document-derived terms are added on top.
+    """
+    global _CLIENT_RE, _REDACT_RE, _REDACT_TERMS
+    engagement_dir = Path(engagement_dir)
+
+    client_terms = set()
+    candidate = _engagement_id_candidate(engagement_dir)
+    if candidate:
+        client_terms.add(candidate)
+    if client_slug:
+        client_terms.add(client_slug)
+
+    path_terms = {str(engagement_dir), str(engagement_dir.parent)}
+    parts = [q.lower() for q in engagement_dir.parts]
+    if "engagements" in parts:
+        path_terms.update(engagement_dir.parts[parts.index("engagements") + 1:])
+
+    failure = None
+    try:
+        client_terms.update(_denylist.resolve_engagement_deny_list(
+            engagement_dir, client_slug=client_slug))
+    except Exception as exc:   # noqa: BLE001 — see docstring
+        failure = exc
+
+    _CLIENT_RE = _compile_terms(client_terms)
+    all_terms = client_terms | path_terms
+    _REDACT_TERMS = sorted(
+        (t for t in all_terms if len(t) >= _MIN_REDACT_LEN), key=len, reverse=True)
+    _REDACT_RE = _compile_terms(all_terms)
+
+    if failure is not None:
+        # Emitted through the redactions just installed.
+        log(f"  ⚠ deny-list resolution failed ({type(failure).__name__}: "
+            f"{failure}) — identifier checks are running on the directory "
+            f"name alone", C.YELLOW)
+
+
+class ClientIdentifierLeak(RuntimeError):
+    """A composed prompt or a `cwd` still names the client. Fail closed.
+
+    This is the assertion #167 exists to make true, enforced at the ONE place
+    every agent invocation passes through rather than trusted call site by call
+    site. It raises rather than warns: the whole ticket is the claim that no
+    client-identifying string is sent, and a control that merely logs when that
+    claim breaks is the pattern this repo has already shipped twice — a gate
+    scoring green while certifying nothing.
+    """
+
+
+def _leaked_terms(text: str) -> list:
+    """Deny-list terms present in `text`, with the repo's own path discounted.
+
+    `str(REPO_ROOT)` prefixes every workspace path and every knowledge path in
+    a composed prompt. If a client's name happened to share a word with the
+    checkout directory (`…/value-consulting-agents` and a client called "Value
+    Bank"), matching against it would fail every invocation for a reason that
+    has nothing to do with the client. Strip it first, then match.
+    """
+    if _CLIENT_RE is None:
+        return []
+    probe = str(text).replace(str(REPO_ROOT), "")
+    return sorted(set(_CLIENT_RE.findall(probe)))
+
+
+def _assert_neutral_invocation(agent_name: str, cwd, system_prompt: str):
+    """Refuse to launch an agent whose cwd or prompt names the client."""
+    for label, value in (("cwd", str(cwd)), ("composed prompt", system_prompt)):
+        hits = _leaked_terms(value)
+        if hits:
+            raise ClientIdentifierLeak(
+                f"REFUSING to invoke '{agent_name}': its {label} still contains "
+                f"client identifier(s) {hits}. Every path parameter and the cwd "
+                f"must resolve inside the neutral workspace "
+                f"(pii.identity.materialise_workspace) — see solution-design-v6.md "
+                f"D6. Nothing was sent."
+            )
+
+
+def _dump_composed_prompt(agent_name: str, mode: str, cwd, system_prompt: str):
+    """Optional audit trail: write exactly what this invocation would send.
+
+    Off unless `CORTEX_PROMPT_DUMP_DIR` is set. Enabled, it records the cwd and
+    the full composed prompt for every agent invocation, which is how the
+    "no composed prompt and no cwd contains a client identifier" claim is
+    checked against reality instead of against the code that is supposed to
+    make it true. Safe to write: `_assert_neutral_invocation` has already run
+    and refused anything carrying a client identifier.
+    """
+    target = os.environ.get("CORTEX_PROMPT_DUMP_DIR")
+    if not target:
+        return
+    try:
+        out = Path(target)
+        out.mkdir(parents=True, exist_ok=True)
+        n = len(list(out.glob("*.prompt.txt"))) + 1
+        safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", f"{n:03d}_{agent_name}_{mode}")
+        (out / f"{safe}.prompt.txt").write_text(
+            f"AGENT: {agent_name}\nMODE: {mode}\nCWD: {cwd}\n"
+            f"{'-' * 60}\n{system_prompt}\n", encoding="utf-8")
+    except OSError as exc:
+        log(f"  ⚠ prompt dump failed ({type(exc).__name__}: {exc})", C.YELLOW)
+
+
+def _redact(msg: str) -> str:
+    """Replace every known client identifier in `msg` with `<REDACTED>`.
+
+    Longest-first ordering matters: without it, the term `hdfc` would consume
+    the leading segment of the full path `/…/engagements/hdfc/2026-02_x` and
+    leave the engagement slug exposed.
+    """
+    if _REDACT_RE is None:
+        return msg
+    return _REDACT_RE.sub("<REDACTED>", msg)
+
+
 def log(msg: str, color: str = ""):
     ts = datetime.now().strftime("%H:%M:%S")
-    print(f"{C.DIM}{ts}{C.RESET} {color}{msg}{C.RESET}")
+    print(f"{C.DIM}{ts}{C.RESET} {color}{_redact(str(msg))}{C.RESET}")
 
 
 def log_step(step: str, desc: str):
     print(f"\n{C.BOLD}{C.CYAN}{'═' * 60}{C.RESET}")
-    print(f"{C.BOLD}{C.CYAN}  {step}: {desc}{C.RESET}")
+    print(f"{C.BOLD}{C.CYAN}  {step}: {_redact(desc)}{C.RESET}")
     print(f"{C.BOLD}{C.CYAN}{'═' * 60}{C.RESET}\n")
+
+
+def log_print(msg: str = ""):
+    """`print` for pipeline chrome — same redaction guarantee as `log`.
+
+    Used for the header/summary blocks, which print engagement paths and
+    agent-produced content and therefore need the same treatment as `log`.
+    """
+    print(_redact(str(msg)))
 
 
 def read_file(path: Path) -> str:
@@ -100,11 +326,229 @@ def glob_files(pattern: str, directory: Path) -> list[Path]:
     return sorted(directory.glob(pattern))
 
 
-def parse_agent_md(agent_name: str) -> tuple[str, str]:
-    """Read agent .md file, return (system_prompt_body, model)."""
-    path = AGENTS_DIR / f"{agent_name}.md"
-    text = read_file(path)
-    # Strip YAML frontmatter
+# ─── Workspace + engagement identity (#167) ──────────────────────────────────
+
+def _engagement_id_candidate(engagement_dir: Path) -> Optional[str]:
+    """The path segment directly below `engagements/` — the thing #168 turns
+    into an opaque ID, and therefore the key to look up in the map."""
+    parts = engagement_dir.parts
+    lowered = [p.lower() for p in parts]
+    if "engagements" not in lowered:
+        return None
+    idx = lowered.index("engagements")
+    return parts[idx + 1] if idx + 1 < len(parts) else None
+
+
+def _resolve_client_slug(engagement_dir: Path) -> Optional[str]:
+    """Close the D14 seam: resolve the client slug out of `.engagement_map.json`.
+
+    `denylist.resolve_engagement_deny_list` mines the client DIRECTORY NAME for
+    deny-list terms — that is how `hdfc` becomes a term. Once #168 makes those
+    directories opaque IDs, the name degrades to a meaningless token and the
+    client's own name would silently fall off the deny-list. D14 deliberately
+    did NOT teach `denylist.py` to read the map (that would break
+    `drift_check.py`'s byte-for-byte parity with the self-contained copy inside
+    `mcp-query-guard.py`); it left the existing `client_slug=` parameter as the
+    seam and made #167 responsible for threading it. This is that thread.
+
+    Returns None when there is no map yet — pre-#168 the directory name IS the
+    client slug, which is exactly what the deny-list already mines, so None is
+    the CORRECT value and not a degradation.
+
+    Fails loudly, rather than returning None, when the directory name already
+    LOOKS like an opaque ID but the map cannot resolve it. That combination is
+    the dangerous one: an opaque directory with no map entry yields a deny-list
+    of one meaningless token, and carrying on would ship an unscrubbed client
+    name while every log line said the run succeeded. `MapUnreadableError`
+    propagates in every case — a corrupt map is never treated as "no map".
+    """
+    candidate = _engagement_id_candidate(engagement_dir)
+    if candidate is None:
+        return None
+    looks_opaque = bool(_OPAQUE_ID_RE.match(candidate))
+    try:
+        record = _identity.client_for_id(candidate)
+    except (_identity.MapNotFoundError, _identity.UnknownEngagementIdError):
+        if looks_opaque:
+            raise
+        return None
+    return record.get("slug") or record.get("client") or None
+
+
+def _clear_recorded_workspace(engagement_dir: Path):
+    """Drop a previous run's workspace (and its pointer) if one is recorded.
+
+    Called only when a NEW workspace is being materialised, so a re-run never
+    accumulates orphaned copies of scrubbed client material under
+    `.cortex-workspaces/`.
+    """
+    pointer = engagement_dir / WORKSPACE_POINTER
+    if not pointer.exists():
+        return
+    try:
+        stale = Path(pointer.read_text(encoding="utf-8").strip())
+    except OSError:
+        stale = None
+    if stale is not None and stale.name.startswith(_identity.WORKSPACE_PREFIX) \
+            and stale.parent == WORKSPACE_ROOT and stale.is_dir():
+        shutil.rmtree(str(stale), ignore_errors=True)
+    pointer.unlink(missing_ok=True)
+
+
+def _sweep_stray_mappings(engagement_dir: Path):
+    """Get every `.anon_mapping_*.json` out of `inputs/` before the workspace
+    is built. THIS IS A LEAK GATE, not tidying.
+
+    `materialise_workspace` copies every file under `inputs/` whose name starts
+    with `.anon_` — and `.anon_mapping_<name>.json` starts with `.anon_`. But a
+    mapping file is not a scrubbed artifact: it is the OPPOSITE of one. It holds
+    the real values keyed by their placeholders, chmod 600, and copying it into
+    the directory an agent runs in would hand the model the entire
+    de-anonymisation key alongside the scrubbed text.
+
+    The normal path never reaches here with anything to do — this run's mappings
+    are deleted the moment `.pii_mapping.json` exists. What this catches is the
+    residue: a previous run killed between writing a per-transcript mapping and
+    writing the combined one, or an engagement anonymised by hand through the
+    CLI. Two cases, two answers:
+
+      - `.pii_mapping.json` exists -> the strays are superseded by it. Delete.
+      - it does not -> those files are the ONLY record of some earlier run's
+        substitutions, so deleting them would make that run's deliverable
+        permanently unrestorable. Move them somewhere outside `inputs/`
+        (mode preserved) and say so loudly. Never leave them where they would
+        be copied.
+    """
+    inputs_dir = engagement_dir / "inputs"
+    strays = sorted(inputs_dir.glob(".anon_mapping_*.json"))
+    if not strays:
+        return
+    if (engagement_dir / ".pii_mapping.json").exists():
+        for p in strays:
+            p.unlink(missing_ok=True)
+        log(f"  🔒 Removed {len(strays)} superseded per-transcript mapping "
+            f"file(s) from inputs/ before building the workspace", C.DIM)
+        return
+    quarantine = engagement_dir / ".pii_orphan_mappings"
+    quarantine.mkdir(exist_ok=True)
+    quarantine.chmod(0o700)
+    for p in strays:
+        target = quarantine / p.name
+        shutil.move(str(p), str(target))
+        target.chmod(0o600)
+    log(f"  ⚠ {len(strays)} per-transcript PII mapping file(s) were still in "
+        f"inputs/ with no combined .pii_mapping.json — an earlier run was "
+        f"interrupted. They hold real client values, so they have been moved to "
+        f".pii_orphan_mappings/ rather than deleted or copied into the "
+        f"workspace.", C.YELLOW)
+
+
+def _materialise_run_workspace(engagement_dir: Path):
+    """Build THE workspace for this run and record where it is.
+
+    One workspace per RUN, not per step (identity.py's constraint): agents
+    accumulate their output in `<workspace>/outputs/`, and `copy_back()`
+    returns the whole tree to the real engagement at the end.
+    """
+    _sweep_stray_mappings(engagement_dir)
+    _clear_recorded_workspace(engagement_dir)
+    WORKSPACE_ROOT.mkdir(parents=True, exist_ok=True)
+    ws = _identity.materialise_workspace(engagement_dir, workspace_root=WORKSPACE_ROOT)
+
+    # Belt-and-braces on the gate above: prove no mapping file made it in.
+    # `materialise_workspace` renames everything it copies, so the check is on
+    # the SOURCE each workspace file came from, not the neutral name.
+    smuggled = sorted(
+        neutral for neutral, source in ws.input_names.items()
+        if source.name.startswith(".anon_mapping_")
+    )
+    if smuggled:
+        ws.cleanup()
+        raise ClientIdentifierLeak(
+            "REFUSING to run: PII mapping file(s) were copied into the neutral "
+            f"workspace as {smuggled}. A mapping file is the de-anonymisation "
+            "key, not a scrubbed artifact. The workspace has been destroyed and "
+            "nothing was sent."
+        )
+
+    pointer = engagement_dir / WORKSPACE_POINTER
+    pointer.write_text(str(ws.path) + "\n", encoding="utf-8")
+    pointer.chmod(0o600)
+    log(f"  🔒 Neutral workspace ready ({len(ws.input_names)} scrubbed input(s)): {ws.path}",
+        C.CYAN)
+    return ws
+
+
+def _restore_workspace(engagement_dir: Path):
+    """Reattach `--resume-from` to the workspace the interrupted run was using.
+
+    THE DECISION (`--resume-from`): REATTACH to the persisted workspace; do not
+    re-materialise. Recorded here because the two options are not equivalent.
+
+    Re-materialising cannot be made deterministic in the way that matters. The
+    directory NAME could be (mkdtemp's randomness is incidental), but the
+    workspace's `outputs/` cannot: everything the interrupted run produced
+    lives there, and rebuilding it would mean copying the real engagement's
+    `outputs/` back in. Those files may already have been through
+    `deanonymize_dir` on a previous completed run — i.e. they hold the client's
+    REAL name — so seeding from them would re-inject into the workspace exactly
+    the identifiers this ticket exists to keep out of it, on the one code path
+    nobody exercises until something has already gone wrong. Reattaching has no
+    such failure mode: the workspace holds placeholder-form artifacts because
+    that is the only form ever written into it.
+
+    If the workspace is gone (temp reaped, different machine, cleaned up after a
+    successful run), this raises and names the fix rather than silently falling
+    back to a client-named path — identity.py's no-silent-fallbacks rule.
+    """
+    pointer = engagement_dir / WORKSPACE_POINTER
+    hint = ("Re-run with `--resume-from discovery` (or with no --resume-from) to "
+            "rebuild it; the pipeline will re-anonymise the inputs and start a "
+            "fresh workspace.")
+    if not pointer.exists():
+        raise RuntimeError(
+            "--resume-from needs the workspace this engagement's previous run "
+            f"used, but no {WORKSPACE_POINTER} record exists. " + hint
+        )
+    path = Path(pointer.read_text(encoding="utf-8").strip())
+    if not (path / "outputs").is_dir():
+        raise RuntimeError(
+            "--resume-from needs the workspace this engagement's previous run "
+            f"used, but it no longer exists on disk. " + hint
+        )
+    # `input_names` maps neutral workspace filename -> the client-named artifact
+    # it came from. It is in-memory-only by design and is NOT reconstructed here:
+    # its single consumer is discovery's `transcript_path`, and resuming from any
+    # step at or after `parallel_a` never invokes discovery. Resuming discovery
+    # itself re-materialises instead of restoring.
+    ws = _identity.Workspace(path, engagement_dir, {})
+    log(f"  🔒 Reattached to the run's neutral workspace: {ws.path}", C.CYAN)
+    return ws
+
+
+def _publish_workspace_outputs(ws) -> int:
+    """Copy everything the workspace produced back to the real engagement's
+    `outputs/`, preserving relative structure.
+
+    Delegates to `Workspace.copy_back()`, whose atomicity guarantee is stated
+    precisely in identity.py: staging inside the engagement directory (same
+    filesystem) for all the real I/O, then metadata-only `os.replace` renames.
+    Not reimplemented here. Idempotent — safe to call after every step, which is
+    what keeps an interrupted run's work out of the workspace-only limbo.
+    """
+    try:
+        report = ws.copy_back()
+    except _identity.CopyBackInterrupted as exc:
+        log(f"  ✗ COPY-BACK INTERRUPTED — {exc}", C.RED)
+        raise
+    if report["count"]:
+        log(f"  📤 Published {report['count']} file(s) to the engagement's outputs/",
+            C.GREEN)
+    return report["count"]
+
+
+def _split_frontmatter(text: str) -> tuple[str, str]:
+    """Strip YAML frontmatter from agent markdown. Returns (body, model)."""
     if text.startswith("---"):
         parts = text.split("---", 2)
         if len(parts) >= 3:
@@ -115,6 +559,196 @@ def parse_agent_md(agent_name: str) -> tuple[str, str]:
             model = model_match.group(1) if model_match else "sonnet"
             return body, model
     return text, "sonnet"
+
+
+def parse_agent_md(agent_name: str) -> tuple[str, str]:
+    """Read agent .md file, return (system_prompt_body, model)."""
+    path = AGENTS_DIR / f"{agent_name}.md"
+    return _split_frontmatter(read_file(path))
+
+
+# ─── Mode Composer (skill-first contracts — .design/solution-design-v3.md) ────
+#
+# Extracted agents carry their operating contracts as `### Mode: <name>` blocks
+# inside a `## Modes` section of their own .md file. The composer builds the
+# invocation prompt from core identity + ONE selected mode + runtime params.
+# All 10 pipeline agents are mode-extracted; the legacy inline-prompt path in
+# run_agent was deleted with the final extraction (narrative-assembler, #114).
+# parse_agent_modes still returns {} for agent files without a `## Modes`
+# section (Inspire/standalone-only agents — never invoked by this script).
+
+_MODES_HEADING = re.compile(r"(?m)^##\s+Modes\s*$")
+_NEXT_H2 = re.compile(r"(?m)^##[ \t]+(?!Modes\s*$)\S")
+_MODE_SPLIT = re.compile(r"(?m)^###\s+Mode:\s*")
+_MODE_NAME = re.compile(r"^([A-Za-z0-9_-]+)")
+_YAML_FENCE = re.compile(r"```yaml\s*\n(.*?)\n```", re.DOTALL)
+_PLACEHOLDER = re.compile(r"\{([A-Za-z_][A-Za-z0-9_]*)\}")
+
+# Complete key set per the design — no speculative fields.
+_MODE_CONTRACT_KEYS = {
+    "inputs", "degraded", "knowledge", "outputs",
+    "checkpoint", "phases", "gates", "params",
+}
+_INPUTS_KEYS = {"required", "optional"}
+
+
+def _import_yaml():
+    try:
+        import yaml
+        return yaml
+    except ImportError as e:
+        raise RuntimeError(
+            "parse_agent_modes requires PyYAML (`pip install pyyaml`) — "
+            "only needed for mode-extracted agents; legacy inline prompts are unaffected."
+        ) from e
+
+
+def parse_agent_modes(path) -> dict:
+    """Parse the `## Modes` section of an agent .md file.
+
+    Returns {mode_name: {"contract": dict, "prose": str, "raw": str}} where
+    `contract` is the parsed fenced-YAML block, `prose` is the remaining
+    behavior text, and `raw` is the full mode block (heading + yaml + prose)
+    as written. A file without a `## Modes` section returns {} (legacy agent).
+    """
+    path = Path(path)
+    body, _ = _split_frontmatter(read_file(path))
+
+    heading = _MODES_HEADING.search(body)
+    if not heading:
+        return {}
+    section = body[heading.end():]
+    # The Modes section ends at the next level-2 heading, if any.
+    nxt = _NEXT_H2.search(section)
+    if nxt:
+        section = section[:nxt.start()]
+
+    yaml = _import_yaml()
+    modes: dict = {}
+    blocks = _MODE_SPLIT.split(section)[1:]  # drop preamble before first mode
+    for block in blocks:
+        name_match = _MODE_NAME.match(block.strip())
+        if not name_match:
+            raise ValueError(f"{path.name}: malformed '### Mode:' heading in ## Modes section")
+        name = name_match.group(1)
+        if name in modes:
+            raise ValueError(f"{path.name}: duplicate mode '{name}' in ## Modes section")
+
+        fence = _YAML_FENCE.search(block)
+        contract = {}
+        if fence:
+            contract = yaml.safe_load(fence.group(1)) or {}
+        if not isinstance(contract, dict):
+            raise ValueError(f"{path.name}: mode '{name}' YAML contract must be a mapping")
+
+        unknown = set(contract) - _MODE_CONTRACT_KEYS
+        if unknown:
+            raise ValueError(
+                f"{path.name}: mode '{name}' has unknown contract key(s): {sorted(unknown)} "
+                f"(allowed: {sorted(_MODE_CONTRACT_KEYS)})"
+            )
+        inputs = contract.get("inputs", {})
+        if inputs and (not isinstance(inputs, dict) or set(inputs) - _INPUTS_KEYS):
+            raise ValueError(
+                f"{path.name}: mode '{name}' inputs must be a mapping with keys "
+                f"{sorted(_INPUTS_KEYS)} only"
+            )
+
+        prose = _YAML_FENCE.sub("", block)
+        # Drop the name line (incl. trailing comments) — keep behavior prose only.
+        prose = "\n".join(prose.strip().split("\n")[1:]).strip()
+        modes[name] = {
+            "contract": contract,
+            "prose": prose,
+            "raw": f"### Mode: {name}\n" + "\n".join(block.strip().split("\n")[1:]).strip(),
+        }
+    return modes
+
+
+def _substitute_params(text: str, params: dict, context: str) -> str:
+    """Substitute {placeholder} tokens with param VALUES. Unknown placeholders raise."""
+    def repl(m):
+        key = m.group(1)
+        if key not in params:
+            raise KeyError(
+                f"Unknown placeholder '{{{key}}}' in {context} — not provided in params "
+                f"(available: {sorted(params)})"
+            )
+        return str(params[key])
+    return _PLACEHOLDER.sub(repl, text)
+
+
+def _preflight_required_inputs(contract: dict, params: dict, agent_name: str, mode: str):
+    """Check the mode's required input files exist before spending an agent run.
+
+    degraded: refuse  -> missing required input is a hard error (pipeline behavior)
+    otherwise         -> warn and proceed (the agent handles degradation per its prose)
+    """
+    required = (contract.get("inputs") or {}).get("required") or []
+    missing = []
+    for entry in required:
+        resolved = _substitute_params(str(entry), params, f"{agent_name}/{mode} inputs.required")
+        p = Path(resolved)
+        if not p.is_absolute():
+            p = REPO_ROOT / p
+        if not p.exists():
+            missing.append(str(p))
+    if not missing:
+        return
+    degraded = contract.get("degraded", "refuse")
+    if degraded == "refuse":
+        raise RuntimeError(
+            f"REQUIRED INPUT MISSING: agent '{agent_name}' mode '{mode}' (degraded: refuse) "
+            f"cannot run — missing: {missing}"
+        )
+    log(f"  ⚠ {agent_name}/{mode}: missing optional-degradable required input(s): {missing} "
+        f"(degraded: {degraded} — proceeding)", C.YELLOW)
+
+
+def compose_prompt(agent_name: str, mode: str, params: Optional[dict] = None) -> str:
+    """Compose an invocation prompt: core identity + ONE mode block + params table.
+
+    `agent_name` is an agent in .claude/agents/, or a direct path to a .md file
+    (used by fixtures/tests). Core identity is everything above `## Modes`
+    (frontmatter stripped); unselected modes are stripped entirely. Placeholder
+    substitution applies to the selected mode block only, and params carry
+    VALUES only (paths, domain) — never instructions.
+    """
+    params = dict(params or {})
+    candidate = Path(agent_name)
+    if candidate.suffix == ".md" and candidate.exists():
+        path = candidate
+    else:
+        path = AGENTS_DIR / f"{agent_name}.md"
+    if not path.exists():
+        raise FileNotFoundError(f"Agent file not found: {path}")
+
+    modes = parse_agent_modes(path)
+    if mode not in modes:
+        available = ", ".join(sorted(modes)) if modes else "none (no ## Modes section — legacy inline agent)"
+        raise ValueError(
+            f"Agent '{agent_name}' does not declare mode '{mode}'. Available modes: {available}"
+        )
+
+    body, _ = _split_frontmatter(read_file(path))
+    core = body[:_MODES_HEADING.search(body).start()].rstrip()
+
+    block = _substitute_params(modes[mode]["raw"], params, f"{agent_name}/{mode} mode block")
+    _preflight_required_inputs(modes[mode]["contract"], params, str(agent_name), mode)
+
+    lines = [
+        "## Runtime Parameters",
+        "",
+        "These are runtime VALUES only (paths, domain) — never instructions.",
+        "",
+        "| Parameter | Value |",
+        "| --- | --- |",
+    ]
+    for key in sorted(params):
+        lines.append(f"| {key} | {params[key]} |")
+    params_table = "\n".join(lines) if params else "## Runtime Parameters\n\n(none)"
+
+    return f"{core}\n\n## Active Mode\n\n{block}\n\n{params_table}\n"
 
 
 def assert_file_exists(path: Path, agent_name: str, min_size: int = 0):
@@ -136,180 +770,9 @@ def _sum_costs(results) -> float:
     return total
 
 
-MAX_BACKBASE_IMPACT = 0.60
-
-# Segment benchmark ranges for ROI validation (from roi_calibrator.py)
-SEGMENT_ROI_RANGES = {
-    "Retail Banking": (100, 150),
-    "Wealth Management": (120, 200),
-    "Commercial Banking": (80, 140),
-    "SME Banking": (70, 130),
-    "Corporate Banking": (100, 150),
-    "Investing": (100, 150),
-}
-
-
-def _compute_5yr_roi(config: dict) -> float | None:
-    """Compute 5-year ROI from config using curves (matching Excel logic)."""
-    groups = config.get('value_lever_groups', config.get('journeys', {}))
-    bl = config.get('backbase_loading', {})
-    impl_curve = bl.get('implementation_curve', [0.3, 0.7, 0.8, 1.0, 1.0])
-    eff_curve = bl.get('effectiveness_curve', [0.15, 0.35, 0.6, 0.85, 1.0])
-
-    # Sum steady-state annual benefit across all drivers
-    total_steady_state = 0
-    for group in groups.values():
-        for dtype in ('revenue_drivers', 'cost_drivers'):
-            for driver in group.get(dtype, {}).values():
-                baseline = driver.get('baseline_annual', 0)
-                bi = driver.get('inputs', {}).get('backbase_impact', {})
-                impact = bi.get('value', 0) if isinstance(bi, dict) else bi if isinstance(bi, (int, float)) else 0
-                total_steady_state += baseline * impact
-        # Add servicing analysis totals
-        sa = group.get('servicing_analysis')
-        if isinstance(sa, dict):
-            for channel in sa.values():
-                if isinstance(channel, dict):
-                    for task in channel.get('tasks', []):
-                        if isinstance(task, dict):
-                            total_steady_state += task.get('total_saved', 0)
-
-    # Apply curves year by year (matching Excel logic)
-    total_5yr_benefit = 0
-    for yr in range(5):
-        impl = impl_curve[yr] if yr < len(impl_curve) else 1.0
-        eff = eff_curve[yr] if yr < len(eff_curve) else 1.0
-        total_5yr_benefit += total_steady_state * impl * eff
-
-    # Sum investment
-    inv = config.get('investment', {})
-    total_investment = 0
-    for inv_type in ('license', 'implementation'):
-        inv_data = inv.get(inv_type, {})
-        if isinstance(inv_data, dict):
-            for yr_key in ('year_1', 'year_2', 'year_3', 'year_4', 'year_5'):
-                total_investment += inv_data.get(yr_key, 0)
-        elif isinstance(inv_data, (int, float)):
-            total_investment += inv_data
-
-    if total_investment <= 0:
-        return None
-
-    return (total_5yr_benefit - total_investment) / total_investment * 100
-
-
-def _validate_roi_config(config_path: Path):
-    """Validate roi_config.json for unreasonable values. Caps impacts and warns."""
-    if not config_path.exists():
-        return
-    try:
-        config = json.loads(config_path.read_text())
-    except Exception as e:
-        log(f"  ⚠ Could not parse roi_config.json: {type(e).__name__}", C.YELLOW)
-        return
-
-    warnings = []
-    modified = False
-    total_benefit = 0
-    client_revenue = config.get('bank_profile', {}).get('total_revenue', 0)
-
-    groups = config.get('value_lever_groups', config.get('journeys', {}))
-    for group_key, group in groups.items():
-        for driver_type in ('revenue_drivers', 'cost_drivers'):
-            for drv_key, driver in group.get(driver_type, {}).items():
-                bi = driver.get('inputs', {}).get('backbase_impact', {})
-                val = bi.get('value', 0) if isinstance(bi, dict) else bi if isinstance(bi, (int, float)) else 0
-                if isinstance(val, (int, float)) and val > MAX_BACKBASE_IMPACT:
-                    warnings.append(
-                        f"    {drv_key}: backbase_impact {val:.0%} → capped to {MAX_BACKBASE_IMPACT:.0%}"
-                    )
-                    if isinstance(bi, dict):
-                        bi['value'] = MAX_BACKBASE_IMPACT
-                    modified = True
-                baseline = driver.get('baseline_annual', 0)
-                impact = bi.get('value', 0.30) if isinstance(bi, dict) else bi if isinstance(bi, (int, float)) else 0.30
-                total_benefit += baseline * impact
-
-    # Cap scenario-level impacts
-    for sc_name, sc in config.get('scenarios', {}).items():
-        if not isinstance(sc, dict):
-            continue
-        for imp_key, imp_val in sc.get('backbase_impacts', {}).items():
-            if isinstance(imp_val, (int, float)) and imp_val > MAX_BACKBASE_IMPACT:
-                warnings.append(
-                    f"    Scenario '{sc_name}' impact '{imp_key}': {imp_val:.0%} → capped to {MAX_BACKBASE_IMPACT:.0%}"
-                )
-                sc['backbase_impacts'][imp_key] = MAX_BACKBASE_IMPACT
-                modified = True
-
-    # --- OVERESTIMATION CHECKS ---
-    investment = config.get('total_investment', 0)
-    if investment > 0 and total_benefit > 0:
-        five_yr_roi_simple = (total_benefit * 5 - investment) / investment * 100
-        if five_yr_roi_simple > 500:
-            warnings.append(
-                f"    5-year ROI (simple) = {five_yr_roi_simple:.0f}% — exceeds 500% threshold, review baselines"
-            )
-
-    if client_revenue > 0 and total_benefit > client_revenue * 0.05:
-        warnings.append(
-            f"    Total annual benefit ${total_benefit:,.0f} exceeds 5% of client revenue ${client_revenue:,.0f}"
-        )
-
-    # --- UNDERESTIMATION CHECK (NEW) ---
-    # Compute curve-adjusted ROI (matches Excel logic)
-    curve_roi = _compute_5yr_roi(config)
-    if curve_roi is not None:
-        # Detect segment
-        industry = config.get('industry', '').lower()
-        segment = "Retail Banking"  # default
-        for seg_name in SEGMENT_ROI_RANGES:
-            if seg_name.lower().replace(' ', '') in industry.replace(' ', '').lower():
-                segment = seg_name
-                break
-        if 'wealth' in industry:
-            segment = "Wealth Management"
-        elif 'invest' in industry:
-            segment = "Investing"
-        elif 'commercial' in industry:
-            segment = "Commercial Banking"
-        elif 'sme' in industry or 'small' in industry:
-            segment = "SME Banking"
-        elif 'corporate' in industry:
-            segment = "Corporate Banking"
-
-        low, high = SEGMENT_ROI_RANGES.get(segment, (60, 150))
-        log(f"  📊 Curve-adjusted 5-year ROI: {curve_roi:.0f}% (segment: {segment}, benchmark: {low}-{high}%)", C.CYAN)
-
-        if curve_roi < low:
-            warnings.append(
-                f"    ⚠ ROI {curve_roi:.0f}% is BELOW {segment} benchmark range ({low}-{high}%). "
-                f"Consider: (1) review backbase_impact values — may be too conservative, "
-                f"(2) check if implementation/effectiveness curves are too slow, "
-                f"(3) run roi_calibrator.py --config roi_config.json for expansion proposals, "
-                f"(4) verify investment isn't over-estimated."
-            )
-        elif curve_roi > high:
-            warnings.append(
-                f"    ⚠ ROI {curve_roi:.0f}% is ABOVE {segment} benchmark range ({low}-{high}%). "
-                f"A consultant presenting {curve_roi:.0f}% ROI will lose credibility. "
-                f"Review: (1) attribution — are top levers genuinely Backbase-driven or bank strategic decisions? "
-                f"(2) baselines — is the full customer base addressable or only digitally active subset? "
-                f"(3) backbase_impact — any P3 assumptions above 0.40 should be reduced, "
-                f"(4) investment — is it adequate for a bank this size? "
-                f"(5) interdependency — apply 10-20% haircut if multiple levers share the same customer base."
-            )
-
-    if warnings:
-        log("  ⚠ ROI VALIDATION WARNINGS:", C.YELLOW)
-        for w in warnings:
-            log(w, C.YELLOW)
-
-    if modified:
-        config_path.write_text(json.dumps(config, indent=2, ensure_ascii=False))
-        log(f"  ✓ roi_config.json updated — impacts capped at {MAX_BACKBASE_IMPACT:.0%}", C.GREEN)
-    elif not warnings:
-        log("  ✓ roi_config.json passed reasonableness checks", C.GREEN)
+# ROI capping/validation logic (MAX_BACKBASE_IMPACT, SEGMENT_ROI_RANGES,
+# _compute_5yr_roi, _validate_roi_config) moved to artifact_boundary.py so the
+# same gates run in both the pipeline and standalone skill paths.
 
 
 # ─── Resilient Query Wrapper ──────────────────────────────────────────────────
@@ -324,18 +787,35 @@ async def _resilient_query(prompt: str, options: ClaudeAgentOptions, label: str)
 
 async def run_agent(
     agent_name: str,
-    prompt: str,
-    cwd: Path,
+    cwd: Optional[Path] = None,
     model: str = "sonnet",
     max_turns: int = 50,
     label: str = "",
+    *,
+    mode: str,
+    params: Optional[dict] = None,
 ) -> ResultMessage:
-    """Run a single agent via the SDK. Returns the ResultMessage."""
+    """Run a single agent via the SDK. Returns the ResultMessage.
+
+    The invocation prompt is ALWAYS composed from the agent's own ## Modes
+    contract (core identity + the selected mode block + a runtime-params
+    table). The legacy inline-prompt branch was deleted after the tenth and
+    final extraction (narrative-assembler, ticket #114) left zero callers.
+    """
+    if cwd is None:
+        raise ValueError("run_agent: 'cwd' is required")
+
     display = label or agent_name
     start = time.time()
     log(f"  ▶ Launching {display}...", C.YELLOW)
 
-    system_prompt, agent_model = parse_agent_md(agent_name)
+    # Prompt composed from core identity + selected mode + params.
+    system_prompt = compose_prompt(agent_name, mode, params)
+    _, agent_model = parse_agent_md(agent_name)
+    prompt = (
+        f"Execute your '{mode}' mode contract now. All runtime parameter values "
+        "are listed in the Runtime Parameters table of your instructions."
+    )
     use_model = model or agent_model
 
     # V5: Inject tool constraint into system prompt to prevent Task tool usage
@@ -345,6 +825,13 @@ async def run_agent(
         "Using Task wastes turns and risks hitting output limits.\n\n"
         + system_prompt
     )
+
+    # #167 CHOKE POINT — the last thing before anything leaves this machine.
+    # Every agent in the chain passes through here, so this is where the
+    # ticket's guarantee is enforced rather than asserted: if the composed
+    # prompt or the cwd still names the client, nothing is sent.
+    _assert_neutral_invocation(agent_name, cwd, system_prompt)
+    _dump_composed_prompt(agent_name, mode, cwd, system_prompt)
 
     # Map model names to Claude model IDs
     model_map = {
@@ -364,6 +851,11 @@ async def run_agent(
         max_turns=max_turns,
         # Unset CLAUDECODE to allow nested sessions when running inside Claude Code
         env={"CLAUDECODE": ""},
+        # Explicit, not left to the SDK default: makes project .claude/settings.json
+        # hooks (anonymize-guard.py, mcp-query-guard.py, ...) load independently of
+        # the setting_sources=None-vs-[] serialization change across SDK 0.1.59 —
+        # see the claude-agent-sdk pin comment in requirements.txt for the full story.
+        setting_sources=["user", "project", "local"],
     )
 
     result = None
@@ -529,99 +1021,186 @@ def _generate_discovery_checkpoint(outputs_dir: Path, transcripts: list[Path]) -
     return checkpoint_path
 
 
-# Lean extraction format instructions shared across single and multi-transcript paths
-_LEAN_FORMAT = """
-IMPORTANT — Write findings in this LEAN structured format:
-
-## Summary
-[3-5 bullet points: the most important findings from this transcript]
-
-## Evidence Table
-| ID | Category | Finding | Severity | Line Ref |
-(One-line findings only. No full quotes — just reference the line number.)
-
-## Pain Points
-| ID | Description | Impact | Confidence |
-
-## Metrics
-| Name | Value | Source Line |
-
-## Stakeholder Positions
-| Name/Role | Key Stance |
-
-## Data Gaps
-[Bullet list of missing data or unanswered questions]
-
-TARGET SIZE: 8-15KB. Do NOT include source quotes, interpretation notes, or verbose descriptions.
-Do NOT write multi-line cells. Keep every table row on ONE line.
-"""
+# The lean extraction format (formerly the `_LEAN_FORMAT` f-string shared by the
+# single- and multi-transcript discovery prompts) now lives in the agent's own
+# contract: .claude/agents/discovery-transcript-interpreter.md, core section
+# "Lean Interim Extraction Format" — carried into every composed pipeline prompt.
+# _generate_discovery_checkpoint() below still depends on its heading contract
+# ("## Summary" ... breaks at "## Evidence"/"## Pain").
 
 
 async def step_discovery(
     engagement_dir: Path,
-    outputs_dir: Path,
     express: bool,
     non_interactive: bool = False,
-) -> dict:
-    """Run Discovery: parallel lean extraction -> Python checkpoint -> finalize from interims."""
+    client_slug: Optional[str] = None,
+) -> tuple:
+    """Run Discovery: anonymise inputs -> materialise the neutral workspace ->
+    parallel lean extraction -> Python checkpoint -> finalize from interims.
+
+    Returns `(timing_dict, workspace)`. Discovery owns workspace creation
+    because the workspace can only be built once the `.anon_` artifacts exist,
+    and this is where they are produced. ONE workspace per run, not per step —
+    every later step receives this same object.
+    """
     start = time.time()
     cost = 0.0
     inputs_dir = engagement_dir / "inputs"
     transcripts = sorted(inputs_dir.glob("transcript_*.md"))
-    intake = inputs_dir / "engagement_intake.md"
+    # (engagement_intake.md is now carried by the agent's pipeline mode contract
+    #  via the {engagement_dir} param — no inline prompt references it here.)
 
     if not transcripts:
         log("  ⚠ No transcripts found in inputs/", C.YELLOW)
-        return {"elapsed": 0, "cost": 0}
+        # Still materialise: Block A reads discovery OUTPUTS, not transcripts,
+        # and every downstream step needs somewhere neutral to run.
+        return {"elapsed": 0, "cost": 0}, _materialise_run_workspace(engagement_dir)
 
     log(f"  Found {len(transcripts)} transcript(s)")
 
     # --- PII Anonymization: strip client names, emails, phones before sending to API ---
-    anon_mappings = {}  # { original_path: mapping_path }
+    # Ticket #161 fix: one SHARED entity_mapping dict threads through the whole
+    # transcript loop instead of each transcript anonymizing standalone. Two bugs,
+    # fixed together — fixing only one reintroduces the other:
+    #   1. A shallow `combined_mapping.update(json.loads(...))` across per-transcript
+    #      v2 mappings ({"version": 2, "entities": {...}}) REPLACES the whole
+    #      `entities` sub-dict each time, discarding every earlier transcript's
+    #      mapping. Fixed by accumulating in one dict instead of merging N files.
+    #   2. Each transcript anonymized standalone restarts Presidio's instance
+    #      counter at 1, so transcript A's <EMAIL_ADDRESS_1> and transcript B's
+    #      <EMAIL_ADDRESS_1> would be DIFFERENT values — a deep merge of `entities`
+    #      would then bind one placeholder to two different values, the exact
+    #      one-key-per-category collision this whole engine exists to eliminate.
+    #      Fixed by sharing one entity_mapping dict (mutated in place by
+    #      engine.py's instance-counter operator) so numbering is continuous and a
+    #      repeated value reuses its existing placeholder across every file.
+    #
+    # NOT THREAD-SAFE — this shared dict is mutated with no locking (see
+    # scripts/pii/engine.py's module docstring). Anonymization MUST stay
+    # sequential; do not parallelize this loop without replacing the operator.
+    entity_mapping: dict = {}
     anon_transcripts = []
+    per_transcript_mappings: list = []
     for t in transcripts:
         try:
-            anon_path, mapping_path = anonymize_transcript_file(t, engagement_dir, output_dir=inputs_dir)
+            # per-transcript mapping_path is written to disk (chmod 0600) but not
+            # used here — the combined .pii_mapping.json below is built directly
+            # from the shared entity_mapping dict, which is the authoritative state.
+            # #167: it is DELETED once that combined file exists, and only then —
+            # see the cleanup below.
+            anon_path, mapping_path = anonymize_transcript_file(
+                t, engagement_dir, output_dir=inputs_dir,
+                entity_mapping=entity_mapping, client_slug=client_slug,
+            )
             anon_transcripts.append(anon_path)
-            anon_mappings[str(t)] = mapping_path
+            per_transcript_mappings.append(mapping_path)
             log(f"    Anonymized: {t.name} → {anon_path.name}")
         except Exception as e:
             # FAIL CLOSED: never send raw PII to the API. Skip this transcript and
             # surface the failure loudly rather than silently leaking the original.
+            # Unchanged by #167 — and structurally reinforced by it: the workspace
+            # below copies ONLY `.anon_` artifacts, so a transcript that failed
+            # here has no scrubbed sibling and therefore cannot reach an agent
+            # even by accident.
             log(f"    ✗ Anonymization FAILED for {t.name} ({type(e).__name__}: {e}) — "
                 f"SKIPPING (raw transcript will NOT be sent to the API).", C.RED)
 
     # Use anonymized transcripts for all downstream processing
     transcripts = anon_transcripts
 
-    # Save combined mapping for de-anonymization of final outputs
-    combined_mapping = {}
-    for mp in anon_mappings.values():
-        if mp.exists():
-            combined_mapping.update(json.loads(mp.read_text()))
-    if combined_mapping:
+    # engagement_intake.md is a deny-list SOURCE — it exists to hold the client's
+    # name — so the raw file must never enter a directory an agent runs in
+    # (identity.py's materialise_workspace docstring leaves it no exemption).
+    # Scrub it through the SAME shared mapping instead, so its content reaches
+    # the workspace only in `.anon_` form and any client name it holds gets the
+    # same placeholder it gets everywhere else.
+    intake_file = inputs_dir / "engagement_intake.md"
+    if intake_file.exists():
+        try:
+            anon_intake, intake_mapping = anonymize_transcript_file(
+                intake_file, engagement_dir, output_dir=inputs_dir,
+                entity_mapping=entity_mapping, client_slug=client_slug,
+            )
+            per_transcript_mappings.append(intake_mapping)
+            log(f"    Anonymized: {intake_file.name} → {anon_intake.name}")
+        except Exception as e:
+            log(f"    ✗ Anonymization FAILED for {intake_file.name} "
+                f"({type(e).__name__}: {e}) — SKIPPING (the raw intake will NOT "
+                f"be sent to the API).", C.RED)
+
+    # Save combined mapping for de-anonymization of final outputs. `entity_mapping`
+    # is already the full accumulated state (every transcript that succeeded above,
+    # continuously numbered, one placeholder per distinct value) — write it
+    # directly in the v2 nested-by-entity-type shape rather than re-merging files.
+    if entity_mapping:
+        combined_mapping = {
+            "version": 2,
+            "entities": {etype: dict(values) for etype, values in sorted(entity_mapping.items())},
+        }
         mapping_file = engagement_dir / ".pii_mapping.json"
         mapping_file.write_text(json.dumps(combined_mapping, indent=2))
         mapping_file.chmod(0o600)  # Restrict access — this file contains PII
-        log(f"    PII mapping saved ({len(combined_mapping)} substitutions)")
+        substitution_count = sum(len(values) for values in entity_mapping.values())
+        log(f"    PII mapping saved ({substitution_count} substitutions)")
+
+        # ONLY NOW: drop the per-transcript mappings. Each is a chmod-600 file
+        # holding real PII, superseded byte-for-byte by the combined file just
+        # written (the shared entity_mapping IS their union). Deleting them any
+        # earlier would open a window where an interrupted run has real values on
+        # disk in neither place and the deliverable can never be restored.
+        # `--resume-from` reads only `.pii_mapping.json`.
+        removed = 0
+        for mp in per_transcript_mappings:
+            try:
+                Path(mp).unlink(missing_ok=True)
+                removed += 1
+            except OSError as e:
+                log(f"    ⚠ could not remove per-transcript mapping {Path(mp).name} "
+                    f"({type(e).__name__}: {e}) — it still holds real PII", C.YELLOW)
+        if removed:
+            log(f"    Per-transcript mappings cleaned up ({removed} file(s))")
+
+    # ── THE NEUTRAL WORKSPACE ────────────────────────────────────────────────
+    # Built here, after anonymisation, because it copies `.anon_` artifacts and
+    # nothing else. Every path parameter and every `cwd` from this point on
+    # resolves inside it; the client-named engagement directory is never named
+    # to an agent again.
+    workspace = _materialise_run_workspace(engagement_dir)
+    outputs_dir = workspace.outputs
+    # Real `.anon_` artifact path -> the neutral name it was copied in under.
+    ws_name_for = {v.resolve(): k for k, v in workspace.input_names.items()}
+    transcripts = [
+        workspace.inputs / ws_name_for[t.resolve()]
+        for t in transcripts if t.resolve() in ws_name_for
+    ]
+
+    # discovery-transcript-interpreter is mode-extracted (skill-first contracts):
+    # prompts are composed from .claude/agents/discovery-transcript-interpreter.md
+    # (## Modes -> pipeline) via compose_prompt — no inline f-strings. Params
+    # carry VALUES only; out-of-phase params are explicit "(n/a — ...)" markers
+    # per the mode contract. The agent's inputs here are the ALREADY-anonymized
+    # .anon_transcript_* files produced above — anonymization stays
+    # orchestrator-owned (fail-closed, see the loop above), never agent-run.
+    def _interim_params(transcript: Path, index: int) -> dict:
+        return {
+            "engagement_dir": workspace.path,
+            "outputs_dir": outputs_dir,
+            "phase": "interim",
+            "transcript_path": transcript,
+            "transcript_index": index,
+            "transcript_count": len(transcripts),
+            "interim_files": "(n/a — interim phase)",
+        }
 
     if len(transcripts) == 1:
         # Single transcript: lean extraction -> Python checkpoint
-        prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
-Engagement directory: {engagement_dir}
-
-Read and process this transcript: {transcripts[0]}
-Read the engagement context: {intake}
-
-Extract evidence items, pain points, metrics, and stakeholder intelligence.
-Write your findings to: {outputs_dir}/interim_transcript_1.md
-{_LEAN_FORMAT}
-"""
         result = await run_agent(
-            "discovery-transcript-interpreter", prompt,
-            cwd=engagement_dir,
+            "discovery-transcript-interpreter",
+            cwd=workspace.path,
             label="Discovery (1 transcript)",
             max_turns=15,
+            mode="pipeline",
+            params=_interim_params(transcripts[0], 1),
         )
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
     else:
@@ -629,24 +1208,13 @@ Write your findings to: {outputs_dir}/interim_transcript_1.md
         log(f"  Launching {len(transcripts)} transcript extractions in parallel...")
         extract_tasks = []
         for i, transcript in enumerate(transcripts, 1):
-            prompt = f"""PHASE DIRECTIVE: Phase 1 of 2 — Transcript {i} of {len(transcripts)}
-Engagement directory: {engagement_dir}
-
-Read and process ONLY this transcript: {transcript}
-Read the engagement context: {intake}
-
-Extract evidence items, pain points, metrics, and stakeholder intelligence.
-Write your findings ONLY to: {outputs_dir}/interim_transcript_{i}.md
-
-Do NOT write a checkpoint file. Do NOT read other transcripts or interim files.
-Focus only on this one transcript. Write the interim file and stop.
-{_LEAN_FORMAT}
-"""
             extract_tasks.append(run_agent(
-                "discovery-transcript-interpreter", prompt,
-                cwd=engagement_dir,
+                "discovery-transcript-interpreter",
+                cwd=workspace.path,
                 label=f"Discovery (T{i}/{len(transcripts)})",
                 max_turns=15,
+                mode="pipeline",
+                params=_interim_params(transcript, i),
             ))
 
         # Fire all transcript extractions simultaneously
@@ -662,37 +1230,28 @@ Focus only on this one transcript. Write the interim file and stop.
     # Checkpoint review — T2 FIX: was express=False, now express=express
     present_checkpoint("discovery", outputs_dir, express=express, non_interactive=non_interactive)
 
-    # Phase 2: Finalize registers — reads interims directly (NOT original transcripts)
+    # Phase 2: Finalize registers — reads interims directly (NOT original transcripts).
+    # Composed from the same ## Modes -> pipeline contract, phase "finalize";
+    # the enumerated interim list travels as a VALUES-only param.
     interim_files = sorted(outputs_dir.glob("interim_transcript_*.md"))
-    interim_list = chr(10).join(f'- {f}' for f in interim_files)
+    interim_list = ", ".join(str(f) for f in interim_files)
 
-    prompt = f"""PHASE DIRECTIVE: Phase 2 of 2 — Finalize Registers
-Engagement directory: {engagement_dir}
-
-Read the consultant approval: {outputs_dir}/CHECKPOINT_discovery_APPROVED.md
-
-Then read ALL interim files for detailed evidence:
-{interim_list}
-
-De-duplicate findings across transcripts (same point from multiple stakeholders = higher confidence).
-Incorporate any consultant feedback from the approval file.
-
-Do NOT read the original transcript files — the interims contain all extracted data you need.
-
-Produce these REQUIRED final output files (keep each file concise, under 20KB):
-- {outputs_dir}/evidence_register.md — consolidated evidence with IDs, categories, findings, severity
-- {outputs_dir}/pain_points.md — de-duplicated pain points ranked by impact
-- {outputs_dir}/metrics.md — all quantitative data extracted
-- {outputs_dir}/stakeholder_intelligence.md — key stakeholder positions and alignment
-
-You MUST write all four files. Do NOT write journal entries or update other files.
-"""
     # T1 FIX: added max_turns=15
     result = await run_agent(
-        "discovery-transcript-interpreter", prompt,
-        cwd=engagement_dir,
+        "discovery-transcript-interpreter",
+        cwd=workspace.path,
         label="Discovery (finalize)",
         max_turns=15,
+        mode="pipeline",
+        params={
+            "engagement_dir": workspace.path,
+            "outputs_dir": outputs_dir,
+            "phase": "finalize",
+            "transcript_path": "(n/a — finalize phase)",
+            "transcript_index": "n/a",
+            "transcript_count": len(interim_files),
+            "interim_files": interim_list,
+        },
     )
     cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
@@ -701,12 +1260,11 @@ You MUST write all four files. Do NOT write journal entries or update other file
     assert_file_exists(outputs_dir / "pain_points.md", "Discovery")
     assert_file_exists(outputs_dir / "metrics.md", "Discovery")
 
-    return {"elapsed": time.time() - start, "cost": cost}
+    return {"elapsed": time.time() - start, "cost": cost}, workspace
 
 
 async def step_parallel_block_a(
-    engagement_dir: Path,
-    outputs_dir: Path,
+    ws,
     express: bool,
     domain: str,
     non_interactive: bool = False,
@@ -717,21 +1275,21 @@ async def step_parallel_block_a(
     to eliminate the P1 synchronization barrier and context reload overhead.
     Interactive mode preserves the existing P1 -> checkpoint -> P2 flow.
     """
+    # #167: `engagement_dir` here is the NEUTRAL WORKSPACE, not the client-named
+    # engagement directory — that is the whole point of the ticket. It is bound
+    # once, at the top, so that every `cwd=` and every `"engagement_dir"` param
+    # below resolves to the workspace with no per-call-site opportunity to miss
+    # one. The real engagement directory is reachable only as `ws.engagement_dir`
+    # and is deliberately not used in this function.
+    engagement_dir = ws.path
+    outputs_dir = ws.outputs
     start = time.time()
     cost = 0.0
-    inputs_dir = engagement_dir / "inputs"
-    intake = inputs_dir / "engagement_intake.md"
 
-    # Shared input context for all agents
-    shared_context = f"""Engagement directory: {engagement_dir}
-Read these discovery outputs before starting:
-- {outputs_dir}/evidence_register.md
-- {outputs_dir}/pain_points.md
-- {outputs_dir}/metrics.md
-- {outputs_dir}/stakeholder_intelligence.md
-Engagement intake: {intake}
-Domain: {domain}
-"""
+    # The old `shared_context` f-string block (engagement dir + discovery
+    # outputs + intake + domain) is gone: all Block A agents are now
+    # mode-extracted, and each agent's ## Modes pipeline contract carries the
+    # discovery-output/intake/domain context as inputs + params instead.
 
     if non_interactive:
         # ── S1: SINGLE-PHASE (non-interactive) ──────────────────────────
@@ -740,153 +1298,74 @@ Domain: {domain}
 
         log_step("2", "PARALLEL BLOCK A — Single-Phase (5 agents, non-interactive)")
 
-        jb_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
-{shared_context}
+        # journey-builder is mode-extracted (skill-first contracts): its
+        # prompt is composed from .claude/agents/journey-builder.md
+        # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+        jb_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+            "phase": "single",
+        }
 
-Also read domain journey templates: knowledge/domains/{domain}/journey_maps.md
-Also read domain personas: knowledge/domains/{domain}/personas.md
+        # market-context-researcher is mode-extracted (skill-first contracts):
+        # its prompt is composed from .claude/agents/market-context-researcher.md
+        # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+        mc_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+            "phase": "single",
+        }
 
-OUTPUT DISCIPLINE:
-- Do NOT explore the filesystem beyond the listed input files.
-- If a file doesn't exist, skip it and proceed — do NOT retry.
-- Write ONLY the required output files listed below.
+        # capability-assessment is mode-extracted (skill-first contracts): its
+        # prompt is composed from .claude/agents/capability-assessment.md
+        # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+        cap_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+            "phase": "single",
+        }
 
-STEP 1 — Analysis & Checkpoint:
-Analyze evidence density across customer journeys. Recommend the top 3-5
-journeys for mapping based on evidence volume and value leakage potential.
-Write checkpoint to: {outputs_dir}/CHECKPOINT_journey-builder.md (for audit trail)
+        # roi-hypothesis-builder is mode-extracted (skill-first contracts):
+        # its prompt is composed from .claude/agents/roi-hypothesis-builder.md
+        # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+        # model="opus" is NOT passed here (matching legacy: this call site
+        # never overrode the model, unlike the interactive Phase 1 call
+        # below) — see the extraction commit message for the discrepancy.
+        roi_hyp_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+            "phase": "single",
+        }
 
-STEP 2 — Final Output (continue immediately, do NOT stop):
-Build detailed journey swimlane maps with value leakage quantification.
-Produce future-state Backbase-enabled swimlanes.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/journey_maps.json
-- {outputs_dir}/journey_maps_summary.md
-Do NOT write journal entries or update other files.
-"""
-
-        mc_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
-{shared_context}
-
-OUTPUT DISCIPLINE:
-- Do NOT explore the filesystem beyond the listed input files.
-- If a file doesn't exist, skip it and proceed — do NOT retry.
-- Write ONLY the required output files listed below.
-- TURN BUDGET: You have ~30 turns total. RESERVE your last 5 turns for writing
-  output files. Stop ALL web research by turn 20 and begin writing.
-  Producing no output file is a FAILURE — partial research with an output file
-  is always better than thorough research with no output.
-
-STEP 1 — Analysis & Checkpoint:
-Research market context for this engagement. Cover:
-- Module 1: Client financial metrics (search for annual reports)
-- Module 2: Competitive landscape
-- Module 3: Industry benchmarks and CX trends
-Write checkpoint to: {outputs_dir}/CHECKPOINT_market-context.md (for audit trail)
-
-STEP 2 — Final Output (continue immediately, do NOT stop):
-Finalize the market context brief with all validated findings.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/market_context_validated.md
-Do NOT write journal entries or update other files.
-"""
-
-        cap_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
-{shared_context}
-
-Also read: knowledge/standards/capability_taxonomy_{domain}.md (if exists)
-Fallback: knowledge/standards/capability_taxonomy.md
-
-OUTPUT DISCIPLINE:
-- Do NOT explore the filesystem beyond the listed input files.
-- If a file doesn't exist, skip it and proceed — do NOT retry.
-- Write ONLY the required output files listed below.
-
-STEP 1 — Analysis & Checkpoint:
-Build the problem map from discovery evidence. Identify capability gaps
-and propose assessment scope.
-Write checkpoint to: {outputs_dir}/CHECKPOINT_capability.md (for audit trail)
-
-STEP 2 — Final Output (continue immediately, do NOT stop):
-Score maturity (1-5) for each capability. Build the F/M/B heatmap.
-Write detailed drill-downs per capability.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/capability_assessment.md
-Do NOT write journal entries or update other files.
-"""
-
-        roi_hyp_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
-{shared_context}
-
-Also read: knowledge/methodologies/hypothesis_tree_decomposition.md
-Also read: knowledge/methodologies/value_lever_framework.md
-Also read: knowledge/domains/{domain}/benchmarks.md
-Also read: knowledge/domains/{domain}/roi_levers.md (if exists)
-
-OUTPUT DISCIPLINE:
-- Do NOT explore the filesystem beyond the listed input files.
-- If a cross-reference file doesn't exist yet, proceed WITHOUT it — do NOT wait or retry.
-- Write ONLY the required output files listed below.
-
-STEP 1 — Define the problem statement:
-(a) Bank's desired outcome (from evidence), (b) Backbase's sales objective,
-(c) Primary LOB and problem type, (d) Scope constraints.
-
-STEP 2 — Build hypothesis tree:
-Apply Layer 1 math decomposition for the problem type.
-Apply Layer 2 LOB-specific elaboration. Attach KPIs from benchmarks.
-
-STEP 3 — Derive value lever candidates:
-For each node with a gap + Backbase capability, build the four-link chain:
-Root Driver → Operational Change → Volume/Rate Impact → Financial Impact Direction.
-Do NOT compute dollar values. State inputs needed for financial modeling.
-
-STEP 4 — Coverage check:
-MECE verified, 2+ lifecycle stages, 5-8 levers typical.
-
-Write checkpoint to: {outputs_dir}/CHECKPOINT_roi_levers.md (for audit trail)
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/lever_candidates.md
-Do NOT write journal entries or update other files.
-"""
-
-        bench_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
-{shared_context}
-
-Also read: knowledge/domains/{domain}/benchmarks.md
-
-OUTPUT DISCIPLINE:
-- Do NOT explore the filesystem beyond the listed input files.
-- If a file doesn't exist, skip it and proceed — do NOT retry.
-- Write ONLY the required output files listed below.
-
-STEP 1 — Analysis & Checkpoint:
-Curate domain and regional benchmarks relevant to this engagement.
-Rate confidence (High/Medium/Low) and provide sources.
-Write checkpoint to: {outputs_dir}/CHECKPOINT_benchmark.md (for audit trail)
-
-STEP 2 — Final Output (continue immediately, do NOT stop):
-Finalize benchmarks with source citations and confidence ratings.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/benchmarks_validated.md
-Do NOT write journal entries or update other files.
-"""
+        # benchmark-librarian is mode-extracted (skill-first contracts): its
+        # prompt is composed from .claude/agents/benchmark-librarian.md
+        # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+        bench_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+            "phase": "single",
+        }
 
         # Fire all 5 simultaneously — single-phase with agent-specific turn caps
         # V5: Per-agent timeout of 40 min to prevent hung agents blocking the pipeline
         BLOCK_A_TIMEOUT = 40 * 60  # 40 minutes
 
-        async def _timed_agent(name, prompt, label, max_turns):
-            """Wrap agent in timeout — returns result or raises TimeoutError."""
+        async def _timed_agent(name, label, max_turns, *, mode, params=None):
+            """Wrap agent in timeout — returns result or raises TimeoutError.
+
+            The prompt is composed from the agent's own ## Modes contract
+            (mode= / params=) — there is no inline-prompt form anymore.
+            """
             try:
                 return await asyncio.wait_for(
-                    run_agent(name, prompt, engagement_dir,
-                              label=label, max_turns=max_turns),
+                    run_agent(name, engagement_dir,
+                              label=label, max_turns=max_turns,
+                              mode=mode, params=params),
                     timeout=BLOCK_A_TIMEOUT,
                 )
             except asyncio.TimeoutError:
@@ -895,11 +1374,16 @@ Do NOT write journal entries or update other files.
 
         # Block A1: 5 agents in parallel (hypothesis builder replaces monolithic ROI)
         results = await asyncio.gather(
-            _timed_agent("journey-builder", jb_prompt, "Journey Builder", 30),
-            _timed_agent("market-context-researcher", mc_prompt, "Market Context", 30),
-            _timed_agent("capability-assessment", cap_prompt, "Capability", 25),
-            _timed_agent("roi-hypothesis-builder", roi_hyp_prompt, "ROI Hypothesis", 20),
-            _timed_agent("benchmark-librarian", bench_prompt, "Benchmark", 25),
+            _timed_agent("journey-builder", "Journey Builder", 30,
+                         mode="pipeline", params=jb_params),
+            _timed_agent("market-context-researcher", "Market Context", 30,
+                         mode="pipeline", params=mc_params),
+            _timed_agent("capability-assessment", "Capability", 25,
+                         mode="pipeline", params=cap_params),
+            _timed_agent("roi-hypothesis-builder", "ROI Hypothesis", 20,
+                         mode="pipeline", params=roi_hyp_params),
+            _timed_agent("benchmark-librarian", "Benchmark", 25,
+                         mode="pipeline", params=bench_params),
             return_exceptions=True,
         )
 
@@ -928,38 +1412,19 @@ Do NOT write journal entries or update other files.
         if file_exists(outputs_dir / "lever_candidates.md"):
             log_step("2B", "ROI FINANCIAL MODEL — Sequential (reads Block A1 outputs)")
 
-            roi_model_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
-{shared_context}
-
-Read validated lever candidates: {outputs_dir}/lever_candidates.md
-Also read: knowledge/domains/{domain}/benchmarks.md
-Also read: knowledge/domains/{domain}/roi_levers.md (if exists)
-
-OPTIONAL cross-references (try ONCE, skip if not found — do NOT retry):
-- {outputs_dir}/capability_assessment.md
-- {outputs_dir}/market_context_validated.md
-- {outputs_dir}/benchmarks_validated.md
-
-OUTPUT DISCIPLINE:
-- Do NOT explore the filesystem beyond the listed input files.
-- Write ONLY the required output files listed below.
-
-For each lever in lever_candidates.md:
-1. Compute gap-based backbase_impact using percentage point gap method
-2. Build baseline calculations with bank-specific data
-3. Define 3 scenarios (conservative/moderate/aggressive) with per-lever curves
-4. Run reasonableness checks (total benefit < 5% of revenue, no single lever > 2%)
-
-Write checkpoint to: {outputs_dir}/CHECKPOINT_roi_model.md (for audit trail)
-
-REQUIRED OUTPUT FILES (you MUST produce BOTH):
-- {outputs_dir}/roi_report.md
-- {outputs_dir}/roi_config.json
-Do NOT write journal entries or update other files.
-"""
+            # roi-financial-modeler is mode-extracted (skill-first contracts):
+            # its prompt is composed from .claude/agents/roi-financial-modeler.md
+            # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+            roi_model_params = {
+                "engagement_dir": engagement_dir,
+                "outputs_dir": outputs_dir,
+                "domain": domain,
+                "phase": "single",
+            }
 
             result_a2 = await _timed_agent(
-                "roi-financial-modeler", roi_model_prompt, "ROI Financial Model", 25
+                "roi-financial-modeler", "ROI Financial Model", 25,
+                mode="pipeline", params=roi_model_params,
             )
             cost += result_a2.total_cost_usd if result_a2 and result_a2.total_cost_usd else 0
 
@@ -977,76 +1442,60 @@ Do NOT write journal entries or update other files.
         # ── Phase 1: Launch all 5 simultaneously ─────────────────────────
         log_step("2A", "PARALLEL BLOCK A — Phase 1 (5 agents simultaneously)")
 
-        jb_prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
-{shared_context}
+        # journey-builder is mode-extracted: prompt composed from its own
+        # ## Modes contract (mode="pipeline", phase carried as a param).
+        jb_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+        }
 
-Also read domain journey templates: knowledge/domains/{domain}/journey_maps.md
-Also read domain personas: knowledge/domains/{domain}/personas.md
+        # market-context-researcher is mode-extracted: prompt composed from its
+        # own ## Modes contract (mode="pipeline", phase carried as a param).
+        mc_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+        }
 
-Analyze evidence density across customer journeys. Recommend the top 3-5
-journeys for mapping based on evidence volume and value leakage potential.
+        # capability-assessment is mode-extracted: prompt composed from its own
+        # ## Modes contract (mode="pipeline", phase carried as a param).
+        cap_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+        }
 
-Write: {outputs_dir}/CHECKPOINT_journey-builder.md
-"""
+        # roi-hypothesis-builder is mode-extracted: prompt composed from its
+        # own ## Modes contract (mode="pipeline", phase carried as a param).
+        # No phase-2 continuation of its own — Phase 2 below runs
+        # roi-financial-modeler, not roi-hypothesis-builder again.
+        roi_hyp_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+        }
 
-        mc_prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
-{shared_context}
-
-Research market context for this engagement. Cover:
-- Module 1: Client financial metrics (search for annual reports)
-- Module 2: Competitive landscape
-- Module 3: Industry benchmarks and CX trends
-
-Write: {outputs_dir}/CHECKPOINT_market-context.md
-"""
-
-        cap_prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
-{shared_context}
-
-Also read: knowledge/standards/capability_taxonomy_{domain}.md (if exists)
-Fallback: knowledge/standards/capability_taxonomy.md
-
-Build the problem map from discovery evidence. Identify capability gaps
-and propose assessment scope.
-
-Write: {outputs_dir}/CHECKPOINT_capability.md
-"""
-
-        roi_hyp_prompt = f"""PHASE DIRECTIVE: Phase 1 (Hypothesis Building)
-{shared_context}
-
-Also read: knowledge/methodologies/hypothesis_tree_decomposition.md
-Also read: knowledge/methodologies/value_lever_framework.md
-Also read: knowledge/domains/{domain}/benchmarks.md
-Also read: knowledge/domains/{domain}/roi_levers.md (if exists)
-
-STEP 1: Define problem statement (bank goal + BB objective + LOB + scope).
-STEP 2: Build hypothesis tree (Layer 1 math + Layer 2 LOB elaboration).
-STEP 3: Derive lever candidates with four-link chain validation.
-STEP 4: Coverage check (MECE, lifecycle, 5-8 levers).
-
-Write: {outputs_dir}/CHECKPOINT_roi_levers.md
-Write: {outputs_dir}/lever_candidates.md
-"""
-
-        bench_prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
-{shared_context}
-
-Also read: knowledge/domains/{domain}/benchmarks.md
-
-Curate domain and regional benchmarks relevant to this engagement.
-Rate confidence (High/Medium/Low) and provide sources.
-
-Write: {outputs_dir}/CHECKPOINT_benchmark.md
-"""
+        # benchmark-librarian is mode-extracted: prompt composed from its own
+        # ## Modes contract (mode="pipeline", phase carried as a param).
+        bench_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+        }
 
         # Fire all 5 simultaneously (hypothesis builder replaces monolithic ROI)
         results = await asyncio.gather(
-            run_agent("journey-builder", jb_prompt, engagement_dir, label="Journey Builder P1"),
-            run_agent("market-context-researcher", mc_prompt, engagement_dir, label="Market Context P1"),
-            run_agent("capability-assessment", cap_prompt, engagement_dir, label="Capability P1"),
-            run_agent("roi-hypothesis-builder", roi_hyp_prompt, engagement_dir, label="ROI Hypothesis", model="opus"),
-            run_agent("benchmark-librarian", bench_prompt, engagement_dir, label="Benchmark P1"),
+            run_agent("journey-builder", cwd=engagement_dir, label="Journey Builder P1",
+                      mode="pipeline", params={**jb_params, "phase": "1"}),
+            run_agent("market-context-researcher", cwd=engagement_dir, label="Market Context P1",
+                      mode="pipeline", params={**mc_params, "phase": "1"}),
+            run_agent("capability-assessment", cwd=engagement_dir, label="Capability P1",
+                      mode="pipeline", params={**cap_params, "phase": "1"}),
+            run_agent("roi-hypothesis-builder", cwd=engagement_dir, label="ROI Hypothesis",
+                      model="opus", mode="pipeline", params={**roi_hyp_params, "phase": "1"}),
+            run_agent("benchmark-librarian", cwd=engagement_dir, label="Benchmark P1",
+                      mode="pipeline", params={**bench_params, "phase": "1"}),
             return_exceptions=True,
         )
 
@@ -1064,88 +1513,28 @@ Write: {outputs_dir}/CHECKPOINT_benchmark.md
         # ── Phase 2: Launch all 5 again ──────────────────────────────────
         log_step("2B", "PARALLEL BLOCK A — Phase 2 (5 agents simultaneously)")
 
-        jb2_prompt = f"""PHASE DIRECTIVE: Phase 2 of 2
-{shared_context}
-
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_journey-builder_APPROVED.md
-Read draft checkpoint: {outputs_dir}/CHECKPOINT_journey-builder.md
-
-Build detailed journey swimlane maps with value leakage quantification.
-Produce future-state Backbase-enabled swimlanes.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/journey_maps.json
-- {outputs_dir}/journey_maps_summary.md
-"""
-
-        mc2_prompt = f"""PHASE DIRECTIVE: Phase 2 of 2
-{shared_context}
-
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_market-context_APPROVED.md
-Read draft checkpoint: {outputs_dir}/CHECKPOINT_market-context.md
-
-Finalize the market context brief with all validated findings.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/market_context_validated.md
-"""
-
-        cap2_prompt = f"""PHASE DIRECTIVE: Phase 2 of 2
-{shared_context}
-
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_capability_APPROVED.md
-Read draft checkpoint: {outputs_dir}/CHECKPOINT_capability.md
-
-Score maturity (1-5) for each capability. Build the F/M/B heatmap.
-Write detailed drill-downs per capability.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/capability_assessment.md
-"""
-
-        roi_model_prompt = f"""PHASE DIRECTIVE: Phase 2 (Financial Modeling)
-{shared_context}
-
-Read validated lever candidates: {outputs_dir}/lever_candidates.md
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_roi_levers_APPROVED.md
-Read draft checkpoint: {outputs_dir}/CHECKPOINT_roi_levers.md
-Also read: knowledge/domains/{domain}/benchmarks.md
-Also read: knowledge/domains/{domain}/roi_levers.md (if exists)
-
-OPTIONAL cross-references (if available):
-- {outputs_dir}/capability_assessment.md
-- {outputs_dir}/market_context_validated.md
-- {outputs_dir}/benchmarks_validated.md
-
-For each lever in lever_candidates.md:
-1. Compute gap-based backbase_impact using percentage point gap method
-2. Build baseline calculations with bank-specific data
-3. Define 3 scenarios (conservative/moderate/aggressive) with per-lever curves
-4. Run reasonableness checks (total benefit < 5% of revenue, no single lever > 2%)
-
-REQUIRED OUTPUT FILES (you MUST produce BOTH):
-- {outputs_dir}/roi_report.md
-- {outputs_dir}/roi_config.json
-"""
-
-        bench2_prompt = f"""PHASE DIRECTIVE: Phase 2 of 2
-{shared_context}
-
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_benchmark_APPROVED.md
-Read draft checkpoint: {outputs_dir}/CHECKPOINT_benchmark.md
-
-Finalize benchmarks with source citations and confidence ratings.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/benchmarks_validated.md
-"""
+        # roi-financial-modeler is mode-extracted (skill-first contracts): its
+        # prompt is composed from .claude/agents/roi-financial-modeler.md
+        # (## Modes -> pipeline, phase "2") via compose_prompt — no inline
+        # f-string. The modeler has no pipeline phase "1" of its own — the ROI
+        # pair's Phase 1 above was roi-hypothesis-builder.
+        roi_model_params = {
+            "engagement_dir": engagement_dir,
+            "outputs_dir": outputs_dir,
+            "domain": domain,
+        }
 
         results = await asyncio.gather(
-            run_agent("journey-builder", jb2_prompt, engagement_dir, label="Journey Builder P2"),
-            run_agent("market-context-researcher", mc2_prompt, engagement_dir, label="Market Context P2"),
-            run_agent("capability-assessment", cap2_prompt, engagement_dir, label="Capability P2"),
-            run_agent("roi-financial-modeler", roi_model_prompt, engagement_dir, label="ROI Financial Model"),
-            run_agent("benchmark-librarian", bench2_prompt, engagement_dir, label="Benchmark P2"),
+            run_agent("journey-builder", cwd=engagement_dir, label="Journey Builder P2",
+                      mode="pipeline", params={**jb_params, "phase": "2"}),
+            run_agent("market-context-researcher", cwd=engagement_dir, label="Market Context P2",
+                      mode="pipeline", params={**mc_params, "phase": "2"}),
+            run_agent("capability-assessment", cwd=engagement_dir, label="Capability P2",
+                      mode="pipeline", params={**cap_params, "phase": "2"}),
+            run_agent("roi-financial-modeler", cwd=engagement_dir, label="ROI Financial Model",
+                      mode="pipeline", params={**roi_model_params, "phase": "2"}),
+            run_agent("benchmark-librarian", cwd=engagement_dir, label="Benchmark P2",
+                      mode="pipeline", params={**bench_params, "phase": "2"}),
             return_exceptions=True,
         )
 
@@ -1160,7 +1549,7 @@ REQUIRED OUTPUT FILES:
     assert_file_exists(outputs_dir / "roi_config.json", "ROI")
 
     # ── ROI Reasonableness Gate ───────────────────────────────────────────
-    _validate_roi_config(outputs_dir / "roi_config.json")
+    cap_roi_config(outputs_dir / "roi_config.json")
 
     for f, name in [
         ("journey_maps.json", "Journey Builder"),
@@ -1176,8 +1565,7 @@ REQUIRED OUTPUT FILES:
 
 
 async def step_roadmap(
-    engagement_dir: Path,
-    outputs_dir: Path,
+    ws,
     express: bool,
     non_interactive: bool = False,
 ) -> dict:
@@ -1185,58 +1573,37 @@ async def step_roadmap(
 
     S4: Single-pass in both express AND non-interactive mode.
     """
+    engagement_dir = ws.path      # #167: the neutral workspace — see step_parallel_block_a
+    outputs_dir = ws.outputs
     start = time.time()
     cost = 0.0
 
+    # roadmap-prioritization is mode-extracted (skill-first contracts): its
+    # prompt is composed from .claude/agents/roadmap-prioritization.md
+    # (## Modes -> pipeline) via compose_prompt — no inline f-string.
+    roadmap_params = {
+        "engagement_dir": engagement_dir,
+        "outputs_dir": outputs_dir,
+    }
+
     # S4 FIX: Single-pass in express OR non-interactive mode
     if express or non_interactive:
-        prompt = f"""Complete the full roadmap in a single pass.
-Engagement directory: {engagement_dir}
-
-Read:
-- {outputs_dir}/capability_assessment.md
-- {outputs_dir}/roi_report.md
-- {outputs_dir}/evidence_register.md
-
-Sequence initiatives by value, feasibility, and dependencies.
-Create initiative cards with decision gates.
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/roadmap.md
-"""
-        result = await run_agent("roadmap-prioritization", prompt, engagement_dir,
-                                 label="Roadmap (single-pass)", max_turns=20)
+        result = await run_agent("roadmap-prioritization", cwd=engagement_dir,
+                                 label="Roadmap (single-pass)", max_turns=20,
+                                 mode="pipeline", params={**roadmap_params, "phase": "single"})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
     else:
         # Phase 1
-        prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
-Engagement directory: {engagement_dir}
-
-Read:
-- {outputs_dir}/capability_assessment.md
-- {outputs_dir}/roi_report.md
-
-Propose phasing and sequencing logic.
-
-Write: {outputs_dir}/CHECKPOINT_roadmap.md
-"""
-        result = await run_agent("roadmap-prioritization", prompt, engagement_dir, label="Roadmap P1")
+        result = await run_agent("roadmap-prioritization", cwd=engagement_dir, label="Roadmap P1",
+                                 mode="pipeline", params={**roadmap_params, "phase": "1"})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
         # T2 FIX: was express=False, now express=express
         present_checkpoint("roadmap", outputs_dir, express=express, non_interactive=non_interactive)
 
         # Phase 2
-        prompt = f"""PHASE DIRECTIVE: Phase 2 of 2
-Engagement directory: {engagement_dir}
-
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_roadmap_APPROVED.md
-Read draft: {outputs_dir}/CHECKPOINT_roadmap.md
-
-REQUIRED OUTPUT FILES:
-- {outputs_dir}/roadmap.md
-"""
-        result = await run_agent("roadmap-prioritization", prompt, engagement_dir, label="Roadmap P2")
+        result = await run_agent("roadmap-prioritization", cwd=engagement_dir, label="Roadmap P2",
+                                 mode="pipeline", params={**roadmap_params, "phase": "2"})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
     assert_file_exists(outputs_dir / "roadmap.md", "Roadmap")
@@ -1244,8 +1611,7 @@ REQUIRED OUTPUT FILES:
 
 
 async def step_assembly(
-    engagement_dir: Path,
-    outputs_dir: Path,
+    ws,
     express: bool,
     non_interactive: bool = False,
 ) -> dict:
@@ -1256,12 +1622,19 @@ async def step_assembly(
 
     Interactive mode: preserves existing 3-phase flow with CP2 consultant review.
     """
+    engagement_dir = ws.path      # #167: the neutral workspace — see step_parallel_block_a
+    outputs_dir = ws.outputs
     start = time.time()
     cost = 0.0
-    inputs_dir = engagement_dir / "inputs"
 
-    all_outputs = "\n".join(
-        f"- {outputs_dir}/{f}"
+    # narrative-assembler is mode-extracted (skill-first contracts): every
+    # assembler prompt here is composed from .claude/agents/narrative-assembler.md
+    # (## Modes -> pipeline-report | pipeline-shard) via compose_prompt — no
+    # inline f-strings. File lists stay Python-built (existence-filtered) and
+    # travel as VALUES-only params; shard identity + act assignment are carried
+    # by the shard_id param against the mode's shard table.
+    upstream_files = ", ".join(
+        str(outputs_dir / f)
         for f in [
             "evidence_register.md", "pain_points.md", "metrics.md",
             "stakeholder_intelligence.md", "capability_assessment.md",
@@ -1271,6 +1644,10 @@ async def step_assembly(
         ]
         if (outputs_dir / f).exists()
     )
+    report_params = {
+        "engagement_dir": engagement_dir,
+        "outputs_dir": outputs_dir,
+    }
 
     # Resume guard: if both assembly outputs exist, skip entirely
     if file_exists(outputs_dir / "assessment_report.md") and file_exists(outputs_dir / "executive_summary.md"):
@@ -1281,142 +1658,49 @@ async def step_assembly(
         # ── S3: PARALLEL ASSEMBLY SHARDING (non-interactive) ─────────────
 
         # Phase 1: Quick structure plan (V5: capped to concise briefing)
-        p1_prompt = f"""PHASE DIRECTIVE: Phase 1 — Assembly Plan (CONCISE structure plan only)
-Engagement directory: {engagement_dir}
-
-Read ALL upstream outputs:
-{all_outputs}
-
-Also read: {inputs_dir}/engagement_intake.md
-
-OUTPUT CONSTRAINT: Write a CONCISE 2-3 page briefing (max 3,000 words).
-Do NOT reproduce upstream content. Do NOT write full analysis.
-This is a consistency anchor for the parallel shard writers.
-
-Required sections (brief bullets only):
-1. Transformation Arc — the EXACT phrase all shard writers will use (1 sentence)
-2. Personas — names, segments, key attributes (bulleted list, ~5 lines)
-3. Key Numbers — 5-year value, investment, payback (exact figures, ~5 lines)
-4. Per-Act Blueprint — 2-3 sentences per act describing scope
-5. Lighthouse Initiative — name and scope for Act 3 (3-4 lines)
-6. Narrative Bridges — one-liner per transition (Act N → Act N+1)
-
-Write: {outputs_dir}/CHECKPOINT_assembly_CP1.md
-Do NOT write journal entries or update other files.
-"""
-        result = await run_agent("narrative-assembler", p1_prompt, engagement_dir,
-                                 label="Assembly P1 (plan)", max_turns=5)
+        result = await run_agent("narrative-assembler", cwd=engagement_dir,
+                                 label="Assembly P1 (plan)", max_turns=15,
+                                 mode="pipeline-report",
+                                 params={**report_params, "phase": "plan",
+                                         "upstream_files": upstream_files})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
         present_checkpoint("assembly_CP1", outputs_dir, express=express, non_interactive=non_interactive)
 
-        # Phase 2: V5 3-way parallel shard writing (balanced workload)
-        # Shard A: Acts 1-2 (Strategic Narrative)
-        shard_a_files = "\n".join(
-            f"- {outputs_dir}/{f}"
-            for f in [
-                "evidence_register.md", "pain_points.md", "metrics.md",
-                "stakeholder_intelligence.md", "market_context_validated.md",
-            ]
-            if (outputs_dir / f).exists()
-        )
-
-        # Shard B: Acts 3-5 (Lighthouse + Journey + Capability)
-        shard_b_files = "\n".join(
-            f"- {outputs_dir}/{f}"
-            for f in [
-                "evidence_register.md", "pain_points.md",
-                "capability_assessment.md", "journey_maps_summary.md",
-                "market_context_validated.md", "benchmarks_validated.md",
-            ]
-            if (outputs_dir / f).exists()
-        )
-
-        # Shard C: Acts 6-7 + Appendix (Roadmap + ROI)
-        shard_c_files = "\n".join(
-            f"- {outputs_dir}/{f}"
-            for f in [
-                "roadmap.md", "roi_report.md", "roi_config.json",
-                "capability_assessment.md", "benchmarks_validated.md",
-                "evidence_register.md",
-            ]
-            if (outputs_dir / f).exists()
-        )
-
-        prompt_a = f"""PHASE DIRECTIVE: Phase 2A — Strategic Narrative (Acts 1, 2)
-Engagement directory: {engagement_dir}
-
-Read the approved assembly plan: {outputs_dir}/CHECKPOINT_assembly_CP1_APPROVED.md
-Read the draft plan: {outputs_dir}/CHECKPOINT_assembly_CP1.md
-
-Read upstream files:
-{shard_a_files}
-Also read: {inputs_dir}/engagement_intake.md
-
-Write Acts 1-2 of the assessment report with FULL detail:
-- Act 1: Strategic Alignment — Why transformation is needed
-- Act 2: The Vision — What the transformation looks like
-
-Use the EXACT transformation arc phrase, persona names, and key numbers from the CP1 plan.
-End Act 2 with a narrative bridge paragraph that transitions to Act 3.
-
-Write: {outputs_dir}/assembly_shard_A.md
-Do NOT write journal entries or update other files.
-"""
-
-        prompt_b = f"""PHASE DIRECTIVE: Phase 2B — Lighthouse + Assessment (Acts 3, 4, 5)
-Engagement directory: {engagement_dir}
-
-Read the approved assembly plan: {outputs_dir}/CHECKPOINT_assembly_CP1_APPROVED.md
-Read the draft plan: {outputs_dir}/CHECKPOINT_assembly_CP1.md
-
-Read upstream files:
-{shard_b_files}
-Also read: {inputs_dir}/engagement_intake.md
-
-Write Acts 3-5 of the assessment report with FULL detail:
-- Act 3: The Lighthouse — How we prove the transformation (quick-win initiative)
-- Act 4: Deep-Dive Assessment — Where the current system breaks (lifecycle gaps)
-- Act 5: Capability Assessment — What capabilities the transformation requires
-
-Use the EXACT transformation arc phrase, persona names, and key numbers from the CP1 plan.
-Include narrative bridges between acts.
-End Act 5 with a narrative bridge paragraph that transitions to Act 6.
-
-Write: {outputs_dir}/assembly_shard_B.md
-Do NOT write journal entries or update other files.
-"""
-
-        prompt_c = f"""PHASE DIRECTIVE: Phase 2C — Roadmap + Benefits (Acts 6, 7) + Appendix
-Engagement directory: {engagement_dir}
-
-Read the approved assembly plan: {outputs_dir}/CHECKPOINT_assembly_CP1_APPROVED.md
-Read the draft plan: {outputs_dir}/CHECKPOINT_assembly_CP1.md
-
-Read upstream files:
-{shard_c_files}
-Also read: {inputs_dir}/engagement_intake.md
-
-Write Acts 6-7 of the assessment report with FULL detail:
-- Act 6: Delivery Roadmap — How we build the transformation (phases)
-- Act 7: Benefits Case — Why the transformation pays for itself
-
-Also write the Appendix section (methodology, data sources, evidence index).
-
-Use the EXACT transformation arc phrase, persona names, and key numbers from the CP1 plan.
-Include narrative bridges between acts.
-
-Write: {outputs_dir}/assembly_shard_C.md
-Do NOT write journal entries or update other files.
-"""
+        # Phase 2: V5 3-way parallel shard writing (balanced workload).
+        # Shard sources (existence-filtered here; the mode's shard table
+        # assigns the acts): A = Acts 1-2 (Strategic Narrative),
+        # B = Acts 3-5 (Lighthouse + Journey + Capability),
+        # C = Acts 6-7 + Appendix (Roadmap + ROI).
+        shard_source_names = {
+            "A": ["evidence_register.md", "pain_points.md", "metrics.md",
+                  "stakeholder_intelligence.md", "market_context_validated.md"],
+            "B": ["evidence_register.md", "pain_points.md",
+                  "capability_assessment.md", "journey_maps_summary.md",
+                  "market_context_validated.md", "benchmarks_validated.md"],
+            "C": ["roadmap.md", "roi_report.md", "roi_config.json",
+                  "capability_assessment.md", "benchmarks_validated.md",
+                  "evidence_register.md"],
+        }
+        shard_labels = {
+            "A": "Assembly P2A (Acts 1-2)",
+            "B": "Assembly P2B (Acts 3-5)",
+            "C": "Assembly P2C (Acts 6-7)",
+        }
 
         results = await asyncio.gather(
-            run_agent("narrative-assembler", prompt_a, engagement_dir,
-                      label="Assembly P2A (Acts 1-2)", max_turns=25),
-            run_agent("narrative-assembler", prompt_b, engagement_dir,
-                      label="Assembly P2B (Acts 3-5)", max_turns=25),
-            run_agent("narrative-assembler", prompt_c, engagement_dir,
-                      label="Assembly P2C (Acts 6-7)", max_turns=25),
+            *[
+                run_agent("narrative-assembler", cwd=engagement_dir,
+                          label=shard_labels[sid], max_turns=25,
+                          mode="pipeline-shard",
+                          params={"engagement_dir": engagement_dir,
+                                  "outputs_dir": outputs_dir,
+                                  "shard_id": sid,
+                                  "source_files": ", ".join(
+                                      str(outputs_dir / f) for f in names
+                                      if (outputs_dir / f).exists())})
+                for sid, names in shard_source_names.items()
+            ],
             return_exceptions=True,
         )
 
@@ -1442,76 +1726,40 @@ Do NOT write journal entries or update other files.
             missing = [p.name for p in shard_paths if not p.exists()]
             log(f"  ✗ Cannot merge — missing shards: {', '.join(missing)}", C.RED)
 
-        # Executive summary (quick agent pass)
-        exec_prompt = f"""Write a concise executive summary for the assessment report.
-
-Read: {outputs_dir}/assessment_report.md
-Also read: {outputs_dir}/CHECKPOINT_assembly_CP1.md (for key numbers and arc)
-
-Synthesize:
-- The transformation arc
-- Key findings (3-5 bullets)
-- Strategic recommendation
-- Financial headline (investment, payback, 5-year value)
-
-Write: {outputs_dir}/executive_summary.md (2-3 pages max)
-Do NOT write journal entries or update other files.
-"""
-        result = await run_agent("narrative-assembler", exec_prompt, engagement_dir,
-                                 label="Executive Summary", max_turns=15)
+        # Executive summary (quick agent pass — pipeline-report phase exec-summary)
+        result = await run_agent("narrative-assembler", cwd=engagement_dir,
+                                 label="Executive Summary", max_turns=15,
+                                 mode="pipeline-report",
+                                 params={**report_params, "phase": "exec-summary",
+                                         "upstream_files": "(n/a — exec-summary reads the merged report)"})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
     else:
         # ── INTERACTIVE: Keep existing 3-phase flow with CP2 review ──────
 
         # Phase 1: Assembly plan
-        prompt = f"""PHASE DIRECTIVE: Phase 1 of 3
-Engagement directory: {engagement_dir}
-
-Read ALL upstream outputs:
-{all_outputs}
-
-Also read: {inputs_dir}/engagement_intake.md
-
-Build the 7-act narrative structure and assembly plan.
-
-Write: {outputs_dir}/CHECKPOINT_assembly_CP1.md
-"""
-        result = await run_agent("narrative-assembler", prompt, engagement_dir, label="Assembly P1")
+        result = await run_agent("narrative-assembler", cwd=engagement_dir, label="Assembly P1",
+                                 mode="pipeline-report",
+                                 params={**report_params, "phase": "1",
+                                         "upstream_files": upstream_files})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
         present_checkpoint("assembly_CP1", outputs_dir, express=express, non_interactive=non_interactive)
 
         # Phase 2: Draft report
-        prompt = f"""PHASE DIRECTIVE: Phase 2 of 3
-Engagement directory: {engagement_dir}
-
-Read approved plan: {outputs_dir}/CHECKPOINT_assembly_CP1_APPROVED.md
-Read all upstream outputs:
-{all_outputs}
-
-Draft the full 7-act report sections.
-
-Write: {outputs_dir}/CHECKPOINT_assembly_CP2.md
-"""
-        result = await run_agent("narrative-assembler", prompt, engagement_dir, label="Assembly P2")
+        result = await run_agent("narrative-assembler", cwd=engagement_dir, label="Assembly P2",
+                                 mode="pipeline-report",
+                                 params={**report_params, "phase": "2",
+                                         "upstream_files": upstream_files})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
         # Assembly CP2 ALWAYS pauses for interactive — this is the final report review
         present_checkpoint("assembly_CP2", outputs_dir, express=False, non_interactive=non_interactive)
 
         # Phase 3: Finalize
-        prompt = f"""PHASE DIRECTIVE: Phase 3 of 3
-Engagement directory: {engagement_dir}
-
-Read approved draft: {outputs_dir}/CHECKPOINT_assembly_CP2_APPROVED.md
-
-Incorporate consultant feedback. Finalize the report.
-
-REQUIRED OUTPUT FILES (you MUST produce BOTH):
-- {outputs_dir}/assessment_report.md
-- {outputs_dir}/executive_summary.md
-"""
-        result = await run_agent("narrative-assembler", prompt, engagement_dir, label="Assembly P3")
+        result = await run_agent("narrative-assembler", cwd=engagement_dir, label="Assembly P3",
+                                 mode="pipeline-report",
+                                 params={**report_params, "phase": "3",
+                                         "upstream_files": "(n/a — phase 3 reads the approved CP2 draft)"})
         cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
     assert_file_exists(outputs_dir / "assessment_report.md", "Assembly")
@@ -1519,24 +1767,12 @@ REQUIRED OUTPUT FILES (you MUST produce BOTH):
     return {"elapsed": time.time() - start, "cost": cost}
 
 
-# ─── T3: Inline design rules for HTML generation ─────────────────────────────
-
-_DESIGN_RULES_INLINE = """
-CRITICAL DESIGN RULES — Backbase Unified Frontline 2026 (full details in design-system.md):
-- LIGHT base theme: Body background #FFFFFF (pure white), cards #FFFFFF, soft surfaces #F3F6F9
-- Brand colors: #3367FF (action blue), #041326 (navy), #FF503C (red), #2ECC71 (green), #D97706 (amber), #6B7786 (muted)
-- Dark navy (#041326) ONLY for: sidebar navigation, hero banner, dark-feature accent sections, metric cards
-- WCAG on dark backgrounds: Blue text -> use #93B5FF (mid-blue) for body, #3367FF for large only; Green text -> #86E1A6 lightened
-- Sub-labels on dark backgrounds: minimum rgba(255,255,255,0.55) opacity
-- Card accents: use TOP accent gradients (#3367FF -> #93B5FF), NEVER border-left ribbons
-- Brand chrome on light panels: blue inverted-L corner accent (top-left) + Backbase wordmark footer (bottom-right)
-- DO NOT generate a dark-themed dashboard. The base theme is LIGHT (#FFFFFF).
-- TYPOGRAPHY: Libre Franklin primary (Helvetica/Arial fallback). Use <strong> or font-weight:700 SPARINGLY — only for metric values, card
-  titles, and key emphasis. Body text and descriptions must use normal weight (400).
-  Over-bolding everything makes the dashboard feel heavy and reduces visual hierarchy.
-- NO ENGAGE 2026 hexes (#3367FF, #041326, #FF503C, #2ECC71, #D97706 are deprecated)
-- NO cyan or purple in headlines/CTAs (purple `#7C3AED` allowed only for utility tile accents in 6-up grids)
-"""
+# The inline design rules (formerly the `_DESIGN_RULES_INLINE` constant, T3)
+# and the 6-partial placeholder-by-placeholder spec now live VERBATIM in the
+# agent's own contract: .claude/agents/narrative-assembler.md, mode
+# "html-partial" (the single literal template token sits in that file's core
+# "HTML Template Token Reference" section — composer constraint). The frozen
+# standards snapshot / deliverable evals continue to enforce the same rules.
 
 
 def _prepare_html_source_pack(outputs_dir: Path) -> Path:
@@ -1617,11 +1853,10 @@ def _assemble_html_dashboard(template_path: Path, partials_dir: Path, output_pat
     return size > 100_000  # sanity: should be >100KB
 
 
-async def step_generate_html(
-    engagement_dir: Path,
-    outputs_dir: Path,
-) -> dict:
+async def step_generate_html(ws) -> dict:
     """Generate HTML dashboard. V5: Python pre-pack + assembly, 6 macro-partials."""
+    engagement_dir = ws.path      # #167: the neutral workspace — see step_parallel_block_a
+    outputs_dir = ws.outputs
     start = time.time()
     cost = 0.0
 
@@ -1636,318 +1871,21 @@ async def step_generate_html(
 
     template_path = REPO_ROOT / "templates/presentations/assessment-dashboard-template.html"
 
-    html_prompt = f"""You are generating HTML content for an interactive assessment dashboard.
-Python will handle assembly — you only write 6 partial files.
-
-TOOL CONSTRAINT: Do NOT use the Task tool. Do NOT read the template file.
-Do NOT assemble the final HTML. Python handles template + assembly.
-
-STEP 1 — Read the source data (ONE file with all upstream data):
-Read: {source_pack}
-(Read it in chunks if needed: lines 1-500, 501-1000, etc.)
-
-{_DESIGN_RULES_INLINE}
-
-STEP 2 — Write 6 partial files to: {partials_dir}/
-
-Each partial uses comment markers to delimit placeholder values:
-<!-- PLACEHOLDER_NAME -->
-HTML content here
-<!-- NEXT_PLACEHOLDER_NAME -->
-HTML content here
-
-IMPORTANT FORMAT RULES:
-- Each marker is on its own line: <!-- NAME -->
-- Content follows on the next line(s)
-- Next marker starts the next placeholder
-- Use ONLY the placeholder names listed below — exact spelling matters
-
-═══════════════════════════════════════════════════════════
-PARTIAL_A.html — Hero + Executive Summary
-═══════════════════════════════════════════════════════════
-
-<!-- CLIENT_NAME -->
-Short client name (e.g., NFIS)
-<!-- REPORT_SUBTITLE -->
-e.g., Digital Investor Platform Assessment
-<!-- ASSESSMENT_DATE -->
-e.g., February 2026
-<!-- HERO_H1 -->
-Multi-line hero heading with <span> tags. Use SOLID color for accent words — never gradient text. Example:
-<span>From Trusted</span><span>Banker to</span><span style="color:#3367FF;">Trusted Investor</span>
-<!-- HERO_SUBTITLE -->
-1-2 sentence hero subtitle about the engagement
-<!-- HERO_TAGS -->
-<span class="hero-tag">Tag1</span><span class="hero-tag">Tag2</span>...
-<!-- HERO_ALERT -->
-<span style="font-weight:700;">⚠ Cost of Inaction: $XXX/month</span> — breakdown text
-<!-- HERO_IMAGE_URL -->
-https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=900&auto=format&fit=crop&q=80
-<!-- HERO_FLOATS -->
-3 floating glass cards:
-<div class="hero-float" style="top:80px;right:24px;"><div class="hero-float-val" style="color:#DC2626;">50%</div><div class="hero-float-lbl">Label</div></div>
-(repeat for 3 cards)
-<!-- HERO_STATS -->
-5 stat items:
-<div class="hero-stat"><div class="hero-stat-val" style="color:#3367FF;">14.27M</div><div class="hero-stat-lbl">Label</div></div>
-(repeat for 5 stats)
-<!-- EXEC_SUMMARY_DESC -->
-1-2 sentence executive summary
-<!-- EXEC_TRANSFORMATION_STORY -->
-Transformation arc card with gradient overline:
-<div style="position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3367FF,#93B5FF);"></div><div style="padding:4px 0 20px;"><div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:3px;background:linear-gradient(90deg,#3367FF,#93B5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px;">TRANSFORMATION ARC</div><h3 style="font-size:1.5rem;font-weight:900;">Arc Title</h3><p style="font-size:0.92rem;color:var(--muted);line-height:1.8;">Arc description</p></div></div>
-<!-- EXEC_BENTO_ITEMS -->
-6 bento stat cards. Use class "bento-item bento-stat" (light) or "bento-item bento-dark bento-stat" (dark).
-For 2x-width: add "bento-2x1". For accent: add "bento-accent".
-<div class="bento-item bento-dark bento-2x1 bento-stat"><div class="bento-stat-val" style="color:#DC2626;">50%</div><div class="bento-stat-lbl">Label</div></div>
-<!-- EXEC_PILLARS -->
-Dark feature section with 3 transformation pillars:
-<div class="dark-feature-overline">THE THREE PILLARS</div><h3>Pillar1. <span>Pillar2.</span> Pillar3.</h3><div class="dark-feature-sub">Description</div><div class="dark-feature-grid"><div class="dark-feature-card"><h4>🎯 Title</h4><p>Description</p></div>(repeat 3)</div>
-<!-- EXEC_METRIC_CARDS -->
-4 metric cards:
-<div class="metric-card"><div class="metric-val" style="color:#DC2626;">-$1.5M</div><div class="metric-lbl">5-Year NPV</div></div>
-(repeat for NPV, payback, investment, confidence)
-<!-- EXEC_DECISION_BOX -->
-Decision request card with scenario comparison grid (conservative/base/aspirational boxes)
-
-═══════════════════════════════════════════════════════════
-PARTIAL_B.html — Acts 1, 2, 3
-═══════════════════════════════════════════════════════════
-
-For each act: TITLE, DESC, TRANSFORMATION_THREAD, then act-specific content.
-TRANSFORMATION_THREAD format (same card style as EXEC_TRANSFORMATION_STORY but shorter):
-<div style="position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3367FF,#93B5FF);"></div><div style="padding:4px 0 0;"><div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:3px;background:linear-gradient(90deg,#3367FF,#93B5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;">TRANSFORMATION ARC — ACT THEME</div><h3 style="font-size:1.1rem;font-weight:900;margin-bottom:10px;">Thread Title</h3><p style="font-size:0.88rem;color:var(--muted);line-height:1.75;">2-3 sentences connecting this act to the transformation arc.</p></div></div>
-
-<!-- ACT1_TITLE -->
-Act 1 title
-<!-- ACT1_DESC -->
-Act 1 description (1-2 sentences)
-<!-- ACT1_TRANSFORMATION_THREAD -->
-(transformation thread card HTML as described above — theme: "Why transformation is needed")
-<!-- ACT1_DARK_FEATURE -->
-Dark feature section: overline + h3 + sub + grid of dark-feature-cards
-<!-- ACT1_INSIGHT_CARDS -->
-2-4 insight cards (class="card")
-<!-- ACT1_ADDITIONAL_CONTENT -->
-Any extra content (evidence quotes, data tables, etc.)
-<!-- ACT2_TITLE -->
-Act 2 title
-<!-- ACT2_DESC -->
-Act 2 description
-<!-- ACT2_TRANSFORMATION_THREAD -->
-(theme: "What the transformation looks like")
-<!-- ACT2_PILLAR_CARDS -->
-3 pillar cards (class="pillar-card" or "card")
-<!-- ACT2_ADDITIONAL_CONTENT -->
-Extra content
-<!-- ACT3_TITLE -->
-Act 3 title
-<!-- ACT3_DESC -->
-Act 3 description
-<!-- ACT3_TRANSFORMATION_THREAD -->
-(theme: "How we prove the transformation")
-<!-- ACT3_LIGHTHOUSE_DETAIL -->
-Lighthouse initiative detail (phase 1 description, scope, timeline)
-<!-- ACT3_MILESTONE_CARDS -->
-3 milestone cards
-<!-- ACT3_ADDITIONAL_CONTENT -->
-Extra content
-
-═══════════════════════════════════════════════════════════
-PARTIAL_C.html — Acts 4 and 5
-═══════════════════════════════════════════════════════════
-
-<!-- ACT4_TITLE -->
-Act 4 title
-<!-- ACT4_DESC -->
-Act 4 description
-<!-- ACT4_TRANSFORMATION_THREAD -->
-(theme: "Where current system breaks")
-<!-- ACT4_PERSONAS -->
-Persona cards: <div class="persona-card"><h4>Name</h4><div style="font-size:0.75rem;color:var(--muted);">Segment</div><div class="persona-detail">Pain points, needs, etc.</div></div>
-<!-- ACT4_JX_HEADLINES -->
-Journey experience map headline cards per stage:
-<div class="jx-headline"><span class="jx-stage-num">1</span><strong>Stage Name</strong><span class="jx-emoji">📱</span></div>
-<!-- ACT4_JX_SVG -->
-SVG emotion curve (width 100%, viewBox, path with emotion line):
-<svg width="100%" viewBox="0 0 800 200" style="overflow:visible;">...<path d="M0,100 C..." stroke="#3367FF" fill="none" stroke-width="3"/>...<circle class="jx-marker" data-stage="1" cx="80" cy="120" r="8" fill="#3367FF" onclick="showStage(1)"/>...</svg>
-<!-- ACT4_JX_PANELS -->
-Expandable detail panels per stage:
-<div class="jx-panel" id="jxp-1"><h4>Stage 1 Title</h4><div class="pain-grid"><div class="pain-item">Pain point</div>...</div><div class="opp-grid"><div class="opp-item">Opportunity</div>...</div></div>
-<!-- ACT4_ADDITIONAL_CONTENT -->
-Extra content
-<!-- ACT5_TITLE -->
-Act 5 title
-<!-- ACT5_DESC -->
-Act 5 description
-<!-- ACT5_TRANSFORMATION_THREAD -->
-(theme: "What capabilities the transformation requires")
-<!-- ACT5_HERO_STATS -->
-MANDATORY. Hero stats row matching 02e gold standard. 2-column grid:
-Left: Big average maturity number (e.g. "0.56") with SOLID color (use the maturity-level CSS var that matches the score, e.g. var(--L1)), "Average Maturity / 4.0" sublabel. Never use gradient text.
-Right: Distribution bar (.dist-bar + .dist-seg CSS classes) showing count/percent per maturity level + .dist-legend with dot + label.
-Use this HTML structure:
-<div style="display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:center;margin-bottom:36px;">
-  <div style="text-align:center;"><div style="font-size:3.2rem;font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,var(--L0),var(--L1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;">X.XX</div><div style="font-size:0.72rem;color:var(--muted);font-weight:600;">Average Maturity / 4.0</div></div>
-  <div><div class="dist-bar" style="margin-bottom:8px;"><div class="dist-seg" style="width:NN%;background:var(--L0);">N (NN%)</div>...</div><div class="dist-legend">...</div></div>
-</div>
-Compute averages from capability data. Only show levels that have capabilities.
-<!-- ACT5_DARK_FEATURE -->
-MANDATORY. Dark feature banner showing the cross-cutting structural barrier. Use .dark-feature CSS class.
-Structure: overline + large h3 title (2-line with <br><span>) + subtitle paragraph + 3-column comparison:
-Left: "What Exists" — 4 bullet items showing current infrastructure (blue tones, rgba(26,90,255,...))
-Center: Broken connection (X icon with dashed line)
-Right: "What's Missing" — 4 bullet items showing gaps (red tones, rgba(255,114,98,...), with line-through text)
-Bottom: Quote from evidence in italic with attribution.
-Model the NFIS 02e "Two Organizations, Zero Shared Intelligence" pattern but adapted to this client's structural barrier.
-<!-- ACT5_PIPELINE_LABEL -->
-Short uppercase label for the lifecycle pipeline, e.g. "Member Banking Lifecycle" or "Customer Investment Lifecycle"
-<!-- ACT5_DOMAIN_LEGEND -->
-Domain legend pills — one colored pill badge per capability domain. Use this HTML pattern:
-<span style="display:inline-block;padding:4px 12px;border-radius:8px;font-size:0.68rem;font-weight:700;background:#EFF6FF;color:#1D4ED8;">Customer Lifecycle</span>
-(one per domain, using distinct background/text color pairs)
-<!-- ACT5_CAP_COUNT -->
-Total number of capabilities (integer only, e.g. "16" or "20")
-<!-- ACT5_HEATMAP_DATA -->
-CRITICAL FORMAT: JS object literals separated by commas, NO outer brackets.
-The template wraps this in [...]. Each object MUST have these fields:
-  id (string), name (string), domain (string), score (0-4 integer),
-  front (0-4 integer — front office score), middle (0-4 integer — middle office score),
-  back (0-4 integer — back office score).
-Optional: desc (assessment detail text), impact (value impact string, e.g. "$892K (5yr)").
-The detail panel shows F/M/B breakdown + assessment detail + value impact when clicked.
-Example: {{id:"C1.1",name:"Account Origination",domain:"Onboarding",score:1,front:1,middle:1,back:0,desc:"Account opening workflow lacks digital capabilities",impact:"$892K (5yr)"}},{{id:"C1.2",name:"Funding Automation",domain:"Onboarding",score:0,front:0,middle:0,back:0,desc:"Manual ACH only",impact:"$1.4M (5yr)"}}
-<!-- ACT5_LIFECYCLE_STAGES -->
-CRITICAL FORMAT: JS object literals separated by commas, NO outer brackets.
-The template wraps this in [...]. Each stage object MUST have:
-  id (string), title (string), icon (emoji string), color (hex string from brand palette),
-  tagline (string — short problem statement), stat (string), statLabel (string),
-  statDetail (string — 2-3 sentence explanation),
-  l1s (array of L1 problem objects).
-Each L1 object MUST have: label (string), desc (string), l2s (array of L2 objects).
-Each L2 object MUST have: label (string), desc (string), caps (array of capability ID strings matching ACT5_HEATMAP_DATA ids).
-Create 4-6 lifecycle stages that group capabilities by customer journey phase.
-Map ALL capabilities to exactly one lifecycle stage. Every capability ID must appear in exactly one L2.caps array.
-Stage colors: use brand palette (#3367FF, #EA580C, #059669, #DC2626, #93B5FF, #D97706).
-The template uses var LIFECYCLE_STAGES = [{{ACT5_LIFECYCLE_STAGES}}]; — so output complete JS objects with their own braces.
-
-═══════════════════════════════════════════════════════════
-PARTIAL_D.html — Acts 6 and 7
-═══════════════════════════════════════════════════════════
-
-<!-- ACT6_TITLE -->
-Act 6 title
-<!-- ACT6_DESC -->
-Act 6 description
-<!-- ACT6_TRANSFORMATION_THREAD -->
-(theme: "How we build the transformation")
-<!-- ACT6_TIMELINE -->
-VISUAL timeline with phase dots and expandable cards. Use these EXACT CSS classes:
-<div class="timeline-phase"><div class="phase-dot" style="border-color:#DC2626;"></div><div class="phase-card open"><h4 style="color:#DC2626;">Phase 1: NOW</h4><div class="phase-time">Months 0-9 | 2026 H1-H2</div><div class="phase-cost">~$3.0M Investment</div><div class="phase-items"><ul><li>Initiative 1</li><li>Initiative 2</li></ul></div></div></div>
-Repeat for 3 phases. Use colors: Phase 1=#DC2626 (red), Phase 2=#EA580C (orange), Phase 3=#059669 (green).
-Make Phase 1 card "open" (expanded), others collapsed (user clicks to expand).
-Each phase lists: initiatives as bullet points, timeline range, investment estimate.
-<!-- ACT6_PHASE_CARDS -->
-3 phase summary cards (optional — only if timeline doesn't cover all detail)
-<!-- ACT6_ADDITIONAL_CONTENT -->
-Two sections here:
-1. DECISIONS CARD: A single FULL-WIDTH .card with border-top:3px solid #3367FF. Inside: heading "THREE DECISIONS REQUIRED BEFORE MONTH 1" + 3-column grid of decision boxes (background:#EFF6FF, border-radius:12px, padding:20px). Do NOT wrap in card-grid card-grid-3.
-2. KEY VALUE MILESTONES: A .card with 4-column grid of milestone boxes (Month X → what happens). Use phase-matching colors for backgrounds.
-<!-- ACT7_TITLE -->
-Act 7 title
-<!-- ACT7_DESC -->
-Act 7 description
-<!-- ACT7_TRANSFORMATION_THREAD -->
-(theme: "Why transformation pays for itself")
-<!-- ACT7_ROI_CARDS -->
-CRITICAL: 4 dynamic ROI cards with specific IDs that setScenario() updates.
-Use these EXACT CSS classes (roi-card, NOT metric-card):
-<div class="roi-card"><div class="roi-card-val" id="roi-npv">-$1.5M</div><div class="roi-card-lbl">5-Year NPV</div></div><div class="roi-card"><div class="roi-card-val" id="roi-return">-12%</div><div class="roi-card-lbl">5-Year ROI</div></div><div class="roi-card"><div class="roi-card-val" id="roi-payback">~6.5 yrs</div><div class="roi-card-lbl">Payback Period</div></div><div class="roi-card"><div class="roi-card-val" id="roi-benefits">$7.7M</div><div class="roi-card-lbl">5yr Gross Benefits</div></div>
-Set initial values to the BASE scenario numbers from roi_config.json → scenarios.base. The parent roi-grid div is already in the template.
-<!-- ACT7_BASE_DESC -->
-Plain text description of the base scenario (1-2 sentences). NOT HTML. Use roi_config.json → scenarios.base.desc.
-<!-- ACT7_SCENARIO_DATA -->
-CRITICAL FORMAT: A JS object (NO var keyword, NO semicolon — the template wraps it).
-Must have exactly 3 keys: conservative, base, aspirational.
-Each value MUST have: npv (string), roi (string), payback (string), benefits (string), desc (string).
-SOURCE: Copy values DIRECTLY from roi_config.json → "scenarios" object. Do NOT re-derive from markdown tables.
-Example:
-conservative:{{npv:"-$4.8M",roi:"-55%",payback:">10 yrs",benefits:"$3.1M",desc:"Conservative: low improvement rates across all levers"}},base:{{npv:"-$1.5M",roi:"-12%",payback:"~6.5 yrs",benefits:"$7.7M",desc:"Base: moderate improvements with peer-benchmarked assumptions"}},aspirational:{{npv:"+$3.2M",roi:"+36%",payback:"~4.2 yrs",benefits:"$14.5M",desc:"Aspirational: high conversion rates with full cross-app integration"}}
-<!-- ACT7_FINANCIAL_TABLE -->
-Wrap the table in: <div class="card reveal" style="margin-bottom:40px;"><h3 style="margin-bottom:20px;">5-Year Financial Model &mdash; Base Scenario</h3><div style="overflow-x:auto;">
-...TABLE HERE...
-</div></div>
-HTML table with 5-year projection (Year 1-5 + 5yr Total columns, benefit lines/cost lines/net row).
-<!-- ACT7_VALUE_LEVERS -->
-Start with: <h3 style="margin-bottom:20px;">Value Levers &mdash; Base Scenario (5-Year)</h3>
-EXPANDABLE value lever cards. Users click to see benchmarks and calculation.
-Use the .lever-card CSS classes from the template. Create 5-6 lever cards.
-SOURCE: Use roi_config.json → "lever_summary" array for lever names, values, MECE text, benchmarks, and capability IDs. Do NOT invent MECE content — it is authored by the ROI agent.
-CRITICAL: Keep expanded content CONCISE. Each MECE box must be 1-2 SHORT sentences (max 25 words). No verbose paragraphs.
-Each lever card follows this structure:
-<div class="lever-card" data-trace-id="BEN-1">
-  <div class="lever-header" onclick="this.parentElement.classList.toggle('open')">
-    <span class="lever-num">01</span>
-    <span class="lever-name">Lever Name</span>
-    <span class="lever-value" style="color:#3367FF;">$X.XM</span>
-    <span class="lever-arrow">&#9660;</span>
-  </div>
-  <div class="lever-body"><div class="lever-content">
-    <div class="lever-mece">
-      <div class="lever-mece-box" style="background:#FEF2F2;"><h5 style="color:#DC2626;">Current State</h5>Short phrase: what happens today</div>
-      <div class="lever-mece-box" style="background:#FFFBEB;"><h5 style="color:#D97706;">Change Driver</h5>Short phrase: what Backbase enables</div>
-      <div class="lever-mece-box" style="background:#F0FDF4;"><h5 style="color:#059669;">Target State</h5>Short phrase: KPI improvement with %</div>
-    </div>
-    <div class="lever-benchmark"><strong>Benchmark:</strong> One-line industry benchmark with source</div>
-    <div class="lever-capabilities"><span class="lever-cap-tag">CAP-ID</span></div>
-  </div></div>
-</div>
-Lever-value colors: #3367FF, #EA580C, #93B5FF, #059669, #DC2626, #D97706.
-
-═══════════════════════════════════════════════════════════
-PARTIAL_E.html — Journey Maps
-═══════════════════════════════════════════════════════════
-
-<!-- JOURNEY_DESC -->
-Journey maps description (1-2 sentences)
-<!-- JOURNEY_SWIMLANES -->
-Journey swimlanes with current/future toggle per journey:
-<div class="journey-block" id="journey-1"><div class="swimlane-header"><h4>Journey Name</h4><div><button class="swimlane-toggle-btn active-current" onclick="toggleJourney('1','current',this)">Current</button><button class="swimlane-toggle-btn" onclick="toggleJourney('1','future',this)">Future</button></div></div><div class="swimlane-panel active" data-state="current"><div class="swimlane-row"><div class="swim-stage">Stage</div><div class="swim-actions">Actions</div><div class="swim-pain">Pain</div><div class="swim-channel">Channel</div></div></div><div class="swimlane-panel" data-state="future"><div class="swimlane-row"><div class="swim-stage">Stage</div><div class="swim-actions">Future actions</div><div class="swim-gain">Gains</div><div class="swim-channel">Channel</div></div></div></div>
-Create 3-4 journey blocks for key personas.
-
-═══════════════════════════════════════════════════════════
-PARTIAL_F.html — Use Cases
-═══════════════════════════════════════════════════════════
-
-<!-- USECASES_TITLE -->
-Use cases section title
-<!-- USECASES_DESC -->
-Use cases description
-<!-- USECASES_CARDS -->
-Clickable use case cards:
-<div class="uc-card"><div class="uc-card-header"><span class="uc-icon">💡</span><h4>Use Case Title</h4></div><div class="uc-card-body"><p>Description</p><div class="uc-stat-row"><div class="uc-stat-card"><div class="uc-stat-val">$1.3M</div><div class="uc-stat-lbl">Annual Value</div></div></div></div></div>
-<!-- USECASES_PHONE_PROTOTYPES -->
-OPTIONAL — only include prototypes if the engagement has detailed use case flow data.
-If not available, write: <!-- no prototypes -->
-If included (2-3 max), wrap them in a heading and grid:
-<h3 style="margin:48px 0 24px;">Prototype Previews</h3>
-<div class="proto-grid">
-<div class="proto-wrap"><div class="proto-phone"><div class="proto-notch"></div><div class="proto-screen"><div style="padding:16px;"><h5 style="font-size:0.85rem;margin-bottom:12px;">Screen Title</h5><div style="background:#F1F5F9;border-radius:8px;padding:12px;margin-bottom:8px;font-size:0.75rem;">Content block</div></div></div></div><div class="proto-caption"><span style="font-weight:600;">Screen Name</span><p style="font-weight:400;">What this screen shows</p></div></div>
-</div>
-
-═══════════════════════════════════════════════════════════
-
-Write ALL 6 files (PARTIAL_A through PARTIAL_F). STOP IMMEDIATELY after writing the 6th file.
-Do NOT write any other files. Do NOT assemble the final HTML.
-Do NOT read the template. Do NOT explore the filesystem.
-Do NOT validate. Do NOT run any bash scripts.
-Python handles the template, assembly, and validation — your ONLY job is the 6 partials.
-After writing PARTIAL_F.html, output "DONE — 6 partials written" and stop.
-"""
+    # narrative-assembler is mode-extracted (skill-first contracts): the
+    # 6-partial HTML re-invocation is composed from
+    # .claude/agents/narrative-assembler.md (## Modes -> html-partial) via
+    # compose_prompt — no inline f-string. The design rules + placeholder spec
+    # travel inside the mode block verbatim; Python keeps ownership of the
+    # source pack (above), the template, assembly, and validation (below).
+    html_params = {
+        "source_pack": source_pack,
+        "partials_dir": partials_dir,
+    }
 
     result = await run_agent(
-        "narrative-assembler", html_prompt, engagement_dir,
+        "narrative-assembler", cwd=engagement_dir,
         label="HTML Dashboard", max_turns=25,
+        mode="html-partial", params=html_params,
     )
     cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
@@ -1972,11 +1910,10 @@ After writing PARTIAL_F.html, output "DONE — 6 partials written" and stop.
     return {"elapsed": time.time() - start, "cost": cost}
 
 
-async def step_generate_excel(
-    engagement_dir: Path,
-    outputs_dir: Path,
-) -> dict:
+async def step_generate_excel(ws) -> dict:
     """Generate ROI Excel model. Extracted for S2 overlapping."""
+    engagement_dir = ws.path      # #167: the neutral workspace — see step_parallel_block_a
+    outputs_dir = ws.outputs
     start = time.time()
     cost = 0.0
 
@@ -1984,22 +1921,20 @@ async def step_generate_excel(
         log("  ⚠ Skipping Excel — roi_config.json not found", C.YELLOW)
         return {"elapsed": 0, "cost": 0}
 
-    excel_prompt = f"""You are generating a ROI Excel model.
-
-Read and follow: {COMMANDS_DIR / 'generate-roi-excel.md'}
-
-Read the ROI config: {outputs_dir}/roi_config.json
-Read the ROI report: {outputs_dir}/roi_report.md
-
-Generate the Excel model using the roi_excel_generator tool or by writing
-the Excel file directly.
-
-Write the output to: {outputs_dir}/
-"""
+    # roi-financial-modeler is mode-extracted (skill-first contracts): the
+    # Excel re-invocation is composed from .claude/agents/roi-financial-modeler.md
+    # (## Modes -> excel-source) via compose_prompt — no inline f-string. The
+    # mode reads and follows .claude/commands/generate-roi-excel.md, which
+    # re-runs the cap gate (idempotent backstop) before generating.
+    excel_params = {
+        "engagement_dir": engagement_dir,
+        "outputs_dir": outputs_dir,
+    }
 
     result = await run_agent(
-        "roi-financial-modeler", excel_prompt, engagement_dir,
+        "roi-financial-modeler", cwd=engagement_dir,
         label="ROI Excel", max_turns=30,
+        mode="excel-source", params=excel_params,
     )
     cost += result.total_cost_usd if result and result.total_cost_usd else 0
 
@@ -2012,22 +1947,8 @@ Write the output to: {outputs_dir}/
 
 
 async def step_validate(engagement_dir: Path, outputs_dir: Path) -> bool:
-    """Run the validation gate script."""
-    script = REPO_ROOT / "scripts" / "validate_engagement_outputs.sh"
-    if not script.exists():
-        log("  ⚠ validate_engagement_outputs.sh not found — skipping", C.YELLOW)
-        return True
-
-    result = subprocess.run(
-        ["bash", str(script), str(engagement_dir), "assessment"],
-        capture_output=True, text=True,
-    )
-    if result.returncode == 0:
-        log("  ✓ Validation gate PASSED", C.GREEN)
-        return True
-    else:
-        log(f"  ✗ Validation gate FAILED:\n{result.stdout}\n{result.stderr}", C.RED)
-        return False
+    """Run the validation gate script (moved to artifact_boundary.validate_outputs)."""
+    return validate_outputs(engagement_dir, "assessment")["passed"]
 
 
 # ─── T4: Pipeline Summary ────────────────────────────────────────────────────
@@ -2067,7 +1988,16 @@ async def run_pipeline(
     pipeline_start = time.time()
     timings: dict[str, dict] = {}
 
+    # ── #167: identity first, before anything can print or compose a path ──
+    # `client_slug` closes the D14 seam (the map's slug keeps the client's name
+    # on the deny-list once #168 makes directories opaque); the same value seeds
+    # the log-redaction backstop.
+    client_slug = _resolve_client_slug(engagement_dir)
+    _install_log_redactions(engagement_dir, client_slug=client_slug)
+
     # ── Detect domain from intake ─────────────────────────────────────────
+    # Host-side only: this reads the RAW intake in Python and yields one of six
+    # fixed enum values. Neither the file nor its text ever reaches a prompt.
     intake_file = engagement_dir / "inputs" / "engagement_intake.md"
     domain = "retail"  # default
     if intake_file.exists():
@@ -2089,7 +2019,10 @@ async def run_pipeline(
     print(f"\n{C.BOLD}{'═' * 60}{C.RESET}")
     print(f"{C.BOLD}  CORTEX PIPELINE ORCHESTRATOR{C.RESET}")
     print(f"{C.BOLD}{'═' * 60}{C.RESET}")
-    print(f"  Engagement: {engagement_dir}")
+    # `log_print`, not `print`: this line has always rendered the client-named
+    # engagement path, and this process's stdout is read back into a Claude Code
+    # session's context whenever the pipeline is launched from one.
+    log_print(f"  Engagement: {engagement_dir}")
     print(f"  Domain:     {domain}")
     mode = "EXPRESS" if express else ("NON-INTERACTIVE" if non_interactive else "STANDARD")
     print(f"  Mode:       {mode}")
@@ -2122,16 +2055,27 @@ async def run_pipeline(
         steps = steps[steps.index(resume_from):]
 
     # ── Step 1: Discovery ─────────────────────────────────────────────────
+    # Discovery both anonymises the inputs and materialises the ONE workspace
+    # this run uses. Everything after it receives that workspace; `outputs_dir`
+    # is rebound to the workspace's own outputs/ and the client-named engagement
+    # directory is not named to an agent again.
     if "discovery" in steps:
         log_step("1", "DISCOVERY")
-        timings["discovery"] = await step_discovery(engagement_dir, outputs_dir, express, non_interactive)
+        timings["discovery"], ws = await step_discovery(
+            engagement_dir, express, non_interactive, client_slug=client_slug)
+    else:
+        ws = _restore_workspace(engagement_dir)
+    outputs_dir = ws.outputs
+    if "discovery" in steps:
+        _publish_workspace_outputs(ws)
 
     # ── Step 2: Parallel Block A ──────────────────────────────────────────
     if "parallel_a" in steps:
         # log_step is called inside step_parallel_block_a based on mode
         timings["parallel_a"] = await step_parallel_block_a(
-            engagement_dir, outputs_dir, express, domain, non_interactive
+            ws, express, domain, non_interactive
         )
+        _publish_workspace_outputs(ws)
 
     # ── S2: Overlapping stages (non-interactive) ─────────────────────────
     if non_interactive:
@@ -2145,10 +2089,9 @@ async def run_pipeline(
             roadmap_and_excel = []
             if "roadmap" in steps:
                 roadmap_and_excel.append(("roadmap", step_roadmap(
-                    engagement_dir, outputs_dir, express, non_interactive)))
+                    ws, express, non_interactive)))
             if "generate" in steps and file_exists(outputs_dir / "roi_config.json"):
-                roadmap_and_excel.append(("excel", step_generate_excel(
-                    engagement_dir, outputs_dir)))
+                roadmap_and_excel.append(("excel", step_generate_excel(ws)))
 
             if roadmap_and_excel:
                 tasks = [t[1] for t in roadmap_and_excel]
@@ -2159,30 +2102,31 @@ async def run_pipeline(
                         timings[name] = {"elapsed": 0, "cost": 0}
                     else:
                         timings[name] = result
+                _publish_workspace_outputs(ws)
 
         # Assembly (needs roadmap.md from above)
         if "assembly" in steps:
             log_step("4", "ASSEMBLY (parallel shards)")
-            timings["assembly"] = await step_assembly(
-                engagement_dir, outputs_dir, express, non_interactive)
+            timings["assembly"] = await step_assembly(ws, express, non_interactive)
+            _publish_workspace_outputs(ws)
 
         # HTML (needs assessment_report.md from assembly)
         if "generate" in steps:
             log_step("5", "HTML DASHBOARD")
-            timings["html"] = await step_generate_html(engagement_dir, outputs_dir)
+            timings["html"] = await step_generate_html(ws)
 
     else:
         # ── Standard/Interactive flow (sequential) ───────────────────────
 
         if "roadmap" in steps:
             log_step("3", "ROADMAP")
-            timings["roadmap"] = await step_roadmap(
-                engagement_dir, outputs_dir, express, non_interactive)
+            timings["roadmap"] = await step_roadmap(ws, express, non_interactive)
+            _publish_workspace_outputs(ws)
 
         if "assembly" in steps:
             log_step("4", "ASSEMBLY")
-            timings["assembly"] = await step_assembly(
-                engagement_dir, outputs_dir, express, non_interactive)
+            timings["assembly"] = await step_assembly(ws, express, non_interactive)
+            _publish_workspace_outputs(ws)
 
         if "generate" in steps:
             log_step("5", "GENERATE HTML + EXCEL (parallel)")
@@ -2190,10 +2134,10 @@ async def run_pipeline(
             gen_tasks = []
             gen_names = []
             if file_exists(outputs_dir / "assessment_report.md"):
-                gen_tasks.append(step_generate_html(engagement_dir, outputs_dir))
+                gen_tasks.append(step_generate_html(ws))
                 gen_names.append("html")
             if file_exists(outputs_dir / "roi_config.json"):
-                gen_tasks.append(step_generate_excel(engagement_dir, outputs_dir))
+                gen_tasks.append(step_generate_excel(ws))
                 gen_names.append("excel")
             if gen_tasks:
                 results = await asyncio.gather(*gen_tasks, return_exceptions=True)
@@ -2204,48 +2148,65 @@ async def run_pipeline(
                     else:
                         timings[name] = result
 
+    # ── Step 5b: PUBLISH — workspace outputs -> the real engagement ───────
+    # Everything the agents produced lives in the workspace. It has to come home
+    # BEFORE the validation gate (which inspects the engagement's own
+    # deliverables) and before the de-anonymisation gate (which is the single
+    # point where real names re-enter artifacts, and which reads and rewrites
+    # the engagement's outputs/, not the workspace's). Delegated to
+    # Workspace.copy_back() with its stated atomicity guarantee — staged inside
+    # the engagement directory, published by atomic rename. Idempotent, so the
+    # per-step calls above are a durability measure, not a duplicate publish.
+    _publish_workspace_outputs(ws)
+
     # ── Step 6: Validation Gate ───────────────────────────────────────────
+    # Runs against the REAL engagement — these are the consultant's deliverables.
+    real_outputs_dir = engagement_dir / "outputs"
     if "validate" in steps:
         log_step("6", "VALIDATION GATE")
-        passed = await step_validate(engagement_dir, outputs_dir)
+        passed = await step_validate(engagement_dir, real_outputs_dir)
         if not passed:
             log("  Pipeline completed with validation warnings.", C.YELLOW)
 
     # ── Step 6b: De-anonymize final outputs ─────────────────────────────
-    pii_mapping_file = engagement_dir / ".pii_mapping.json"
-    if pii_mapping_file.exists():
-        log("  Restoring client names in final outputs...", C.CYAN)
-        try:
-            pii_mapping = json.loads(pii_mapping_file.read_text())
-            if pii_mapping:
-                deanon_count = 0
-                for out_file in outputs_dir.iterdir():
-                    if out_file.suffix in ('.md', '.html', '.json', '.txt') and not out_file.name.startswith('interim'):
-                        content = out_file.read_text()
-                        restored = deanonymize_text(content, pii_mapping)
-                        if restored != content:
-                            out_file.write_text(restored)
-                            deanon_count += 1
-                log(f"  ✓ De-anonymized {deanon_count} output file(s)")
-        except Exception as e:
-            log(f"  ⚠ De-anonymization failed: {type(e).__name__} — outputs may contain placeholders", C.YELLOW)
+    # Moved to artifact_boundary.deanonymize_dir — a missing .pii_mapping.json
+    # is reported loudly as NOT client-ready, never silently skipped.
+    # The workspace copy is deliberately NOT restored: it stays placeholder-form
+    # for as long as it exists, so nothing an agent can still reach ever carries
+    # a real client name.
+    deanonymize_dir(real_outputs_dir, engagement_dir / ".pii_mapping.json")
 
-    # Clean up anonymized transcript copies (keep mapping for audit trail)
-    for anon_file in (engagement_dir / "inputs").glob(".anon_transcript_*"):
-        anon_file.unlink(missing_ok=True)
+    # Clean up anonymized transcript copies (keep mapping for audit trail).
+    # `.anon_engagement_intake.md` goes too — it is a scrubbed copy of a
+    # deny-list source and has no life beyond this run.
+    for pattern in (".anon_transcript_*", ".anon_engagement_intake.md"):
+        for anon_file in (engagement_dir / "inputs").glob(pattern):
+            anon_file.unlink(missing_ok=True)
 
     # ── Step 7: Knowledge Harvest (silent, non-blocking) ─────────────────
     log_step("7", "KNOWLEDGE HARVEST")
+    # `engagement_dir.name` is the `YYYY-MM_domain_type` slug by convention, one
+    # level BELOW the client directory — but conventions are not guarantees, and
+    # this value is rendered into the harvester's prompt and into the knowledge
+    # filenames it writes. Check it against the deny-list rather than trusting
+    # the layout.
     engagement_id = engagement_dir.name
-    await step_harvest(engagement_dir, outputs_dir, engagement_id)
+    if _leaked_terms(engagement_id):
+        engagement_id = "engagement-" + hashlib.sha256(
+            engagement_id.encode("utf-8")).hexdigest()[:8]
+        log("  ⚠ engagement id matched a client identifier — using a neutral id "
+            "for harvest instead", C.YELLOW)
+    await step_harvest(ws, engagement_id)
 
     # ── T4: Summary with timing + costs ──────────────────────────────────
     total_time, total_cost = _print_pipeline_summary(timings, pipeline_start)
 
+    # The consultant's deliverables now live in the REAL engagement, not the
+    # workspace — list those.
     print(f"\n  Output files:")
-    for f in sorted(outputs_dir.iterdir()):
+    for f in sorted(real_outputs_dir.iterdir()):
         if not f.name.startswith("CHECKPOINT") and not f.name.startswith("interim"):
-            print(f"    {f.name:40s} {f.stat().st_size:>8,} bytes")
+            log_print(f"    {f.name:40s} {f.stat().st_size:>8,} bytes")
 
     # Write timing to journal
     journal = engagement_dir / "ENGAGEMENT_JOURNAL.md"
@@ -2271,7 +2232,7 @@ async def run_pipeline(
             f.write(timing_entry)
 
     # Runtime evals (non-blocking): score this run's agent outputs + deliverables +
-    # pipeline contracts into .pipeline_run_report.json and flag anything below
+    # deliverable-structural contracts into .pipeline_run_report.json and flag anything below
     # threshold. Never breaks the engagement — wrapped so any eval error is swallowed.
     try:
         import sys as _sys
@@ -2284,7 +2245,15 @@ async def run_pipeline(
         print(f"  📊 Eval report → {_path.name}"
               + (f"  ⚑ {len(_rep['flags'])} flag(s)" if _rep.get("flags") else "  ✓ clean"))
     except Exception as _e:  # never let evals break a run
-        print(f"  (runtime evals skipped: {_e})")
+        log_print(f"  (runtime evals skipped: {_e})")
+
+    # ── Tear down the workspace ──────────────────────────────────────────
+    # Only here, at the end of a run that reached this line. An earlier
+    # exception leaves it standing on purpose (identity.Workspace.__exit__ takes
+    # the same position): a failed run's agent output may not have been
+    # published yet, and `--resume-from` reattaches to exactly this directory.
+    ws.cleanup()
+    (engagement_dir / WORKSPACE_POINTER).unlink(missing_ok=True)
 
     print()
 
@@ -2399,14 +2368,40 @@ def _open_harvest_pr(branch: str, token: str, engagement_id: str, summary: str) 
         return ""
 
 
-async def step_harvest(engagement_dir: Path, outputs_dir: Path, engagement_id: str):
+async def step_harvest(ws, engagement_id: str):
     """
     Post-pipeline knowledge harvest — runs silently after validation.
     - Always extracts knowledge locally (no setup required)
     - Optionally pushes harvest/* branch + opens PR if CORTEX_HARVEST_TOKEN is set
     - Skips if outputs haven't changed since last harvest
+
+    #167: the harvester is an agent like any other, so its `cwd` and its path
+    params are the neutral workspace. It therefore reads the PLACEHOLDER-form
+    outputs (`<CLIENT_1>`, `<PERSON_2>`) rather than the de-anonymised
+    deliverables — which is the form the harvester's own contract requires it to
+    write into shared knowledge anyway, so this tightens the guarantee instead of
+    relying on the agent to re-anonymise. Host-side state
+    (`.harvest_state`, the synthetic-quarantine policy) stays anchored on the
+    REAL engagement directory, which is where it has always lived.
     """
+    engagement_dir = ws.engagement_dir   # REAL — host-side state only
+    workspace_dir = ws.path              # what the agent is told
+    outputs_dir = ws.outputs
     cortex_dir = REPO_ROOT
+
+    # Synthetic-engagement gate — single source of truth (artifact_boundary.
+    # synthetic_policy). "real" falls through unchanged; "quarantine" routes
+    # the harvester into its own quarantine mode and suppresses auto-push;
+    # "never" skips harvest entirely (real source material must not be
+    # extracted).
+    policy, reason = synthetic_policy(engagement_dir)
+    if policy == "never":
+        log("  🧪 Synthetic engagement (harvest_policy: never) — harvest skipped entirely (real source material, must not be extracted)", C.YELLOW)
+        log(f"  {reason}", C.DIM)
+        return
+    if policy == "quarantine":
+        log("  🧪 Synthetic engagement (harvest_policy: quarantine) — harvest redirected to outputs/knowledge_harvest/; shared knowledge untouched", C.CYAN)
+        log(f"  {reason}", C.DIM)
 
     # Check if outputs changed since last harvest
     hash_file = engagement_dir / ".harvest_state"
@@ -2417,39 +2412,33 @@ async def step_harvest(engagement_dir: Path, outputs_dir: Path, engagement_id: s
 
     log("  🧠 Harvesting knowledge from engagement outputs...", C.CYAN)
 
-    harvest_prompt = f"""You are running an automatic knowledge harvest after a pipeline run.
-
-Engagement directory: {engagement_dir}
-Outputs directory: {outputs_dir}
-Engagement ID: {engagement_id}
-
-Your task:
-1. Read the key output files: evidence_register.md, roi_config.json, journey_maps.json, capability_assessment.md, roi_report.md (read only what exists)
-2. Read knowledge/learnings/EXTRACTION_REGISTRY.md to understand what's already been harvested
-3. Extract NEW learnings not already in the registry:
-   - Benchmarks → append to knowledge/domains/{{domain}}/benchmarks.md
-   - Journey patterns → write to knowledge/learnings/journey_maps/{{engagement_id}}.md
-   - ROI patterns → append to knowledge/learnings/roi_models/ (new file if novel lever type)
-   - Pain point patterns → append to knowledge/learnings/pain_points/{{domain}}_patterns.md
-4. Anonymise everything: replace client name with [Client-{{domain}}-{{region}}-{{year}}]
-5. Update knowledge/learnings/EXTRACTION_REGISTRY.md — add row to Auto-Harvest Log with today's date
-6. Write a 3-5 line plain-text harvest summary (what was added/updated) to {engagement_dir}/.harvest_summary.txt
-
-Follow knowledge/standards/benchmark_evolution.md append-only rules.
-Do NOT modify any existing benchmark values — only append new ones.
-"""
+    # knowledge-harvester is mode-extracted (skill-first contracts): its
+    # prompt is composed from .claude/agents/knowledge-harvester.md
+    # (## Modes -> pipeline | quarantine) via compose_prompt — no inline f-string.
+    harvest_params = {
+        "engagement_dir": workspace_dir,
+        "outputs_dir": outputs_dir,
+        "engagement_id": engagement_id,
+    }
 
     result = await run_agent(
-        "knowledge-harvester", harvest_prompt, engagement_dir,
+        "knowledge-harvester", cwd=workspace_dir,
         label="Harvest", max_turns=25,
+        mode=("quarantine" if policy == "quarantine" else "pipeline"), params=harvest_params,
     )
 
-    # Read summary written by agent
-    summary_file = engagement_dir / ".harvest_summary.txt"
+    # Read summary written by agent — into the workspace, per the params above.
+    summary_file = workspace_dir / ".harvest_summary.txt"
     summary = summary_file.read_text().strip() if summary_file.exists() else "Knowledge updated."
 
-    # Save hash so next run skips if nothing changes
+    # Save hash so next run skips if nothing changes (dedup applies to
+    # repeated quarantine runs too, so re-running a test engagement doesn't
+    # re-harvest every time).
     hash_file.write_text(current_hash)
+
+    if policy == "quarantine":
+        log("  ✓ Quarantined harvest complete — shared knowledge untouched, auto-push skipped", C.DIM)
+        return
 
     # Auto-push if harvest token is available (optional — knowledge is already saved locally)
     env_vars = _load_env_file(cortex_dir)

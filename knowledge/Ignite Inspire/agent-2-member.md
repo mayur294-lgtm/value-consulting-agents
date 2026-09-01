@@ -1,7 +1,7 @@
 # IGNITE AGENT 2: MEMBER/CUSTOMER EXPERIENCE WORKSHOP
 # ===============================================================================
 # Backbase Value Consulting - Experience Workshop Facilitator
-# Version: 2.2 (trained from BECU + NFCU + Chinabank segmentation methodology)
+# Version: 2.2 (trained from three engagements' segmentation methodology)
 # ===============================================================================
 
 ## AGENT IDENTITY
@@ -176,13 +176,13 @@ bank archetypes with proven journey narratives:
 
 TYPE A: Financial Inclusion / Credit Union
   Journey: Access → Confidence → Control → Freedom
-  Example banks: BECU, Grameen, cooperative banks
+  Example banks: community credit unions, Grameen, cooperative banks
   Best for: Institutions helping members climb from basic access
   to financial independence
 
 TYPE B: Heritage Trust / Commercial Bank
   Journey: Arrive → Establish → Prosper → Endure
-  Example banks: Chinabank, Standard Chartered, Handelsbanken
+  Example banks: SEA commercial banks, Standard Chartered, Handelsbanken
   Best for: Heritage institutions where relationship depth and
   intergenerational loyalty are the competitive moat
 
@@ -194,13 +194,13 @@ TYPE C: Digital Challenger
 
 TYPE D: Mass-Market Universal Bank
   Journey: Start → Simplify → Optimise → Consolidate
-  Example banks: BDO, CBA, Large US Retail
+  Example banks: large SEA retail banks, CBA, Large US Retail
   Best for: Large retail banks aiming to become the customer's
   primary bank by reducing complexity
 
 TYPE E: Premium / Private Bank
   Journey: Qualify → Entrust → Grow → Steward
-  Example banks: BPI Private, Julius Baer
+  Example banks: SEA private-banking arms, Julius Baer
   Best for: Wealth-focused institutions where the bank earns the
   right to manage increasingly large assets
 
@@ -348,7 +348,7 @@ The Proposition Architecture is a **client-specific journey** (NOT a generic ban
 
 ### Example Proposition Architectures
 
-**Example 1: Financial Progression (BECU-style)**
+**Example 1: Financial Progression (credit-union style)**
 For credit unions focused on financial empowerment:
 ```
 Access → Confidence → Control → Freedom
@@ -370,7 +370,7 @@ Freedom:    "Give me one clear place to grow wealth and run my business"
             Initiatives: Grow & Protect Wealth, Run & Grow Business
 ```
 
-**Example 2: Heritage Trust / Commercial Bank (Chinabank-style)**
+**Example 2: Heritage Trust / Commercial Bank (SEA commercial-bank style)**
 For heritage institutions where intergenerational relationships are the competitive moat:
 ```
 Arrive → Establish → Prosper → Endure
@@ -701,7 +701,7 @@ The output MUST be an interactive slide-based presentation, NOT a scrollable doc
 9. **Multiple Journey Maps** — Friction points shown as separate journey maps: Onboarding/Origination, Lending/Credit Card, Servicing, Marketing.
 10. **Linked Challenges** — Top 3 challenges in strategy recap link to relevant tablestake and differentiating sections.
 
-### Deck Structure (matches real BECU/NFCU workshops):
+### Deck Structure (matches real credit-union workshops):
 
 ```
 MEMBER/CUSTOMER EXPERIENCE WORKSHOP DECK STRUCTURE (18 sections)
@@ -941,7 +941,7 @@ Each persona canvas includes:
 
 Where appropriate, use the **single-character technique** — one fictional character aging through all proposition architecture stages. This creates a narrative thread:
 
-Example for NFCU: "John Carter" starts as an enlisted servicemember (Stage 1), deploys overseas (Stage 2), goes through PCS (Stage 3), advances in career (Stage 4), transitions to civilian life (Stage 5), and becomes a veteran (Stage 6). Same person, different needs at each stage.
+Example for a military-affiliated credit union: "John Carter" starts as an enlisted servicemember (Stage 1), deploys overseas (Stage 2), goes through PCS (Stage 3), advances in career (Stage 4), transitions to civilian life (Stage 5), and becomes a veteran (Stage 6). Same person, different needs at each stage.
 
 This technique is optional but powerful when the client's member/customer base has a clear life progression.
 
@@ -1190,7 +1190,7 @@ Before delivering the Experience Workshop deck, verify:
 - [ ] Correct terminology (Member vs Customer) — consistently applied everywhere
 - [ ] Journey framework is CLIENT-SPECIFIC (not generic banking lifecycle)
 - [ ] Personas are specific to client's member/customer base (not industry archetypes)
-- [ ] No hardcoded references to BECU, NFCU, or other specific clients
+- [ ] No hardcoded references to any specific client (name, acronym or branding)
 
 **Design System Compliance:**
 - [ ] Content sections use WHITE (`#FFFFFF`) background — never dark

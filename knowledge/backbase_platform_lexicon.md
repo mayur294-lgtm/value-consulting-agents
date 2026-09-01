@@ -120,7 +120,7 @@ expand←  │  & Expansion    │     Assist      │ ←retain
 
 **Domain Variations:**
 - **Retail:** Self-service digital deflection. Key metric: containment rate, cost-to-serve, NPS. *Target: 20%→60% digital containment.*
-- **Wealth:** RM productivity (admin→advice shift). Key metric: non-value task time, review prep time, churn rate. *ISPWM example: 65% non-value time → target 35%.*
+- **Wealth:** RM productivity (admin→advice shift). Key metric: non-value task time, review prep time, churn rate. *[Client-wealth-EMEA-2023] example: 65% non-value time → target 35%.*
 - **SME:** Digital self-service + relationship support. Key metric: digital adoption, support ticket volume.
 - **Commercial:** Self-service portal + dedicated RM. Key metric: client satisfaction, issue resolution time.
 
@@ -435,9 +435,9 @@ Grand Central provides unified connectivity to:
 
 | Engagement | Investment | Benefits (5yr) | ROI | Payback |
 |------------|------------|----------------|-----|---------|
-| ISPWM (Luxembourg) | €9.1M | €28.5M | 224% | ~2 years |
-| Schroders (UK) | ~£19M | £153M | 8x | ~1.5 years |
-| HNB Wealth (Sri Lanka) | $9.6M | $25.7M | 167% | ~2 years |
+| [Client-wealth-EMEA-2023] (Luxembourg) | €9.1M | €28.5M | 224% | ~2 years |
+| [Client-wealth-EMEA-2024] (UK) | ~£19M | £153M | 8x | ~1.5 years |
+| [Client-wealth-APAC-2025] (Sri Lanka) | $9.6M | $25.7M | 167% | ~2 years |
 | Seabank (Philippines) | $11M | $18.3M | 66% | 1.7 years |
 
 ---

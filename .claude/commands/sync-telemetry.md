@@ -28,7 +28,7 @@ Look for telemetry sources in this order:
 For each journal found, run the extraction:
 
 ```bash
-python scripts/extract_telemetry.py [journal_path] --output /tmp/telemetry_extract.json
+python3 scripts/extract_telemetry.py [journal_path] --output /tmp/telemetry_extract.json
 ```
 
 If the Python script isn't available, manually extract:
@@ -45,7 +45,7 @@ gh issue create \
   --repo [REPO_OWNER/REPO_NAME] \
   --title "[Telemetry] $(date +%Y-%m-%d) — [domain] [engagement_type]" \
   --label "telemetry" \
-  --body "$(python scripts/format_telemetry_issue.py --input /tmp/telemetry_extract.json)"
+  --body "$(python3 scripts/format_telemetry_issue.py --input /tmp/telemetry_extract.json)"
 ```
 
 **Important:** The repo should be the central Value Consulting AgenticOS repository, not the consultant's fork.
@@ -73,6 +73,7 @@ If the `gh` CLI is not authenticated:
 
 ## Notes
 
-- Telemetry is anonymized — no client names or sensitive data should be in the telemetry blocks
+- **Client-name anonymization is enforced, not asserted:** `scripts/extract_telemetry.py` (called by Step 2 above, and by the `post-commit`/`pre-push` git hooks) replaces the journal's literal `**Client:**` value with the same descriptive, non-identifying label the knowledge harvester uses — `[Client-{domain}-{REGION}-{year}-{disc}]` (see `.claude/agents/knowledge-harvester.md` Core Rule 2 and `scripts/extract_telemetry.py`'s `_client_label`) — before it is ever written to `.telemetry_cache.jsonl` or a GitHub Issue body.
+- **Known gap — not covered by the above:** `journal_path` in the extracted JSON (e.g. `engagements/{client}/...`) still names the client's directory; that's the separate path-anonymization work tracked in `.prd/prd-v6.md` §2 and not yet built. Free-text notes inside `MODIFICATION_LOG` blocks are consultant-written and are not run through any anonymizer — do not paste client specifics into them.
 - The telemetry data feeds the Flywheel's Triage Agent, which groups similar issues across consultants
 - High-frequency issues get prioritized for the Dev Agent to fix automatically

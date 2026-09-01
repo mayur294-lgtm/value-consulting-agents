@@ -26,7 +26,12 @@ build/
 .claude/worktrees/
 
 # Engagement data (client-confidential — never commit)
-engagements/
+/engagements/
+
+# Test engagements (quarantine zone — may contain real source material used as test input)
+# Only the README documenting the convention is tracked.
+tests/engagements/*
+!tests/engagements/README.md
 
 # Environment files (may contain secrets)
 .env
@@ -37,6 +42,27 @@ engagements/
 # PII anonymization artifacts (contain real client names)
 .pii_mapping.json
 .anon_*
+
+# Engagement identity map (#166) — the ONLY place an opaque engagement ID is
+# bound to a real client name. chmod 600, machine-local, never committed.
+.engagement_map.json
+
+# Harness gate override — machine-local acknowledgement that work is being done
+# outside a bb-* cycle (see .claude/hooks/require-harness.py). It was committed
+# once and, because the hook only tests for its existence, silently disabled the
+# gate on every clone. It is a per-developer marker, never a repo state.
+.prd/ACTIVE_CHANGE
+
+# Video workspace for the rollout announcement film. Start frames and scripts
+# are tracked; Runway renders and the stitched cut are not.
+docs/rollout/video/**/*.mp4
+docs/rollout/video/**/*.mov
+
+# Neutral pipeline workspaces (#167). Throwaway per-run directories holding
+# scrubbed copies of engagement inputs and the outputs agents produce, kept
+# inside the repo only so agents' repo-relative knowledge paths still resolve.
+# Never committed; removed at the end of a successful run.
+/.cortex-workspaces/
 
 # Temporary files
 *.tmp
@@ -49,3 +75,13 @@ Desktop.ini
 
 # Miscellaneous
 *.webloc
+
+# Cortex ontology handover — PII round-trip mappings stay local, never committed
+*.mapping.json
+
+# Cheat-sheet art: the six inlined character PNGs and the pipeline diagram are
+# TRACKED (tools/build_cheatsheet.py base64-inlines them, so CI cannot generate
+# a byte-identical sheet without them). The multi-megabyte working sources they
+# were cut from are not needed for the build and stay local.
+docs/rollout/assets/gryphon-source.png
+docs/rollout/assets/cast-clean.png

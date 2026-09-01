@@ -8,6 +8,46 @@ Roadmap, releases, and team commitments are tracked on the **[Cortex Roadmap pro
 
 Every task, issue, and workstream lives there with a Start Date, Target Date, milestone, and owner. The board is the single forward-looking view of the project; this repo is the source of truth for the work itself.
 
+## Installation
+
+One command, once, from the repo root:
+
+```bash
+bash scripts/setup_pii.sh
+```
+
+It finds a Python interpreter Cortex can run on, creates a virtual environment at `.venv`, installs all of `requirements.txt` into it, and downloads the language model PII detection needs (`en_core_web_lg`, ~380 MB — the slow step, give it a few minutes). It's safe to re-run; a second run reuses what's already installed and finishes quickly. It also checks for the `tesseract` OCR binary, needed only for reading screenshots — if it's missing, the script reports the one command to install it and continues; nothing else is blocked.
+
+**Don't run `pip install -r requirements.txt` yourself.** Cortex's pipeline (`claude-agent-sdk`) and its PII tooling (Presidio, document text extraction, OCR) both need **Python 3.10–3.13**, and the system `python3` on most consultant machines is 3.9 — so that command fails outright there, after downloading the 380 MB model first. `setup_pii.sh` exists to pick the right interpreter for you; `.venv/bin/python` is then the interpreter that runs the pipeline.
+
+You don't have to remember any of this yourself: every session start, Claude checks whether PII protection is set up and, if it isn't, tells you exactly what's missing and prints this same command. Until it's set up, client documents in an engagement's `inputs/` folder won't open — that's intentional, so raw client material never reaches Claude unscrubbed. Everything else works normally in the meantime.
+
+## Working with engagements
+
+Start one:
+
+```bash
+./scripts/init_engagement.sh navy_federal 2026-02_retail_assessment assessment
+```
+
+Find it again, any time — partial and case-insensitive, so half-remembered spellings work:
+
+```bash
+./scripts/find_engagement.sh navy_federal
+```
+
+The engagement directory it creates is a random ID (`engagements/e7f3a2c1/…`), not the client's name. That's deliberate: every agent call is told its working directory, so a directory named after the client tells the model who the client is on every single call, however well the documents inside have been scrubbed. The ID is bound to the client only in `.engagement_map.json` — repo root, readable only by you, never committed, never sent anywhere.
+
+**You never need to type or remember an ID.** `find_engagement.sh` is the lookup. Everything *inside* an engagement directory is exactly as it was: `inputs/`, `outputs/`, the journal, the session ID.
+
+If you already have client-named engagement directories from before this change, migrate them once:
+
+```bash
+./scripts/migrate_engagement_ids.sh
+```
+
+It prints the full plan and changes nothing until you re-run it with `--apply` and confirm. It also refuses to migrate any engagement where doing so would weaken the check that stops the client's name being sent to Backbase Infobank — and tells you what to supply to fix that.
+
 ## What is Value Consulting?
 
 Value Consulting is a disciplined practice that connects business outcomes to technology investments through evidence-based analysis. Unlike traditional consulting that focuses on deliverables or vendor solutions, Value Consulting focuses on **measurable business value creation**.

@@ -24,14 +24,14 @@ This document provides benchmark data for retail banking digital transformation,
 
 | Bank | Region | Digital Active Rate | Mobile Adoption |
 |------|--------|---------------------|-----------------|
-| Banque Saudi Fransi | Saudi Arabia | 67% | High |
-| BNCR | Costa Rica | 51% | Medium |
-| Banco Pichincha | Ecuador | 49% | Medium |
-| ABK | Kuwait | 30% | Low |
-| Tech CU | USA | 30% | Medium |
-| EWB | Philippines | 18% | Low |
-| Weatherbys | UK | 10% | Low |
-| Letshego | Pan-Africa | 17% | Low |
+| [Client-retail-MENA-2022] | Saudi Arabia | 67% | High |
+| [Client-public-LATAM-2021] | Costa Rica | 51% | Medium |
+| Banco [Client-retail-LATAM-2022] | Ecuador | 49% | Medium |
+| [Client-retail-MENA-2022b] | Kuwait | 30% | Low |
+| [Client-creditunion-NAM-2021] | USA | 30% | Medium |
+| [Client-commercial-NAM-2021] | Philippines | 18% | Low |
+| [Client-wealth-EMEA-2022] | UK | 10% | Low |
+| [Client-retail-AFRICA-2022] | Pan-Africa | 17% | Low |
 
 ---
 
@@ -49,12 +49,12 @@ This document provides benchmark data for retail banking digital transformation,
 
 | Bank | Region | Digital Leakage | Branch Leakage | Overall Leakage |
 |------|--------|-----------------|----------------|-----------------|
-| ABK Kuwait | Kuwait | 97% | 35% | 35% |
-| Tech CU | USA | 96% | 32% | 64% |
-| EWB | Philippines | 92% | 20% | 40% |
-| Eastern Bank (Backbase) | USA | 87% | N/A | N/A |
-| CIH | Morocco | 78% | 0% | N/A |
-| Caja Social | Colombia | N/A | N/A | 25% |
+| [Client-retail-MENA-2022b] Kuwait | Kuwait | 97% | 35% | 35% |
+| [Client-creditunion-NAM-2021] | USA | 96% | 32% | 64% |
+| [Client-commercial-NAM-2021] | Philippines | 92% | 20% | 40% |
+| [Client-retail-NAM-2023] (Backbase) | USA | 87% | N/A | N/A |
+| [Client-retail-EMEA-2022] | Morocco | 78% | 0% | N/A |
+| [Client-retail-LATAM-2021] | Colombia | N/A | N/A | 25% |
 
 ### Funded Account Rates
 
@@ -63,11 +63,11 @@ This document provides benchmark data for retail banking digital transformation,
 | Funded Accounts | <40% | 40-60% | 60-80% | >80% |
 
 **Reference Points:**
-- Banco Pichincha (Ecuador): 100%
-- Eastern Bank (USA): 69%
-- EWB (Philippines): 40%
-- Tech CU (USA): 34%
-- ABK (Kuwait): 30%
+- Banco [Client-retail-LATAM-2022] (Ecuador): 100%
+- [Client-retail-NAM-2023] (USA): 69%
+- [Client-commercial-NAM-2021] (Philippines): 40%
+- [Client-creditunion-NAM-2021] (USA): 34%
+- [Client-retail-MENA-2022b] (Kuwait): 30%
 
 ### Onboarding Time
 
@@ -79,10 +79,10 @@ This document provides benchmark data for retail banking digital transformation,
 | Time to Debit Card | >10 days | 7-10 days | 4-7 days | <4 days |
 
 **Reference Points:**
-- CIH (Morocco): 12 min digital, 20 min branch
-- Banco Pichincha (Ecuador): 70 min digital, 10 min branch
-- Tech CU (USA): 3 days end-to-end
-- EWB (Philippines): 3 days end-to-end
+- [Client-retail-EMEA-2022] (Morocco): 12 min digital, 20 min branch
+- Banco [Client-retail-LATAM-2022] (Ecuador): 70 min digital, 10 min branch
+- [Client-creditunion-NAM-2021] (USA): 3 days end-to-end
+- [Client-commercial-NAM-2021] (Philippines): 3 days end-to-end
 
 ---
 
@@ -97,11 +97,11 @@ This document provides benchmark data for retail banking digital transformation,
 | Internal Handoffs | >5 | 3-5 | 2-3 | <2 |
 
 **Reference Points:**
-- ABK (Kuwait): 95% STP, 0% auto-ID
-- EWB (Philippines): 90% STP
-- Eastern Bank (USA): 75% STP, 2% auto-ID
-- Tech CU (USA): 70% STP, 72% auto-ID
-- CIH (Morocco): 25% STP, 60% auto-ID
+- [Client-retail-MENA-2022b] (Kuwait): 95% STP, 0% auto-ID
+- [Client-commercial-NAM-2021] (Philippines): 90% STP
+- [Client-retail-NAM-2023] (USA): 75% STP, 2% auto-ID
+- [Client-creditunion-NAM-2021] (USA): 70% STP, 72% auto-ID
+- [Client-retail-EMEA-2022] (Morocco): 25% STP, 60% auto-ID
 
 ### Cost Metrics
 
@@ -123,7 +123,7 @@ This document provides benchmark data for retail banking digital transformation,
 | Kiosk | $0.50-1.00 | Growing |
 | ATM | $0.75-1.25 | Stable |
 
-**Source:** Banesco Bolivia Value Assessment (2025)
+**Source:** [Client-retail-LATAM-2025] Bolivia Value Assessment (2025)
 
 ### Transaction Volume Profile (Mid-Size LATAM Retail Bank)
 
@@ -170,10 +170,10 @@ This document provides benchmark data for retail banking digital transformation,
 | Product Penetration (New Customers) | 1.0 | 1.2-1.5 | 1.5-2.0 | >2.0 |
 
 **Reference Points:**
-- Sandy Spring (USA): 96% retention, 1.95 products/customer
-- CIH (Morocco): 3.2 products/customer
-- Caja Social (Colombia): 2.1 products/customer
-- EWB (Philippines): 1.2 products/customer
+- [Client-retail-NAM-2021] (USA): 96% retention, 1.95 products/customer
+- [Client-retail-EMEA-2022] (Morocco): 3.2 products/customer
+- [Client-retail-LATAM-2021] (Colombia): 2.1 products/customer
+- [Client-commercial-NAM-2021] (Philippines): 1.2 products/customer
 
 ---
 
@@ -188,17 +188,17 @@ This document provides benchmark data for retail banking digital transformation,
 | Card Delivery Time | >10 days | 7-10 days | 4-7 days | Instant virtual |
 
 **Reference Points:**
-- ABK (Kuwait): 8% digital card orders, 72 hours delivery
-- Sandy Spring (USA): 0% digital card orders
-- CIH (Morocco): 4 days delivery
+- [Client-retail-MENA-2022b] (Kuwait): 8% digital card orders, 72 hours delivery
+- [Client-retail-NAM-2021] (USA): 0% digital card orders
+- [Client-retail-EMEA-2022] (Morocco): 4 days delivery
 
 ### Service Volume Distribution
 
 | Bank | Cards-Related Branch Visits | Cards-Related CC Calls |
 |------|---------------------------|------------------------|
-| Sandy Spring (USA) | 4.37% of visits | 0.03% of calls |
-| EWB (Philippines) | 9% of visits | 7% of calls |
-| CIH (Morocco) | N/A | 159,485 calls/year |
+| [Client-retail-NAM-2021] (USA) | 4.37% of visits | 0.03% of calls |
+| [Client-commercial-NAM-2021] (Philippines) | 9% of visits | 7% of calls |
+| [Client-retail-EMEA-2022] (Morocco) | N/A | 159,485 calls/year |
 
 ---
 
@@ -279,13 +279,13 @@ This document provides benchmark data for retail banking digital transformation,
 | Average Ticket (USD) | $3,000-8,000 |
 | Average Term | 48-60 months |
 
-**Source:** Banco Caja Social Colombia Value Assessment (2025)
+**Source:** [Client-retail-LATAM-2021] Colombia Value Assessment (2025)
 
 ---
 
 ## Australia/APAC Retail Banking Benchmarks
 
-### MyState Journey Assessment Reference (May 2025)
+### [Client-retail-ANZ-2025] Journey Assessment Reference (May 2025)
 
 **Context:** Regional Australian bank/mutual, ~23K online application interests/year, ~7K approvals
 
@@ -317,7 +317,7 @@ This document provides benchmark data for retail banking digital transformation,
 
 ### Backbase Impact Benchmarks
 
-| Impact Area | MyState Target |
+| Impact Area | [Client-retail-ANZ-2025] Target |
 |-------------|----------------|
 | Revenue Uplift (Onboarding) | 10-15% |
 | Cost Avoidance (Onboarding) | 40-50% |
@@ -325,7 +325,7 @@ This document provides benchmark data for retail banking digital transformation,
 | Cost Avoidance (Servicing) | 20-30% |
 | NPS Lift Potential | >30% |
 
-**Source:** MyState Journey Assessment Report (May 2025)
+**Source:** [Client-retail-ANZ-2025] Journey Assessment Report (May 2025)
 
 ### Portfolio Quality Benchmarks
 
@@ -343,11 +343,11 @@ This document provides benchmark data for retail banking digital transformation,
 
 ## North America Credit Union Benchmarks
 
-### BECU Reference (2025-2026)
+### [Client-creditunion-NAM-2025] Reference (2025-2026)
 
 **Context:** Large US Credit Union, Pacific Northwest, 1.5M members, $29B+ assets, Fiserv DNA core
 
-| Metric | BECU Value | Notes |
+| Metric | [Client-creditunion-NAM-2025] Value | Notes |
 |--------|------------|-------|
 | Total Members | 1,500,000 | Retail members |
 | Business Members | 85,000 | SMB segment |
@@ -357,11 +357,11 @@ This document provides benchmark data for retail banking digital transformation,
 | Total Revenue | $1.3B | NII + Non-interest income |
 | Employees (FTE) | 3,200 | Includes all staff |
 | Branches | 60 | Financial centers |
-| ATMs (Owned) | 250 | BECU fleet |
+| ATMs (Owned) | 250 | [Client-creditunion-NAM-2025] fleet |
 | NPS Score | 66.99 | 2024 average |
 | Products per Member | 2.3 | Cross-sell ratio |
 
-#### Digital Metrics (BECU)
+#### Digital Metrics ([Client-creditunion-NAM-2025])
 
 | Metric | Value | Notes |
 |--------|-------|-------|
@@ -377,7 +377,7 @@ This document provides benchmark data for retail banking digital transformation,
 | Integration Cycle | 8 months | New integrations |
 | Maintenance vs New Dev | 40% / 60% | Dev time split |
 
-#### Call Center Metrics (BECU)
+#### Call Center Metrics ([Client-creditunion-NAM-2025])
 
 | Metric | Value | Notes |
 |--------|-------|-------|
@@ -389,7 +389,7 @@ This document provides benchmark data for retail banking digital transformation,
 | Digital-Related Calls/Month | 5,000 | Password resets, login issues |
 | Systems Used per Transaction | 12 | Employee swivel-chair |
 
-#### Branch Metrics (BECU)
+#### Branch Metrics ([Client-creditunion-NAM-2025])
 
 | Metric | Value | Notes |
 |--------|-------|-------|
@@ -398,13 +398,13 @@ This document provides benchmark data for retail banking digital transformation,
 | Unified Member 360 View | No | Pain point |
 | System Downtime Recovery | 4 days | Pain point |
 
-**Source:** BECU Ignite Workshops & Business Case Questionnaire (2025-2026)
+**Source:** [Client-creditunion-NAM-2025] Ignite Workshops & Business Case Questionnaire (2025-2026)
 
-### WSFS Bank Reference (2025)
+### [Client-retail-NAM-2025] Reference (2025)
 
 **Context:** US Regional Bank, Delaware, Consumer + Business Banking, FIS platform
 
-#### Consumer Banking (WSFS)
+#### Consumer Banking ([Client-retail-NAM-2025])
 
 | Metric | Value | Notes |
 |--------|-------|-------|
@@ -424,7 +424,7 @@ This document provides benchmark data for retail banking digital transformation,
 | Average Handle Time | 7:21 min | Per call |
 | Dev Time Split | 75% maint / 25% new | Pain point |
 
-#### Customer Lifetime Value (WSFS)
+#### Customer Lifetime Value ([Client-retail-NAM-2025])
 
 | Segment | Value | Products |
 |---------|-------|----------|
@@ -432,7 +432,7 @@ This document provides benchmark data for retail banking digital transformation,
 | Millennial | $1,173/year | 2 accounts |
 | Long-term Family | $600-800/year | Multiple products |
 
-#### Pain Points (WSFS Consumer)
+#### Pain Points ([Client-retail-NAM-2025] Consumer)
 
 - Cumbersome OAO process
 - Difficult web/mobile navigation
@@ -444,7 +444,7 @@ This document provides benchmark data for retail banking digital transformation,
 - No budgeting tools
 - Limited card controls
 
-**Source:** WSFS Bank Workshop & Questionnaire (November 2025)
+**Source:** [Client-retail-NAM-2025] Workshop & Questionnaire (November 2025)
 
 ### Credit Union Benchmarks Summary
 
@@ -461,7 +461,7 @@ This document provides benchmark data for retail banking digital transformation,
 
 ## Credit Union Transaction Economics (NAM)
 
-### UFCU Reference (2022)
+### [Client-creditunion-NAM-2022] Reference (2022)
 
 **Context:** Large Texas Credit Union, ~195K retail users, ~20K business users, Symitar core
 
@@ -502,13 +502,13 @@ This document provides benchmark data for retail banking digital transformation,
 | NSF/Return Fees | $270K | Combined |
 | Wire Fees | $34K | Incoming |
 
-**Source:** UFCU Cost-Benefit Analysis (2022)
+**Source:** [Client-creditunion-NAM-2022] Cost-Benefit Analysis (2022)
 
 ---
 
 ## Credit Card Economics (NAM)
 
-### TD Bank Cards Reference (2022)
+### [Client-cards-NAM-2022] Reference (2022)
 
 **Context:** US Bank credit card program economics, industry average analysis
 
@@ -547,13 +547,13 @@ This document provides benchmark data for retail banking digital transformation,
 | Default/Inactive Adjustment | 25-50% | Portfolio quality |
 | Net Revenue per Active Account | $227-491/year | Conservative range |
 
-**Source:** TD Bank Cards Cost-Benefit Analysis (2022)
+**Source:** [Client-cards-NAM-2022] Cost-Benefit Analysis (2022)
 
 ---
 
 ## EMEA Retail Banking Benchmarks
 
-### Credins Bank Reference (Albania, 2025)
+### [Client-retail-EMEA-2025] Bank Reference (Albania, 2025)
 
 **Context:** Albanian retail bank, ~398K retail clients, DedaBit core banking
 
@@ -574,13 +574,13 @@ This document provides benchmark data for retail banking digital transformation,
 - Digital lending at 22% shows opportunity for origination
 - High churn (13.5%) indicates retention opportunity
 
-**Source:** Credins Bank Retail Questionnaire (2025)
+**Source:** [Client-retail-EMEA-2025] Bank Retail Questionnaire (2025)
 
 ---
 
 ## Africa Retail Banking Benchmarks
 
-### I&M Kenya Reference (East Africa, 2025)
+### [Client-retail-AFRICA-2025] Kenya Reference (East Africa, 2025)
 
 **Context:** Multi-country bank (Kenya, Uganda, Tanzania, Rwanda), 461K customers, Finacle core
 
@@ -647,9 +647,9 @@ This document provides benchmark data for retail banking digital transformation,
 - RM spending 40% on non-value-added tasks = automation opportunity
 - Strong call center efficiency (5 min resolution)
 
-**Source:** I&M Kenya Business Questionnaire Consolidated (2025)
+**Source:** [Client-retail-AFRICA-2025] Kenya Business Questionnaire Consolidated (2025)
 
 ---
 
 *Last Updated: February 2026*
-*Sources: Backbase Consulting Playbook Metrics Benchmark [Master], Client Discovery Workshops, Banesco Bolivia (2025), Banco Caja Social Colombia (2025), BECU (2025-2026), WSFS Bank (2025), UFCU (2022), TD Bank Cards (2022), Credins Bank (2025), I&M Kenya (2025)*
+*Sources: Backbase Consulting Playbook Metrics Benchmark [Master], Client Discovery Workshops, [Client-retail-LATAM-2025] Bolivia (2025), [Client-retail-LATAM-2021] Colombia (2025), [Client-creditunion-NAM-2025] (2025-2026), [Client-retail-NAM-2025] (2025), [Client-creditunion-NAM-2022] (2022), [Client-cards-NAM-2022] (2022), [Client-retail-EMEA-2025] Bank (2025), [Client-retail-AFRICA-2025] Kenya (2025)*

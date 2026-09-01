@@ -17,7 +17,7 @@ Or provide a partial path like:
 
 All engagement folders are located under:
 ```
-/Users/mayur@backbase.com/Library/CloudStorage/GoogleDrive-mayur@backbase.com/Shared drives/Customer Advisory/Team Value Consulting/Team Value Consulting /03 - Engagements/
+~/Library/CloudStorage/GoogleDrive-<you>@backbase.com/Shared drives/Customer Advisory/Team Value Consulting/Team Value Consulting /03 - Engagements/
 ```
 
 ## Classification Process
@@ -71,8 +71,8 @@ For each file/folder, assess:
    - `competitor`: Competitor positioning, build vs buy arguments
 
 3. **Client Sensitivity**
-   - REDACT: Contains client-specific financials, names, contracts
-   - ANONYMIZE: Can be generalized with bank type/region
+   - REDACT: Contains client-specific financials, names, contracts — exclude from extraction entirely
+   - ANONYMIZE: Can be generalized with bank type/region — before extracting it, run the shared tool rather than generalizing by hand: `.claude/hooks/_resolve_python.sh scripts/anonymize_transcript.py --file <file> --engagement-dir <source_engagement_dir>`, then read only the `.anon_<filename>` output. If the file is later routed through `/extract-learnings`, that skill's Step 2 applies the descriptive `[Client-{domain}-{REGION}-{year}-{disc}]` relabeling on top.
    - SAFE: Generic patterns, public benchmarks
 
 ### Step 4: Generate Inventory Report
@@ -127,12 +127,12 @@ Create the `scans/` folder if it doesn't exist.
 ## Example
 
 ```
-/scan-engagement 2025/38. Fifth Third Engagement Plan Version 2
+/scan-engagement 2025/38. [Client-commercial-NAM-2026-b] Engagement Plan Version 2
 ```
 
 Output:
 ```markdown
-# Engagement Scan: Fifth Third Bank
+# Engagement Scan: [Client-commercial-NAM-2026-b]
 
 ## Metadata
 - **Region:** NAM

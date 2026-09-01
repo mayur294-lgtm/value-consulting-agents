@@ -132,7 +132,7 @@ Where:
 
 ### Retail Banking
 
-**Training data available:** BECU (USA, Credit Union), SeABank (Vietnam), MyState (Australia), Credins (Albania), WSFS, UFCU, Banesco (Bolivia), Banco Caja Social (Colombia)
+**Training data available:** [Client-creditunion-NAM-2025] (USA, Credit Union), [Client-retail-APAC-2026-b] (Vietnam), [Client-retail-ANZ-2025] (Australia), [Client-retail-EMEA-2025] (Albania), [Client-retail-NAM-2025], [Client-creditunion-NAM-2022], [Client-retail-LATAM-2025] (Bolivia), [Client-retail-LATAM-2021] (Colombia)
 
 **Most relevant problem types:** Type 1, Type 2, Type 3, Type 5
 
@@ -208,7 +208,7 @@ Lending Margin = Working Capital Facilities × Net Spread + Term Loans × Net Sp
 
 ### Commercial Banking
 
-**Training data available:** Seacoast Bank (USA, commercial onboarding), BOK Financial (treasury discovery)
+**Training data available:** Seacoast Bank (USA, commercial onboarding), [Client-commercial-NAM-2026-a] (treasury discovery)
 
 **Most relevant problem types:** Type 1, Type 2, Type 4, Type 5
 
@@ -252,7 +252,7 @@ Treasury = Services Used × Monthly Fee ($500-2,000/month per service)
 
 ### Corporate Banking
 
-**Training data available:** Minimal — BOK Financial treasury pain points only. No complete ROI model.
+**Training data available:** Minimal — [Client-commercial-NAM-2026-a] treasury pain points only. No complete ROI model.
 
 > **GAP: Need at least 1 complete corporate banking engagement ROI model. Key differences from commercial: larger, more complex entities, multi-country, syndicated lending, sophisticated treasury. Benchmark data exists in commercial/benchmarks.md but no lever-level models.**
 
@@ -287,7 +287,7 @@ Revenue is concentrated: top 20% of clients typically generate 60-80% of revenue
 
 ### Wealth Management / Private Banking
 
-**Training data available:** HNB (Sri Lanka, 19K wealth clients), Tangerine/Scotiabank (Canada, 138K wealth clients), Goodbody (Ireland), TriState Capital (NAM)
+**Training data available:** [Client-wealth-APAC-2025] (Sri Lanka, 19K wealth clients), [Client-wealth-NAM-2024]/Scotiabank (Canada, 138K wealth clients), [Client-wealth-EMEA-2025] (Ireland), [Client-wealth-NAM-2023] (NAM)
 
 **Most relevant problem types:** Type 6, Type 4, Type 1 (Branch B: churn), Type 2 (compliance costs)
 
@@ -322,7 +322,7 @@ Also: NII from deposit balances, lending against portfolios, insurance commissio
 | Products per client (banking + wealth) | <2 | 2-3 | >4 | estimated |
 | Retail-to-wealth conversion rate | <1% | 1-2% | >3% | roi_levers.md |
 
-**HNB reference data:**
+**[Client-wealth-APAC-2025] reference data:**
 - 19,183 wealth clients, $1.82B AUM, $18.15M revenue (1.0% blended rate)
 - 45 RMs, 60% admin time, 41 KYC/AML staff
 - 6,000+ unconverted eligible customers (met threshold but not enrolled)
@@ -331,7 +331,7 @@ Also: NII from deposit balances, lending against portfolios, insurance commissio
 
 ### Investing (Digital / Self-Directed)
 
-**Training data available:** NFIS (Navy Federal Investment Services)
+**Training data available:** [Client-investing-NAM-2026] ([Client-investing-NAM-2026])
 
 **Most relevant problem types:** Type 6, Type 3, Type 1 (Branch C: cross-sell)
 
@@ -355,15 +355,15 @@ Full-service advisor (FA): 65-100 bps on AUM
 
 | KPI | Poor | Average | Best-in-Class | Source |
 |-----|------|---------|--------------|--------|
-| Account funding rate | <50% | 50-70% | >85% | estimated from NFIS |
+| Account funding rate | <50% | 50-70% | >85% | estimated from [Client-investing-NAM-2026] |
 | Self-directed → managed conversion | <3% | 5-8% | >10% | roi_levers.md |
 | AUM uplift (engaged vs non-engaged) | <10% | 15-20% | >25% | roi_levers.md |
 | ACAT completion rate improvement | — | +15-20% | +25% | roi_levers.md |
-| Advisor referral cold rate | high | moderate | low | NFIS evidence |
-| DI-to-FA tier upgrade capture rate | low | — | — | NFIS evidence |
-| Chat/call deflection rate | <20% | 30-40% | >50% | NFIS servicing data |
+| Advisor referral cold rate | high | moderate | low | [Client-investing-NAM-2026] evidence |
+| DI-to-FA tier upgrade capture rate | low | — | — | [Client-investing-NAM-2026] evidence |
+| Chat/call deflection rate | <20% | 30-40% | >50% | [Client-investing-NAM-2026] servicing data |
 
-**NFIS reference data:**
+**[Client-investing-NAM-2026] reference data:**
 - 7 lever groups, $23M total 5-year benefits vs $8.8M investment
 - ROI: 162%, Payback: 3.0 years, NPV: $9.5M
 - Largest lever: In-App Cross-Sell ($2.27M steady-state) — driven by banking app as discovery channel for investment products
@@ -389,12 +389,12 @@ Full-service advisor (FA): 65-100 bps on AUM
 
 | LOB | Status | What's Available | What's Needed |
 |-----|--------|-----------------|---------------|
-| **Retail** | Strong | BECU, SeABank, MyState, Credins, WSFS, UFCU, Banesco, Banco Caja Social | Sufficient for now |
-| **Wealth** | Strong | HNB, Tangerine, Goodbody, TriState Capital | Sufficient for now |
-| **Investing** | Moderate | NFIS (1 engagement) | 1-2 more investing engagements to validate patterns |
+| **Retail** | Strong | [Client-creditunion-NAM-2025], [Client-retail-APAC-2026-b], [Client-retail-ANZ-2025], [Client-retail-EMEA-2025], [Client-retail-NAM-2025], [Client-creditunion-NAM-2022], [Client-retail-LATAM-2025], [Client-retail-LATAM-2021] | Sufficient for now |
+| **Wealth** | Strong | [Client-wealth-APAC-2025], [Client-wealth-NAM-2024], [Client-wealth-EMEA-2025], [Client-wealth-NAM-2023] | Sufficient for now |
+| **Investing** | Moderate | [Client-investing-NAM-2026] (1 engagement) | 1-2 more investing engagements to validate patterns |
 | **SME** | Weak | Referenced in calibrator, no full ROI model | Need 1+ complete SME ROI model (ideally SME-primary bank) |
-| **Commercial** | Moderate | Seacoast (onboarding only), BOK Financial (treasury discovery) | Need 1 complete commercial ROI model with full lever set |
-| **Corporate** | Weak | BOK Financial (discovery only), benchmark data | Need 1+ complete corporate ROI model (multi-entity, treasury-heavy) |
+| **Commercial** | Moderate | Seacoast (onboarding only), [Client-commercial-NAM-2026-a] (treasury discovery) | Need 1 complete commercial ROI model with full lever set |
+| **Corporate** | Weak | [Client-commercial-NAM-2026-a] (discovery only), benchmark data | Need 1+ complete corporate ROI model (multi-entity, treasury-heavy) |
 
 ---
 

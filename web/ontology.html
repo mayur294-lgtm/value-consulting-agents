@@ -183,11 +183,11 @@ p{font-size:0.9rem;margin:6px 0;color:#475569}
 
 <div class="concept">
   <h3>Entities = The Nouns</h3>
-  <p>An entity is a "type of thing" that exists in the system. Each entity has <strong>attributes</strong> — the fields that describe it. Every specific instance (like "Navy Federal" or "the NFIS Wealth Assessment") is a row in that entity's table.</p>
+  <p>An entity is a "type of thing" that exists in the system. Each entity has <strong>attributes</strong> — the fields that describe it. Every specific instance (like "Client B" or "the CLIENT-A Wealth Assessment") is a row in that entity's table.</p>
   <div class="example">
     <strong>Entity:</strong> Client<br>
     <strong>Attributes:</strong> name, industry, geography, asset_size, tech_stack<br>
-    <strong>Instance:</strong> name="Navy Federal CU", industry="Credit Union", geography="North America", asset_size="$170B+"
+    <strong>Instance:</strong> name="Client B CU", industry="Credit Union", geography="North America", asset_size="$170B+"
   </div>
   <p>We have 32 entities organized into 5 categories:</p>
   <div class="legend" style="margin-top:12px">
@@ -663,7 +663,7 @@ p{font-size:0.9rem;margin:6px 0;color:#475569}
 <tr class="inh"><td class="a-name fk">engagement_id</td><td class="a-type">UUID → Engagement</td><td class="a-note">inherited</td></tr>
 <tr><td class="a-name pk">id</td><td class="a-type">UUID</td><td class="a-note">PK</td></tr>
 <tr><td class="a-name fk">template_id</td><td class="a-type">UUID → UseCaseTemplate</td><td class="a-note">nullable</td></tr>
-<tr><td class="a-name">code</td><td class="a-type">TEXT</td><td class="a-note">"NFIS-UC-03"</td></tr>
+<tr><td class="a-name">code</td><td class="a-type">TEXT</td><td class="a-note">"CLIENT-A-UC-03"</td></tr>
 <tr><td class="a-name req">name</td><td class="a-type">TEXT</td><td class="a-note">"Guided Digital Account Funding"</td></tr>
 <tr><td class="a-name">category</td><td class="a-type">ENUM</td><td class="a-note">acquisition | onboarding | servicing | lending | payments | investing | advisory | engagement | operations | compliance</td></tr>
 <tr><td class="a-name">problem_statement</td><td class="a-type">TEXT</td><td class="a-note"></td></tr>

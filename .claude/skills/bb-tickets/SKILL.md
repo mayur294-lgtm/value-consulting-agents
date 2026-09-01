@@ -191,7 +191,7 @@ Using the code-architect findings (file paths, creates/consumes, dependencies, c
    - Each PR must be independently reviewable and testable.
    - Note estimated line count per PR for reference, but do not use it as the grouping criterion.
 
-4. **Write the Verify command.** Decide the exact eval/structural commands `/bb-build` runs at each step boundary so it never has to invent them. For cortex this is the three-part check: `python scripts/test_agent.py` (structural) + `python evals/run_experiment.py --component <component> --altitude unit` + `python evals/run_experiment.py --altitude pipeline`. Name the `<component>` per ticket. Note any deliverable-altitude eval deferred to publish.
+4. **Write the Verify command.** Decide the exact eval/structural commands `/bb-build` runs at each step boundary so it never has to invent them. For cortex this is the three-part check: `python scripts/test_agent.py` (structural) + `python evals/run_experiment.py --component <component> --altitude unit` + `python evals/run_experiment.py --altitude deliverable-structural`. Name the `<component>` per ticket. Note any deliverable-altitude eval deferred to publish.
 
 5. **Decide scope as a decision, not an option.** State what to build outright — "Build all N. #X is stretch → build unless told otherwise." Leave no open question for `/bb-build` to re-ask.
 
@@ -209,7 +209,7 @@ Using the code-architect findings (file paths, creates/consumes, dependencies, c
    ## Verify   (run exactly these at each step boundary — nothing else)
    python scripts/test_agent.py
    python evals/run_experiment.py --component [component] --altitude unit
-   python evals/run_experiment.py --altitude pipeline
+   python evals/run_experiment.py --altitude deliverable-structural
    # note any deliverable-altitude eval deferred to publish.
 
    ## Dependency Graph

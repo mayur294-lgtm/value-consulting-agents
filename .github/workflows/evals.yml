@@ -1,10 +1,11 @@
 name: Evals (harness gate)
 
 # Tier-1 component-change gate. Runs the eval suite on any PR that touches a
-# content component (agent / command / skill / template / presentation / pipeline).
-# BLOCKING mode (SHADOW: "false") since 2026-07-24: the job exits non-zero when a
-# gated eval fails. To fully enforce, this check must also be marked "Required" in
-# branch protection on main (repo admin). Set SHADOW: "true" to revert to advisory.
+# content component (agent / command / skill / template / presentation / hook
+# / pipeline). BLOCKING mode (SHADOW: "false") since 2026-07-24: the job exits
+# non-zero when a gated eval fails. To fully enforce, this check must also be
+# marked "Required" in branch protection on main (repo admin). Set SHADOW:
+# "true" to revert to advisory.
 
 on:
   pull_request:
@@ -12,10 +13,28 @@ on:
       - ".claude/agents/**"
       - ".claude/commands/**"
       - ".claude/skills/**"
+      - ".claude/hooks/**"
+      - ".claude/settings.json"       # hook REGISTRATION — changes hook behaviour with no hook file touched (#191)
       - "templates/**"
       - "presentations/**"
       - "scripts/**.py"
+      - "scripts/**.sh"               # setup_pii.sh, init_engagement.sh, _resolve_python.sh's callers — the .py-only filter skipped every shell script under scripts/
+      - "tools/**.py"                 # roi_excel_generator.py and friends — was missing from this filter (#193)
       - "evals/**"
+      # The CTP rows (#95) gate on a GOVERNANCE STANDARD and on CLAUDE.md, not
+      # on a component file — so without these two lines a PR that guts
+      # knowledge/standards/critical_thought_partner_protocol.md, or unwires
+      # CLAUDE.md from it, never runs the checks written to catch exactly that.
+      # Both rows passed on a laptop and were unreachable from CI (Mayur's
+      # 2026-08-30 review, finding 4).
+      - "knowledge/standards/**"
+      - "CLAUDE.md"
+      # THE GATE GATES ITSELF. Without this line a PR that only WEAKENS this
+      # workflow — flipping SHADOW to "true", deleting the derive step,
+      # narrowing the filter above — never runs it, and merges unopposed.
+      # That is #191's own argument (hook REGISTRATION changes behaviour with
+      # no hook file touched) applied to the registration of this gate.
+      - ".github/workflows/evals.yml"
 
 permissions:
   contents: read
@@ -36,10 +55,40 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            evals/requirements.txt
+            requirements.txt
       - name: Install deps
         run: |
           pip install -r evals/requirements.txt
           if [ -n "$LANGFUSE_PUBLIC_KEY" ]; then pip install "langfuse>=2.0" "anthropic>=0.40"; fi
+      - name: Install PII deps (pii-anonymizer component)
+        # scripts/pii/engine.py imports presidio_analyzer at module level and
+        # needs Python 3.10-3.13 (see its module docstring) — actions/setup-python
+        # above already pins 3.11, so `sys.executable` here is Presidio-capable
+        # and the pii-anonymizer rubric can import the engine in-process with no
+        # separate venv step. requirements.txt carries the Presidio/spaCy pins,
+        # including the ~380 MB en_core_web_lg model as a pinned direct wheel
+        # URL dependency — this single install pulls the same model everywhere
+        # (see requirements.txt / scripts/setup_pii.sh), no separate download
+        # step needed. The setup-python cache above keys on this file so the
+        # wheel isn't re-fetched every run.
+        run: |
+          # The image checks in the pii-anonymizer rubric
+          # (image_input_produces_sidecar_and_redacted_copy,
+          # image_unreadable_script_refuses_and_writes_nothing, and the .png leg
+          # of document_formats_converted_and_scrubbed) exercise the OCR path.
+          # requirements.txt carries `pytesseract`, which is only the PYTHON
+          # BINDING — the tesseract BINARY it shells out to is a system package
+          # and was never installed here. Without it scripts/pii/ingest.py
+          # correctly raises OCRUnavailableError, the three checks HARD-FAIL on
+          # the wrong error type, and the row scores 0.842 against its 1.00
+          # threshold. That is an environment gap, not a code defect: the binding
+          # without the binary is a half-installed dependency.
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq tesseract-ocr
+          pip install -r requirements.txt
       - name: Registry preflight
         # Fail fast if any GATING golden can't resolve in CI (missing or
         # gitignored) — a silently-skipped golden would make its gate a
@@ -47,24 +96,286 @@ jobs:
         # non-fatal DEBT. Runs before the suite so a mis-wired registry is a
         # precise error, not a green-that-verified-nothing.
         run: python evals/check_registry.py
+      - name: Derive changed components
+        # #193: a component-scoped change (an agent, a hook with its own
+        # row, a generator script) must run ITS row, and a changed file that
+        # maps to a component with no row must fail loudly — a silent skip
+        # here is exactly the failure mode this epic exists to close. The
+        # path->row table below is intentionally the ONLY place this mapping
+        # lives (not duplicated into a helper script) so there is exactly one
+        # file to keep in sync when a component's subject file moves; every
+        # entry mirrors a path evals/registry.yaml's own comments already
+        # name for that row. It reads registry.yaml fresh every run, so it
+        # can never drift on the "does this row still exist" half of the
+        # question — only the "which path maps to which row" half is
+        # hand-maintained, and that half fails CLOSED (hard error), not open.
+        id: changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr diff "${{ github.event.pull_request.number }}" --name-only > /tmp/changed_paths.txt
+          python3 - <<'PY'
+          import os
+          import re
+          import sys
+
+          import yaml
+
+          reg = yaml.safe_load(open("evals/registry.yaml"))
+          components = set((reg.get("components") or {}).keys())
+          # #201 — `retired: true` rows are REDIRECTS, not gates. The eleven
+          # agent names whose prose-golden rows became `rubric_calibration:`
+          # rows keep a stub in `components:` purely so `--component <agent>`
+          # prints the mapping instead of a bare KeyError; that stub always
+          # hard-fails by design. Read from the registry's own flag (never a
+          # hand-kept path list here, which would drift the moment a row moved),
+          # and reported as a NOTICE, because the honest answer for a changed
+          # agent PROMPT is "path 2 has nothing that verifies this" — running
+          # the calibration rubric would score a frozen fixture the prompt
+          # cannot affect and print a green that means nothing about the diff.
+          retired = {n for n, s in (reg.get("components") or {}).items()
+                     if isinstance(s, dict) and s.get("retired")}
+
+          # Explicit path -> component for rows whose subject file does NOT
+          # follow the `.claude/agents/<name>.md` == component-name
+          # convention handled below. Keep in sync by hand; every target here
+          # is named in the matching row's comment in evals/registry.yaml.
+          EXPLICIT = {
+              "tools/roi_excel_generator.py": "roi-excel-generator",
+              ".claude/hooks/mcp-query-guard.py": "mcp-query-guard",
+              ".claude/hooks/anonymize-guard.py": "pii-anonymizer",
+              "scripts/anonymize_transcript.py": "pii-anonymizer",
+              "evals/run_experiment.py": "run-experiment-runner",
+              "evals/mutations.py": "mutation-harness",
+              "evals/check_registry.py": "mutation-harness",
+              # tools/proposal_builder.py is the SUBJECT of the `proposal-engine`
+              # row (#150): rubrics/component/proposal_engine.py subprocesses this
+              # exact file, so changing it really can move that score. Mapped here
+              # AHEAD of mariamt/20260819-proposal-builder merging, because
+              # measured against that branch's real 37-file diff this step derived
+              # ZERO rows — every path fell through to the silent `continue` below,
+              # so the whole proposal gate would have arrived covered by nothing
+              # and said so nowhere. The file exists only on that branch, so until
+              # it lands this entry is inert (a path not in the diff is never
+              # looked up); when it lands with its registry row, it resolves.
+              #
+              # DELIBERATELY NOT MAPPED, because a mapping asserts the row can see
+              # the file and these two cannot:
+              #   tools/pricing_model.py       — read by NO rubric in the suite.
+              #     It needs its own row, which is a registry change on that
+              #     branch, not a line here. Pointing it at `proposal-engine`
+              #     would convert a silent skip into a FALSE GREEN — strictly
+              #     worse, and the exact failure the v7 epic exists to close.
+              #   .claude/commands/proposal-builder.md — named in
+              #     proposal_loop.py's docstring as the subject, but that rubric
+              #     reads two committed goldens and never opens the command file,
+              #     so the prompt cannot move the score. Same shape as the eleven
+              #     `rubric_calibration:` rows: a gate named after something it
+              #     cannot see. `proposal-loop` is therefore covered by nothing
+              #     here on purpose — see the eval report, not a mapping.
+              "tools/proposal_builder.py": "proposal-engine",
+          }
+          EXPLICIT_PREFIXES = {
+              "scripts/pii/": "pii-anonymizer",
+          }
+          # Convention: an agent's own row is named after its file stem.
+          # Excludes .claude/agents/deprecated/** — those are explicitly
+          # retired (CLAUDE.md "Flywheel") and were never eval-adopted.
+          AGENT_RE = re.compile(r"^\.claude/agents/([^/]+)\.md$")
+
+          # Retired agents that still sit at the LIVE path as a redirect stub
+          # rather than under deprecated/ — touching one would otherwise hard
+          # fail CI demanding an eval row for an agent nobody may invoke.
+          # Deliberately an explicit, greppable path list and NOT a
+          # "description starts with DEPRECATED" frontmatter rule: a
+          # frontmatter rule lets any PR dodge this gate by adding one word to
+          # a description, which is the silent-skip failure mode this whole
+          # epic exists to close. Extending this list requires editing this
+          # workflow — which, per the `paths:` filter above, now runs the gate
+          # on itself. The durable fix is deleting the live-path stub
+          # (.claude/agents/deprecated/roi-business-case-builder.md already
+          # holds the real copy); until then, this one line.
+          RETIRED_IN_PLACE = {
+              ".claude/agents/roi-business-case-builder.md",
+          }
+
+          paths = [line.strip() for line in open("/tmp/changed_paths.txt") if line.strip()]
+
+          matched: set[str] = set()
+          missing: list[tuple[str, str]] = []
+          for p in paths:
+              if p in RETIRED_IN_PLACE:
+                  print(f"note: {p} is a retired-in-place agent stub — no eval row expected")
+                  continue
+              comp = EXPLICIT.get(p)
+              if comp is None:
+                  for prefix, name in EXPLICIT_PREFIXES.items():
+                      if p.startswith(prefix):
+                          comp = name
+                          break
+              if comp is None:
+                  m = AGENT_RE.match(p)
+                  if m and "/deprecated/" not in p:
+                      comp = m.group(1)
+              if comp is None:
+                  # Not a path this mapping treats as a component: NOTHING in
+                  # this job re-evaluates it. Do not read this as "covered by
+                  # the fixed deliverable/altitude evals" — for the prompt
+                  # tier that is false. `--deliverable deck|roi|assessment|
+                  # report` and `--altitude deliverable-structural` all score
+                  # COMMITTED GOLDEN FILES; they never re-render from a
+                  # changed command, skill or template, so a change to one
+                  # cannot move them. This is a known, filed inconsistency
+                  # (.prd/backlog.md, "uncovered-path inconsistency"): 17 path
+                  # classes trigger this workflow and then skip silently,
+                  # while a changed agent with no row hard-fails four lines
+                  # below. The intended direction is extending fail-loud to
+                  # them, not softening the agent rule.
+                  continue
+              if comp in retired:
+                  moved = (reg["components"][comp] or {}).get("moved_to", "?")
+                  print(f"::notice::{p} maps to components.{comp}, which is RETIRED as a gate "
+                        f"(#201). Its rubric now lives at rubric_calibration.{moved} and scores a "
+                        f"frozen golden — it says nothing about this prompt change. Nothing in "
+                        f"path 2 verifies an agent prompt; run evals/path1.py locally if you want "
+                        f"evidence.")
+                  continue
+              if comp in components:
+                  matched.add(comp)
+              else:
+                  missing.append((p, comp))
+
+          if missing:
+              print("::error::changed file(s) map to a component with NO row in evals/registry.yaml — "
+                    "add one (see CLAUDE.md's bb-* harness: a new/changed component needs eval "
+                    "coverage) rather than let this skip silently:")
+              for p, comp in missing:
+                  print(f"::error::  {p}  ->  expected components.{comp} in evals/registry.yaml, but it is not there")
+              sys.exit(1)
+
+          names = sorted(matched)
+          print("changed component rows to run:", names or "(none)")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("components=" + " ".join(names) + "\n")
+          PY
       - name: Run eval suite
         id: run
+        env:
+          CHANGED_COMPONENTS: ${{ steps.changed.outputs.components }}
         run: |
           set -o pipefail
+
+          # Deliverable rows are DERIVED from the registry, never hand-listed.
+          # They used to be four literals, and `proposal` (#150) — authored with
+          # a golden and seven single-defect negatives on its own branch — was
+          # covered by NOTHING here, with no output saying so: not by this list
+          # (its name was never added) and not by the derive step above (which
+          # maps zero rows for that branch's whole diff). That is the same
+          # argument the mutation-row derivation below already makes, applied to
+          # the list it sits next to. Deriving means a new deliverable row is
+          # gated the moment it exists, which is the only version of this that
+          # cannot go quiet.
+          #
+          # `--negatives` is attached PER ROW from the registry rather than
+          # hand-paired: `roi` declares one (roi_config_overcap.json, the #180
+          # threshold-0.90 gate) and the old literal list ran it WITHOUT the
+          # flag, so that negative had never once been exercised in CI.
+          deliverable_cmds=()
+          while IFS= read -r line; do
+            deliverable_cmds+=("$line")
+          done < <(python3 - <<'PY'
+          import yaml
+
+          reg = yaml.safe_load(open("evals/registry.yaml"))
+          for name, spec in (reg.get("deliverables") or {}).items():
+              if not isinstance(spec, dict):
+                  continue
+              cmd = f"--deliverable {name}"
+              if spec.get("negatives"):
+                  cmd += " --negatives"
+              print(cmd)
+          PY
+          )
+
+          # A derivation that yields nothing must not read as "nothing to run".
+          # An empty array here would silently drop EVERY deliverable gate while
+          # the job still went green — precisely the failure this step exists to
+          # close, reintroduced by the fix for it.
+          if [ "${#deliverable_cmds[@]}" -eq 0 ]; then
+            echo "::error::no deliverable rows derived from evals/registry.yaml — refusing to run a suite with zero deliverable coverage"
+            exit 1
+          fi
+          echo "deliverable rows derived from the registry: ${deliverable_cmds[*]}"
+
           {
             echo '## Eval results'
             echo
             echo '```'
             rc=0
-            for cmd in \
-              "--deliverable deck --negatives" \
-              "--deliverable roi" \
-              "--deliverable assessment" \
-              "--altitude pipeline"; do
+
+            # Fixed list — every PR in scope runs these regardless of what changed.
+            fixed_cmds=(
+              "${deliverable_cmds[@]}"
+              "--component mcp-query-guard"
+              "--component pii-anonymizer"
+              # CTP (#95). FIXED rather than derived: the derive step maps a
+              # CHANGED FILE to a component, and these two rows' subjects are a
+              # knowledge standard and CLAUDE.md, which map to no component
+              # name. Deriving them would mean inventing a second mapping; the
+              # rows are cheap and deterministic, so run them every time.
+              "--component critty"
+              "--component critical-thought-partner"
+              "--altitude deliverable-structural"
+            )
+            for cmd in "${fixed_cmds[@]}"; do
               echo "### run_experiment.py $cmd"
               python evals/run_experiment.py $cmd || rc=1
               echo
             done
+
+            # Changed-component rows (#193) — anything the diff maps to that
+            # isn't already covered by the fixed list above.
+            declare -A already=( [mcp-query-guard]=1 [pii-anonymizer]=1 [critty]=1 [critical-thought-partner]=1 )
+            for name in $CHANGED_COMPONENTS; do
+              if [ -z "${already[$name]:-}" ]; then
+                already[$name]=1
+                echo "### run_experiment.py --component $name  (changed-component row, #193)"
+                python evals/run_experiment.py --component "$name" || rc=1
+                echo
+              fi
+            done
+
+            # Mutation proofs (#193) — every row that DECLARES a mutations
+            # entry gets its proof re-run in CI, not just locally. Derived
+            # fresh from the registry every run (never a hardcoded row list,
+            # which would silently stop covering a row the moment a new one
+            # is added, or keep "covering" one that dropped its mutations:).
+            mutate_rows=$(python3 - <<'PY'
+          import yaml
+
+          reg = yaml.safe_load(open("evals/registry.yaml"))
+          rows = []
+          # `rubric_calibration` is listed HERE, not left to `components`: those
+          # eleven rows used to be YAML-aliased into `components:` for dispatch
+          # and were picked up for free. The alias is gone (the runner has a real
+          # `--calibration` branch), so a two-section tuple would silently stop
+          # running 38 mutation proofs — coverage vanishing with no output, the
+          # exact failure this derivation exists to prevent.
+          for section in ("components", "deliverables", "rubric_calibration"):
+              for name, spec in (reg.get(section) or {}).items():
+                  if not isinstance(spec, dict):
+                      continue
+                  if isinstance(spec.get("mutations"), dict) or isinstance(spec.get("negatives"), dict):
+                      rows.append(name)
+          print(" ".join(sorted(rows)))
+          PY
+          )
+            for row in $mutate_rows; do
+              echo "### run_experiment.py --mutate $row  (mutation proof, #193)"
+              python evals/run_experiment.py --mutate "$row" || rc=1
+              echo
+            done
+
             echo '```'
             echo
             if [ "$rc" -ne 0 ]; then

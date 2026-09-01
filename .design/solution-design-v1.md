@@ -47,7 +47,7 @@ Governance note (CLAUDE.md): agent + skill edits are Architect-tier and require-
 ### 3.1 Top-level `sources` (new, optional)
 ```json
 "sources": [
-  { "ref": "MyState CC actuals",
+  { "ref": "client CC actuals",
     "detail": "Call volumes + AHT by wrap-up code, ~182k calls/yr (Nov24–May25); FTE CC 28 / Branch 66.",
     "file": "6 month Data.xlsx · 250512 Follow-up questions.xlsx" }
 ]
@@ -102,9 +102,9 @@ Pipeline-altitude experiment is the backstop: it must stay green to prove no dow
 
 | Decision | Alternatives | Why | Trade-off |
 | --- | --- | --- | --- |
-| Port stash@{1} verbatim as the generator baseline | Re-derive from scratch | It is the proven code that produced MyState v5; lowest risk | Must review the patch as if new (no blind trust) |
+| Port stash@{1} verbatim as the generator baseline | Re-derive from scratch | It is the proven code that produced the live v5 config; lowest risk | Must review the patch as if new (no blind trust) |
 | Explicit `_confidence` wins, heuristic is fallback | Replace heuristic entirely | Backward compat for configs without `_confidence` | Two code paths for confidence |
-| Dedicated golden fixtures in `evals/goldens/` (not the live MyState config) | Point eval at `engagements/outputs/2605_Mystate_Ignite/roi_config.json` | Engagement outputs are mutable/could move; a golden is stable and self-documenting | Must keep the golden representative if the schema evolves |
+| Dedicated golden fixtures in `evals/goldens/` (not a live client config) | Point eval at `engagements/outputs/2605_Mystate_Ignite/roi_config.json` | Engagement outputs are mutable/could move; a golden is stable and self-documenting | Must keep the golden representative if the schema evolves |
 | Additive-only, absent-key = prior behaviour | Make provenance mandatory in the generator | Can't break existing/historical configs | Provenance quality depends on the agent actually emitting it (enforced upstream via the agent's own eval checks) |
 | Generator does not validate confidence vocabulary | Enforce enum in generator | Separation of concerns — vocabulary belongs to the agent contract/eval | A malformed value would render verbatim (caught by agent-side eval) |
 | Skill doc: provenance keys + minimal schema correction only | Full `/generate-roi-excel` rewrite | Keeps the cycle scoped; the stale full-rewrite is its own backlog item | Doc remains imperfect outside the provenance area |

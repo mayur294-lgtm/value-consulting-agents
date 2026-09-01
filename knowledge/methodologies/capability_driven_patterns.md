@@ -242,7 +242,7 @@ AI & Agentic value depends heavily on **channel volumes** and **current automati
 - High call volume + low current deflection = large opportunity
 - Already have chatbot = incremental improvement, not greenfield
 - NBA value requires digital engagement base (customers must be in-app to receive prompts)
-- BECU model reference: AI chatbot engagement valued separately from call center deflection
+- [Client-creditunion-NAM-2025] model reference: AI chatbot engagement valued separately from call center deflection
 
 ---
 

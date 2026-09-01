@@ -36,7 +36,7 @@ This repo's own software — **agents (`.claude/agents/`), skills/commands (`.cl
 `/bb-prd → /bb-design → /bb-tickets → /bb-build → /bb-pr-review → /bb-refine`
 
 - `bb-prd` writes `.prd/prd-v*.md` including an **Eval Acceptance Criteria** section (which `evals/registry.yaml` cases + thresholds define done; a NEW component authors fresh eval cases).
-- `bb-build`'s verify step = **evals**, not a compiler: `python scripts/test_agent.py` (structural) + `python evals/run_experiment.py --component <name>` (unit) + `python evals/run_experiment.py --altitude pipeline` (the change didn't break downstream). A ticket isn't done until these pass.
+- `bb-build`'s verify step = **evals**, not a compiler: `python scripts/test_agent.py` (structural) + `python evals/run_experiment.py --component <name>` (unit) + `python evals/run_experiment.py --altitude deliverable-structural` (the change didn't break downstream output contracts — it lints files, it does not run the pipeline). A ticket isn't done until these pass.
 - `bb-pr-review` opens a **draft PR** that can't merge until the `evals.yml` gate is green; `bb-refine` harvests failing/edge/drift cases into `.prd/backlog.md` to seed the next cycle.
 
 **Deploy = green-merge to `main`** (agents/skills are read at runtime — no build artifact). A `v*` tag cuts a formal release, gated on the full eval suite.
@@ -47,23 +47,35 @@ The `require-harness.py` hook blocks direct edits to component paths when no bb-
 
 ## Commands
 
-Python 3.11. Install deps with `pip install -r requirements.txt` (only `openpyxl`; CI also installs `pyyaml`). There is no Makefile and no npm/unit-test suite in the repo root — the engine is `scripts/orchestrate.py` and quality is enforced structurally in CI.
+The system `python3` on most consultant machines is 3.9.6 — that runs the **hooks** fine (they're stdlib-only, or lazily import Presidio only when anonymizing). It does **not** run `scripts/orchestrate.py`: the pipeline imports `claude_agent_sdk` at module level, which is declared in `requirements.txt` but is not installed under the system interpreter, and (as of the Presidio PII gate) `step_discovery` also needs `scripts/pii/engine.py`, which requires **Python 3.10–3.13**. Both live in one place: the `.venv` created by `bash scripts/setup_pii.sh` (see README "Installation") installs the *entire* `requirements.txt` — `claude-agent-sdk` included — so `.venv/bin/python` is the interpreter that actually runs the pipeline, not system `python3`. There is no Makefile and no npm/unit-test suite in the repo root — the engine is `scripts/orchestrate.py` and quality is enforced structurally in CI.
 
-**Run the assessment pipeline** — the core engine for Ignite Assess (Discovery → Block A's 5 parallel agents → Roadmap → Assembly → HTML → Excel → Validation). Run from repo root; `CLAUDECODE=` clears the env var so checkpoints work:
+**Run the assessment pipeline** — the core engine for Ignite Assess (Discovery → Block A's 5 parallel agents → Roadmap → Assembly → HTML → Excel → Validation). Run from repo root, through `.venv` (`bash scripts/setup_pii.sh` once if `.venv` doesn't exist yet); `CLAUDECODE=` clears the env var so checkpoints work:
 
 ```bash
-CLAUDECODE= python3 scripts/orchestrate.py {engagement_dir}                 # interactive (consultant checkpoints)
-CLAUDECODE= python3 scripts/orchestrate.py --express {engagement_dir}        # fewer checkpoints
-CLAUDECODE= python3 scripts/orchestrate.py --non-interactive {engagement_dir} # fully automated
-CLAUDECODE= python3 scripts/orchestrate.py --resume-from {step} {engagement_dir} # resume after interruption
-CLAUDECODE= python3 scripts/orchestrate.py --dry-run {engagement_dir}        # plan only, no API calls
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py {engagement_dir}                 # interactive (consultant checkpoints)
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --express {engagement_dir}        # fewer checkpoints
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --non-interactive {engagement_dir} # fully automated
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --resume-from {step} {engagement_dir} # resume after interruption
+CLAUDECODE= .venv/bin/python scripts/orchestrate.py --dry-run {engagement_dir}        # plan only, no API calls
 ```
 
-**Bootstrap a new engagement** (creates the client→engagement hierarchy, intake + journal templates, session UUID). Run from repo root:
+**Bootstrap a new engagement** (mints an opaque engagement ID, writes the map entry and CLIENT_PROFILE.md, creates intake + journal templates and the session UUID). Signature unchanged — you still pass the client's short name. Run from repo root:
 
 ```bash
 ./scripts/init_engagement.sh <client_short_name> <YYYY-MM_domain_type> [assessment|ignite]
 # e.g. ./scripts/init_engagement.sh navy_federal 2026-02_retail_assessment assessment
+```
+
+**Find an engagement** — you never type an opaque ID; partial and case-insensitive:
+
+```bash
+./scripts/find_engagement.sh navy_federal
+```
+
+**Migrate existing client-named engagement directories to opaque IDs** — one time, consultant-invoked only (never from a hook), **dry run by default**. It refuses to migrate any engagement that would lose a deny-list term:
+
+```bash
+./scripts/migrate_engagement_ids.sh
 ```
 
 **Agent quality checks** — what `test-agents.yml` runs on agent/knowledge/template PRs ($0, no LLM; validates against `tests/quality_metrics.yaml`):
@@ -76,9 +88,9 @@ python scripts/test_agent.py --branch HEAD --base-branch origin/main --output te
 
 **Telemetry (intake only — feeds the bb-* harness backlog):** one-time `./scripts/setup_telemetry.sh`; extract `python3 scripts/extract_telemetry.py <ENGAGEMENT_JOURNAL.md>`; manual sync via the `/sync-telemetry` skill. Triage aggregates findings and labels the top issue `needs-bb-prd` (queued for `bb-prd` — **nothing auto-implements**; the auto-dev loop was removed 2026-06-24).
 
-**Anonymize a transcript before it reaches MCP/KG:** `python3 scripts/anonymize_transcript.py ...` (the `anonymize-guard.py` hook also blocks unscrubbed reads automatically).
+**Anonymize a transcript (or any file) before it reaches MCP/KG:** `.claude/hooks/_resolve_python.sh scripts/anonymize_transcript.py --file <path> --engagement-dir <engagement_dir>` — plain `python3` cannot run this (Presidio needs 3.10–3.13; see Commands above), so always go through `_resolve_python.sh` or `.venv/bin/python` directly. This is the ONE anonymization tool in Cortex — every other surface that needs to anonymize something (knowledge harvest, `/extract-learnings`, `/scan-engagement`, `upgrade-analysis`) calls this same tool and applies at most a descriptive relabeling on top (`[Client-{domain}-{REGION}-{year}-{disc}]`) — see `.claude/agents/knowledge-harvester.md` Core Rule 2 for that convention. The `anonymize-guard.py` hook also blocks unscrubbed reads under `engagements/*/inputs/` automatically (fails closed).
 
-> `tests/` holds **engagement validation runs** (BECU, WSFS, NFIS, Mystate), not unit tests.
+> `tests/` holds **engagement validation runs** ([Client-creditunion-NAM-2025], [Client-retail-NAM-2025], [Client-investing-NAM-2026], Mystate), not unit tests.
 
 ---
 
@@ -97,20 +109,22 @@ The big picture that spans multiple files (see `STRUCTURE.md`, `FLYWHEEL.md`, an
 
 4. **Skills are slash commands** in `.claude/commands/` (~28): the `/frontline*` family (deck/doc builders — see catalog below), `/generate-assessment-html`, `/generate-roi-questionnaire`, `/generate-roi-excel`, `/build-roi`, `/build-journey`, `/run-pipeline`, `/publish`, `/reconcile`, `/scan-engagement`, `/extract-learnings`, and the `domain-*` retrievers. (`.claude/skills/` holds only the `coding-standards` plugin skill.)
 
-5. **Engagement hierarchy** (`engagements/[client]/[YYYY-MM_domain_type]/`, detailed in `STRUCTURE.md`): a persistent `CLIENT_PROFILE.md` per client (survives across engagements) plus per-engagement `inputs/`, `outputs/`, `ENGAGEMENT_JOURNAL.md`, and `.engagement_session_id`.
+5. **Engagement hierarchy** (`engagements/[opaque_id]/[YYYY-MM_domain_type]/`, detailed in `STRUCTURE.md`): the top-level directory is a random opaque ID, because `compose_prompt` renders `engagement_dir` into every agent prompt and `cwd` is that path — a client-named directory leaks the client on every call (solution-design-v6 D6). The ID→client binding lives only in `.engagement_map.json` (repo root, chmod 600, gitignored); `./scripts/find_engagement.sh <client>` is the lookup, so no one types an ID. Inside is unchanged: `CLIENT_PROFILE.md` (carried forward to each new engagement for that client, and the file that keeps the client's name on the deny-list now the directory name doesn't), plus per-engagement `inputs/`, `outputs/`, `ENGAGEMENT_JOURNAL.md`, and `.engagement_session_id`.
 
 6. **The Flywheel** (`FLYWHEEL.md`) — ⚠️ **auto-dev loop KILLED (2026-06-24).** The autonomous `dev-agent.yml` (which auto-implemented `ready-for-dev` telemetry issues) is removed — it changed agents **outside** the bb-* harness + eval gate. Telemetry/Triage still run as **intake only** (telemetry → prioritized issue → feeds the next `bb-prd` backlog); **nothing auto-implements.** All component changes go through the **bb-* development harness** (`bb-prd → bb-design → bb-tickets → bb-build (eval verify) → bb-pr-review → bb-refine`) with evals as the gate. Deprecated: `.claude/agents/deprecated/{dev-agent,review-agent,coach-agent}.md`.
 
 7. **Hooks (`.claude/settings.json` → `.claude/hooks/`) fire automatically** and enforce governance — know them before debugging "why was my action blocked":
    - SessionStart `auto-branch.sh` — never work on `main`; auto-creates a feature branch.
-   - PreToolUse(Read|Bash) `anonymize-guard.py` — blocks unscrubbed PII from reaching MCP/KG.
+   - SessionStart `pii-preflight.sh` — checks whether the Presidio venv is installed and, if not, tells the consultant the one command that fixes it (`bash scripts/setup_pii.sh`). Never blocks.
+   - PreToolUse(Read|Bash) `anonymize-guard.py` — a path/timestamp gate (not a content scanner): blocks any raw read under `engagements/*/inputs/` unless a current `.anon_` sibling exists. Fails closed.
+   - PreToolUse(`mcp__.*`) `mcp-query-guard.py` — blocks or rewrites outbound Backbase Infobank MCP queries that contain a client/stakeholder identifier (enforces `knowledge/standards/security_protocol.md` §5).
    - PreToolUse(Write) `require-checkpoint.py` — enforces consultant checkpoints before writes.
    - Stop `enforce-journal.py` — enforces a journal entry on completion.
-   - Git `.githooks/post-commit` + `pre-push` — telemetry extraction/sync (Flywheel backup layers).
+   - Git `.githooks/post-commit` + `pre-push` — telemetry extraction/sync (Flywheel backup layers); `scripts/extract_telemetry.py` replaces the raw client name with the descriptive `[Client-{domain}-{REGION}-{year}-{disc}]` label before anything is written or synced.
 
 8. **Knowledge & ontology:** `knowledge/` holds methodology, `standards/` (the governance protocols + per-domain capability taxonomies), `design-system.md` (visual SSOT), `banking_os.md` (positioning canon), domain benchmarks, and battlecards. `ontology-test/` holds per-client knowledge-graph JSON and the Minimi bridge (`MINIMI_BRIDGE.md`).
 
-9. **CI contribution gates:** `enforce-contribution-scope.yml` blocks Consultant-tier PRs from touching agents/skills/tools/CLAUDE.md (Architect-only); `test-agents.yml` guards agent/knowledge/template PRs. See **Contribution Tiers** below.
+9. **CI contribution gates:** `enforce-contribution-scope.yml` blocks Consultant-tier PRs from touching agents/skills/tools/CLAUDE.md (Architect-only); `test-agents.yml` guards agent/knowledge/template PRs; `catalog-drift.yml` fails any PR that adds, renames or retires a skill/agent without updating `docs/rollout/catalog.yaml` and regenerating the cheat sheet (`python3 tools/build_cheatsheet.py`) — the consultant-facing capability list is generated from that catalog, so this is what stops it going stale. See **Contribution Tiers** below.
 
 ---
 
@@ -127,6 +141,30 @@ Every analysis must be grounded in:
 - Hide assumptions
 - Present guesses as facts
 - Use optimistic math without downside cases
+
+### You Are a Critical Thought Partner, Not a Typist
+
+A senior consultant questions before producing, to make sure the work is built on solid ground. You do the same. You challenge weak input, surface what's missing, and keep the work pointed at the original problem — **but only when it earns its cost.**
+
+**Challenge only when it makes sense.** Speak up when at least one of these holds, and stay silent otherwise:
+- It changes a number, framing, or structure in something the client will see (materiality)
+- It contradicts evidence already in front of you
+- The output would rest on an unsupported, load-bearing assumption
+- The current ask has drifted from the problem you agreed to solve
+- Something is missing whose absence would change the answer
+
+Stay silent — just do the work — when: you already raised it and they made an informed call; it's cosmetic or easily reversed; they explicitly closed the topic; or it's low-impact (log it to the assumptions register instead of interrupting). **Most turns need no challenge. That is the system working, not failing.** When you do challenge, batch every concern into one structured push — never a string of nags.
+
+**When you challenge, do it like a partner:**
+
+1. **Agree the problem first.** Share your read of what's being solved, for whom, and what success looks like — then ask if it matches. Don't restate unilaterally; reach it together. Separate the surface ask from the underlying need. Match how deeply you decompose to how complex the problem is.
+2. **Carry "so what" through to the output.** Every solution states what it means for the stakeholder it's presented to.
+3. **Surface what's missing — including what you can't see.** For gaps you can detect, follow the Handling Missing Data rules. For context you *can't* detect (deal history, politics, tacit knowledge), name the shape of what you're missing and ask before producing.
+4. **Pressure-test input, transparently.** Test assertions by decomposing to the link that doesn't hold; fall back to first principles when evidence is thin. State what makes you uncertain and ask where a number or claim came from. Never confront, never lecture — invite a defense.
+5. **Hold the line on the original problem.** Keep the agreed problem in view. Re-anchor when you've drifted before producing the wrong thing — and pull the consultant back when *they* drift from their own stated intent.
+6. **Metabolize correction.** When corrected, restate what you now understand to confirm, extract the underlying principle, sweep the rest of the work for the same mistake, and ask what else the same blind spot may have touched.
+
+This sharpens the consultant's thinking and pressure-tests the output before a client ever sees it. Two honest limits: you're a **sharpener, not an oracle** — you can challenge a figure's logic but can't verify it without the source data; and you're **instruction, not independence** — the same model reasoning over the same context, so name where a genuinely independent check would bite harder. When a consultant wants a hard, on-demand pressure-test regardless of triggers, they invoke `/critty`. Full triggers, suppression rules, and examples: `knowledge/standards/critical_thought_partner_protocol.md`.
 
 ### You Follow README.md Standards
 
@@ -224,7 +262,8 @@ ALL agents (current and future) MUST comply with these protocols:
 |----------|------|----------|
 | **Auditability Protocol** | `knowledge/standards/auditability_protocol.md` | Journal entries, telemetry, output provenance, checkpoint logging |
 | **Context Management Protocol** | `knowledge/standards/context_management_protocol.md` | File size checks, chunking, context preservation |
-| **Security Protocol** | `knowledge/standards/security_protocol.md` | Prompt injection defense, untrusted data handling, MCP query anonymization, web source validation, stakeholder intelligence bounds |
+| **Security Protocol** | `knowledge/standards/security_protocol.md` | Prompt injection defense, untrusted data handling, MCP query anonymization (§5 — enforced by the `mcp-query-guard.py` hook, not prose alone), web source validation, stakeholder intelligence bounds |
+| **Critical Thought Partner Protocol** | `knowledge/standards/critical_thought_partner_protocol.md` | When/how to challenge consultant input — triggers, suppression rules, the five functions, drift detection |
 | **Unified Design System** | `knowledge/design-system.md` | Visual output standards, brand colors, typography, layout patterns |
 
 **Non-negotiable rules for every agent:**
@@ -412,7 +451,7 @@ Cover · Section Divider · Agenda · Content · Split Comparison (From/To) · S
 
 **Do NOT use these skills for:**
 - Assessment dashboards → use `/generate-assessment-html`
-- Schroders/SEB-style executive briefings → use `/executive-briefing` family
+- Executive-briefing-style deliverables → use `/executive-briefing` family
 
 ### /generate-roi-questionnaire - ROI Questionnaire Generator
 
