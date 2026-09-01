@@ -1,6 +1,6 @@
 ---
 version: 5
-status: built
+status: archived
 date: 2026-08-19
 author: Mariam Titus George
 previous: prd-v4.md
